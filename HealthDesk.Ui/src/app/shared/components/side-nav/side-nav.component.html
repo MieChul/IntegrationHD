@@ -1,0 +1,12 @@
+<nav *ngIf="true" class="d-flex flex-column flex-shrink-0 p-3 bg-light sidebar">
+  <a href="/" class="d-block mb-3 text-center logo">
+    <img src="assets/logo.png" alt="Logo" class="img-fluid">
+  </a>
+  <ul class="nav nav-pills nav-flush flex-column mb-auto text-center">
+    <li class="nav-item" *ngFor="let link of navLinks">
+      <a href="{{link.url}}" class="nav-link py-3 border-bottom" [class.active]=""  aria-current="page" data-bs-toggle="tooltip" data-bs-placement="right" [title]="link.tooltip">
+        <i [class]="link.iconClass"></i>
+      </a>
+    </li>
+  </ul>
+</nav>

@@ -1,0 +1,417 @@
+// Define primary, accent, and background colors for Material theme
+$primary-color: #d76745bc;
+$accent-color: #2cbf5d;
+$background-color: hsl(302, 76%, 53%);
+$gradient-color1: hsl(302, 76%, 53%);
+$gradient-color2: #63b4ee;
+$gradient-color3: #2cbf5d;
+$secondary-color: #a159ffd2; // From logo
+
+$background-light-blue: #7ac7fd;
+$background-medium-blue: #7dcbfc;
+$background-dark-blue: #65ade7;
+$background-lightest-blue: #7cc9fd;
+$background-darker-blue: #63abe5;
+
+// Additional colors from the logo
+$logo-white: #ffffff;
+$logo-light-red: #ff7261;
+$logo-green: #0fcf82d1;
+
+
+// Custom theme styles for Material components
+body {
+  background: linear-gradient(to right, $gradient-color1, $gradient-color2, $gradient-color3);
+  animation: gradientAnimation 10s ease infinite;
+  font-family: 'Roboto', sans-serif;
+  color: #ffffff;
+  background-size: 200% 200%;
+
+  // Gradient animation
+  @keyframes gradientAnimation {
+    0% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+}
+
+// Material component color styling
+.mat-primary {
+  color: $primary-color;
+}
+
+.mat-accent {
+  color: $accent-color;
+}
+
+// Angular Material component styles
+.mat-button {
+  color: $accent-color;
+  font-weight: bold;
+  transition: transform 0.3s ease, color 0.3s ease;
+
+  &:hover {
+    transform: scale(1.05);
+    color: $primary-color;
+  }
+}
+
+// Button styling for custom buttons
+.btn-custom {
+  background-color: $primary-color;
+  border: none;
+  color: #ffffff;
+  padding: 10px 20px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: $accent-color;
+    transform: scale(1.1);
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+  }
+}
+
+// Card styles
+.card-custom {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+
+  &:hover {
+    transform: translateY(-10px);
+    box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.3);
+  }
+}
+
+
+// Capsule container
+.capsule-container {
+  max-width: 360px;
+  max-height: 100vh;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 50px;
+  padding: 30px;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  margin: 1% auto auto auto;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden; // Prevent horizontal scrolling
+  box-sizing: border-box;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #bb7fbb;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+// Logo animation
+.logo-animated {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 10px;
+  border-radius: 50%;
+  background-image: url('../../../assets/logo.png'); // Adjust logo path
+  background-size: cover;
+
+  @keyframes rotate {
+    0% {
+      transform: rotate(0deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+// Gradient animation for text
+.logo-container h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(45deg, #673ab7, #03a9f4, #4caf50);
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: gradient-animation 4s ease-in-out infinite;
+
+  @keyframes gradient-animation {
+    0% {
+      background-position: 0%;
+    }
+
+    100% {
+      background-position: 100%;
+    }
+  }
+}
+
+// Input and button animations
+mat-form-field,
+button,
+.divider {
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+// Focus animation for form fields
+::ng-deep mat-form-field.mat-form-field-appearance-outline .mat-form-field-outline-thick {
+  border-color: #66bb6a;
+  transition: border-color 0.3s ease;
+
+  &.mat-focused {
+    border-color: #673ab7;
+    transition: border-color 0.4s ease;
+  }
+}
+
+// Login button animation
+button.login-button {
+  font-size: 1rem;
+  padding: 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+  }
+}
+
+// Divider styling
+.divider {
+  font-weight: bold;
+  color: #333;
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  position: relative;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #333;
+    margin: 0 8px;
+  }
+}
+
+// Auth options and link styling
+.auth-options {
+  text-align: center;
+  font-size: 0.9rem;
+
+  .signup-text {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 5px 0;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    color: #673ab7;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.3s ease, transform 0.3s ease;
+    font-size: 0.9rem; // Set the font size for uniformity
+
+    &:hover {
+      color: #3f51b5;
+      transform: translateY(-2px);
+    }
+
+    mat-icon {
+      font-size: 1rem; // Adjust to match text size more closely
+      margin-right: 5px;
+      vertical-align: middle; // Align icon with the text vertically
+      transition: transform 0.3s ease;
+    }
+  }
+}
+
+// Role tile styling
+.roles-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  .role-tile {
+    width: 85px;
+    height: 85px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 15px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    cursor: pointer;
+
+    img {
+      width: 80%;
+      height: auto;
+      transition: opacity 0.3s ease;
+    }
+
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+
+      img {
+        opacity: 0.3;
+      }
+
+      .role-title {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+
+  .role-title {
+    position: absolute;
+    bottom: 10px;
+    text-align: center;
+    color: #673ab7;
+    font-weight: 600;
+    font-size: 0.65rem;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+}
+
+// OTP styling
+.otp-section {
+  margin-top: 20px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.otp-input {
+  width: 40px;
+  height: 40px;
+  text-align: center;
+  font-size: 1.5rem;
+  border-radius: 5px;
+  border: 2px solid #4caf50;
+  /* Green border */
+  box-shadow: 0px 4px 8px rgba(76, 175, 80, 0.3);
+  /* Green shadow */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin-bottom: 5px;
+
+  &:focus {
+    outline: none;
+    transform: scale(1.1);
+    box-shadow: 0px 6px 12px rgba(76, 175, 80, 0.4);
+    border-color: #388e3c;
+  }
+}
+
+// Snackbar styles
+.success-snackbar {
+  background-color: #4caf50 !important;
+  color: white;
+}
+
+.error-snackbar {
+  background-color: #f44336 !important;
+  color: white;
+}
+
+.captcha-container {
+  margin-bottom: 15px;
+  /* Adds space between captcha and Send OTP button */
+}
+
+.resend-otp-message {
+  color: #4caf50;
+  /* Green text for resend countdown */
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+// OTP title in green
+.otp-title {
+  color: #4caf50;
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-top: 20px;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.page-header {
+  font-size: 2.5rem;
+  font-weight: 600;
+  font-family: 'Roboto', sans-serif;
+  text-align: center;
+  margin-bottom: 20px;
+  color: transparent;
+  background: linear-gradient(to right, $gradient-color1, $gradient-color2, $gradient-color3);
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: fadeInTop 1s ease-out, gradientTextAnimation 10s ease infinite;
+
+  // Text gradient animation
+  @keyframes gradientTextAnimation {
+    0% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  // Fade in from the top animation
+  @keyframes fadeInTop {
+    0% {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  background-size: 200% 200%; // For smooth gradient animation
+}
+
+
+
