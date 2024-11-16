@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HealthDesk.API", "HealthDesk.API\HealthDesk.API.csproj", "{533B8F14-920F-441B-A1E8-90C35412FF14}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HealthDesk.Application", "HealthDesk.Application\HealthDesk.Application.csproj", "{508E60C4-C3C3-4541-A554-8166BEFD6361}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HealthDesk.Core", "HealthDesk.Core\HealthDesk.Core.csproj", "{E8D9B517-A201-42DB-87DA-F71F4FE2958A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HealthDesk.Infrastructure", "HealthDesk.Infrastructure\HealthDesk.Infrastructure.csproj", "{342C06EC-5F02-4ED4-A672-C8651FFE4E6B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{533B8F14-920F-441B-A1E8-90C35412FF14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{533B8F14-920F-441B-A1E8-90C35412FF14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{533B8F14-920F-441B-A1E8-90C35412FF14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{533B8F14-920F-441B-A1E8-90C35412FF14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{508E60C4-C3C3-4541-A554-8166BEFD6361}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{508E60C4-C3C3-4541-A554-8166BEFD6361}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{508E60C4-C3C3-4541-A554-8166BEFD6361}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{508E60C4-C3C3-4541-A554-8166BEFD6361}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8D9B517-A201-42DB-87DA-F71F4FE2958A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8D9B517-A201-42DB-87DA-F71F4FE2958A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8D9B517-A201-42DB-87DA-F71F4FE2958A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8D9B517-A201-42DB-87DA-F71F4FE2958A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{342C06EC-5F02-4ED4-A672-C8651FFE4E6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{342C06EC-5F02-4ED4-A672-C8651FFE4E6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{342C06EC-5F02-4ED4-A672-C8651FFE4E6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{342C06EC-5F02-4ED4-A672-C8651FFE4E6B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7A952264-5354-463B-B78C-23688ED44711}
+	EndGlobalSection
+EndGlobal

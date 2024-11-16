@@ -23,3 +23,16 @@ D:\HD\finalHealthDesk\HealthDesk\HealthDesk.Core\obj\Debug\net8.0\HealthDesk.Cor
 D:\HD\finalHealthDesk\HealthDesk\HealthDesk.Core\obj\Debug\net8.0\refint\HealthDesk.Core.dll
 D:\HD\finalHealthDesk\HealthDesk\HealthDesk.Core\obj\Debug\net8.0\HealthDesk.Core.pdb
 D:\HD\finalHealthDesk\HealthDesk\HealthDesk.Core\obj\Debug\net8.0\ref\HealthDesk.Core.dll
+C:\Users\admin\Desktop\desk\IntegrationHD\HealthDesk.Core\bin\Debug\net8.0\HealthDesk.Core.deps.json
+C:\Users\admin\Desktop\desk\IntegrationHD\HealthDesk.Core\bin\Debug\net8.0\HealthDesk.Core.dll
+C:\Users\admin\Desktop\desk\IntegrationHD\HealthDesk.Core\bin\Debug\net8.0\HealthDesk.Core.pdb
+C:\Users\admin\Desktop\desk\IntegrationHD\HealthDesk.Core\obj\Debug\net8.0\HealthDesk.Core.csproj.AssemblyReference.cache
+C:\Users\admin\Desktop\desk\IntegrationHD\HealthDesk.Core\obj\Debug\net8.0\HealthDesk.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\admin\Desktop\desk\IntegrationHD\HealthDesk.Core\obj\Debug\net8.0\HealthDesk.Core.AssemblyInfoInputs.cache
+C:\Users\admin\Desktop\desk\IntegrationHD\HealthDesk.Core\obj\Debug\net8.0\HealthDesk.Core.AssemblyInfo.cs
+C:\Users\admin\Desktop\desk\IntegrationHD\HealthDesk.Core\obj\Debug\net8.0\HealthDesk.Core.csproj.CoreCompileInputs.cache
+C:\Users\admin\Desktop\desk\IntegrationHD\HealthDesk.Core\obj\Debug\net8.0\HealthDesk.Core.sourcelink.json
+C:\Users\admin\Desktop\desk\IntegrationHD\HealthDesk.Core\obj\Debug\net8.0\HealthDesk.Core.dll
+C:\Users\admin\Desktop\desk\IntegrationHD\HealthDesk.Core\obj\Debug\net8.0\refint\HealthDesk.Core.dll
+C:\Users\admin\Desktop\desk\IntegrationHD\HealthDesk.Core\obj\Debug\net8.0\HealthDesk.Core.pdb
+C:\Users\admin\Desktop\desk\IntegrationHD\HealthDesk.Core\obj\Debug\net8.0\ref\HealthDesk.Core.dll

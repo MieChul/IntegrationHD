@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Api\\HealthDesk.API.csproj": {}
+    "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.API\\HealthDesk.API.csproj": {}
   },
   "projects": {
-    "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Api\\HealthDesk.API.csproj": {
+    "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.API\\HealthDesk.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Api\\HealthDesk.API.csproj",
+        "projectUniqueName": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.API\\HealthDesk.API.csproj",
         "projectName": "HealthDesk.API",
-        "projectPath": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Api\\HealthDesk.API.csproj",
+        "projectPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.API\\HealthDesk.API.csproj",
         "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
-        "outputPath": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Api\\obj\\",
+        "outputPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.API\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -26,8 +26,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Application\\HealthDesk.Application.csproj": {
-                "projectPath": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Application\\HealthDesk.Application.csproj"
+              "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Application\\HealthDesk.Application.csproj": {
+                "projectPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Application\\HealthDesk.Application.csproj"
               }
             }
           }
@@ -83,14 +83,14 @@
         }
       }
     },
-    "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Application\\HealthDesk.Application.csproj": {
+    "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Application\\HealthDesk.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Application\\HealthDesk.Application.csproj",
+        "projectUniqueName": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Application\\HealthDesk.Application.csproj",
         "projectName": "HealthDesk.Application",
-        "projectPath": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Application\\HealthDesk.Application.csproj",
+        "projectPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Application\\HealthDesk.Application.csproj",
         "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
-        "outputPath": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Application\\obj\\",
+        "outputPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Application\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -105,11 +105,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Core\\HealthDesk.Core.csproj": {
-                "projectPath": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Core\\HealthDesk.Core.csproj"
+              "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj": {
+                "projectPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj"
               },
-              "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj": {
-                "projectPath": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj"
+              "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj": {
+                "projectPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj"
               }
             }
           }
@@ -174,14 +174,14 @@
         }
       }
     },
-    "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Core\\HealthDesk.Core.csproj": {
+    "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Core\\HealthDesk.Core.csproj",
+        "projectUniqueName": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj",
         "projectName": "HealthDesk.Core",
-        "projectPath": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Core\\HealthDesk.Core.csproj",
+        "projectPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj",
         "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
-        "outputPath": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Core\\obj\\",
+        "outputPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Core\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -238,14 +238,14 @@
         }
       }
     },
-    "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj": {
+    "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj",
+        "projectUniqueName": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj",
         "projectName": "HealthDesk.Infrastructure",
-        "projectPath": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj",
+        "projectPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
-        "outputPath": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Infrastructure\\obj\\",
+        "outputPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -260,8 +260,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Core\\HealthDesk.Core.csproj": {
-                "projectPath": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Core\\HealthDesk.Core.csproj"
+              "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj": {
+                "projectPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj"
               }
             }
           }

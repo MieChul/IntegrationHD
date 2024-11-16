@@ -1,5 +1,4 @@
-﻿using HealthDesk.Core;
-
+﻿
 namespace HealthDesk.Application;
 
  public interface IUserService

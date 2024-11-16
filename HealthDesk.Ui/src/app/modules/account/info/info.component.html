@@ -1,0 +1,692 @@
+<div class="container-fluid bg-transparent userInfo">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="row">
+            <div class="col-lg-3">
+                <div class="card mb-4 text-center">
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <span>Upload Profile Image</span>
+                            <div class="cursor-pointer" (click)="file.click();removeClass('profImg')">
+                                <img alt="" onerror="this.onerror=null; this.src='/assets/defaultProfile.jpg'" class="rounded-circle img-fluid" id="profImg">
+                                <input [hidden]="true" #file type="file" accept="image/*"
+                                    onchange="document.getElementById('profImg').src = window.URL.createObjectURL(this.files[0])"
+                                    (change)="upload($event, 'profileImage')">
+                            </div>
+                            <div class="form-floating"
+                                *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
+                                <input type="text" formControlName="displayName" class="form-control" id="floatingInput"
+                                    placeholder="Display Name" autocomplete="off"
+                                    [ngClass]="{ 'is-invalid': submitted && f['displayName'].errors }">
+                                <div *ngIf="submitted && f['displayName'].errors" class="invalid-feedback">
+                                    <div *ngIf="f['displayName'].errors['required']">Display Name is required</div>
+                                </div>
+                                <label for="floatingInput" class="form-label-floating">Display Name<i
+                                        class="danger">*</i></label>
+                            </div>
+                        </div>
+                        <div class="row mb-3" *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
+                            <div class=" col-sm-9">
+                                <div class="input-group">
+                                    <input class="form-control dobbox" [ngModelOptions]="{standalone: true}"
+                                        placeholder="Birth Date yyyy-mm-dd" name="dp" [(ngModel)]="birthDate"
+                                        ngbDatepicker #d="ngbDatepicker" [minDate]="{year: 1960, month:1, day: 1}"
+                                        (ngModelChange)="calculateAge()" autocomplete="off"
+                                        [ngClass]="{ 'is-invalid': submitted && dobError }">
+
+
+                                    <button class="btn btn-outline-secondary bi bi-calendar3 input-group-text"
+                                        (click)="d.toggle()" type="button"></button>
+                                </div>
+                                <div *ngIf="submitted && dobError" class="invalid-feedback d-block">
+                                    Birth Date is required
+                                </div>
+                            </div>
+                            <div class="form-floating col-sm-3">
+                                <input readonly class="form-control" [(ngModel)]="age"
+                                    [ngModelOptions]="{standalone: true}" id="floatingInput" placeholder="Age"
+                                    autocomplete="off" value="0">
+                                <label for="floatingInput" class="form-label-floating">Age</label>
+                            </div>
+
+                        </div>
+                        <div class="row mb-3" *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
+                            <div class="btn-group flex-wrap">
+                                <input type="radio" formControlName="gender" class="btn-check " name="gender"
+                                    id="option1" value="Male" autocomplete="off" />
+                                <label class="btn btn-outline-secondary" for="option1" data-mdb-ripple-init><i
+                                        class="bi bi-gender-male"></i>Male</label>
+
+                                <input type="radio" formControlName="gender" class="btn-check" name="gender"
+                                    id="option2" value="Female" autocomplete="off" />
+                                <label class="btn btn-outline-secondary" for="option2" data-mdb-ripple-init><i
+                                        class="bi bi-gender-female"></i>Female</label>
+
+                                <input type="radio" formControlName="gender" class="btn-check" name="gender"
+                                    id="option3" value="Unspicified" autocomplete="off" />
+                                <label class="btn btn-outline-secondary" for="option3" data-mdb-ripple-init><i
+                                        class="bi bi-gender-ambiguous"></i>Unspicified</label>
+                            </div>
+                            <div *ngIf="submitted && f['gender'].errors" class="invalid-feedback d-block">
+                                Gender is required
+                            </div>
+                        </div>
+                        <div class="row" *ngIf="this.user.role == 'patient'">
+                            <div class="form-floating col-sm-6">
+                                <input class="form-control" id="floatingInput" placeholder="Blood Group"
+                                    autocomplete="off" formControlName="bloodGroup">
+                                <label for="floatingInput" class="form-label-floating">Blood Group</label>
+                            </div>
+                            <div class="form-floating col-sm-6">
+                                <input class="form-control" id="floatingInput" placeholder="Blood Group"
+                                    autocomplete="off" formControlName="relationId">
+                                <label for="floatingInput" class="form-label-floating">Relative Unique Id</label>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-9">
+                <div class="card bg-danger text-center" *ngIf="isRejected">
+                    <div class="row">
+                        <div class="col top-warning"><i class="bi bi-exclamation-triangle-fill"></i> Your application was rejected. Please resubmit with corrections.
+                            <a class="warning cursor-pointer" (click)="open(content)">Show Admin Comments</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card bg-warning text-center" *ngIf="isSaved">
+                    <div class="row">
+                        <div class="col top-warning"><i class="bi bi-exclamation-triangle-fill"></i> Your application is saved. Please complete the application and submit for admin to review.
+                        </div>
+                    </div>
+                </div>
+                <ul class="nav nav-tabs">
+                    <li class="nav-item " *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
+                        <div class="nav-link" id="p_info" #p_info aria-current="page"
+                            (click)="changeTab('p_info',p_info)"><i class="bi bi-person"></i>Personal Information</div>
+                    </li>
+                    <li class="nav-item" *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
+                        <div class="nav-link" id="addr_info" #addr_info (click)="changeTab('addr_info', addr_info )"><i
+                                class="bi bi-building"></i>Address Information</div>
+                    </li>
+                    <li *ngIf="this.user.role == 'physician'" class="nav-item">
+                        <div class="nav-link" id="q_info" #q_info (click)="changeTab('q_info',q_info)"><i
+                                class="bi bi-filetype-doc"></i>Qualification
+                            Documents</div>
+                    </li>
+                    <li class="nav-item" *ngIf="this.user.role != 'patient'">
+                        <div class="nav-link" id="hosp_info" #hosp_info (click)="changeTab('hosp_info',hosp_info)"><i
+                                class="bi bi-hospital"></i>{{this.user.role === 'physician' ? 'Hospital/Clinic' : 'Basic Information'}}</div>
+                    </li>
+                    <li class="nav-item" *ngIf="this.user.role != 'physician' &&  this.user.role != 'patient' ">
+                        <div class="nav-link" id="auth_per" #auth_per (click)="changeTab('auth_per',auth_per)"><i
+                                class="bi bi-person"></i>Authorized Person Information</div>
+                    </li>
+                </ul>
+                <div class="row">
+                    <div *ngIf="tab ==='p_info'">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <p class="mb-4"><span class="text-primary font-italic me-1">Personal Information</span>
+                                </p>
+                                <div class="row">
+                                    <div class="form-floating mb-3 col-sm-4">
+                                        <input type="text" class="form-control" formControlName="firstName"
+                                            id="firtNames" placeholder="First Name" autocomplete="off"
+                                            [ngClass]="{ 'is-invalid': submitted && f['firstName'].errors }">
+                                        <div *ngIf="submitted && f['firstName'].errors" class="invalid-feedback">
+                                            <div>First Name is required</div>
+                                        </div>
+                                        <label for="firtsNames" class="form-label-floating">First Name<i
+                                                class="danger">*</i></label>
+                                    </div>
+                                    <div class="form-floating mb-3 col-sm-4">
+                                        <input type="text" class="form-control" id="middleName"
+                                            placeholder="Middle Name" autocomplete="off" formControlName="middleName">
+                                        <label for="middleName" class="form-label-floating">Middle Name</label>
+                                    </div>
+
+                                    <div class="form-floating mb-3 col-sm-4">
+                                        <input type="text" class="form-control" formControlName="lastName" id="lastName"
+                                            placeholder="Last Name" autocomplete="off"
+                                            [ngClass]="{ 'is-invalid': submitted && f['lastName'].errors }">
+                                        <div *ngIf="submitted && f['lastName'].errors" class="invalid-feedback">
+                                            <div>Last Name is required</div>
+                                        </div>
+                                        <label for="lastName" class="form-label-floating">Last Name<i
+                                                class="danger">*</i></label>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="form-floating mb-3 col-sm-6">
+                                        <input type="text" [readOnly]="true" formControlName="mobile1"
+                                            class="form-control" id="mobile" placeholder="Mobile" value="f.mobile1"
+                                            autocomplete="off">
+                                        <label for="mobile" class="form-label-floating">Mobile<i
+                                                class="danger">*</i></label>
+                                    </div>
+
+                                    <div class="form-floating mb-3 col-sm-6">
+                                        <input formControlName="mobile2" type="text" class="form-control" id="mobile1"
+                                            placeholder="Mobile 1" autocomplete="off"
+                                            [ngClass]="{ 'is-invalid': submitted && f['mobile2'].errors }">
+                                        <div *ngIf="submitted && f['mobile2'].errors" class="invalid-feedback">
+                                            <div *ngIf="f['mobile2'].invalid">Mobile number is invalid</div>
+                                        </div>
+                                        <label for="mobile1" class="form-label-floating">Mobile 1</label>
+
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="form-floating mb-3 col-sm-6">
+                                        <input type="text" formControlName="email1" class="form-control" id="email1"
+                                            placeholder="Email" value="f.email1" autocomplete="off"
+                                            [ngClass]="{ 'is-invalid': submitted && f['email1'].errors }">
+                                        <div *ngIf="submitted && f['email1'].errors" class="invalid-feedback">
+                                            <div *ngIf="f['email1'].invalid">Email is invalid</div>
+                                        </div>
+                                        <label for="mobile" class="form-label-floating">Email</label>
+                                    </div>
+
+                                    <div class="form-floating mb-3 col-sm-6">
+                                        <input type="text" formControlName="email2" class="form-control" id="email1"
+                                            placeholder="Email2" autocomplete="off"
+                                            [ngClass]="{ 'is-invalid': submitted && f['email2'].errors }">
+                                        <div *ngIf="submitted && f['email2'].errors" class="invalid-feedback">
+                                            <div *ngIf="f['email2'].invalid">Email is invalid</div>
+                                        </div>
+                                        <label for="email1" class="form-label-floating">Email 1</label>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="form-floating mb-3 col-sm-6">
+                                        <input type="text" formControlName="aadhar" class="form-control" id="aadhar"
+                                            placeholder="Aadhar" autocomplete="off"
+                                            [ngClass]="{ 'is-invalid': submitted && f['aadhar'].errors }">
+                                        <div *ngIf="submitted && f['aadhar'].errors" class="invalid-feedback">
+                                            <div *ngIf="f['aadhar'].invalid">Aadhar is invalid</div>
+                                        </div>
+                                        <label for="aadhar" class="form-label-floating">Aadhar</label>
+                                    </div>
+
+                                    <div class="form-floating mb-3 col-sm-6">
+                                        <input type="text" formControlName="pan" class="form-control" id="Pan"
+                                            placeholder="Pan" autocomplete="off"
+                                            [ngClass]="{ 'is-invalid': submitted && f['pan'].errors }">
+                                        <div *ngIf="submitted && f['pan'].errors" class="invalid-feedback">
+                                            <div *ngIf="f['pan'].invalid">Pan is invalid</div>
+                                        </div>
+                                        <label for="Pan" class="form-label-floating">Pan</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngIf="tab =='addr_info'">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <p class="mb-4"><span class="text-primary font-italic me-1">Address Information</span>
+                                </p>
+                                <div class="row">
+                                    <div class="form-floating mb-3 col-sm-6">
+                                        <input type="text" formControlName="address1" class="form-control" id="address1"
+                                            placeholder="Houe/ Flat Number" autocomplete="off"
+                                            [ngClass]="{ 'is-invalid': submitted && f['address1'].errors }">
+                                        <div *ngIf="submitted && f['address1'].errors" class="invalid-feedback">
+                                            <div *ngIf="f['address1'].errors['required']">Houe/ Flat Number is required</div>
+                                        </div>
+                                        <label for="address1" class="form-label-floating">Houe/ Flat Number<i
+                                                class="danger">*</i></label>
+                                    </div>
+
+                                    <div class="form-floating mb-3 col-sm-6">
+                                        <input formControlName="address2" type="text" class="form-control" id="address2"
+                                            placeholder="Building / Society" autocomplete="off"
+                                            [ngClass]="{ 'is-invalid': submitted && f['address2'].errors }">
+                                        <div *ngIf="submitted && f['address2'].errors" class="invalid-feedback">
+                                            <div *ngIf="f['address2'].errors['required']">Building / Society is required</div>
+                                        </div>
+                                        <label for="address2" class="form-label-floating">Building / Society<i
+                                                class="danger">*</i></label>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="form-floating mb-3 ">
+                                        <textarea type="text" class="form-control" id="area" placeholder="Area"
+                                            autocomplete="off" formControlName="area"
+                                            [ngClass]="{ 'is-invalid': submitted && f['area'].errors }"></textarea>
+                                        <div *ngIf="submitted && f['area'].errors" class="invalid-feedback">
+                                            <div *ngIf="f['area'].errors['required']">Area/ Locality is required</div>
+                                        </div>
+                                        <label for="area" class="form-label-floating">Area/ Locality<i
+                                                class="danger">*</i></label>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col">
+                                        <select formControlName="city" class="form-select"
+                                            aria-label="Default select example"
+                                            [ngClass]="{ 'is-invalid': submitted && f['city'].errors }">
+                                            <option selected>select city</option>
+                                            <option value="Mumbai">Mumbai</option>
+                                            <option value="Bangalore">Bangalore</option>
+                                            <option value="Pune">Pune</option>
+                                        </select>
+                                        <div *ngIf="submitted && f['city'].errors" class="invalid-feedback d-flex">
+                                            <div *ngIf="f['city'].errors['required']">City is required</div>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <select formControlName="state" class="form-select"
+                                            aria-label="Default select example"
+                                            [ngClass]="{ 'is-invalid': submitted && f['state'].errors }">
+                                            <option selected>select state</option>
+                                            <option value="Maharashtra">Maharashtra</option>
+                                            <option value="Karnataka">Karnataka</option>
+                                            <option value="Gujrat">Gujrat</option>
+
+                                        </select>
+                                        <div *ngIf="submitted && f['state'].errors" class="invalid-feedback d-flex">
+                                            <div *ngIf="f['state'].errors['required']">State is required</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="form-floating mb-3 col-sm-6">
+                                        <input type="text" formControlName="pincode" class="form-control" id="pincode"
+                                            placeholder="Pin Code" autocomplete="off"
+                                            [ngClass]="{ 'is-invalid': submitted && f['pincode'].errors }">
+                                        <div *ngIf="submitted && f['pincode'].errors" class="invalid-feedback">
+                                            <div>Pincode is required</div>
+                                        </div>
+                                        <label for="pincode" class="form-label-floating">Pin Code<i
+                                                class="danger">*</i></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngIf="tab =='q_info'">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <p class="mb-4"><span class="text-primary font-italic me-1">Qualification
+                                        Documents</span>
+                                </p>
+                                <div class="row mb-1" formGroupName="graduation">
+                                    <span class="text-success font-italic mb-2">Graduation<i class="danger">*</i></span>
+                                    <div class="form-floating mb-3 col-sm-4">
+                                        <input type="text" class="form-control" id="year" placeholder="Year"
+                                            autocomplete="off" formControlName="year" [ngClass]="{ 'is-invalid': submitted && gYearError }">
+                                        <div *ngIf="submitted && gYearError" class="invalid-feedback d-flex">
+                                            <div>Year is required</div>
+                                        </div>
+                                        <label for="year" class="form-label-floating">Year Of passing</label>
+                                    </div>
+
+                                    <div class="form-floating mb-3 col-sm-4">
+                                        <input type="text" class="form-control" id="institute" placeholder="Institute"
+                                            autocomplete="off" formControlName="institute" [ngClass]="{ 'is-invalid': submitted && gInstituteError }">
+                                        <div *ngIf="submitted && gInstituteError" class="invalid-feedback d-flex">
+                                            <div>Institute is required</div>
+                                        </div>
+                                        <label for="institute" class="form-label-floating">Name Of Institute</label>
+                                    </div>
+                                    <div class="form-floating mb-3 col-sm-4">
+                                        <div class="row">   <div class="col-sm-9">
+                                            <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
+                                                id="formFile" (change)="upload($event, 'graduation')" [ngClass]="{ 'is-invalid': submitted && gDocError }">
+                                        <div *ngIf="submitted && gDocError" class="invalid-feedback d-flex">
+                                            <div>Document is required</div>
+                                        </div>
+                                        </div>
+                                        <div *ngIf="user.graduation.document" class="form-floating mb-3 col-sm-3">  
+                                            <div (click)="view(user.graduation.document)"  class="btn btn-primary"> View</div>
+                                        </div></div>
+                                        
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row" formGroupName="postGraduation">
+                                    <span class="text-success font-italic mb-2">Post Graduation</span>
+                                    <div class="form-floating col-sm-4">
+                                        <input type="text" class="form-control" id="year" placeholder="Year"
+                                            autocomplete="off" formControlName="year">
+                                        <label for="year" class="form-label-floating">Year Of passing</label>
+                                    </div>
+
+                                    <div class="form-floating col-sm-4">
+                                        <input type="text" class="form-control" id="institute" placeholder="institute"
+                                            autocomplete="off" formControlName="institute">
+                                        <label for="institute" class="form-label-floating">Name Of Institute</label>
+                                    </div>
+                                    <div class="form-floating mb-3 col-sm-4">
+                                        <div class="row">   <div class="col-sm-9">
+                                            <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
+                                            id="formFile" (change)="upload($event, 'postGraduation')">
+                                        </div>
+                                        <div *ngIf="user.postGraduation.document" class="form-floating mb-3 col-sm-3">
+                                            <div (click)="view(user.postGraduation.document)"  class="btn btn-primary"> View</div>
+                                        </div></div>
+                                        
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row" formGroupName="superSpecialization">
+                                    <span class="text-success font-italic mb-2">Super Specialization</span>
+                                    <div class="form-floating col-sm-4">
+                                        <input type="text" class="form-control" id="year" placeholder="Year"
+                                            autocomplete="off" formControlName="year">
+                                        <label for="year" class="form-label-floating">Year Of passing</label>
+                                    </div>
+
+                                    <div class="form-floating col-sm-4">
+                                        <input type="text" class="form-control" id="institute" placeholder="Institute"
+                                            autocomplete="off" formControlName="institute">
+                                        <label for="institute" class="form-label-floating">Name Of Institute</label>
+                                    </div>
+                                    <div class="form-floating mb-3 col-sm-4">
+                                        <div class="row">   <div class="col-sm-9">
+                                            <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
+                                            id="formFile" (change)="upload($event, 'superSpecialization')">
+                                        </div>
+                                        <div *ngIf="user.superSpecialization.document" class="form-floating mb-3 col-sm-3">
+                                            <div (click)="view(user.superSpecialization.document)"  class="btn btn-primary"> View</div>
+                                        </div></div> 
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row" formGroupName="additionalQualification">
+                                    <span class="text-success font-italic mb-2">Additional Qualifications</span>
+                                    <div class="form-floating col-sm-4">
+                                        <input type="text" class="form-control" id="year" placeholder="Year"
+                                            autocomplete="off" formControlName="year">
+                                        <label for="year" class="form-label-floating">Year Of passing</label>
+                                    </div>
+
+                                    <div class="form-floating col-sm-4">
+                                        <input type="text" class="form-control" id="institute" placeholder="Institute"
+                                            autocomplete="off" formControlName="institute">
+                                        <label for="institute" class="form-label-floating">Name Of Institute</label>
+                                    </div>
+                                    <div class="form-floating mb-3 col-sm-4">
+                                        <div class="row">   <div class="col-sm-9">
+                                            <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
+                                            id="formFile" (change)="upload($event, 'additionalQualification')">
+                                        </div>
+                                        <div *ngIf="user.additionalQualification.document" class="form-floating mb-3 col-sm-3">
+                                            <div (click)="view(user.additionalQualification.document)"  class="btn btn-primary"> View</div>
+                                        </div></div> 
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row" formGroupName="medicalRegistration">
+                                    <span class="text-success font-italic mb-2">Medical Registration</span>
+                                    <div class="form-floating col-sm-4">
+                                        <input type="text" class="form-control" id="certificateNumber"
+                                            placeholder="Certificate Number" autocomplete="off"
+                                            formControlName="certificateNumber">
+                                        <label for="certificateNumber" class="form-label-floating">Certification
+                                            Number</label>
+                                    </div>
+                                    <div class="form-floating col-sm-4">
+                                        <input type="text" class="form-control" id="councilName"
+                                            placeholder="Council Name" autocomplete="off" formControlName="councilName">
+                                        <label for="councilName" class="form-label-floating">Council Name</label>
+                                    </div>
+                                    <div class="form-floating mb-3 col-sm-4">
+                                        <div class="row">   <div class="col-sm-9">
+                                            <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
+                                            id="formFile" (change)="upload($event, 'medicalRegistration')">
+                                        </div>
+                                        <div *ngIf="user.medicalRegistration.document" class="form-floating mb-3 col-sm-3">
+                                            <div (click)="view(user.medicalRegistration.document)"  class="btn btn-primary"> View</div>
+                                        </div></div> 
+                                    </div>
+                                </div>
+                                <hr>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="tab =='hosp_info'">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p class="mb-4" *ngIf="user.role=='physician'"><span
+                                    class="text-primary font-italic me-1">Hospital/Clinic Information</span>
+                            </p>
+                            <p class="mb-4" *ngIf="user.role!='physician' && user.role!='patient'"><span
+                                    class="text-primary font-italic me-1">Basic Information</span>
+                            </p>
+                            <div class="row">
+                                <div *ngIf="user.role=='physician'" class="form-floating mb-3 col-sm-6">
+                                    <input type="text" class="form-control" id="email" formControlName="clinicName"
+                                        placeholder="Hospital Clinic Name" autocomplete="off"
+                                        [ngClass]="{ 'is-invalid': submitted && f['clinicName'].errors }">
+                                    <div *ngIf="submitted && f['clinicName'].errors" class="invalid-feedback">
+                                        <div>Hospital Clinic Name is required</div>
+                                    </div>
+                                    <label for="mobile" class="form-label-floating">Hospital Clinic Name<i
+                                            class="danger">*</i></label>
+                                </div>
+                                <div *ngIf="user.role!='physician'" class="form-floating mb-3 col-sm-6">
+                                    <input type="text" formControlName="orgName" class="form-control" id="email"
+                                        placeholder="Organization Name" autocomplete="off"
+                                        [ngClass]="{ 'is-invalid': submitted && f['orgName'].errors }">
+                                    <div *ngIf="submitted && f['orgName'].errors" class="invalid-feedback">
+                                        <div>Organization Name is required</div>
+                                    </div>
+                                    <label for="mobile" class="form-label-floating">Organization Name<i
+                                            class="danger">*</i></label>
+                                </div>
+                                <div *ngIf="user.role!='physician'" class="form-floating mb-3 col-sm-6">
+                                    <input type="text" class="form-control" id="city" autocomplete="off"
+                                        value="{{user.role | titlecase}}" [readOnly]="true">
+                                    <label for="mobile" class="form-label-floating">Organization Type<i
+                                            class="danger">*</i></label>
+                                </div>
+                                <div *ngIf="user.role=='physician'" class="cursor-pointer col-sm-6"
+                                    (click)="file.click();removeClass('hospImg');">
+                                    <label>Hospital/Clinic Image</label>
+                                    <img alt="avatar" class="rounded-circle-hosp img-fluid profileImage" id="hospImg">
+                                    <input [hidden]="true" #file type="file" accept="image/*"
+                                        onchange="document.getElementById('hospImg').src = window.URL.createObjectURL(this.files[0])">
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="form-floating mb-3 col-sm-6">
+                                    <input type="text" class="form-control" id="email" placeholder="Email"
+                                        autocomplete="off" formControlName="clinicAddress1">
+                                    <label for="mobile" class="form-label-floating">Houe/ Flat Number</label>
+                                </div>
+
+                                <div class="form-floating mb-3 col-sm-6">
+                                    <input type="text" class="form-control" id="email1" placeholder="Email; 1"
+                                        autocomplete="off" formControlName="clinicAddress2">
+                                    <label for="lastName" class="form-label-floating">Building / Society</label>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="form-floating mb-3 ">
+                                    <textarea type="text" class="form-control" id="area" placeholder="Area"
+                                        autocomplete="off" formControlName="clinicArea"
+                                        [ngClass]="{ 'is-invalid': submitted && f['clinicArea'].errors }"></textarea>
+                                    <div *ngIf="submitted && f['clinicArea'].errors" class="invalid-feedback">
+                                        <div>Area/ Locality is required</div>
+                                    </div>
+                                    <label for="mobile" class="form-label-floating">Area/Locality<i
+                                            class="danger">*</i></label>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col">
+                                    <select class="form-select" aria-label="Default select example"
+                                        formControlName="clinicCity"
+                                        [ngClass]="{ 'is-invalid': submitted && f['clinicCity'].errors }">
+                                        <option selected>select city</option>
+                                        <option value="Mumbai">Mumbai</option>
+                                        <option value="Bangalore">Bangalore</option>
+                                        <option value="Pune">Pune</option>
+                                    </select>
+                                    <div *ngIf="submitted && f['clinicCity'].errors" class="invalid-feedback d-flex">
+                                        <div *ngIf="f['clinicCity'].errors['required']">City is required</div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <select class="form-select" aria-label="Default select example"
+                                        formControlName="clinicState"
+                                        [ngClass]="{ 'is-invalid': submitted && f['clinicState'].errors }">
+                                        <option selected>select state</option>
+                                        <option value="Maharashtra">Maharashtra</option>
+                                        <option value="Karnataka">Karnataka</option>
+                                        <option value="Gujrat">Gujrat</option>
+                                    </select>
+                                    <div *ngIf="submitted && f['clinicState'].errors" class="invalid-feedback d-flex">
+                                        <div *ngIf="f['clinicState'].errors['required']">State is required</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="form-floating mb-3 col-sm-6">
+                                    <input type="text" class="form-control" id="email" placeholder="Pin Code"
+                                        autocomplete="off" formControlName="clinicPincode"
+                                        [ngClass]="{ 'is-invalid': submitted && f['clinicPincode'].errors }">
+                                    <div *ngIf="submitted && f['clinicPincode'].errors" class="invalid-feedback">
+                                        <div>Pincode is required</div>
+                                    </div>
+                                    <label for="mobile" class="form-label-floating">Pin Code<i
+                                            class="danger">*</i></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="tab ==='auth_per'">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p class="mb-4"><span class="text-primary font-italic me-1">Personal Information</span>
+                            </p>
+                            <div class="row">
+                                <div class="form-floating mb-3 col-sm-4">
+                                    <input type="text" class="form-control" id="firtName" placeholder="First Name"
+                                        autocomplete="off" formControlName="authFirstName"
+                                        [ngClass]="{ 'is-invalid': submitted && f['authFirstName'].errors }">
+                                    <div *ngIf="submitted && f['authFirstName'].errors" class="invalid-feedback">
+                                        <div>First Name is required</div>
+                                    </div>
+                                    <label for="firtsName" class="form-label-floating">First Name<i
+                                            class="danger">*</i></label>
+                                </div>
+                                <div class="form-floating mb-3 col-sm-4">
+                                    <input type="text" class="form-control" id="middle" placeholder="Middle Name"
+                                        autocomplete="off" formControlName="authMiddleName">
+                                    <label for="middle" class="form-label-floating">Middle Name</label>
+                                </div>
+
+                                <div class="form-floating mb-3 col-sm-4">
+                                    <input type="text" class="form-control" id="lastName" placeholder="Last Name"
+                                        autocomplete="off" formControlName="authLastName"
+                                        [ngClass]="{ 'is-invalid': submitted && f['authLastName'].errors }">
+                                    <div *ngIf="submitted && f['authLastName'].errors" class="invalid-feedback">
+                                        <div>Last Name is required</div>
+                                    </div>
+                                    <label for="lastName" class="form-label-floating">Last Name<i
+                                            class="danger">*</i></label>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="form-floating mb-3 col-sm-6">
+                                    <input type="text" class="form-control" id="designation" placeholder="Designation"
+                                        autocomplete="off" formControlName="authDesignation"
+                                        [ngClass]="{ 'is-invalid': submitted && f['authDesignation'].errors }">
+                                    <div *ngIf="submitted && f['authDesignation'].errors" class="invalid-feedback">
+                                        <div>Designation is required</div>
+                                    </div>
+                                    <label for="designation" class="form-label-floating">Designation<i
+                                            class="danger">*</i></label>
+                                </div>
+
+                                <div class="form-floating mb-3 col-sm-6">
+                                    <input type="text" class="form-control" id="department" placeholder="Department"
+                                        autocomplete="off" formControlName="authDept">
+                                    <label for="department" class="form-label-floating">Department</label>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="form-floating mb-3 col-sm-3">
+                                    <input type="text" class="form-control" id="landline" placeholder="Landline"
+                                        autocomplete="off" formControlName="landLine">
+                                    <label for="landline" class="form-label-floating">Landline</label>
+                                </div>
+                                <div class="form-floating mb-3 col-sm-3">
+                                    <input type="text" class="form-control" id="mobile" placeholder="Mobile"
+                                        autocomplete="off" formControlName="authMob"
+                                        [ngClass]="{ 'is-invalid': submitted && f['authMob'].errors }">
+                                    <div *ngIf="submitted && f['authMob'].errors" class="invalid-feedback">
+                                        <div>Mobile is required</div>
+                                    </div>
+                                    <label for="mobile" class="form-label-floating">Mobile<i
+                                            class="danger">*</i></label>
+                                </div>
+
+                                <div class="form-floating mb-3 col-sm-3">
+                                    <input type="text" class="form-control" id="email1" placeholder="Email"
+                                        autocomplete="off" formControlName="authEmail"
+                                        [ngClass]="{ 'is-invalid': submitted && f['authEmail'].errors }">
+                                    <div *ngIf="submitted && f['authEmail'].errors" class="invalid-feedback">
+                                        <div *ngIf="f['authEmail'].invalid">Email is invalid</div>
+                                    </div>
+                                    <label for="email1" class="form-label-floating">Email </label>
+                                </div>
+                            </div>
+                            <hr>
+                        </div>
+                    </div>
+                </div>
+                <div class="row ">
+                    <div class="card bg-light">
+                        <div class="row card-body">
+                            <div class="text-center">
+                                <button type="button"
+                                class="btn btn-outline-primary col-sm-2 m-1 text-center" (click)="save()">Save</button>
+                            <button type="submit"
+                                class="btn btn-outline-success col-sm-2 m-1 text-center">Submit</button>
+                            <button type="button" class="btn btn-outline-primary col-sm-2 m-1 text-center"
+                                (click)="reload()">Reload</button>
+                            <button *ngIf="!isRejected && !isSaved" type="button" class="btn btn-outline-secondary col-sm-2 m-1 text-center"
+                                (click)="nagivateToRole()">Back</button>
+                                </div>
+                            
+                        </div>
+                        <div class="invalid-feedback d-flex" *ngIf="errorsFound">There are errors in the submitted
+                            application, please fix them and submit again.</div>
+                        <div class="invalid-feedback d-flex" *ngIf="updateErrors">{{updateErrorsMessage}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<ng-template #content let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title">Admin Comments</h4>
+        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+    </div>
+    <div class="modal-body">
+        <div class="mb-3">
+            {{user.rejectionComments}}
+        </div>
+    </div>
+</ng-template>

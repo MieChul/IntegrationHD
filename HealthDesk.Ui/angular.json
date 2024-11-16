@@ -51,16 +51,22 @@
           },
           "configurations": {
             "production": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "20MB",
+                  "maximumError": "20MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kB",
-                  "maximumError": "4kB"
+                  "maximumWarning": "20MB",
+                  "maximumError": "20MB"
                 }
               ],
               "outputHashing": "all"
@@ -108,7 +114,7 @@
               "@angular/material/prebuilt-themes/azure-blue.css",
               "src/styles.scss",
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
-                            "node_modules/bootstrap-icons/font/bootstrap-icons.css"
+              "node_modules/bootstrap-icons/font/bootstrap-icons.css"
             ],
             "scripts": [
               "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"

@@ -8,6 +8,7 @@ const patientModule = () => import('./modules/patient/patient.module').then(x =>
 const anonymousModule = () => import('./modules/anonymous/anonymous.module').then(x => x.AnonymousModule);
 const organizationModule = () => import('./modules/organization/organization.module').then(x => x.OrganizationModule);
 const adminModule = () => import('./modules/admin/admin.module').then(x => x.AdminModule);
+const accountModule = () => import('./modules/account/account.module').then(x => x.AccountModule);
 const routes: Routes = [
     { path: 'physician', loadChildren: physicianModule },
     { path: 'patient', loadChildren: patientModule  , canActivate: [RoleGuard], data: { roles: ['patient'] } },
@@ -16,11 +17,7 @@ const routes: Routes = [
     { path: 'about-us', component: AboutUsComponent },
     { path: 'contact-us', component: ContactUsComponent },
     { path: 'admin', loadChildren:adminModule, canActivate: [RoleGuard], data: { roles: ['Admin'] } },
-    { path: 'admin', loadChildren: () => import('./modules/admin/admin.module').then(m => m.AdminModule) },
-    { path: 'patient', loadChildren: () => import('./modules/patient/patient.module').then(m => m.PatientModule) },
-    { path: 'physician', loadChildren: () => import('./modules/physician/physician.module').then(m => m.PhysicianModule) },
-    { path: 'organization', loadChildren: () => import('./modules/organization/organization.module').then(m => m.OrganizationModule) },
-    { path: 'anonymous', loadChildren: () => import('./modules/anonymous/anonymous.module').then(m => m.AnonymousModule) }
+    { path: 'account', loadChildren:accountModule} ,
 ];
 
 @NgModule({

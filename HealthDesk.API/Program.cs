@@ -10,7 +10,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: allowedOrigins, policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "https://HealthDesk.com")  // Update with allowed origins
+        policy.WithOrigins("http://localhost:4200", "https://HealthDesk.com", "http://localhost:90")  // Update with allowed origins
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials(); 

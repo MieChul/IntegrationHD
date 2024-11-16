@@ -3083,11 +3083,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Application\\HealthDesk.Application.csproj",
+      "projectUniqueName": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Application\\HealthDesk.Application.csproj",
       "projectName": "HealthDesk.Application",
-      "projectPath": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Application\\HealthDesk.Application.csproj",
+      "projectPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Application\\HealthDesk.Application.csproj",
       "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
-      "outputPath": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Application\\obj\\",
+      "outputPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Application\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -3102,11 +3102,11 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Core\\HealthDesk.Core.csproj": {
-              "projectPath": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Core\\HealthDesk.Core.csproj"
+            "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj": {
+              "projectPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj"
             },
-            "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj": {
-              "projectPath": "D:\\HD\\finalHealthDesk\\HealthDesk\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj"
+            "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj": {
+              "projectPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj"
             }
           }
         }
