@@ -1,0 +1,22 @@
+.star-rating {
+    font-size: 2rem; /* Adjust size as needed */
+    color: #fbc02d; /* Star color */
+    cursor: pointer;
+  
+    .bi-star {
+      color: #ddd; /* Empty star color */
+    }
+  
+    .bi-star-fill {
+      color: #fbc02d; /* Filled star color */
+    }
+  
+    i {
+      transition: color 0.2s ease-in-out;
+      margin-right: 0.1rem;
+    }
+  
+    i:hover, i:hover ~ i {
+      color: #ffca28; /* Hover effect color */
+    }
+  }

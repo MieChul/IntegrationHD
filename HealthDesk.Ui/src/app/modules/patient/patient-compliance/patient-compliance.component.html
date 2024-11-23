@@ -1,0 +1,260 @@
+<div class="container">
+    <h1 class="animated-heading">
+        <i class="bi bi-check2-circle me-2"></i>Patient Compliance
+    </h1>
+
+    <div class="row mb-3 align-items-center">
+        <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
+            <div class="mb-2 me-3">
+                <label for="filterDate" class="form-label label-modern shadow">Filter by Date</label>
+                <input type="text" id="filterDate" class="form-control" ngbDatepicker #filterDatePicker="ngbDatepicker"
+                    (click)="filterDatePicker.toggle()" formControlName="filterDate">
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
+            <button class="btn btn-primary" (click)="addMedicine()">Add Medicine</button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-modern">
+            <thead>
+                <tr>
+                    <th (click)="sortTable('dosageForm')">Dosage Form</th>
+                    <th (click)="sortTable('drugName')">Drug Name</th>
+                    <th (click)="sortTable('strength')">Strength</th>
+                    <th (click)="sortTable('frequency')">Frequency</th>
+                    <th (click)="sortTable('compliancePer')">Compliance</th>
+                    <th (click)="sortTable('pillCount')">Pills Counter</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let compliance of patientCompliances">
+                    <td>{{ compliance.dosageForm }}</td>
+                    <td>{{ compliance.drugName }}</td>
+                    <td>{{ compliance.strength }}</td>
+                    <td>{{ compliance.frequency }}</td>
+                    <td>{{ compliance.compliancePer }}%</td>
+                    <td>{{ compliance.pillCount }} remaining</td>
+                    <td>
+                        <button class="btn btn-info btn-sm me-1" (click)="viewCompliance(compliance)" ngbTooltip="View Compliance" tooltipClass="view-tooltip">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-warning btn-sm me-1" (click)="setReminder(compliance)" ngbTooltip="Set Reminder" tooltipClass="reminder-tooltip">
+                            <i class="bi bi-alarm"></i>
+                        </button>
+                        <button class="btn btn-secondary btn-sm me-1" (click)="viewMedicineInfo(compliance)" ngbTooltip="Medicine Info" tooltipClass="info-tooltip">
+                            <i class="bi bi-info-circle"></i>
+                        </button>
+                        <button class="btn btn-primary btn-sm me-1" (click)="editMedicine(compliance)" ngbTooltip="Edit Medicine" tooltipClass="edit-tooltip">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" (click)="deleteMedicine(compliance)" ngbTooltip="Delete Medicine" tooltipClass="delete-tooltip">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Set Reminder Modal -->
+<div class="modal fade" id="reminderModal" tabindex="-1" aria-labelledby="reminderModalLabel" aria-hidden="true" #reminderModal>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reminderModalLabel">Set Reminder</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="reminderForm">
+                    <div class="mb-3">
+                        <input type="text" id="dosageForm" formControlName="dosageForm" class="form-control" [readOnly]="true">
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" id="drugName" formControlName="drugName" class="form-control" [readOnly]="true">
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" id="strength" formControlName="strength" class="form-control" [readOnly]="true">
+                    </div>
+                    <div class="mb-3">
+                        <label for="frequency" class="form-label label-modern shadow">Frequency</label>
+                        <input type="number" id="frequency" formControlName="frequency" class="form-control" (change)="updateReminderRows()">
+                    </div>
+
+                    <!-- Dynamic Times Inputs -->
+                    <div formArrayName="times">
+                        <div *ngFor="let timeControl of timesArray.controls; let i = index" class="mb-3">
+                            <label for="time-{{i}}" class="form-label label-modern shadow">Time {{i + 1}}</label>
+                            <input type="time" id="time-{{i}}" [formControlName]="i" class="form-control">
+                        </div>
+                    </div>
+
+                    <!-- Single How Often Input -->
+                    <div class="mb-3">
+                        <label for="howOften" class="form-label label-modern shadow">How Often</label>
+                        <select id="howOften" formControlName="howOften" class="form-select" (change)="onHowOftenChange($event)">
+                            <option value="everyDay">Every Day</option>
+                            <option value="alternateDay">Every Alternate Day</option>
+                            <option value="specificDays">Specific Days</option>
+                            <option value="customDays">Custom Days</option>
+                        </select>
+                    </div>
+
+                    <!-- Specific Days Checkbox -->
+                    <div *ngIf="specificDays" class="mb-3">
+                        <label class="form-label label-modern shadow">Select Days</label>
+                        <div class="d-flex justify-content-between">
+                            <label *ngFor="let day of days" class="form-check-label">
+                                <input type="checkbox" class="form-check-input" [formControlName]="'day-' + day"> {{ day }}
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Custom Dates Input -->
+                    <div *ngIf="customDays" class="mb-3">
+                        <label for="customDates" class="form-label label-modern shadow">Custom Dates</label>
+                        <input type="date" id="customDates" formControlName="customDates" class="form-control">
+                    </div>
+
+                    <!-- Instruction Input -->
+                    <div class="mb-3">
+                        <label for="instruction" class="form-label label-modern shadow">Instruction</label>
+                        <textarea id="instruction" formControlName="instruction" class="form-control"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" (click)="saveReminder()">Save Reminder</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Medicine Info Modal -->
+<div class="modal fade" id="medicineInfoModal" tabindex="-1" aria-labelledby="medicineInfoModalLabel" aria-hidden="true" #medicineInfoModal>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="medicineInfoModalLabel">Add Medicine Information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="medicineInfoForm">
+                    <div class="mb-3">
+                        <label for="purchaseDate" class="form-label label-modern shadow">Date of Purchase</label>
+                        <input type="date" id="purchaseDate" formControlName="purchaseDate" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="unitsPurchased" class="form-label label-modern shadow">Number of Units Purchased</label>
+                        <input type="number" id="unitsPurchased" formControlName="unitsPurchased" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="pillThreshold" class="form-label label-modern shadow">Remind when how many left?</label>
+                        <input type="number" id="pillThreshold" formControlName="pillThreshold" class="form-control">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" (click)="saveMedicineInfo()">Save Info</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Compliance Report Modal -->
+<div class="modal fade" id="complianceReportModal" tabindex="-1" aria-labelledby="complianceReportModalLabel" aria-hidden="true" #complianceReportModal>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="complianceReportModalLabel">Compliance Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div *ngIf="complianceReports.length > 0; else noReports">
+                    <table class="table table-hover table-modern">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Confirmed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let report of complianceReports">
+                                <td>{{ report.date | date: 'dd-MM-yyyy' }}</td>
+                                <td>{{ report.time }}</td>
+                                <td>{{ report.confirmed ? 'Yes' : 'No' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <ng-template #noReports>
+                    <p>No compliance records available.</p>
+                </ng-template>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pill Reminder Popup Modal -->
+<div class="modal fade" id="pillReminderPopupModal" tabindex="-1" aria-labelledby="pillReminderPopupModalLabel" aria-hidden="true" #pillReminderPopupModal>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pillReminderPopupModalLabel">Pill Reminder</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>It's time to purchase <strong>{{ pillReminder?.dosageForm }}</strong> ({{ pillReminder?.drugName }} {{ pillReminder?.strength }}).</p>
+                <p>Please purchase it? If already done then add info by clicking medicine info button.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Ok</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Medicine Modal -->
+<div class="modal fade" id="addMedicineModal" tabindex="-1" aria-labelledby="addMedicineModalLabel" aria-hidden="true" #addMedicineModal>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addMedicineModalLabel">Add Medicine</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="addMedicineForm">
+                    <div class="mb-3">
+                        <label for="dosageForm" class="form-label label-modern shadow">Dosage Form</label>
+                        <input type="text" id="dosageForm" formControlName="dosageForm" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="drugName" class="form-label label-modern shadow">Drug Name</label>
+                        <input type="text" id="drugName" formControlName="drugName" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="strength" class="form-label label-modern shadow">Strength</label>
+                        <input type="text" id="strength" formControlName="strength" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="frequency" class="form-label label-modern shadow">Frequency</label>
+                        <input type="text" id="frequency" formControlName="frequency" class="form-control">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" (click)="saveMedicine()">Save Medicine</button>
+            </div>
+        </div>
+    </div>
+</div>

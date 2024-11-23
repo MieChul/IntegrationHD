@@ -1,0 +1,139 @@
+<div class="container">
+    <h1 class="animated-heading">
+      <i class="bi bi-box-seam me-2"></i>Pharma Management
+    </h1>
+  
+    <div class="row mb-3 align-items-center">
+      <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
+        <div class="mb-2 me-3">
+          <label for="productSearch" class="form-label label-modern shadow">Search by Brand Name</label>
+          <input type="text" id="productSearch" class="form-control" [(ngModel)]="productSearchText"
+            (ngModelChange)="filterProducts()" />
+        </div>
+      </div>
+      <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
+        <button class="btn btn-primary" (click)="openProductDialog()">
+          Add Product
+        </button>
+      </div>
+    </div>
+  
+    <div class="table-responsive">
+      <table class="table table-hover table-modern">
+        <thead>
+          <tr>
+            <th (click)="sortProductTable('brandName')">Brand Name</th>
+            <th (click)="sortProductTable('genericName')">Generic Name</th>
+            <th (click)="sortProductTable('drugClass')">Drug Class</th>
+            <th (click)="sortProductTable('dosageForm')">Dosage Form</th>
+            <th (click)="sortProductTable('strength')">Strength</th>
+            <th>Pack Shot</th>
+            <th (click)="sortProductTable('approvalAgency')">
+              Approval Agency
+            </th>
+            <th>Comment</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let product of filteredProducts">
+            <td>{{ product.brandName }}</td>
+            <td>{{ product.genericName }}</td>
+            <td>{{ product.drugClass }}</td>
+            <td>{{ product.dosageForm }}</td>
+            <td>{{ product.strength }}</td>
+            <td>
+              <button class="btn btn-link" *ngIf="product.packShot" (click)="viewPackShot(product.packShot)">
+                View
+              </button>
+            </td>
+            <td>{{ product.approvalAgency }}</td>
+            <td>{{ product.comment }}</td>
+            <td>
+              <button class="btn btn-warning btn-sm me-1" (click)="openProductDialog(product)">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn btn-danger btn-sm" (click)="deleteProduct(product)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Add/Edit Product Modal -->
+  <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true"
+    #productModal>
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="productModalLabel">
+            {{ isEditProduct ? 'Edit Product' : 'Add Product' }}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+            (click)="closeProductDialog()"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="productForm">
+            <div class="mb-3">
+              <label for="brandName" class="form-label label-modern shadow">Brand Name</label>
+              <select class="form-control" formControlName="brandName" (change)="onProductBrandNameChange()">
+                <option *ngFor="let brand of brandNames" [value]="brand">{{
+                  brand
+                  }}</option>
+                <option value="Other">Other</option>
+              </select>
+              <input *ngIf="isOtherProductBrand" type="text" class="form-control mt-2" placeholder="Enter Brand Name"
+                formControlName="otherBrandName" />
+            </div>
+            <div class="mb-3">
+              <label for="genericName" class="form-label label-modern shadow">Generic Name</label>
+              <input type="text" id="genericName" formControlName="genericName" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label for="drugClass" class="form-label label-modern shadow">Drug Class</label>
+              <select class="form-control" formControlName="drugClass">
+                <option *ngFor="let drug of drugClasses" [value]="drug">{{ drug }}</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="dosageForm" class="form-label label-modern shadow">Dosage Form</label>
+              <select class="form-control" formControlName="dosageForm">
+                <option *ngFor="let dosage of dosageForms" [value]="dosage">{{ dosage }}</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="strength" class="form-label label-modern shadow">Strength</label>
+              <input type="text" id="strength" formControlName="strength" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label for="packShot" class="form-label label-modern shadow">Pack Shot</label>
+              <input type="file" id="packShot" class="form-control" (change)="onPackShotChange($event)" />
+            </div>
+            <div class="mb-3">
+              <label for="approvalAgency" class="form-label label-modern shadow">Approval Agency</label>
+              <select class="form-control" formControlName="approvalAgency">
+                <option *ngFor="let agency of approvalAgencies" [value]="agency">{{
+                  agency
+                  }}</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="comment" class="form-label label-modern shadow">Comment</label>
+              <textarea id="comment" formControlName="comment" class="form-control"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="closeProductDialog()">
+            Close
+          </button>
+          <button type="button" class="btn btn-primary" (click)="saveProduct()">
+            {{ isEditProduct ? 'Save Changes' : 'Add Product' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using HealthDesk.Core.Enum;
 
 namespace HealthDesk.Application;
 
@@ -16,6 +17,15 @@ public class UserLoginDto
 
     [Required]
     public string Password { get; set; }
+}
+
+public class UserDto
+{
+    public string Id { get; set; }   
+     public string Username { get; set; }
+    public string Status { get; set; }
+    public List<Role> Roles { get; set; } = new List<Role>();
+
 }
 
 public class UserRegistrationDto

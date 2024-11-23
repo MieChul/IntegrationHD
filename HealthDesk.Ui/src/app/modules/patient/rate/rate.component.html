@@ -1,0 +1,77 @@
+<div class="container">
+    <h2 class="animated-heading">
+      <i class="bi bi-star me-2"></i>Search & Rate Doctors
+    </h2>
+    
+    <!-- Filter and Search Bar -->
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <input type="text" class="form-control" placeholder="Search by Doctor's Name" [(ngModel)]="searchName">
+      </div>
+      <div class="col-md-4">
+        <input type="text" class="form-control" placeholder="Search by Location" [(ngModel)]="searchLocation">
+      </div>
+      <div class="col-md-4">
+        <select class="form-select" [(ngModel)]="sortOrder">
+          <option value="highest">Sort by Highest Rating</option>
+          <option value="lowest">Sort by Lowest Rating</option>
+        </select>
+      </div>
+    </div>
+    
+    <!-- Doctors List -->
+    <div class="row">
+      <div *ngFor="let doctor of filteredDoctors()" class="col-md-4 col-sm-6 mb-4">
+        <div class="card fade-in">
+          <div class="card-body">
+            <h5 class="card-title">{{ doctor.name }}</h5>
+            <p class="card-text">{{ doctor.location }}</p>
+            <p class="card-text"><strong>Degree:</strong> {{ doctor.degree }}</p>
+            <p class="card-text">
+              <i class="bi bi-star-fill"></i> {{ doctor.rating }} ({{ doctor.reviews }} reviews)
+            </p>
+            <button class="btn btn-primary" (click)="openReviewModal(doctor)">View & Rate</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Review Modal -->
+  <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true" #reviewModal>
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="reviewModalLabel">Reviews for {{ selectedDoctor?.name }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div *ngFor="let review of selectedDoctor?.reviews">
+            <p><strong>{{ review.author }}</strong>: {{ review.comment }}</p>
+          </div>
+          <hr>
+          <h6>Add Your Review:</h6>
+          <form [formGroup]="reviewForm">
+            <div class="mb-3">
+                <label for="rating" class="form-label">Rating</label>
+                <div class="star-rating">
+                  <i *ngFor="let star of [1, 2, 3, 4, 5]" 
+                     class="bi"
+                     [ngClass]="{'bi-star-fill': star <= reviewForm.get('rating')?.value, 'bi-star': star > reviewForm.get('rating')?.value}"
+                     (click)="setRating(star)"></i>
+                </div>
+              </div>
+            <div class="mb-3">
+              <label for="comment" class="form-label">Comment</label>
+              <textarea formControlName="comment" class="form-control"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" (click)="submitReview()">Submit Review</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  

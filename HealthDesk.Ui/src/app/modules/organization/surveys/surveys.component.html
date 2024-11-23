@@ -1,0 +1,82 @@
+<div class="container">
+    <h1 class="animated-heading">
+      <i class="bi bi-box-seam me-2"></i>Surveys
+    </h1>
+    <div class="row mb-3 align-items-center">
+      <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
+        <div class="mb-2 me-3">
+          <label for="productSearch" class="form-label label-modern shadow">Search by Name</label>
+          <input type="text" id="productSearch" class="form-control" [(ngModel)]="surveySearchText"
+            (ngModelChange)="filterSurveys()" />
+        </div>
+      </div>
+      <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
+        <button class="btn btn-primary" (click)="openCreateSurvey()">
+          Create Survey
+        </button>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover table-modern">
+        <thead>
+          <tr>
+            <th>Sr. No</th>
+            <th (click)="sortSurveyTable('name')">Form Name</th>
+            <th (click)="sortSurveyTable('author')">Author</th>
+            <th (click)="sortSurveyTable('date')">Created Date</th>
+            <th (click)="sortSurveyTable('is_active')">Active</th>
+            <th (click)="sortSurveyTable('responses',true)">Responses</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let survey of surveys; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ survey.name }}</td>
+            <td>{{ survey.author }}</td>
+            <td>{{ survey.date | date }}</td>
+            <td>{{ survey.is_active ? 'Yes' : 'No' }}</td>
+            <td>{{ survey.responses.length || 0 }}</td>
+            <td>
+              <button class="btn btn-secondary btn-sm me-1" (click)="shareSurvey(survey)">
+                <i class="bi bi-share"></i>
+              </button>
+              <button class="btn btn-success btn-sm me-1" (click)="viewResponses(survey)">
+                <i class="bi bi-eye"></i>
+              </button>
+              <button class="btn btn-warning btn-sm me-1" (click)="editSurvey(survey)">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn btn-danger btn-sm" (click)="deleteSurvey(survey)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Share Survey Modal -->
+  <div class="modal fade" id="shareSurveyModal" tabindex="-1" aria-labelledby="shareSurveyModalLabel" aria-hidden="true"
+    #shareSurveyModal>
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="shareSurveyModalLabel">Share Survey</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Share this survey link:</p>
+          <div class="input-group mb-3">
+            <input type="text" class="form-control" [(ngModel)]="surveyShareLink" readonly />
+            <button class="btn btn-outline-secondary" type="button" (click)="copyLink()">Copy</button>
+          </div>
+          <p *ngIf="isLinkCopied" class="text-success">Link copied to clipboard!</p>
+          <div class="d-flex justify-content-end">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

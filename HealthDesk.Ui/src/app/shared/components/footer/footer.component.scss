@@ -1,0 +1,45 @@
+// Footer styles
+$primary-color: #d76745bc; // From logo
+$secondary-color: #a159ffd2; // From logo
+.footer {
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1);
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  
+    .container-fluid {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  
+    .social-icons {
+      display: flex;
+      justify-content: center;
+  
+      a {
+        color: #0992f5 !important;
+        font-size: 1.2rem;
+        margin: 0 5px;
+        transition: color 0.3s;
+  
+        &:hover {
+          color: darken(#7ac7fd, 10%) !important;
+        }
+      }
+    }
+  
+    .terms {
+      a {
+        color: #0992f5 !important;
+        text-decoration: none;
+        transition: color 0.3s;
+  
+        &:hover {
+          color: darken(#7ac7fd, 10%) !important;
+        }
+      }
+    }
+  }
+  

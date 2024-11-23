@@ -21,7 +21,7 @@ public class AuthService : IAuthService
         _refreshTokenRepository = refreshTokenRepository;
     }
 
-    public async Task<User> Authenticate(string username, string password)
+    public async Task<UserDto> Authenticate(string username, string password)
     {
         var user = await _userRepository.GetByUsernameAsync(username);
         if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
@@ -29,8 +29,17 @@ public class AuthService : IAuthService
             return null;
         }
 
-        return user; // Return user instead of token
+        var userDto = new UserDto
+        {
+            Id = user.Id,
+            Status = user.Status,
+            Username = user.Username,
+            Roles = user.Roles
+        };
+
+        return userDto; // Return user instead of token
     }
+
     public async Task<string> GenerateRefreshToken(string userId)
     {
         var refreshToken = new RefreshToken
@@ -59,10 +68,18 @@ public class AuthService : IAuthService
 
         // Retrieve the user and generate a new access token
         var user = await _userRepository.GetByIdAsync(tokenEntry.UserId);
-        return user != null ? GenerateToken(user) : null;
+        var userDto = new UserDto
+        {
+            Id = user.Id,
+            Status = user.Status,
+            Username = user.Username,
+            Roles = user.Roles
+        };
+
+        return user != null ? GenerateToken(userDto) : null;
     }
 
-    public async Task SetTokenCookies(HttpContext context, User user)
+    public async Task SetTokenCookies(HttpContext context, UserDto user)
     {
         var accessToken = GenerateToken(user);
         var refreshToken = await GenerateRefreshToken(user.Id);
@@ -91,7 +108,7 @@ public class AuthService : IAuthService
         await _refreshTokenRepository.AddAsync(refreshTokenEntity);
     }
 
-    private string GenerateToken(User user)
+    private string GenerateToken(UserDto user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);

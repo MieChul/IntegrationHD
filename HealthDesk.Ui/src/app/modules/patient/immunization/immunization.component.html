@@ -1,0 +1,97 @@
+<div class="container">
+    <h1 class="animated-heading">
+        <i class="bi bi-shield-virus me-2"></i>Immunization Records
+    </h1>
+
+    <div class="row mb-3 align-items-center">
+        <div class="col-md-4 col-sm-6 d-flex justify-content-start flex-wrap">
+            <button class="btn btn-primary" (click)="addImmunization()">Add Immunization</button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-modern">
+            <thead>
+                <tr>
+                    <th (click)="sortTable('dateOfAdministration')">Date of Administration</th>
+                    <th (click)="sortTable('vaccineName')">Vaccine Name</th>
+                    <th (click)="sortTable('preventableDisease')">Preventable Disease</th>
+                    <th (click)="sortTable('routeOfAdministration')">Route of Administration</th>
+                    <th (click)="sortTable('dosageForm')">Dosage Form</th>
+                    <th (click)="sortTable('dosageDetails')">Dosage Details</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let immunization of immunizationRecords">
+                    <td>{{ immunization.dateOfAdministration | date: 'dd-MM-yyyy' }}</td>
+                    <td>{{ immunization.vaccineName }}</td>
+                    <td>{{ immunization.preventableDisease }}</td>
+                    <td>{{ immunization.routeOfAdministration }}</td>
+                    <td>{{ immunization.dosageForm }}</td>
+                    <td>{{ immunization.dosageDetails }}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm me-1" (click)="editImmunization(immunization)">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" (click)="deleteImmunization(immunization)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add/Edit Immunization Modal -->
+<div class="modal fade" id="immunizationModal" tabindex="-1" aria-labelledby="immunizationModalLabel" aria-hidden="true" #immunizationModal>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="immunizationModalLabel">{{ isEditMode ? 'Edit Immunization' : 'Add Immunization' }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="immunizationForm">
+                    <div class="mb-3">
+                        <label for="dateOfAdministration" class="form-label label-modern shadow">Date of Administration</label>
+                        <input type="date" id="dateOfAdministration" formControlName="dateOfAdministration" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="vaccineName" class="form-label label-modern shadow">Vaccine Name</label>
+                        <select id="vaccineName" formControlName="vaccineName" class="form-select">
+                            <option *ngFor="let vaccine of vaccines" [value]="vaccine">{{ vaccine }}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="preventableDisease" class="form-label label-modern shadow">Preventable Disease</label>
+                        <select id="preventableDisease" formControlName="preventableDisease" class="form-select">
+                            <option *ngFor="let disease of preventableDiseases" [value]="disease">{{ disease }}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="routeOfAdministration" class="form-label label-modern shadow">Route of Administration</label>
+                        <select id="routeOfAdministration" formControlName="routeOfAdministration" class="form-select">
+                            <option *ngFor="let route of routesOfAdministration" [value]="route">{{ route }}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="dosageForm" class="form-label label-modern shadow">Dosage Form</label>
+                        <input type="text" id="dosageForm" formControlName="dosageForm" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="dosageDetails" class="form-label label-modern shadow">Dosage Details</label>
+                        <select id="dosageDetails" formControlName="dosageDetails" class="form-select">
+                            <option *ngFor="let detail of dosageDetails" [value]="detail">{{ detail }}</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" (click)="saveImmunization()">{{ isEditMode ? 'Save Changes' : 'Add Immunization' }}</button>
+            </div>
+        </div>
+    </div>
+</div>

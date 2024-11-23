@@ -1,0 +1,65 @@
+<div class="container my-5">
+    <!-- Survey Header Image -->
+    <div *ngIf="surveyForm.image" class="text-center mb-4">
+        <img [src]="surveyForm.image" alt="Survey Header" class="img-fluid rounded header-image shadow-sm" />
+    </div>
+  
+    <!-- Survey Title and Description -->
+    <div class="text-center mb-4">
+        <h1 class="survey-title mb-2">{{ surveyForm.title }}</h1>
+        <p class="survey-description text-muted">{{ surveyForm.description }}</p>
+    </div>
+  
+    <form (ngSubmit)="submitResponse()" class="form-section">
+        <div *ngFor="let question of surveyForm.questions; let i = index" class="mb-4 question-card p-4 shadow-sm rounded">
+            <label class="form-label question-text">{{ question.text }}</label>
+            <p class="text-muted" *ngIf="question.description">{{ question.description }}</p>
+            <!-- Text Input -->
+            <div *ngIf="question.type === 'text'">
+                <input type="text" class="form-control input-modern" [(ngModel)]="responses[question.text]" name="{{ question.text }}">
+            </div>
+  
+            <!-- Dropdown -->
+            <div *ngIf="question.type === 'dropdown'">
+                <select class="form-control input-modern" [(ngModel)]="responses[question.text]" name="{{ question.text }}">
+                    <option *ngFor="let option of question.options" [value]="option.text">{{ option.text }}</option>
+                </select>
+            </div>
+  
+            <!-- Radio Options -->
+            <div *ngIf="question.type === 'radio'">
+                <div *ngFor="let option of question.options" class="form-check mb-2">
+                    <input type="radio" class="form-check-input" [(ngModel)]="responses[question.text]" [value]="option.text" name="{{ question.text }}">
+                    <label class="form-check-label">{{ option.text }}</label>
+                </div>
+            </div>
+  
+            <!-- Checkbox Options -->
+            <div *ngIf="question.type === 'checkbox'">
+                <div *ngFor="let option of question.options" class="form-check mb-2">
+                    <input type="checkbox" class="form-check-input" [(ngModel)]="responses[question.text]" [value]="option.text" name="{{ question.text }}">
+                    <label class="form-check-label">{{ option.text }}</label>
+                </div>
+            </div>
+  
+            <!-- Date Picker -->
+            <div *ngIf="question.type === 'date'">
+                <input type="date" class="form-control input-modern" [(ngModel)]="responses[question.text]" name="{{ question.text }}">
+            </div>
+  
+            <!-- Number Input -->
+            <div *ngIf="question.type === 'number'">
+                <input type="number" class="form-control input-modern" [(ngModel)]="responses[question.text]" name="{{ question.text }}">
+            </div>
+            <!-- Error Handling -->
+            <div class="text-danger mt-1" *ngIf="questionErrors[i]?.required">This field is required.</div>
+            <div class="text-danger mt-1" *ngIf="questionErrors[i]?.numbersOnly">Please enter a valid number.</div>
+            <div class="text-danger mt-1" *ngIf="questionErrors[i]?.invalidDateRange">Please select a valid date range.</div>
+        </div>
+  
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary btn-modern mt-4">Submit</button>
+        </div>
+    </form>
+  </div>
+  

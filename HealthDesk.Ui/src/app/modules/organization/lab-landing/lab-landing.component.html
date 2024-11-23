@@ -1,0 +1,182 @@
+<div class="container">
+    <h1 class="animated-heading">
+      <i class="bi bi-flask me-2"></i>Laboratory Data Management
+    </h1>
+  
+    <div class="row mb-3 align-items-center">
+      <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
+        <div class="mb-2 me-3">
+          <label for="testSearch" class="form-label label-modern shadow"
+            >Search by Laboratory Test Name</label
+          >
+          <input
+            type="text"
+            id="testSearch"
+            class="form-control"
+            [(ngModel)]="testSearchText"
+            (ngModelChange)="filterTests()"
+          />
+        </div>
+      </div>
+      <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
+        <button class="btn btn-primary" (click)="openTestDialog()">
+          Add Laboratory Test
+        </button>
+      </div>
+    </div>
+  
+    <div class="table-responsive">
+      <table class="table table-hover table-modern">
+        <thead>
+          <tr>
+            <th (click)="sortTestTable('name')">Laboratory Test Name</th>
+            <th (click)="sortTestTable('specimenRequirement')">
+              Specimen Requirement
+            </th>
+            <th (click)="sortTestTable('precaution')">Precaution</th>
+            <th (click)="sortTestTable('reportingTime')">Reporting Time</th>
+            <th (click)="sortTestTable('amount')">Amount</th>
+            <th>Comment</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let test of filteredTests">
+            <td>{{ test.name }}</td>
+            <td>{{ test.specimenRequirement }}</td>
+            <td>{{ test.precaution }}</td>
+            <td>{{ test.reportingTime }}</td>
+            <td>{{ test.amount | currency: 'INR' }}</td>
+            <td>{{ test.comment }}</td>
+            <td>
+              <button
+                class="btn btn-warning btn-sm me-1"
+                (click)="openTestDialog(test)"
+              >
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button
+                class="btn btn-danger btn-sm"
+                (click)="deleteTest(test)"
+              >
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Add/Edit Laboratory Test Modal -->
+  <div
+    class="modal fade"
+    id="testModal"
+    tabindex="-1"
+    aria-labelledby="testModalLabel"
+    aria-hidden="true"
+    #testModal
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="testModalLabel">
+            {{ isEditTest ? 'Edit Laboratory Test' : 'Add Laboratory Test' }}
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+            (click)="closeTestDialog()"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="testForm">
+            <div class="mb-3">
+              <label for="name" class="form-label label-modern shadow"
+                >Laboratory Test Name</label
+              >
+              <input
+                type="text"
+                id="name"
+                formControlName="name"
+                class="form-control"
+              />
+            </div>
+            <div class="mb-3">
+              <label
+                for="specimenRequirement"
+                class="form-label label-modern shadow"
+                >Specimen Requirement</label
+              >
+              <input
+                type="text"
+                id="specimenRequirement"
+                formControlName="specimenRequirement"
+                class="form-control"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="precaution" class="form-label label-modern shadow"
+                >Precaution</label
+              >
+              <input
+                type="text"
+                id="precaution"
+                formControlName="precaution"
+                class="form-control"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="reportingTime" class="form-label label-modern shadow"
+                >Reporting Time</label
+              >
+              <input
+                type="text"
+                id="reportingTime"
+                formControlName="reportingTime"
+                class="form-control"
+                placeholder="e.g., 24 hours"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="amount" class="form-label label-modern shadow"
+                >Amount</label
+              >
+              <input
+                type="number"
+                id="amount"
+                formControlName="amount"
+                class="form-control"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="comment" class="form-label label-modern shadow"
+                >Comment</label
+              >
+              <textarea
+                id="comment"
+                formControlName="comment"
+                class="form-control"
+              ></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+            (click)="closeTestDialog()"
+          >
+            Close
+          </button>
+          <button type="button" class="btn btn-primary" (click)="saveTest()">
+            {{ isEditTest ? 'Save Changes' : 'Add Laboratory Test' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  

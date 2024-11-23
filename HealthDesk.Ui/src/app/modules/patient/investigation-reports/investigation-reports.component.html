@@ -1,0 +1,92 @@
+<div class="container">
+    <h1 class="animated-heading">
+        <i class="bi bi-file-earmark-text me-2"></i>Investigation Reports
+    </h1>
+
+    <div class="row mb-3 align-items-center">
+        <div class="col-md-4 col-sm-6 d-flex justify-content-start flex-wrap">
+            <button class="btn btn-primary" (click)="addReport()">Add Investigation Report</button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-modern">
+            <thead>
+                <tr>
+                    <th (click)="sortTable('dateOfAssessment')">Date of Assessment</th>
+                    <th (click)="sortTable('timeOfAssessment')">Time of Assessment</th>
+                    <th (click)="sortTable('typeOfAssessment')">Type of Assessment</th>
+                    <th (click)="sortTable('assessmentParameters')">Assessment Parameters</th>
+                    <th (click)="sortTable('results')">Results</th>
+                    <th (click)="sortTable('comment')">Comment</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let report of investigationReports; let i = index">
+                    <td>{{ report.dateOfAssessment | date: 'dd-MM-yyyy' }}</td>
+                    <td>{{ report.timeOfAssessment }}</td>
+                    <td>{{ report.typeOfAssessment }}</td>
+                    <td>{{ report.assessmentParameters }}</td>
+                    <td>{{ report.results }}</td>
+                    <td>{{ report.comment }}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm me-1" (click)="viewReport(i)">
+                            <i class="bi bi-eye"></i> View Report
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add/Edit Investigation Report Modal -->
+<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true" #reportModal>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportModalLabel">{{ isEditMode ? 'Edit Report' : 'Add Investigation Report' }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="reportForm">
+                    <div class="mb-3">
+                        <label for="dateOfAssessment" class="form-label label-modern shadow">Date of Assessment</label>
+                        <input type="date" id="dateOfAssessment" formControlName="dateOfAssessment" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="timeOfAssessment" class="form-label label-modern shadow">Time of Assessment</label>
+                        <input type="time" id="timeOfAssessment" formControlName="timeOfAssessment" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="typeOfAssessment" class="form-label label-modern shadow">Type of Assessment</label>
+                        <select id="typeOfAssessment" formControlName="typeOfAssessment" class="form-select">
+                            <option *ngFor="let type of assessmentTypes" [value]="type">{{ type }}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="assessmentParameters" class="form-label label-modern shadow">Assessment Parameters</label>
+                        <input type="text" id="assessmentParameters" formControlName="assessmentParameters" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="results" class="form-label label-modern shadow">Results</label>
+                        <input type="text" id="results" formControlName="results" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="comment" class="form-label label-modern shadow">Comment</label>
+                        <input type="text" id="comment" formControlName="comment" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="reportFile" class="form-label label-modern shadow">Upload Report (PDF only)</label>
+                        <input type="file" id="reportFile" (change)="onFileSelected($event)" class="form-control" accept="application/pdf">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" (click)="saveReport()">{{ isEditMode ? 'Save Changes' : 'Add Report' }}</button>
+            </div>
+        </div>
+    </div>
+</div>

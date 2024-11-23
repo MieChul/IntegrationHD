@@ -1,0 +1,196 @@
+<div class="container">
+    <h1 class="animated-heading">
+        <i class="bi bi-box-seam me-2"></i>Pharmacy Management
+    </h1>
+
+    <div>
+        <div class="row mb-3 align-items-center">
+            <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
+                <div class="mb-2 me-3">
+                    <label for="brandSearch" class="form-label label-modern shadow">Search by Brand Name</label>
+                    <input type="text" id="brandSearch" class="form-control" [(ngModel)]="brandSearchText"
+                        (ngModelChange)="filterBrands()" />
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
+                <button class="btn btn-primary" (click)="openBrandDialog()">
+                    Add Brand
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover table-modern">
+                <thead>
+                    <tr>
+                        <th (click)="sortBrandTable('brandOwner')">Brand Owner</th>
+                        <th (click)="sortBrandTable('brandName')">Brand Name</th>
+                        <th (click)="sortBrandTable('genericName')">Generic Name</th>
+                        <th (click)="sortBrandTable('drugClass')">Drug Class</th>
+                        <th (click)="sortBrandTable('dosageForm')">Dosage Form</th>
+                        <th (click)="sortBrandTable('strength')">Strength</th>
+                        <th (click)="sortBrandTable('price')">Price</th>
+                        <th (click)="sortBrandTable('discount')">% Discount</th>
+                        <th>Comment</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let brand of filteredBrands">
+                        <td>{{ brand.brandOwner }}</td>
+                        <td>{{ brand.brandName }}</td>
+                        <td>{{ brand.genericName }}</td>
+                        <td>{{ brand.drugClass }}</td>
+                        <td>{{ brand.dosageForm }}</td>
+                        <td>{{ brand.strength }}</td>
+                        <td>{{ brand.price | currency: 'INR' }}</td>
+                        <td>{{ brand.discount }}%</td>
+                        <td>{{ brand.comment }}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm me-1" (click)="openBrandDialog(brand)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" (click)="deleteBrand(brand)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div
+class="modal fade"
+id="brandModal"
+tabindex="-1"
+aria-labelledby="brandModalLabel"
+aria-hidden="true"
+#brandModal
+>
+<div class="modal-dialog modal-dialog-centered">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" id="brandModalLabel">
+        {{ isEditBrand ? 'Edit Brand' : 'Add Brand' }}
+      </h5>
+      <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="modal"
+        aria-label="Close"
+        (click)="closeBrandDialog()"
+      ></button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="brandForm">
+        <div class="mb-3">
+          <label for="brandOwner" class="form-label label-modern shadow"
+            >Brand Owner</label
+          >
+          <select class="form-control" formControlName="brandOwner">
+            <option *ngFor="let owner of brandOwners" [value]="owner">{{
+              owner
+            }}</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="brandName" class="form-label label-modern shadow"
+            >Brand Name</label
+          >
+          <input
+            type="text"
+            id="brandName"
+            formControlName="brandName"
+            class="form-control"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="genericName" class="form-label label-modern shadow"
+            >Generic Name</label
+          >
+          <input
+            type="text"
+            id="genericName"
+            formControlName="genericName"
+            class="form-control"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="drugClass" class="form-label label-modern shadow"
+            >Drug Class</label
+          >
+          <select class="form-control" formControlName="drugClass">
+            <option *ngFor="let drug of drugClasses" [value]="drug">{{ drug }}</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="dosageForm" class="form-label label-modern shadow"
+            >Dosage Form</label
+          >
+          <select class="form-control" formControlName="dosageForm">
+            <option *ngFor="let dosage of dosageForms" [value]="dosage">{{ dosage }}</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="strength" class="form-label label-modern shadow"
+            >Strength</label
+          >
+          <input
+            type="text"
+            id="strength"
+            formControlName="strength"
+            class="form-control"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="price" class="form-label label-modern shadow"
+            >Price</label
+          >
+          <input
+            type="number"
+            id="price"
+            formControlName="price"
+            class="form-control"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="discount" class="form-label label-modern shadow"
+            >% Discount</label
+          >
+          <input
+            type="number"
+            id="discount"
+            formControlName="discount"
+            class="form-control"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="comment" class="form-label label-modern shadow"
+            >Comment</label
+          >
+          <textarea
+            id="comment"
+            formControlName="comment"
+            class="form-control"
+          ></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        data-bs-dismiss="modal"
+        (click)="closeBrandDialog()"
+      >
+        Close
+      </button>
+      <button type="button"    data-bs-dismiss="modal" class="btn btn-primary" (click)="saveBrand();">
+        {{ isEditBrand ? 'Save Changes' : 'Add Brand' }}
+      </button>
+    </div>
+  </div>
+</div>
+</div>

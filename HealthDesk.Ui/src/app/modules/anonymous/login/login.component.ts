@@ -42,21 +42,18 @@ export class LoginComponent implements OnInit {
       this.loaderService.show();
 
       const { username, password } = this.loginForm.value;
-      this.router.navigate([`/physician`]);
-      this.loaderService.hide();
+     
 
-      // this.authService.login(username, password).subscribe({
-      //   next: () => {
-      //     this.loaderService.hide();
-
-      //     const userRole =  sessionStorage.getItem('role');
-      //     this.router.navigate([`/${userRole?.toLowerCase()}`]);
-      //   },
-      //   error: (err) => {
-      //     this.loaderService.hide();
-      //     this.notificationService.showError('Incorrect username or password. Please try again.');
-      //   }
-      // });
+      this.authService.login(username, password).subscribe({
+        next: (user) => {
+          this.loaderService.hide();
+          this.router.navigate([`/${user.role}`]);
+        },
+        error: (err) => {
+          this.loaderService.hide();
+          this.notificationService.showError('Incorrect username or password. Please try again.');
+        }
+      });
     }
   }
 

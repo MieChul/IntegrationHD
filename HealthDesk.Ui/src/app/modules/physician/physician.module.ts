@@ -48,7 +48,6 @@ import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
     ViewSurveyComponent
   ],
   imports: [
-    CommonModule,
     SharedModule,
     PhysicianRoutingModule,
     NgMultiSelectDropDownModule

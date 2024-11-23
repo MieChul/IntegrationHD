@@ -1,0 +1,80 @@
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.header-image {
+    max-height: 250px;
+    object-fit: cover;
+    border-radius: 15px;
+}
+
+.card {
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 15px;
+}
+
+.btn-modern {
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    border-radius: 25px;
+    background-color: #4c8bf5;
+    border: none;
+    color: white;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.btn-modern:hover {
+    background-color: #357ae8;
+}
+
+.form-check-input.stylish-checkbox {
+    appearance: none;
+    background-color: #fff;
+    border: 2px solid #ced4da;
+    border-radius: 0.25em;
+    width: 1.5em;
+    height: 1.5em;
+    display: grid;
+    place-content: center;
+    transition: all 0.3s;
+}
+
+.form-check-input.stylish-checkbox:checked {
+    background-color: #4c8bf5;
+    border-color: #4c8bf5;
+}
+
+.form-check-input.stylish-checkbox:checked::before {
+    content: "";
+    width: 0.5em;
+    height: 0.5em;
+    background-color: white;
+    border-radius: 0.25em;
+    transform: scale(1);
+}
+
+.btn-outline-primary, .btn-outline-danger {
+    border-radius: 20px;
+    padding: 5px 12px;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.btn-outline-primary:hover, .btn-outline-danger:hover {
+    background-color: #357ae8;
+    color: white;
+}
+
+.input-modern {
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    transition: border-color 0.3s ease;
+}
+
+.input-modern:focus {
+    border-color: #4c8bf5;
+    box-shadow: 0 0 0 4px rgba(76, 139, 245, 0.2);
+    outline: none;
+}

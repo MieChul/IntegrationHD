@@ -1,9 +1,10 @@
 using HealthDesk.Application;
+using HealthDesk.Core.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HealthDesk.API.Controllers;
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class AuthController : Controller
 {
     private readonly IAuthService _authService;
@@ -30,9 +31,8 @@ public class AuthController : Controller
 
         // Set the access token in an HttpOnly cookie
         await _authService.SetTokenCookies(HttpContext, user);
-
         // Return the user's role or any additional info, but not the token itself
-        return Ok(new { Role = user.Roles.FirstOrDefault()});
+        return Ok(new { Role = user.Roles.FirstOrDefault().ToString().ToLower(), username = loginDto.Username });
     }
 
     [HttpPost("logout")]

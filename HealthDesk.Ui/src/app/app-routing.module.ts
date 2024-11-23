@@ -11,8 +11,8 @@ const adminModule = () => import('./modules/admin/admin.module').then(x => x.Adm
 const accountModule = () => import('./modules/account/account.module').then(x => x.AccountModule);
 const routes: Routes = [
     { path: 'physician', loadChildren: physicianModule },
-    { path: 'patient', loadChildren: patientModule  , canActivate: [RoleGuard], data: { roles: ['patient'] } },
-    { path: 'organization', loadChildren: organizationModule , canActivate: [RoleGuard], data: { roles: ['organization'] } },
+    { path: 'patient', loadChildren: patientModule },
+    { path: 'organization', loadChildren: organizationModule},
     { path: '', loadChildren: anonymousModule },
     { path: 'about-us', component: AboutUsComponent },
     { path: 'contact-us', component: ContactUsComponent },

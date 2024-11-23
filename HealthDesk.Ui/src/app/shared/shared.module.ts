@@ -21,6 +21,8 @@ import { LoaderComponent } from './components/loader/loader.component';
 
 import { TermsConditionComponent } from './components/terms-condition/terms-condition.component';
 import { SidebarComponent } from './components/side-nav/side-nav.component';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 @NgModule({
   declarations: [
@@ -47,7 +49,11 @@ SidebarComponent,
     MatSelectModule,
     MatButtonToggleModule,
     MatDatepickerModule, // Import Datepicker module
-    MatNativeDateModule
+    MatNativeDateModule,
+    MatIconModule,
+    MatMenuModule,
+    MatDividerModule,
+    MatSlideToggleModule
   ],
   exports: [
     LoaderComponent,
@@ -69,7 +75,11 @@ SidebarComponent,
     MatSelectModule,
     MatButtonToggleModule,
     MatDatepickerModule, // Import Datepicker module
-    MatNativeDateModule
+    MatNativeDateModule,
+    MatIconModule,
+    MatMenuModule,
+    MatDividerModule,
+    MatSlideToggleModule
   ]
 })
 export class SharedModule { }

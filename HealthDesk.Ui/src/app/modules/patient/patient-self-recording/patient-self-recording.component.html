@@ -1,0 +1,47 @@
+<div class="container"> 
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <a
+          class="nav-link pointer-cursor"
+          [ngClass]="{ 'active': selectedTab === 'selfRecord' }"
+          (click)="selectTab('selfRecord')"
+          >Self Record</a
+        >
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link pointer-cursor"
+          [ngClass]="{ 'active': selectedTab === 'symptoms' }"
+          (click)="selectTab('symptoms')"
+          >Symptoms</a
+        >
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link pointer-cursor"
+          [ngClass]="{ 'active': selectedTab === 'labData' }"
+          (click)="selectTab('labData')"
+          >Lab Investigation</a
+        >
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link pointer-cursor"
+          [ngClass]="{ 'active': selectedTab === 'investigations' }"
+          (click)="selectTab('investigations')"
+          >Investigation Reports</a
+        >
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link pointer-cursor"
+          [ngClass]="{ 'active': selectedTab === 'immunization' }"
+          (click)="selectTab('immunization')"
+          >Immunization</a
+        >
+      </li>
+    </ul>
+    
+      <div #tabContent class="tab-content mt-3"></div>
+    </div>
+    

@@ -1,0 +1,54 @@
+// Sidebar
+.sidebar {
+    width: 4.5rem;
+    height: 100vh; // Fix the height to the screen
+    overflow-y: auto; // Enable scrolling for overflow
+    transition: all 0.3s ease-in-out;
+    background-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  
+    // Slim scrollbar styling
+    &::-webkit-scrollbar {
+      width: 5px; // Slim width
+    }
+  
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+    }
+  
+    &::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+  
+    &:hover {
+      width: 12rem;
+    }
+  
+    .nav-link {
+      opacity: 0.7;
+      transition: opacity 0.3s, transform 0.3s;
+  
+      &:hover {
+        opacity: 1;
+        transform: translateY(-5px);
+      }
+  
+      i {
+        transition: transform 0.3s;
+  
+        &:hover {
+          transform: scale(1.2);
+        }
+      }
+    }
+  
+    .logo img {
+      transition: transform 0.3s;
+  
+      &:hover {
+        transform: rotate(360deg);
+      }
+    }
+  }
+  

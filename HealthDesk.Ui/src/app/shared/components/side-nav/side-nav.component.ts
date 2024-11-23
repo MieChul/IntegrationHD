@@ -12,6 +12,7 @@ export class SidebarComponent implements OnInit {
   @Input() showSidebar: boolean = true;
   @Input() navLinks: any[] = [];
   activeUrl: string;
+  isCollapsed = false;
 
   constructor(private router: Router) {
     this.activeUrl = this.router.url;
@@ -33,4 +34,8 @@ export class SidebarComponent implements OnInit {
   // isActive(url: string): boolean {
   //   return this.activeUrl === url;
  }
+
+ toggleSidebar(): void {
+  this.isCollapsed = !this.isCollapsed;
+}
 }

@@ -1,0 +1,101 @@
+<div class="container">
+    <h1 class="animated-heading">
+        <i class="bi bi-calendar-check me-2"></i>Patient History
+    </h1>
+
+    <div class="row mb-3 align-items-center">
+        <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
+            <div class="mb-2 me-3">
+                <label for="filterDate" class="form-label label-modern shadow">Filter by Date</label>
+                <input type="text" id="filterDate" class="form-control" ngbDatepicker #filterDatePicker="ngbDatepicker" (click)="filterDatePicker.toggle()" formControlName="filterDate">
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
+            <button class="btn btn-primary" (click)="addHistory()">Add History</button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-modern">
+            <thead>
+                <tr>
+                    <th (click)="sortTable('diagnosisDate')">Date of Diagnosis</th>
+                    <th (click)="sortTable('disease')">Disease</th>
+                    <th (click)="sortTable('drug')">Treatment Drug</th>
+                    <th (click)="sortTable('dosageForm')">Dosage Form</th>
+                    <th (click)="sortTable('strength')">Strength</th>
+                    <th (click)="sortTable('frequency')">Frequency</th>
+                    <th (click)="sortTable('outcome')">Outcome</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let history of patientHistories">
+                    <td>{{ history.diagnosisDate | date: 'dd-MM-yyyy' }}</td>
+                    <td>{{ history.disease }}</td>
+                    <td>{{ history.drug }}</td>
+                    <td>{{ history.dosageForm }}</td>
+                    <td>{{ history.strength }}</td>
+                    <td>{{ history.frequency }}</td>
+                    <td>{{ history.outcome }}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm me-1" (click)="editHistory(history)">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" (click)="deleteHistory(history)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add/Edit History Modal -->
+<div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true" #historyModal>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="historyModalLabel">{{ isEditMode ? 'Edit History' : 'Add History' }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="historyForm">
+                    <div class="mb-3">
+                        <label for="diagnosisDate" class="form-label label-modern shadow">Date of Diagnosis</label>
+                        <input type="date" id="diagnosisDate" formControlName="diagnosisDate" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="disease" class="form-label label-modern shadow">Disease</label>
+                        <input type="text" id="disease" formControlName="disease" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="drug" class="form-label label-modern shadow">Treatment Drug</label>
+                        <input type="text" id="drug" formControlName="drug" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="dosageForm" class="form-label label-modern shadow">Dosage Form</label>
+                        <input type="text" id="dosageForm" formControlName="dosageForm" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="strength" class="form-label label-modern shadow">Strength</label>
+                        <input type="text" id="strength" formControlName="strength" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="frequency" class="form-label label-modern shadow">Frequency</label>
+                        <input type="text" id="frequency" formControlName="frequency" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="outcome" class="form-label label-modern shadow">Outcome</label>
+                        <input type="text" id="outcome" formControlName="outcome" class="form-control">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" (click)="saveHistory()">{{ isEditMode ? 'Save Changes' : 'Add History' }}</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,60 @@
+<div class="container">
+    <h1 class="animated-heading">
+      <i class="bi bi-calendar-check me-2"></i>Manage Appointments
+    </h1>
+  
+    <button class="btn btn-primary mb-3" (click)="scheduleNewAppointment()">Schedule New Appointment</button>
+  
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <a class="nav-link active" (click)="filterAppointments('pending')">Pending</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" (click)="filterAppointments('past')">Past Appointments</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" (click)="filterAppointments('cancelled')">Cancelled Appointments</a>
+      </li>
+    </ul>
+  
+    <div class="table-responsive mt-3">
+      <table class="table table-hover table-modern">
+        <thead>
+          <tr>
+            <th>Doctor Name</th>
+            <th>Appointment Date</th>
+            <th>Appointment Time</th>
+            <th>Clinic Name</th>
+            <th>Status</th>
+            <th *ngIf="filteredAppointments[0]?.status === 'pending'">Action</th>
+            <th *ngIf="filteredAppointments[0]?.status === 'cancelled'">Cancelled By</th>
+            <th *ngIf="filteredAppointments[0]?.status === 'cancelled'">Reason</th>
+          </tr>
+        </thead>
+        <tbody *ngIf="filteredAppointments && filteredAppointments.length > 0">
+          <tr *ngFor="let appointment of filteredAppointments"
+              [ngClass]="{
+                'light-green-row': appointment.appointmentStatus === 'Accepted' && appointment.status === 'pending',
+                'light-yellow-row': appointment.appointmentStatus === 'New Time Proposed'
+              }">
+            <td>{{ appointment.doctorName }}</td>
+            <td>{{ appointment.appointmentDate | date: 'dd-MM-yyyy' }}</td>
+            <td>{{ appointment.appointmentTime }}</td>
+            <td>{{ appointment.clinicName }}</td>
+            <td>{{ appointment.appointmentStatus }}</td>
+            <td *ngIf="appointment.status === 'pending'">
+              <button *ngIf="appointment.proposedNewTime" class="btn btn-primary btn-sm me-1" (click)="openInfoModal(appointment)" ngbTooltip="Accept/Reject new time">
+                <i class="bi bi-info-circle"></i>
+              </button>
+              <button class="btn btn-danger btn-sm me-1" (click)="openCancelModal(appointment)" ngbTooltip="Cancel appointment">
+                <i class="bi bi-x-circle"></i>
+              </button>
+            </td>
+            <td *ngIf="appointment.status === 'cancelled'">{{ appointment.cancelledBy }}</td>
+            <td *ngIf="appointment.status === 'cancelled'">{{ appointment.reason }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  

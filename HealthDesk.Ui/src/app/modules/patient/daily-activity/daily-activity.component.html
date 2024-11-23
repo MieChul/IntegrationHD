@@ -1,0 +1,271 @@
+<div class="container">
+    <h1 class="animated-heading">
+        <i class="bi bi-calendar-heart me-2"></i>Daily Activity
+    </h1>
+    <!-- User Details Section -->
+    <div class="row justify-content-center">
+        <div class="col card shadow-sm fade-in bg-dark">
+            <div class="card-header text-center"><h6>User Info</h6></div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col mb-3">
+                        <h6><i class="bi bi-gender-ambiguous me-2"></i>Gender: <span>{{ gender }}</span></h6>
+                    </div>
+                    <div class="col mb-3">
+                        <h6><i class="bi bi-calendar me-2"></i>Age: <span>{{ age }}</span></h6>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col mb-3">
+                        <h6><i class="bi bi-rulers me-2"></i>Height: <span>{{ height }} cm</span></h6>
+                    </div>
+                    <div class="col mb-3">
+                        <h6><i class="bi bi-weight me-2"></i>Weight: <span>{{ weight }} kg</span></h6>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col mb-3">
+                        <h6><i class="bi bi-briefcase me-2"></i>Occupation: <span>{{ occupation }}</span></h6>
+                    </div>
+                    <div class="col mb-3">
+                        <h6><i class="bi bi-activity me-2"></i>Lifestyle: <span>{{ lifestyle }}</span></h6>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="text-center">
+                    <button class="btn btn-primary mt-3" (click)="openEditPopup()">Edit Details</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col card small shadow-lg bmi-scoreboard p-4 text-center" [ngClass]="{
+            'bg-success': bmi > 18.4 && bmi < 25,
+            'bg-danger': bmi > 30 || bmi <10,
+            'bg-warning': (bmi > 25 && bmi < 30) || (bmi <18.5 && bmi > 10),
+            'bg-info':!bmi
+          }">
+            <div class="card-header bg-white">
+                <div class="legend">
+                    <span class="badge bg-success">Normal (18.5 - 24.9)</span>
+                    <span class="badge bg-warning">Overweight (25 - 29.9) / Underweight (10 - 18.4)</span>
+                    <span class="badge bg-danger">Obese (> 30) / Severely Underweight (< 10)</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="bmi-icon mb-3">
+                    <i class="bi bi-calculator"></i>
+                </div>
+                <h2 class="bmi-value">{{ bmi | number:'1.2-2' }}</h2>
+                <p class="bmi-label">BMI</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div class="row mb-4">
+
+    <!-- Daily Activity Section and Table -->
+    <div class="row mb-3 align-items-center">
+        <div class="col-md-4 col-sm-6 d-flex justify-content-start flex-wrap">
+            <button class="btn btn-primary" (click)="addDailyActivity()">Add Daily Activity</button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-modern">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Calories Consumed</th>
+                    <th>Total Calories</th>
+                    <th>Calories Burnt</th>
+                    <th>Total Burnt</th>
+                    <th>Total Gain/Loss</th>
+                    <th>Comment</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let activity of dailyActivities">
+                    <td>{{ activity.date | date: 'dd-MM-yyyy' }}</td>
+                    <td>
+                        <ul class="list-unstyled">
+                            <li *ngFor="let food of activity.foodDetails">{{ food.mealType }} - {{ food.name }}: {{ food.calories }} kcal</li>
+                        </ul>
+                    </td>
+                    <td>{{ activity.totalCalories }}</td>
+                    <td>
+                        <ul class="list-unstyled">
+                            <li *ngFor="let exercise of activity.exerciseDetails">{{ exercise.timeOfDay }} - {{ exercise.name }}: {{ exercise.caloriesBurnt }} kcal</li>
+                        </ul>
+                    </td>
+                    <td>{{ activity.caloriesBurnt }}</td>
+                    <td [ngClass]="{'text-success': activity.totalGainLoss < 0, 'text-danger': activity.totalGainLoss > 0}">
+                        {{ activity.totalGainLoss > 0 ? '+' : '' }}{{ activity.totalGainLoss }}
+                    </td>
+                    <td>{{ activity.comment }}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm me-1" (click)="editActivity(activity)">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" (click)="deleteActivity(activity)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Edit User Details Popup -->
+<div class="modal fade" id="editDetailsModal" tabindex="-1" aria-labelledby="editDetailsModalLabel" aria-hidden="true"
+    #editDetailsModal>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editDetailsModalLabel">Edit User Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="editForm">
+                    <div class="mb-3">
+                        <label for="weight" class="form-label label-modern shadow"><i class="bi bi-weight"></i> Weight
+                            (kg)</label>
+                        <input type="number" id="weight" formControlName="weight" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="height" class="form-label label-modern shadow"><i class="bi bi-rulers"></i> Height
+                            (cm)</label>
+                        <input type="number" id="height" formControlName="height" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="age" class="form-label label-modern shadow"><i class="bi bi-calendar"></i>
+                            Age</label>
+                        <input type="number" id="age" formControlName="age" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="gender" class="form-label label-modern shadow"><i
+                                class="bi bi-gender-ambiguous"></i> Gender</label>
+                        <select id="gender" formControlName="gender" class="form-select">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="occupation" class="form-label label-modern shadow"><i class="bi bi-briefcase"></i>
+                            Occupation</label>
+                        <input type="text" id="occupation" formControlName="occupation" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="lifestyle" class="form-label label-modern shadow"><i class="bi bi-activity"></i>
+                            Lifestyle</label>
+                        <input type="text" id="lifestyle" formControlName="lifestyle" class="form-control">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" (click)="saveDetails()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Activity Modal -->
+<div class="modal fade" id="activityModal" tabindex="-1" aria-labelledby="activityModalLabel" aria-hidden="true"
+    #activityModal>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="activityModalLabel">{{ isEditMode ? 'Edit Daily Activity' : 'Add Daily Activity' }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="activityForm">
+                    <div class="mb-3">
+                        <label for="date" class="form-label label-modern shadow">Date</label>
+                        <input type="date" id="date" formControlName="date" class="form-control">
+                    </div>
+
+                    <!-- Calories Consumed Section -->
+                    <div class="mb-3">
+                        <h5>Calories Consumed</h5>
+                        <div *ngFor="let meal of meals; let i = index">
+                            <div class="row mb-2">
+                                <div class="col-md-3">
+                                    <label for="mealType">Meal Type</label>
+                                    <select class="form-select" [formControlName]="'mealType' + i">
+                                        <option value="Breakfast">Breakfast</option>
+                                        <option value="Lunch">Lunch</option>
+                                        <option value="Dinner">Dinner</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="food">Food Item</label>
+                                    <select class="form-select" [formControlName]="'food' + i">
+                                        <option *ngFor="let food of foodItems" [value]="food.name">{{ food.name }}</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="quantity">Quantity (g)</label>
+                                    <input type="number" class="form-control" [formControlName]="'quantity' + i" (change)="calculateCaloriesConsumed()">
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="calories">Calories</label>
+                                    <input type="text" class="form-control" [value]="calculateFoodCalories(i)" readonly>
+                                </div>
+                                <div class="col-md-1 d-flex align-items-end">
+                                    <button type="button" class="btn btn-danger btn-sm" (click)="removeMeal(i)">x</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-secondary" (click)="addMeal()">Add Meal</button>
+                    </div>
+
+                    <!-- Activity Section -->
+                    <div class="mb-3">
+                        <h5>Activity</h5>
+                        <div *ngFor="let exercise of exercises; let j = index">
+                            <div class="row mb-2">
+                                <div class="col-md-3">
+                                    <label for="timeOfDay">Time of Day</label>
+                                    <select class="form-select" [formControlName]="'timeOfDay' + j">
+                                        <option value="Morning">Morning</option>
+                                        <option value="Afternoon">Afternoon</option>
+                                        <option value="Evening">Evening</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="exercise">Exercise</label>
+                                    <select class="form-select" [formControlName]="'exercise' + j">
+                                        <option *ngFor="let exercise of exerciseItems" [value]="exercise.name">{{ exercise.name }}</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="duration">Duration (minutes)</label>
+                                    <input type="number" class="form-control" [formControlName]="'duration' + j" (change)="calculateCaloriesBurnt()">
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="caloriesBurnt">Calories Burnt</label>
+                                    <input type="text" class="form-control" [value]="calculateExerciseCalories(j)" readonly>
+                                </div>
+                                <div class="col-md-1 d-flex align-items-end">
+                                    <button type="button" class="btn btn-danger btn-sm" (click)="removeExercise(j)">x</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-secondary" (click)="addExercise()">Add Activity</button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" (click)="saveActivity()">{{ isEditMode ? 'Save Changes' : 'Add Activity' }}</button>
+            </div>
+        </div>
+    </div>
+</div>

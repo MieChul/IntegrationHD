@@ -1,0 +1,107 @@
+<div class="container">
+    <h1 class="animated-heading">
+        <i class="bi bi-prescription me-2"></i>Patient Treatment
+    </h1>
+
+    <div class="row mb-3 align-items-center">
+        <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
+            <div class="mb-2 me-3">
+                <label for="filterDate" class="form-label label-modern shadow">Filter by Start Date</label>
+                <input type="text" id="filterDate" class="form-control" ngbDatepicker #filterDatePicker="ngbDatepicker" (click)="filterDatePicker.toggle()" formControlName="filterDate">
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
+            <button class="btn btn-primary" (click)="addTreatment()">Add Treatment</button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-modern">
+            <thead>
+                <tr>
+                    <th (click)="sortTable('drugName')">Drug Name</th>
+                    <th (click)="sortTable('dosageForm')">Dosage Form</th>
+                    <th (click)="sortTable('strength')">Strength</th>
+                    <th (click)="sortTable('frequency')">Frequency</th>
+                    <th (click)="sortTable('startDate')">Start Date</th>
+                    <th (click)="sortTable('endDate')">End Date</th>
+                    <th (click)="sortTable('ongoing')">Ongoing</th>
+                    <th>Comment</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let treatment of patientTreatments">
+                    <td>{{ treatment.drugName }}</td>
+                    <td>{{ treatment.dosageForm }}</td>
+                    <td>{{ treatment.strength }}</td>
+                    <td>{{ treatment.frequency }}</td>
+                    <td>{{ treatment.startDate | date: 'dd-MM-yyyy' }}</td>
+                    <td>{{ treatment.endDate ? (treatment.endDate | date: 'dd-MM-yyyy') : 'N/A' }}</td>
+                    <td>{{ treatment.ongoing ? 'Yes' : 'No' }}</td>
+                    <td>{{ treatment.comment }}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm me-1" (click)="editTreatment(treatment)">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" (click)="deleteTreatment(treatment)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add/Edit Treatment Modal -->
+<div class="modal fade" id="treatmentModal" tabindex="-1" aria-labelledby="treatmentModalLabel" aria-hidden="true" #treatmentModal>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="treatmentModalLabel">{{ isEditMode ? 'Edit Treatment' : 'Add Treatment' }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="treatmentForm">
+                    <div class="mb-3">
+                        <label for="drugName" class="form-label label-modern shadow">Drug Name</label>
+                        <input type="text" id="drugName" formControlName="drugName" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="dosageForm" class="form-label label-modern shadow">Dosage Form</label>
+                        <input type="text" id="dosageForm" formControlName="dosageForm" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="strength" class="form-label label-modern shadow">Strength</label>
+                        <input type="text" id="strength" formControlName="strength" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="frequency" class="form-label label-modern shadow">Frequency</label>
+                        <input type="text" id="frequency" formControlName="frequency" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="startDate" class="form-label label-modern shadow">Start Date</label>
+                        <input type="date" id="startDate" formControlName="startDate" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="endDate" class="form-label label-modern shadow">End Date</label>
+                        <input type="date" id="endDate" formControlName="endDate" class="form-control" [disabled]="treatmentForm.get('ongoing')?.value">
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" id="ongoing" formControlName="ongoing" class="form-check-input" (change)="toggleEndDate()">
+                        <label for="ongoing" class="form-check-label label-modern shadow">Ongoing</label>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comment" class="form-label label-modern shadow">Comment</label>
+                        <textarea id="comment" formControlName="comment" class="form-control"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" (click)="saveTreatment()">{{ isEditMode ? 'Save Changes' : 'Add Treatment' }}</button>
+            </div>
+        </div>
+    </div>
+</div>

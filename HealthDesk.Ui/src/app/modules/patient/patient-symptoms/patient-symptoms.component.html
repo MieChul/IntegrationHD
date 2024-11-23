@@ -1,0 +1,93 @@
+<div class="container">
+    <h1 class="animated-heading">
+        <i class="bi bi-heart-pulse me-2"></i>Patient Symptoms
+    </h1>
+
+    <div class="row mb-3 align-items-center">
+        <div class="col-md-4 col-sm-6 d-flex justify-content-start flex-wrap">
+            <button class="btn btn-primary" (click)="addSymptom()">Add Symptom</button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-modern">
+            <thead>
+                <tr>
+                    <th (click)="sortTable('dateOfOnset')">Date of Onset</th>
+                    <th (click)="sortTable('timeOfOnset')">Time of Onset</th>
+                    <th (click)="sortTable('symptomType')">Symptom Type</th>
+                    <th (click)="sortTable('description')">Description</th>
+                    <th (click)="sortTable('severity')">Severity</th>
+                    <th (click)="sortTable('comment')">Comment</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let symptom of symptomsRecords; let i = index">
+                    <td>{{ symptom.dateOfOnset | date: 'dd-MM-yyyy' }}</td>
+                    <td>{{ symptom.timeOfOnset }}</td>
+                    <td>{{ symptom.symptomType }}</td>
+                    <td>{{ symptom.description }}</td>
+                    <td>{{ symptom.severity }}</td>
+                    <td>{{ symptom.comment }}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm me-1" (click)="editSymptom(symptom)">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" (click)="deleteSymptom(symptom)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add/Edit Symptom Modal -->
+<div class="modal fade" id="symptomModal" tabindex="-1" aria-labelledby="symptomModalLabel" aria-hidden="true" #symptomModal>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="symptomModalLabel">{{ isEditMode ? 'Edit Symptom' : 'Add Symptom' }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="symptomForm">
+                    <div class="mb-3">
+                        <label for="dateOfOnset" class="form-label label-modern shadow">Date of Onset</label>
+                        <input type="date" id="dateOfOnset" formControlName="dateOfOnset" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="timeOfOnset" class="form-label label-modern shadow">Time of Onset</label>
+                        <input type="time" id="timeOfOnset" formControlName="timeOfOnset" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="symptomType" class="form-label label-modern shadow">Symptom Type</label>
+                        <select id="symptomType" formControlName="symptomType" class="form-select">
+                            <option *ngFor="let type of symptomTypes" [value]="type">{{ type }}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label label-modern shadow">Description</label>
+                        <input type="text" id="description" formControlName="description" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="severity" class="form-label label-modern shadow">Severity</label>
+                        <select id="severity" formControlName="severity" class="form-select">
+                            <option *ngFor="let level of severityLevels" [value]="level">{{ level }}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comment" class="form-label label-modern shadow">Comment</label>
+                        <input type="text" id="comment" formControlName="comment" class="form-control">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" (click)="saveSymptom()">{{ isEditMode ? 'Save Changes' : 'Add Symptom' }}</button>
+            </div>
+        </div>
+    </div>
+</div>

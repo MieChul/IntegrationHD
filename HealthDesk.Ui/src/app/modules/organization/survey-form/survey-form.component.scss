@@ -1,0 +1,88 @@
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.header-image {
+    max-height: 250px;
+    object-fit: cover;
+    border-radius: 15px;
+}
+
+.survey-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.survey-description {
+    font-size: 1.2rem;
+}
+
+.form-section {
+    background-color: #fafafa;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.question-card {
+    background-color: white;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.question-text {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 8px;
+    display: block;
+    font-weight: 500;
+}
+
+.input-modern {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    transition: border-color 0.2s;
+    font-size: 1rem;
+    margin-top: 8px;
+}
+
+.input-modern:focus {
+    border-color: #4c8bf5;
+    box-shadow: 0 0 0 3px rgba(76, 139, 245, 0.2);
+    outline: none;
+}
+
+.btn-modern {
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    border-radius: 25px;
+    background-color: #4c8bf5;
+    border: none;
+    color: white;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.btn-modern:hover {
+    background-color: #357ae8;
+}
+
+.btn-modern:focus {
+    box-shadow: 0 0 0 4px rgba(76, 139, 245, 0.3);
+    outline: none;
+}
+
+.form-check-input {
+    margin-right: 10px;
+    accent-color: #4c8bf5;
+}
+
+.form-check-label {
+    font-size: 1rem;
+}
+
+.text-danger {
+    font-size: 0.85rem;
+}
