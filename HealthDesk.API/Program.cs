@@ -34,7 +34,7 @@ builder.Services.RegisterServices(builder.Configuration);
 builder.Services.AddAuthentication(); 
 
 var app = builder.Build();
-
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseMiddleware<SecurityHeadersMiddleware>();
