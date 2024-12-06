@@ -1,7 +1,13 @@
 <div class="container">
-    <h1 class="animated-heading">
-      Welocme Username!! How can I help you today?
-    </h1>
+  <h1 class="animated-heading">
+    Welocme!! How can I help you today?
+  </h1>
+  <div *ngIf="userData.status !== 'Approved' && userData.status !== 'Submitted'" class=" blink-message alert bg-danger fade show mt-3" role="alert">
+    <strong>Complete Your Profile!</strong> To access HealthDesk utilities, please complete your profile. Clicking any button will redirect you to the profile page.
+  </div>
+  <div *ngIf="userData.status === 'Submitted'" class=" blink-message alert bg-warning fade show mt-3" role="alert">
+    <strong>Thank you for submitting your profile!</strong>  We are currently reviewing it, and once approved, you will gain access to HealthDesk utilities.
+  </div>
     <div class="row justify-content-center mb-2">
       <div class="col card small">
         <div class="h-100 fade-in">
@@ -9,7 +15,8 @@
           <div class="card-body">
             <h5 class="card-title">Medical History</h5>
             <p class="card-text">Access and update medical history.</p>
-            <a href="/patient/history" class="btn btn-primary">Go to Medical History</a>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Medical History</a>
+            <a *ngIf="userData.status === 'Approved'" href="/patient/history" class="btn btn-primary">Go to Medical History</a>
           </div>
         </div>
       </div>
@@ -19,7 +26,8 @@
           <div class="card-body">
             <h5 class="card-title">Current Treatment</h5>
             <p class="card-text">Review and analyze current Treatment.</p>
-            <a href="/patient/treatment" class="btn btn-primary">Go to Treatment</a>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Treatment</a>
+            <a *ngIf="userData.status === 'Approved'" href="/patient/treatment" class="btn btn-primary">Go to Treatment</a>
           </div>
         </div>
       </div>
@@ -29,7 +37,8 @@
           <div class="card-body">
             <h5 class="card-title">Manage Appointments</h5>
             <p class="card-text">Accept/Reject and manage appointments.</p>
-            <a href="/patient/appointments" class="btn btn-primary">Go to Appointments</a>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Appointments</a>
+            <a *ngIf="userData.status === 'Approved'" href="/patient/appointments" class="btn btn-primary">Go to Appointments</a>
           </div>
         </div>
       </div>
@@ -41,7 +50,8 @@
           <div class="card-body">
             <h5 class="card-title">Self Recording Data</h5>
             <p class="card-text">Review and analyze Data.</p>
-            <a href="/patient/self-recording" class="btn btn-primary">Go to Manage Self Data</a>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Manage Self Data</a>
+            <a *ngIf="userData.status === 'Approved'" href="/patient/self-recording" class="btn btn-primary">Go to Manage Self Data</a>
           </div>
         </div>
       </div>
@@ -51,7 +61,8 @@
           <div class="card-body">
             <h5 class="card-title">Medicine Refill & Complaince</h5>
             <p class="card-text">Access and update Medicine Refill & Complaince.</p>
-            <a href="/patient/refill" class="btn btn-primary">Go to Medicine Refill & Complaince</a>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Medicine Refill & Complaince</a>
+            <a *ngIf="userData.status === 'Approved'" href="/patient/refill" class="btn btn-primary">Go to Medicine Refill & Complaince</a>
           </div>
         </div>
       </div>
@@ -61,7 +72,8 @@
           <div class="card-body">
             <h5 class="card-title">Record Daily Activity</h5>
             <p class="card-text">Create and manage Daily Activity.</p>
-            <a href="/patient/daily-activity" class="btn btn-primary">Go to Daily Activity</a>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Daily Activity</a>
+            <a *ngIf="userData.status === 'Approved'" href="/patient/daily-activity" class="btn btn-primary">Go to Daily Activity</a>
           </div>
         </div>
       </div>
@@ -73,7 +85,8 @@
           <div class="card-body">
             <h5 class="card-title">Search and Rate Doctors</h5>
             <p class="card-text">Search and Rate Doctorss.</p>
-            <a href="/patient/rate" class="btn btn-primary">Go to Search and Rate Doctors</a>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Search and Rate Doctors</a>
+            <a *ngIf="userData.status === 'Approved'" href="/patient/rate" class="btn btn-primary">Go to Search and Rate Doctors</a>
           </div>
         </div>
       </div>
@@ -83,7 +96,8 @@
           <div class="card-body">
             <h5 class="card-title">Home Remidies</h5>
             <p class="card-text">Create and manage Home Remidies.</p>
-            <a href="/patient/remidies" class="btn btn-primary">Go to Home Remidies</a>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Home Remidies</a>
+            <a *ngIf="userData.status === 'Approved'" href="/patient/remidies" class="btn btn-primary">Go to Home Remidies</a>
           </div>
         </div>
       </div>

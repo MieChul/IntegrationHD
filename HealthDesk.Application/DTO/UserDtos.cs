@@ -21,36 +21,37 @@ public class UserLoginDto
 
 public class UserDto
 {
-    public string Id { get; set; }   
-     public string Username { get; set; }
+    public string Id { get; set; }
+    public string Username { get; set; }
     public string Status { get; set; }
     public List<Role> Roles { get; set; } = new List<Role>();
+    public string ProfImage { get; set; }
 
 }
 
 public class UserRegistrationDto
 {
-      public string Username { get; set; }
+    public string Username { get; set; }
     public string Password { get; set; }
     public string? Email { get; set; } = string.Empty;
     public string Mobile { get; set; }
-    public int RoleId{ get; set; } 
+    public int RoleId { get; set; }
 }
 
 public class UpdateRequestDto
 {
     public string? FirstName { get; set; } = string.Empty;
-    public string? LastName { get; set; }= string.Empty;
-    public string? Username { get; set; }= string.Empty;
-    public string? Password { get; set; }= string.Empty;
+    public string? LastName { get; set; } = string.Empty;
+    public string? Username { get; set; } = string.Empty;
+    public string? Password { get; set; } = string.Empty;
 
-    public string? Role { get; set; }= string.Empty;
-    public string? ProfImage { get; set; }= string.Empty;
-    public string? GDoc { get; set; }= string.Empty;
-    public string? PDoc { get; set; }= string.Empty;
-    public string? SDoc { get; set; }= string.Empty;
-    public string? ADoc { get; set; }= string.Empty;
-    public string? MDoc { get; set; }= string.Empty;
+    public string? Role { get; set; } = string.Empty;
+    public string? ProfImage { get; set; } = string.Empty;
+    public string? GDoc { get; set; } = string.Empty;
+    public string? PDoc { get; set; } = string.Empty;
+    public string? SDoc { get; set; } = string.Empty;
+    public string? ADoc { get; set; } = string.Empty;
+    public string? MDoc { get; set; } = string.Empty;
 }
 
 public class UpdateUserInfoRequestDto
@@ -97,6 +98,8 @@ public class UpdateUserInfoRequestDto
     public string? BloodGroup { get; set; } = string.Empty;
     public string? RelationId { get; set; } = string.Empty;
 
+    public string Role { get; set; } = string.Empty;
+
     public DOB? DOB { get; set; } = new DOB() { Day = 01, Month = 01, Year = 2000 };
 
     public bool IsSave { get; set; } = false;
@@ -126,7 +129,8 @@ public class MedicalRegistration
 }
 
 
-public class RegisterPatientInfoDto{
+public class RegisterPatientInfoDto
+{
     public string? FirstName { get; set; } = string.Empty;
     public string? MiddleName { get; set; } = string.Empty;
     public string? LastName { get; set; } = string.Empty;
@@ -141,6 +145,6 @@ public class RegisterPatientInfoDto{
     public string? State { get; set; } = string.Empty;
     public string? Area { get; set; } = string.Empty;
     public string? Pincode { get; set; } = string.Empty;
-    
+
     public string? BloodGroup { get; set; } = string.Empty;
 }

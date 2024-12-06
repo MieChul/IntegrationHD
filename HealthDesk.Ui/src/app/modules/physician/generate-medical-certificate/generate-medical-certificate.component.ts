@@ -100,8 +100,9 @@ export class GenerateMedicalCertificateComponent implements OnInit {
     doc.text(`Doctor's Signature`, pageWidth / 2 + margin + 2, 140);
 
     // Add header and footer images
-    const headerImg = 'assets/prescription_header.jpg';
-    const footerImg = 'assets/prescription_footer.png';
+    
+    const headerImg = localStorage.getItem('prescription_header_default');
+    const footerImg =  localStorage.getItem('prescription_footer_default');
 
     if (headerImg) {
       doc.addImage(headerImg, 'JPEG', margin, 10, pageWidth - 2 * margin, 20);

@@ -1,6 +1,7 @@
 
 using HealthDesk.Application.Interfaces;
 using HealthDesk.Core;
+using static HealthDesk.Application.UserRegistrationDto;
 
 namespace HealthDesk.Application.Services;
 public class AccountService : IAccountService
@@ -13,12 +14,21 @@ public class AccountService : IAccountService
         _messageService = messageService;
     }
 
+    public async Task<List<User>> GetAll()
+    {
+        var user = await _userRepository.GetAllAsync();
+        return user.ToList();
+    }
 
     public async Task<User> GetById(string id)
     {
-        var user = await _userRepository.GetByIdAsync(id);
-        if (user == null) throw new KeyNotFoundException("User not found");
-        return user;
+        var userEntity = await _userRepository.GetByIdAsync(id);
+        if (userEntity == null) throw new KeyNotFoundException("User not found");
+        // var userDto = new UpdateUserInfoRequestDto();
+        // GenericMapper.Map<User, UpdateUserInfoRequestDto>(userEntity, userDto);
+        // userDto.Role = userEntity.Roles.FirstOrDefault().ToString().ToLower();
+        userEntity.Role=userEntity.Roles.FirstOrDefault().ToString().ToLower();
+        return userEntity;
     }
 
     public void RegisterPatientInfo(string id, RegisterPatientInfoDto model)
@@ -66,6 +76,7 @@ public class AccountService : IAccountService
             user.AuthMob = model.AuthMob;
             user.AuthEmail = model.AuthEmail;
             user.Status = model.IsSave ? "Saved" : "Submitted";
+            user.ProfImage = model.ProfImage;
             if (model.DOB != null)
             {
                 user.DOB = new DOBEntity
@@ -134,7 +145,7 @@ public class AccountService : IAccountService
 
             if (!model.IsSave)
             {
-                 _messageService.SendEmail("ganesh.divekar@gmail.com;raomithul@gmail.com", "HealthApp: New application has been submitted for review.", "Name :" + model.FirstName  + " Mob:" + model.Mobile1);
+                _messageService.SendEmail("ganesh.divekar@gmail.com;raomithul@gmail.com", "HealthApp: New application has been submitted for review.", "Name :" + model.FirstName + " Mob:" + model.Mobile1);
             }
         }
     }
@@ -149,7 +160,7 @@ public class AccountService : IAccountService
 
         // hash password if it was entered
         if (!string.IsNullOrEmpty(model.Password))
-            user.PasswordHash =BCrypt.Net.BCrypt.HashPassword(model.Password);
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password);
 
         if (string.IsNullOrEmpty(model.Username))
         {
@@ -175,5 +186,21 @@ public class AccountService : IAccountService
             user.LastName = model.LastName;
         }
         await _userRepository.UpdateAsync(user);
+    }
+
+    public async Task AdminAction(string id, string value, string comments)
+    {
+        var user = await _userRepository.GetByIdAsync(id);
+
+
+
+        // hash password if it was entered
+        if (user != null)
+        {
+            user.Status = value;
+            user.RejectionComments = comments;
+            await _userRepository.UpdateAsync(user);
+        }
+
     }
 }

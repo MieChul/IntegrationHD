@@ -19,6 +19,8 @@ interface Survey {
 })
 export class SurveysComponent implements OnInit {
   surveys: Survey[] = [];
+  doctors:any = ['Dr. Smith', 'Dr. Johnson', 'Dr. Williams', 'Dr. Brown', 'Dr. Jones'];
+  selectedDoctors: string[] = []; 
   filteredSurveys: any[] = [];
   surveySearchText: string = '';
   @ViewChild('shareSurveyModal') shareSurveyModal!: any;
@@ -106,5 +108,13 @@ export class SurveysComponent implements OnInit {
 
   viewResponses(survey: Survey): void {
     this.router.navigate(['/organization/pharma/view-survey-response', survey.id]);  // Redirect to the view-survey-response component with the survey id as a parameter
+  }
+
+  sendSurvey() {
+    if (this.selectedDoctors.length > 0) {
+      alert(`Survey sent to: ${this.selectedDoctors.join(', ')}`);
+    } else {
+      alert('Please select at least one doctor to send the survey.');
+    }
   }
 }

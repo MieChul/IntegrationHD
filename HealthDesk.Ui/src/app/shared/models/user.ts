@@ -10,4 +10,5 @@ export class User {
     role?:string;
     status?:string;
     phone?:string;
+    profImage?:string;
 }

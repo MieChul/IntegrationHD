@@ -9,7 +9,7 @@
       <div class="form-row">
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Role *</mat-label>
-          <input matInput formControlName="role" readonly>
+          <input class="disabled-bold" matInput formControlName="role" readonly>
         </mat-form-field>
   
         <mat-form-field appearance="outline" class="full-width" *ngIf="prefilledMobile">
@@ -29,7 +29,7 @@
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Username</mat-label>
           <input matInput formControlName="username" placeholder="Enter username">
-          <button mat-icon-button matSuffix matTooltip="Bweteen 5 to 10 characters long and only alphanumeric allowed.">
+          <button mat-icon-button matSuffix matTooltip="A lphanumeric bweteen 5 to 15 characters long and symbols (. @) allowed. ">
             <mat-icon>info</mat-icon>
           </button>
           <mat-error *ngIf="getControl('username')?.invalid && getControl('username')?.touched">
@@ -67,20 +67,20 @@
   
       <!-- Submit and Clear Buttons -->
       <div class="button-container">
-        <button mat-raised-button color="primary" type="submit">Sign Up</button>
+        <button mat-raised-button color="primary" type="submit">Register</button>
         <button mat-raised-button color="warn" type="button" (click)="onClear()">Clear</button>
       </div>
     </form>
     <div class="auth-options">
       <p class="signup-text">
-       Already have an account?
+       Already have an account ?
         <a (click)="navigateToLogin()" class="signup-link cursor-pointer">
-          <mat-icon>person_add</mat-icon> Sign In
+          <mat-icon>person_add</mat-icon> <b><u>Login</u></b>
         </a>
       </p>
       <p class="signup-text">
         <a (click)="navigateVerifyPassword()" class="cursor-pointer">
-          <mat-icon>lock_open</mat-icon> Forgot Password?
+          <mat-icon>lock_open</mat-icon> <b><u>Forgot Password ?</u></b>
         </a>
       </p>
     </div>

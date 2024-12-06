@@ -41,7 +41,7 @@ export class RegisterComponent implements OnInit {
       role: [{ value: this.selectedRole, disabled: true }],
       mobile: [{ value: this.prefilledMobile, disabled: true }],
       email: [{ value: this.prefilledEmail, disabled: true }],
-      username: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9]{5,10}$/)]],
+      username: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9.@]{5,15}$/)]],
       password: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9_@.$&*-]{6,}$/)]],
       confirmPassword: ['', Validators.required]
     });
@@ -60,7 +60,7 @@ export class RegisterComponent implements OnInit {
   onSubmit(): void {
     if (this.registerForm.valid && this.isPasswordMatch()) {
       this.loaderService.show();
-      var roleId = getRoleId('physician')
+      var roleId = getRoleId(this.selectedRole)
       // Collect form data
       const userData = {
         username: this.registerForm.get('username')?.value,

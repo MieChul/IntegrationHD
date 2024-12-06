@@ -23,6 +23,8 @@ import { TermsConditionComponent } from './components/terms-condition/terms-cond
 import { SidebarComponent } from './components/side-nav/side-nav.component';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 
 @NgModule({
   declarations: [
@@ -53,7 +55,9 @@ SidebarComponent,
     MatIconModule,
     MatMenuModule,
     MatDividerModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    MatCheckboxModule,
+    NgxMatSelectSearchModule
   ],
   exports: [
     LoaderComponent,
@@ -79,7 +83,9 @@ SidebarComponent,
     MatIconModule,
     MatMenuModule,
     MatDividerModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    MatCheckboxModule,
+    NgxMatSelectSearchModule
   ]
 })
 export class SharedModule { }

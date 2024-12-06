@@ -1,8 +1,8 @@
 namespace HealthDesk.Core.Enum;
 public enum Role
 {
-    Patient = 1,
-    Physician = 2,
+    Physician = 1,
+    Patient = 2,
     Admin = 3,
     Hospital = 4,
     Laboratory = 5,

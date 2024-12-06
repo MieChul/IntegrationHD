@@ -279,7 +279,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       if (footerImage) {
         doc.addImage(footerImage, 'PNG', 10, 260, 190, 30); // Adjust position for footer
       }
-      doc.setFontSize(7);
+      doc.setFontSize(6);
       doc.setFont('calibri');
       doc.setDrawColor(0, 0, 0);  // Set black color
       doc.line(5, headerHeight, 200, headerHeight);  // Separator after header
@@ -310,7 +310,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       theme: 'plain',
       styles: {
         font: 'calibri',
-        fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1, cellPadding: { top: 2, right: 5, bottom: 2, left: 5 }
+        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1, cellPadding: { top: 2, right: 5, bottom: 2, left: 5 }
       },
       columnStyles: {
         0: { cellWidth: 30 },  // Column for 'Patient\'s name', 'Age', 'OPD registration'
@@ -330,7 +330,7 @@ export class GeneratePrescriptionComponent implements OnInit {
     ]) || [['', '', '']];
 
     // Approximate table height
-    var approxHeight = (chiefComplaints.length * 10) + 7;
+    var approxHeight = (chiefComplaints.length * 10) + 6;
     // Check height for Chief Complaints table
     checkAndAddNewPage(approxHeight);
     doc.text('Chief Complaints:', 14, startY);
@@ -347,7 +347,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       startY: startY,
       styles: {
         font: 'calibri',
-        fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
+        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
       }
     });
     startY = (doc as any).autoTable.previous.finalY + 5;
@@ -368,7 +368,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       theme: 'plain',
       styles: {
         font: 'calibri',
-        fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
+        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       body: vitalsInfo
     });
@@ -387,7 +387,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       theme: 'plain',
       styles: {
         font: 'calibri',
-        fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
+        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       columnStyles: {
         0: { cellWidth: 30 },
@@ -404,7 +404,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       system.name,
       system.findings
     ]) || [['', '', '']];
-    var approxHt = (systemicData.length * 10) + 7;
+    var approxHt = (systemicData.length * 10) + 6;
     checkAndAddNewPage(approxHt);
     doc.text('Physical Examination:', 14, startY);
     startY += 2;
@@ -419,7 +419,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       },
       styles: {
         font: 'calibri',
-        fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
+        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       startY: startY
     });
@@ -432,7 +432,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       fi.name,
       fi.value
     ]) || [['', '', '']];
-    var approxHt = (investigations.length * 10) + 7;
+    var approxHt = (investigations.length * 10) + 6;
     checkAndAddNewPage(approxHt);
     doc.text('Investigations:', 14, startY);
     startY += 2;
@@ -447,7 +447,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       },
       styles: {
         font: 'calibri',
-        fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
+        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       startY: startY
     });
@@ -464,7 +464,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       body: diagnosisData,
       styles: {
         font: 'calibri',
-        fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
+        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       startY: startY
     });
@@ -480,7 +480,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       medication.instruction
     ]) || [['', '', '', '', '', '', '', '']];
 
-    var approx = (rxData.length * 10) + 7;
+    var approx = (rxData.length * 10) + 6;
     checkAndAddNewPage(approx);
     doc.text('Prescription (Rx):', 14, startY);
     startY += 2;
@@ -495,7 +495,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       body: rxData,
       styles: {
         font: 'calibri',
-        fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
+        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       startY: startY
     });
@@ -518,7 +518,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       },
       styles: {
         font: 'calibri',
-        fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
+        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
       }
     });
     startY = (doc as any).autoTable.previous.finalY + 5;
@@ -531,7 +531,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       theme: 'plain',
       styles: {
         font: 'calibri',
-        fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
+        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       columnStyles: {
         0: { cellWidth: 90 }, // Signature (larger for space)

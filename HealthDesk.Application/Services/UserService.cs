@@ -1,4 +1,5 @@
-﻿using HealthDesk.Core;
+﻿using System.Net.Mail;
+using HealthDesk.Core;
 using HealthDesk.Core.Enum;
 
 namespace HealthDesk.Application;
@@ -16,7 +17,17 @@ public class UserService : IUserService
 
     public async Task<string?> GetUsernameAsync(string contact)
     {
-        var isEmail = new System.Net.Mail.MailAddress(contact)?.Address == contact;
+        var isEmail = false;
+
+        try
+        {
+            var mailAddress = new MailAddress(contact);
+            isEmail = mailAddress.Address == contact;
+        }
+        catch
+        {
+            isEmail = false;
+        }
         var user = await _userRepository.GetByEmailOrMobileAsync(contact, isEmail);
 
         return user?.Username;
@@ -35,7 +46,7 @@ public class UserService : IUserService
 
         var user = new User();
         GenericMapper.Map<UserRegistrationDto, User>(userDto, user);
-         user.Roles = new List<Role> { (Role)userDto.RoleId};
+        user.Roles = new List<Role> { (Role)userDto.RoleId };
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userDto.Password);
         await _userRepository.AddAsync(user);
         return "User registered successfully";

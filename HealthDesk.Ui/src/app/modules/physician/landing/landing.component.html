@@ -1,11 +1,10 @@
 <div class="container">
-    <div *ngIf="!userData.status" class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
-      <strong>Complete Your Profile!</strong> Please complete your profile and submit the necessary documents for verification to use the app without any hassle.
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
     <h1 class="animated-heading">
       Welocme!! How can I help you today?
     </h1>
+    <div *ngIf="userData.status !== 'Approved'" class=" blink-message alert bg-danger fade show mt-3" role="alert">
+      <strong>Complete Your Profile!</strong> To access HealthDesk utilities, please complete your profile. Clicking any button will redirect you to the profile page.
+    </div>
     <div class="row justify-content-center mb-2">
       <div class="col card small">
         <div class="h-100 fade-in">
@@ -13,7 +12,8 @@
           <div class="card-body">
             <h5 class="card-title">Design Prescription Format</h5>
             <p class="card-text">Design your own prescription template.</p>
-            <a *ngIf="!userData.status" href="account/" class="btn btn-primary">Go to Design Prescription</a>
+            <a  *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Design Prescription</a>
+            <a  *ngIf="userData.status === 'Approved'" href="physician/design-prescription" class="btn btn-primary">Go to Design Prescription</a>
           </div>
         </div>
       </div>
@@ -23,7 +23,8 @@
           <div class="card-body">
             <h5 class="card-title">Patient Management</h5>
             <p class="card-text">View and update patient records.</p>
-            <a  *ngIf="!userData.status" href="account/" class="btn btn-primary">Go to Patient Record</a>
+            <a  *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Patient Record</a>
+            <a  *ngIf="userData.status === 'Approved'" href="physician/patient-record" class="btn btn-primary">Go to Patient Record</a>
           </div>
         </div>
       </div>
@@ -33,7 +34,8 @@
           <div class="card-body">
             <h5 class="card-title">Manage Appointments</h5>
             <p class="card-text">Accept/Reject and manage appointment requests.</p>
-            <a *ngIf="!userData.status" href="account/" class="btn btn-primary">Go to Appointments</a>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Appointments</a>
+            <a  *ngIf="userData.status === 'Approved'" href="physician/appointments" class="btn btn-primary">Go to Appointments</a>
           </div>
         </div>
       </div>
@@ -45,7 +47,8 @@
           <div class="card-body">
             <h5 class="card-title">Medical Journal</h5>
             <p class="card-text">Access and update medical journals.</p>
-            <a *ngIf="!userData.status" href="account/" class="btn btn-primary">Go to Medical Journal</a>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Medical Journal</a>
+            <a  *ngIf="userData.status === 'Approved'" href="physician/medical-journal" class="btn btn-primary">Go to Medical Journal</a>
           </div>
         </div>
       </div>
@@ -55,7 +58,8 @@
           <div class="card-body">
             <h5 class="card-title">Medical Cases</h5>
             <p class="card-text">Review and analyze medical cases.</p>
-            <a *ngIf="!userData.status" href="account/" class="btn btn-primary">Go to Medical Cases</a>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Medical Cases</a>
+            <a  *ngIf="userData.status === 'Approved'" href="physician/medical-cases" class="btn btn-primary">Go to Medical Cases</a>
           </div>
         </div>
       </div>
@@ -65,7 +69,8 @@
           <div class="card-body">
             <h5 class="card-title">Survey</h5>
             <p class="card-text">Create and manage surveys.</p>
-            <a *ngIf="!userData.status" href="account/" class="btn btn-primary">Go to Survey</a>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Survey</a>
+            <a  *ngIf="userData.status === 'Approved'" href="physician/survey" class="btn btn-primary">Go to Survey</a>
           </div>
         </div>
       </div>

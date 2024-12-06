@@ -1,4 +1,5 @@
 using HealthDesk.Application;
+using HealthDesk.Application.DTO;
 using HealthDesk.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace HealthDesk.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class AccountController : ControllerBase
 {
     private IAccountService _accountService;
@@ -18,9 +18,9 @@ IAccountService accountService
         _accountService = accountService;
     }
     [HttpGet("{id}")]
-    public IActionResult GetById(string id)
+    public async Task<IActionResult> GetById(string id)
     {
-        var user = _accountService.GetById(id);
+        var user = await _accountService.GetById(id);
         return Ok(user);
     }
 
@@ -42,7 +42,7 @@ IAccountService accountService
     {
         string extension = Path.GetExtension(file.FileName);
         var filename = id + '_' + propName + extension;
-        var tempFilename = $@"..\HealthApp.UI\src\assets\documents\{filename}";
+        var tempFilename = $@"..\HealthDesk.UI\src\assets\documents\{filename}";
 
         using (var fileStream = new FileStream(tempFilename, FileMode.Create))
         {
@@ -72,6 +72,20 @@ IAccountService accountService
     public IActionResult RegisterPatientInfo(string id, RegisterPatientInfoDto model)
     {
         _accountService.RegisterPatientInfo(id, model);
+        return Ok(new { message = "User updated successfully" });
+    }
+
+    [HttpGet("users")]
+    public async Task<IActionResult> GetAll()
+    {
+        var users = await _accountService.GetAll();
+        return Ok(users);
+    }
+
+    [HttpPost("adminAction/{id}")]
+    public async Task<IActionResult> AdminAction(string id, AdminActionDto model)
+    {
+        await _accountService.AdminAction(id, model.Status, model.Comments);
         return Ok(new { message = "User updated successfully" });
     }
 }

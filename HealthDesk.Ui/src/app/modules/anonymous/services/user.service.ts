@@ -20,7 +20,7 @@ export class UserService {
     return this.http.post(`${this.apiUrl}/reset-password`, { contact, newPassword, isEmail });
   }
 
-  getUsername(contact: string, isEmail: boolean): Observable<any> {
-    return this.http.post(`${this.apiUrl}/get-username`, { contact, isEmail });
-  }
+  getUsername(contact: string) {
+    return this.http.get(`${this.apiUrl}/get-username/${contact}`, { withCredentials: true });
+}
 }

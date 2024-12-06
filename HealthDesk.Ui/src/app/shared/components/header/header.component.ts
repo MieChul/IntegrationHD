@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-header',
@@ -9,10 +10,12 @@ import { AuthService } from '../../services/auth.service';
 export class HeaderComponent implements OnInit {
   userData: any = {};
   isMenuOpen : boolean = false;
-  constructor(private authService: AuthService) { }
+  profImg : string = '/assets/defaultProfile.jpg'
+  constructor(public router: Router, private authService: AuthService) { }
 
   ngOnInit(): void {
     this.userData = this.authService.userValue;
+    this.profImg =this.userData.profImage || '/assets/defaultProfile.jpg'
     const darkMode = localStorage.getItem('darkMode') === 'true';
     if (darkMode) {
       document.body.classList.add('dark-mode');

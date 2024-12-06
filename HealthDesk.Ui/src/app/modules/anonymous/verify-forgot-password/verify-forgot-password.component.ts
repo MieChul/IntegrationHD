@@ -69,7 +69,7 @@ export class VerifyForgotPasswordComponent implements OnInit, OnDestroy {
       else
         contactInfo = this.verifyForm.get('email')?.value;
 
-        this.userService.getUsername(contactInfo, isEmail).pipe(
+        this.userService.getUsername(contactInfo).pipe(
           switchMap((response) => {
             // The first API call succeeded, proceed with the second call
             return this.otpService.sendOtp(contactInfo, isEmail);
@@ -164,5 +164,26 @@ export class VerifyForgotPasswordComponent implements OnInit, OnDestroy {
 
   navigateToSignup() {
     this.router.navigate(['/role-selection']);
+  }
+
+  
+  moveToNext(event: KeyboardEvent, index: number) {
+    const target = event.target as HTMLInputElement;
+  
+    // Move focus to the next box if a number is entered
+    if (event.key >= '0' && event.key <= '9') {
+      const nextInput = target.nextElementSibling as HTMLInputElement;
+      if (nextInput) {
+        nextInput.focus();
+      }
+    }
+  
+    // Handle Backspace: Move focus to the previous box
+    if (event.key === 'Backspace') {
+      const prevInput = target.previousElementSibling as HTMLInputElement;
+      if (prevInput) {
+        prevInput.focus();
+      }
+    }
   }
 }

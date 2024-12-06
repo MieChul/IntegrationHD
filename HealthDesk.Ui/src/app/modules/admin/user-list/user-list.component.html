@@ -1,0 +1,63 @@
+<div class="container-fluid bg-transparent userInfo">
+    <div class="row">
+        <div class="col-lg-2"> 
+            <div class="card">
+                <div class="card-body">
+                    <ul class="list-group">
+                        <li class="statusLink list-group-item d-flex justify-content-between align-items-center bg-primary cursor-pointer" (click)="filterRecords('All')">
+                          All
+                          <span class="badge bg-primary rounded-pill">{{countAll}}</span>
+                        </li>
+                        <li class="statusLink list-group-item d-flex justify-content-between align-items-center bg-warning cursor-pointer" (click)="filterRecords('Submitted')">
+                          Submitted
+                          <span class="badge bg-primary rounded-pill">{{countSubmitted}}</span>
+                        </li>
+                        <li class="statusLink list-group-item d-flex justify-content-between align-items-center bg-success cursor-pointer" (click)="filterRecords('Approved')">
+                        Approved
+                          <span class="badge bg-primary rounded-pill">{{countApproved}}</span>
+                        </li>
+                        <li class="statusLink list-group-item d-flex justify-content-between align-items-center bg-danger cursor-pointer" (click)="filterRecords('Rejected')">
+                            Rejected
+                              <span class="badge bg-primary rounded-pill">{{countRejected}}</span>
+                            </li>
+                      </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-10"> 
+            <div class="card">
+                <div class="card-body">
+                    <table class="table table-hover table-responsive">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">User Name</th>
+                                <th scope="col">First Name</th>
+                                <th scope="col">Last Name</th>
+                                <th scope="col">Phone</th>
+                                <th scope="col">Role</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr scope="row" *ngFor="let user of filteredUsers; index as i" class="cursor-pointer" (click)="user.status=='Submitted' && userClicked(user.id)">
+                                <td>{{i+1}}</td>
+                                <td>{{user.username}}</td>
+                                <td>{{user.role == 'patient' || user.role == 'physician' ? user.firstName: user.orgName}}</td>
+                                <td>{{user.lastName}}</td>
+                                <td>{{user.phone}}</td>
+                                <td>{{user.role  | titlecase}}</td>
+                                <td ><span class="listStatus" [ngClass]="[user.status=='Submitted' ? 'bg-warning' : user.status=='Approved' ? 'bg-success' : user.status=='Rejected' ? 'bg-danger' : '']">{{user.status}}</span></td>
+                            </tr>
+                            <tr *ngIf="!users">
+                                <td colspan="4" class="text-center">
+                                    <span class="spinner-border spinner-border-lg align-center"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

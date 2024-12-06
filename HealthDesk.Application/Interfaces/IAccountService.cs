@@ -7,4 +7,6 @@ public interface IAccountService
     Task Update(string id, UpdateRequestDto model);
     Task RegisterUserInfo(string id, UpdateUserInfoRequestDto model);
     void RegisterPatientInfo(string id, RegisterPatientInfoDto model);
+     Task<List<User>> GetAll();
+     Task AdminAction(string id, string value, string comments);
 }

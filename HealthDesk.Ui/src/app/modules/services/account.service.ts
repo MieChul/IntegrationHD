@@ -22,32 +22,26 @@ export class AccountService {
     }
 
     getById(id: string) {
-        return this.http.get<User>(`${environment.apiUrl}/users/${id}`);
+        return this.http.get<User>(`${this.apiUrl}/${id}`, { withCredentials: true });
     }
-
+    
     registerUserInfo(id: string, params: any) {
-        return this.http.post(`${environment.apiUrl}/users/registerUserInfo/${id}`, params)
-            .pipe(map(x => {
-                return x;
-            }));
+        return this.http.post(`${this.apiUrl}/registerUserInfo/${id}`, params, { withCredentials: true });
     }
+    
     uploadFile(model: any) {
-        return this.http.post(`${environment.apiUrl}/users/uploadFile/`, model)
-            .pipe(map(x => {
-                return x;
-            }));
-    }
-    registerPatientInfo(id: string, params: any) {
-        return this.http.post(`${environment.apiUrl}/users/registerPatientInfo/${id}`, params)
-            .pipe(map(x => {
-                return x;
-            }));
+        return this.http.post(`${this.apiUrl}/uploadFile`, model, { withCredentials: true });
     }
 
-    savePhysicianInfo(id: string, params: any) {
-        return this.http.post(`${environment.apiUrl}/physician/savePhysicianLetter/${id}`, params)
-            .pipe(map(x => {
-                return x;
-            }));
+    getAll() {
+        return this.http.get<User[]>(`${this.apiUrl}/users`);
     }
+
+    adminAction(id: string, value:string, comments:string){
+        return this.http.post(`${this.apiUrl}/adminAction/${id}`, {status : value, comments: comments})
+        .pipe(map(x => {
+            return x;
+        }));
+    }
+    
 }

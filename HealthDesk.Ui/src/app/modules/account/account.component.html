@@ -1,11 +1,12 @@
-<div class="app-container">
-    
-    <div class="pos-f-t">
-        <nav class="navbar navbar-dark bg-nav">
-         
-        </nav>
-      </div>
-      <ng-template #popContent> </ng-template>
-        <router-outlet>
-        </router-outlet>
-    </div>
+<div class="d-flex app-container" style="height: 100vh;">
+
+  <div class="flex-grow-1 d-flex flex-column">
+    <app-header></app-header>
+
+    <main class="flex-grow-1 p-4 overflow-auto">
+      <router-outlet></router-outlet>
+    </main>
+
+    <app-footer></app-footer>
+  </div>
+</div>

@@ -34,7 +34,8 @@ public class AuthService : IAuthService
             Id = user.Id,
             Status = user.Status,
             Username = user.Username,
-            Roles = user.Roles
+            Roles = user.Roles,
+            ProfImage = user.ProfImage
         };
 
         return userDto; // Return user instead of token

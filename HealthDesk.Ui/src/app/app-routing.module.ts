@@ -16,7 +16,7 @@ const routes: Routes = [
     { path: '', loadChildren: anonymousModule },
     { path: 'about-us', component: AboutUsComponent },
     { path: 'contact-us', component: ContactUsComponent },
-    { path: 'admin', loadChildren:adminModule, canActivate: [RoleGuard], data: { roles: ['Admin'] } },
+    { path: 'admin', loadChildren:adminModule },
     { path: 'account', loadChildren:accountModule} ,
 ];
 

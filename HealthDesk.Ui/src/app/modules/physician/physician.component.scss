@@ -582,3 +582,21 @@ transition: transform 0.3s, background-color 0.3s;
 background-color: #d82c2c;
 transform: scale(1.05);
 }
+
+.blink-message {
+  color: white; /* Text color white */
+  animation: blink 1s infinite; /* Apply blinking animation */
+  padding: 10px; /* Optional: padding for better spacing */
+  text-align: center; /* Optional: centers the text */
+  border-radius: 5px; /* Optional: rounded corners */
+}
+
+/* Keyframes for blinking effect */
+@keyframes blink {
+  0%, 100% {
+    opacity: 1; /* Fully visible */
+  }
+  50% {
+    opacity: 0; /* Invisible */
+  }
+}

@@ -415,5 +415,12 @@ button.login-button {
   background-size: 200% 200%; // For smooth gradient animation
 }
 
+.disabled-bold {
+  font-weight: bold; /* Makes the text bold */
+  color: #333; /* Adjust color for better readability */
+  background-color: #f9f9f9; /* Light background to differentiate */
+  border: 1px solid #ccc; /* Optional: adds a border for better visibility */
+  pointer-events: none; /* Prevents interaction for disabled fields */
+}
 
 

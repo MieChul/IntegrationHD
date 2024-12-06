@@ -58,9 +58,8 @@
   </div>
   
   <!-- Share Survey Modal -->
-  <div class="modal fade" id="shareSurveyModal" tabindex="-1" aria-labelledby="shareSurveyModalLabel" aria-hidden="true"
-    #shareSurveyModal>
-    <div class="modal-dialog modal-dialog-centered">
+  <div class="modal fade" id="shareSurveyModal" tabindex="-1" aria-labelledby="shareSurveyModalLabel" aria-hidden="true" #shareSurveyModal>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="shareSurveyModalLabel">Share Survey</h5>
@@ -73,7 +72,23 @@
             <button class="btn btn-outline-secondary" type="button" (click)="copyLink()">Copy</button>
           </div>
           <p *ngIf="isLinkCopied" class="text-success">Link copied to clipboard!</p>
-          <div class="d-flex justify-content-end">
+  
+          <div class="mt-4">
+            <label for="doctorSelection" class="form-label">Select Doctors to Share:</label>
+            <mat-form-field appearance="fill" class="w-100">
+              <mat-label>Select Doctors</mat-label>
+              <mat-select [(ngModel)]="selectedDoctors" multiple panelClass="custom-dropdown-panel">
+                <mat-option *ngFor="let doctor of doctors" [value]="doctor">
+                  <mat-checkbox [checked]="selectedDoctors.includes(doctor)">
+                    {{ doctor }}
+                  </mat-checkbox>
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+  
+          <div class="d-flex justify-content-end mt-4">
+            <button type="button" class="btn btn-primary me-2" (click)="sendSurvey()">Send</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
         </div>

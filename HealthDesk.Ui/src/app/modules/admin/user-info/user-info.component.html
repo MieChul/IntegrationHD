@@ -1,0 +1,527 @@
+<div class="container-fluid bg-transparent userInfo">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="card mb-4 text-center">
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <span>Profile Image</span>
+                        <div>
+                            <img alt="" onerror="this.onerror=null; this.src='/assets/defaultProfile.jpg'"
+                                class="rounded-circle img-fluid " id="profImg">
+                        </div>
+                        <div class="form-floating" *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
+                            <input type="text" class="form-control" id="floatingInput" placeholder="Display Name"
+                                autocomplete="off" value="{{user.displayName}}" [readOnly]="true">
+                            <label for="floatingInput" class="form-label-floating">Display Name</label>
+                        </div>
+                    </div>
+                    <div class="row mb-3" *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
+                        <div class=" col-sm-9">
+                            <div class="input-group">
+                                <input class="form-control dobbox" autocomplete="off" value="{{ user.birthDate | date: 'dd/MM/yyyy' }}"
+                                    [readOnly]="true">
+                            </div>
+                        </div>
+                        <div class="form-floating col-sm-3">
+                            <input readonly class="form-control" [(ngModel)]="age" [ngModelOptions]="{standalone: true}"
+                                id="floatingInput" placeholder="Age" autocomplete="off" value="0">
+                            <label for="floatingInput" class="form-label-floating">Age</label>
+                        </div>
+
+                    </div>
+                    <div class="row mb-3" *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
+                        <div class="btn-group flex-wrap">
+                            <input type="radio" class="btn-check " [(ngModel)]="gender" id="option1" value="Male"
+                                autocomplete="off" [disabled]="true" />
+                            <label class="btn btn-outline-secondary" for="option1" data-mdb-ripple-init><i
+                                    class="bi bi-gender-male"></i>Male</label>
+
+                            <input type="radio" class="btn-check" [(ngModel)]="gender" id="option2" value="Female"
+                                autocomplete="off" [disabled]="true" />
+                            <label class="btn btn-outline-secondary" for="option2" data-mdb-ripple-init><i
+                                    class="bi bi-gender-female"></i>Female</label>
+
+                            <input type="radio" class="btn-check" [(ngModel)]="gender" id="option3" value="Unspicified"
+                                autocomplete="off" [disabled]="true" />
+                            <label class="btn btn-outline-secondary" for="option3" data-mdb-ripple-init><i
+                                    class="bi bi-gender-ambiguous"></i>Unspicified</label>
+                        </div>
+                    </div>
+                    <div class="row" *ngIf="this.user.role == 'patient'">
+                        <div class="form-floating col-sm-6">
+                            <input class="form-control" id="floatingInput" placeholder="Blood Group" autocomplete="off"
+                                value="{{user.bloodGroup}}" [readOnly]="true">
+                            <label for="floatingInput" class="form-label-floating">Blood Group</label>
+                        </div>
+                        <div class="form-floating col-sm-6">
+                            <input class="form-control" id="floatingInput" placeholder="Blood Group" autocomplete="off"
+                                value="{{user.relationId}}" [readOnly]="true">
+                            <label for="floatingInput" class="form-label-floating">Relative Unique Id</label>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-9">
+            <ul class="nav nav-tabs">
+                <li class="nav-item " *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
+                    <div class="nav-link" id="p_info" #p_info aria-current="page" (click)="changeTab('p_info',p_info)">
+                        <i class="bi bi-person"></i>Personal Information
+                    </div>
+                </li>
+                <li class="nav-item" *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
+                    <div class="nav-link" id="addr_info" #addr_info (click)="changeTab('addr_info', addr_info )"><i
+                            class="bi bi-building"></i>Address Information</div>
+                </li>
+                <li *ngIf="this.user.role == 'physician'" class="nav-item">
+                    <div class="nav-link" id="q_info" #q_info (click)="changeTab('q_info',q_info)"><i
+                            class="bi bi-filetype-doc"></i>Qualification
+                        Documents</div>
+                </li>
+                <li class="nav-item" *ngIf="this.user.role != 'patient'">
+                    <div class="nav-link" id="hosp_info" #hosp_info (click)="changeTab('hosp_info',hosp_info)"><i
+                            class="bi bi-hospital"></i>{{this.user.role === 'physician' ? 'Hospital/Clinic' :
+                        'BasicInformation'}}</div>
+                </li>
+                <li class="nav-item" *ngIf="this.user.role != 'physician' &&  this.user.role != 'patient' ">
+                    <div class="nav-link" id="auth_per" #auth_per (click)="changeTab('auth_per',auth_per)"><i
+                            class="bi bi-person"></i>Authorized Person Information</div>
+                </li>
+            </ul>
+            <div class="row">
+                <div *ngIf="tab ==='p_info'">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p class="mb-4"><span class="text-primary font-italic me-1">Personal Information</span>
+                            </p>
+                            <div class="row">
+                                <div class="form-floating mb-3 col-sm-4">
+                                    <input type="text" class="form-control" id="firtNames" placeholder="First Name"
+                                        autocomplete="off" value="{{user.firstName}}" [readOnly]="true">
+                                    <label for="firtsNames" class="form-label-floating">First Name</label>
+                                </div>
+                                <div class="form-floating mb-3 col-sm-4">
+                                    <input type="text" class="form-control" id="middleName" placeholder="Middle Name"
+                                        autocomplete="off" value="{{user.middleName}}" [readOnly]="true">
+                                    <label for="middleName" class="form-label-floating">Middle Name</label>
+                                </div>
+                                <div class="form-floating mb-3 col-sm-4">
+                                    <input type="text" class="form-control" id="lastName" placeholder="Last Name"
+                                        autocomplete="off" value="{{user.lastName}}" [readOnly]="true">
+
+                                    <label for="lastName" class="form-label-floating">Last Name<i
+                                            class="danger">*</i></label>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="form-floating mb-3 col-sm-6">
+                                    <input type="text" class="form-control" id="mobile" placeholder="Mobile"
+                                        value="{{user.mobile}}" [readOnly]="true" autocomplete="off">
+                                    <label for="mobile" class="form-label-floating">Mobile<i
+                                            class="danger">*</i></label>
+                                </div>
+
+                                <div class="form-floating mb-3 col-sm-6">
+                                    <input type="text" class="form-control" id="mobile1" placeholder="Mobile 1"
+                                        autocomplete="off" value="{{user.mobile2}}" [readOnly]="true">
+                                    <label for="mobile1" class="form-label-floating">Mobile 1</label>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="form-floating mb-3 col-sm-6">
+                                    <input type="text" class="form-control" id="email1" placeholder="Email"
+                                        value="{{user.email}}" autocomplete="off" [readOnly]="true">
+
+                                    <label for="mobile" class="form-label-floating">Email</label>
+                                </div>
+
+                                <div class="form-floating mb-3 col-sm-6">
+                                    <input type="text" class="form-control" id="email1" placeholder="Email2"
+                                        autocomplete="off" value="{{user.email2}}" [readOnly]="true">
+
+                                    <label for="email1" class="form-label-floating">Email 1</label>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="form-floating mb-3 col-sm-6">
+                                    <input type="text" class="form-control" id="aadhar" placeholder="Aadhar"
+                                        autocomplete="off" value="{{user.aadhar}}" [readOnly]="true">
+
+                                    <label for="aadhar" class="form-label-floating">Aadhar</label>
+                                </div>
+
+                                <div class="form-floating mb-3 col-sm-6">
+                                    <input type="text" class="form-control" id="Pan" placeholder="Pan"
+                                        autocomplete="off" value="{{user.pan}}" [readOnly]="true">
+
+                                    <label for="Pan" class="form-label-floating">Pan</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="tab =='addr_info'">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p class="mb-4"><span class="text-primary font-italic me-1">Address Information</span>
+                            </p>
+                            <div class="row">
+                                <div class="form-floating mb-3 col-sm-6">
+                                    <input type="text" class="form-control" id="address1"
+                                        placeholder="Houe/ Flat Number" autocomplete="off" value="{{user.address1}}"
+                                        [readOnly]="true">
+
+                                    <label for="address1" class="form-label-floating">Houe/ Flat Number<i
+                                            class="danger">*</i></label>
+                                </div>
+
+                                <div class="form-floating mb-3 col-sm-6">
+                                    <input type="text" class="form-control" id="address2"
+                                        placeholder="Building / Society" autocomplete="off" value="{{user.address2}}"
+                                        [readOnly]="true">
+
+                                    <label for="address2" class="form-label-floating">Building / Society<i
+                                            class="danger">*</i></label>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="form-floating mb-3 ">
+                                    <textarea type="text" class="form-control" id="area" placeholder="Area"
+                                        autocomplete="off" value="{{user.area}}" [readOnly]="true"></textarea>
+
+                                    <label for="area" class="form-label-floating">Area/ Locality<i
+                                            class="danger">*</i></label>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="text" class="form-control" id="city" autocomplete="off"
+                                        value="{{user.city}}" [readOnly]="true">
+                                </div>
+                                <div class="col">
+                                    <input type="text" class="form-control" id="city" autocomplete="off"
+                                        value="{{user.state}}" [readOnly]="true">
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="form-floating mb-3 col-sm-6">
+                                    <input type="text" class="form-control" id="pincode" placeholder="Pin Code"
+                                        autocomplete="off" value="{{user.pincode}}" [readOnly]="true">
+
+                                    <label for="pincode" class="form-label-floating">Pin Code<i
+                                            class="danger">*</i></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="tab =='q_info'">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p class="mb-4"><span class="text-primary font-italic me-1">Qualification
+                                    Documents</span>
+                            </p>
+                            <div class="row mb-1">
+                                <span class="text-success font-italic mb-2">Graduation<i class="danger">*</i></span>
+                                <div class="form-floating mb-3 col-sm-4">
+                                    <input type="text" class="form-control" id="aadhar" placeholder="Aadhar"
+                                        autocomplete="off" value="{{user.graduation.year}}" [readOnly]="true">
+                                    <label for="aadhar" class="form-label-floating">Year Of passing</label>
+                                </div>
+
+                                <div class="form-floating mb-3 col-sm-4">
+                                    <input type="text" class="form-control" id="Pan" placeholder="Pan"
+                                        autocomplete="off" value="{{user.graduation.institute}}" [readOnly]="true">
+                                    <label for="Pan" class="form-label-floating">Name Of Institute</label>
+                                </div>
+                                <div class="form-floating mb-3 col-sm-4">
+                                    <div *ngIf="!user.graduation.document">Document Not Submitted</div>
+                                    <button class="btn btn-primary" (click)="view(user.graduation.document)">
+                                        View</button>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <span class="text-success font-italic mb-2">Post Graduation</span>
+                                <div class="form-floating col-sm-4">
+                                    <input type="text" class="form-control" id="aadhar" placeholder="Aadhar"
+                                        autocomplete="off" value="{{user.postGraduation.year}}" [readOnly]="true">
+                                    <label for="aadhar" class="form-label-floating">Year Of passing</label>
+                                </div>
+
+                                <div class="form-floating col-sm-4">
+                                    <input type="text" class="form-control" id="Pan" placeholder="Pan"
+                                        autocomplete="off" value="{{user.postGraduation.institute}}" [readOnly]="true">
+                                    <label for="Pan" class="form-label-floating">Name Of Institute</label>
+                                </div>
+                                <div class="form-floating col-sm-4">
+                                    <div class="form-floating mb-3 col-sm-4">
+                                        <div *ngIf="!user.graduation.document">Document Not Submitted</div>
+                                        <button class="btn btn-primary" (click)="view(user.postGraduation.document)">
+                                            View</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <span class="text-success font-italic mb-2">Super Specialization</span>
+                                <div class="form-floating col-sm-4">
+                                    <input type="text" class="form-control" id="aadhar" placeholder="Aadhar"
+                                        autocomplete="off" value="{{user.superSpecialization.year}}" [readOnly]="true">
+                                    <label for="aadhar" class="form-label-floating">Year Of passing</label>
+                                </div>
+
+                                <div class="form-floating col-sm-4">
+                                    <input type="text" class="form-control" id="Pan" placeholder="Pan"
+                                        autocomplete="off" value="{{user.superSpecialization.institute}}"
+                                        [readOnly]="true">
+                                    <label for="Pan" class="form-label-floating">Name Of Institute</label>
+                                </div>
+                                <div class="form-floating col-sm-4">
+                                    <div class="form-floating mb-3 col-sm-4">
+                                        <div *ngIf="!user.graduation.document">Document Not Submitted</div>
+                                        <button class="btn btn-primary"
+                                            (click)="view(user.superSpecialization.document)"> View</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <span class="text-success font-italic mb-2">Additional Qualifications</span>
+                                <div class="form-floating col-sm-4">
+                                    <input type="text" class="form-control" id="aadhar" placeholder="Aadhar"
+                                        autocomplete="off" value="{{user.additionalQualification.year}}"
+                                        [readOnly]="true">
+                                    <label for="aadhar" class="form-label-floating">Year Of passing</label>
+                                </div>
+
+                                <div class="form-floating col-sm-4">
+                                    <input type="text" class="form-control" id="Pan" placeholder="Pan"
+                                        autocomplete="off" value="{{user.additionalQualification.institute}}"
+                                        [readOnly]="true">
+                                    <label for="Pan" class="form-label-floating">Name Of Institute</label>
+                                </div>
+                                <div class="form-floating col-sm-4">
+                                    <div class="form-floating mb-3 col-sm-4">
+                                        <div *ngIf="!user.graduation.document">Document Not Submitted</div>
+                                        <button class="btn btn-primary"
+                                            (click)="view(user.additionalQualification.document)"> View</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <span class="text-success font-italic mb-2">Medical Registration</span>
+                                <div class="form-floating col-sm-4">
+                                    <input type="text" class="form-control" id="aadhar" placeholder="Aadhar"
+                                        autocomplete="off" value="{{user.medicalRegistration.certificateNumber}}"
+                                        [readOnly]="true">
+                                    <label for="aadhar" class="form-label-floating">Certification Number</label>
+                                </div>
+                                <div class="form-floating col-sm-4">
+                                    <input type="text" class="form-control" id="Pan" placeholder="Pan"
+                                        autocomplete="off" value="{{user.medicalRegistration.councilName}}"
+                                        [readOnly]="true">
+                                    <label for="Pan" class="form-label-floating">Council Name</label>
+                                </div>
+                                <div class="form-floating col-sm-4">
+                                    <div class="form-floating mb-3 col-sm-4">
+                                        <div *ngIf="!user.medicalRegistration.document" class="danger">Document Not
+                                            Submitted</div>
+                                        <button *ngIf="user.medicalRegistration.document" class="btn btn-primary"
+                                            (click)="view(user.medicalRegistration.document)"> View</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="tab =='hosp_info'">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <p class="mb-4" *ngIf="user.role=='physician'"><span
+                                class="text-primary font-italic me-1">Hospital/Clinic Information</span>
+                        </p>
+                        <p class="mb-4" *ngIf="user.role!='physician' && user.role!='patient'"><span
+                                class="text-primary font-italic me-1">Basic Information</span>
+                        </p>
+                        <div class="row">
+                            <div *ngIf="user.role=='physician'" class="form-floating mb-3 col-sm-6">
+                                <input type="text" class="form-control" id="email" placeholder="Hospital Clinic Name"
+                                    autocomplete="off" value="{{user.clinicName}}" [readOnly]="true">
+                                <label for="mobile" class="form-label-floating">Hospital Clinic Name<i
+                                        class="danger">*</i></label>
+                            </div>
+                            <div *ngIf="user.role!='physician'" class="form-floating mb-3 col-sm-6">
+                                <input type="text" class="form-control" id="email" placeholder="Organization Name"
+                                    autocomplete="off" value="{{user.orgName}}" [readOnly]="true">
+                                <label for="mobile" class="form-label-floating">Organization Name<i
+                                        class="danger">*</i></label>
+                            </div>
+                            <div *ngIf="user.role!='physician'" class="form-floating mb-3 col-sm-6">
+                                <input type="text" class="form-control" id="city" autocomplete="off"
+                                    value="{{user.role | titlecase}}" [readOnly]="true">
+                                <label for="mobile" class="form-label-floating">Organization Type<i
+                                        class="danger">*</i></label>
+                            </div>
+                            <div *ngIf="user.role=='physician'" class="cursor-pointer col-sm-6">
+                                <label>Hospital/Clinic Image</label>
+                                <img alt="avatar" class="rounded-circle-hosp img-fluid profileImage" id="hospImg">
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="form-floating mb-3 col-sm-6">
+                                <input type="text" class="form-control" id="email" placeholder="Email"
+                                    autocomplete="off" value="{{user.clinicAddress1}}" [readOnly]="true">
+                                <label for="mobile" class="form-label-floating">Houe/ Flat Number</label>
+                            </div>
+
+                            <div class="form-floating mb-3 col-sm-6">
+                                <input type="text" class="form-control" id="email1" placeholder="Email; 1"
+                                    autocomplete="off" value="{{user.clinicAddress2}}" [readOnly]="true">
+                                <label for="lastName" class="form-label-floating">Building / Society</label>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="form-floating mb-3 ">
+                                <textarea type="text" class="form-control" id="area" placeholder="Area"
+                                    autocomplete="off" value="{{user.clinicArea}}" [readOnly]="true"></textarea>
+                                <label for="mobile" class="form-label-floating">Area/Locality<i
+                                        class="danger">*</i></label>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col">
+                                <input type="text" class="form-control" id="city" autocomplete="off"
+                                    value="{{user.clinicCity}}" [readOnly]="true">
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control" id="city" autocomplete="off"
+                                    value="{{user.clinicState}}" [readOnly]="true">
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="form-floating mb-3 col-sm-6">
+                                <input type="text" class="form-control" id="email" placeholder="Pin Code"
+                                    autocomplete="off" value="{{user.clinicPincode}}" [readOnly]="true">
+                                <label for="mobile" class="form-label-floating">Pin Code<i class="danger">*</i></label>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div *ngIf="tab ==='auth_per'">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <p class="mb-4"><span class="text-primary font-italic me-1">Personal Information</span>
+                        </p>
+                        <div class="row">
+                            <div class="form-floating mb-3 col-sm-4">
+                                <input type="text" class="form-control" id="firtName" placeholder="First Name"
+                                    autocomplete="off" value="{{user.authFirstName}}" [readOnly]="true">
+                                <label for="firtsName" class="form-label-floating">First Name<i
+                                        class="danger">*</i></label>
+                            </div>
+                            <div class="form-floating mb-3 col-sm-4">
+                                <input type="text" class="form-control" id="middle" placeholder="Middle Name"
+                                    autocomplete="off" value="{{user.authMiddleName}}" [readOnly]="true">
+                                <label for="middle" class="form-label-floating">Middle Name</label>
+                            </div>
+
+                            <div class="form-floating mb-3 col-sm-4">
+                                <input type="text" class="form-control" id="lastName" placeholder="Last Name"
+                                    autocomplete="off" value="{{user.authLastName}}" [readOnly]="true">
+                                <label for="lastName" class="form-label-floating">Last Name<i
+                                        class="danger">*</i></label>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="form-floating mb-3 col-sm-6">
+                                <input type="text" class="form-control" id="designation" placeholder="Designation"
+                                    autocomplete="off" value="{{user.authDesignation}}" [readOnly]="true">
+                                <label for="designation" class="form-label-floating">Designation<i
+                                        class="danger">*</i></label>
+                            </div>
+
+                            <div class="form-floating mb-3 col-sm-6">
+                                <input type="text" class="form-control" id="department" placeholder="Department"
+                                    autocomplete="off" value="{{user.authDept}}" [readOnly]="true">
+                                <label for="department" class="form-label-floating">Department</label>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="form-floating mb-3 col-sm-3">
+                                <input type="text" class="form-control" id="landline" placeholder="Landline"
+                                    autocomplete="off" value="{{user.landLine}}" [readOnly]="true">
+                                <label for="landline" class="form-label-floating">Landline</label>
+                            </div>
+                            <div class="form-floating mb-3 col-sm-3">
+                                <input type="text" class="form-control" id="mobile" placeholder="Mobile"
+                                    autocomplete="off" value="{{user.authMob}}" [readOnly]="true">
+                                <label for="mobile" class="form-label-floating">Mobile<i class="danger">*</i></label>
+                            </div>
+
+                            <div class="form-floating mb-3 col-sm-3">
+                                <input type="text" class="form-control" id="email1" placeholder="Email"
+                                    autocomplete="off" value="{{user.authEmail}}" [readOnly]="true">
+                                <label for="email1" class="form-label-floating">Email </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="card bg-light">
+                    <div class="row card-body">
+                        <div class="text-center ">
+                            <button type="submit" class="btn btn-outline-success col-sm-2 m-1 text-center"
+                                (click)="onSubmit('Approved')">Approve</button>
+                            <button class="btn btn-outline-danger col-sm-2 m-1 text-center"
+                                (click)="open(content)">Reject</button>
+                            <button type="button" class="btn btn-outline-secondary col-sm-2 m-1 text-center"
+                                (click)="back()">Back</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-template #content let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title">Admin Comments</h4>
+        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+    </div>
+    <div class="modal-body">
+        <div class="mb-3">
+            <label>Rejection Comments<i class="danger">*</i></label>
+            <div>
+                <textarea id="comments" class="form-control" placeholder="Rejection Comments"
+                    [(ngModel)]="comments"></textarea>
+                <span class="danger" *ngIf="commentError">Please provide a rejection comment.</span>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline-dark" (click)="onSubmit('Rejected')">Save</button>
+    </div>
+</ng-template>

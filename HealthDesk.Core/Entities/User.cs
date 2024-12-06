@@ -176,6 +176,8 @@ public class User : BaseEntity
     public List<PatientSelfRecording> PatientSelfRecording { get; set; }
     [BsonElement("patient_appointment")]
     public List<PatientAppointment> PatientAppointments { get; set; }
+    [BsonElement("role")]
+    public string Role { get; set; }
 }
 
 public class DOBEntity

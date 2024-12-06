@@ -16,15 +16,15 @@
         </li>
         <li class="nav-item">
           <button mat-button [matMenuTriggerFor]="profileMenu">
-            <img src="assets/profile.jpg" alt="Profile" class="profile-img"> {{ userData.username }}
+            <img src="{{profImg}}" alt="Profile" class="profile-img" id="headerprofImg"> {{ userData.username }}
           </button>
           <mat-menu #profileMenu="matMenu">
-            <button mat-menu-item>
+            <button class="pointer-cursor" mat-menu-item (click)="router.navigate(['account/'])">
               <mat-icon>person</mat-icon> My Profile
             </button>
             <mat-divider></mat-divider>
-            <button mat-menu-item>
-              <mat-icon>settings</mat-icon> Settings
+            <button mat-menu-item (click)="router.navigate(['role-selection/'])">
+              <mat-icon>settings</mat-icon> Swtch Role
             </button>
             <mat-divider></mat-divider>
             <button mat-menu-item (click)="logout()">

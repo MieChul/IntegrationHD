@@ -32,7 +32,7 @@ public class AuthController : Controller
         // Set the access token in an HttpOnly cookie
         await _authService.SetTokenCookies(HttpContext, user);
         // Return the user's role or any additional info, but not the token itself
-        return Ok(new { Role = user.Roles.FirstOrDefault().ToString().ToLower(), username = loginDto.Username });
+        return Ok(new { role = user.Roles.FirstOrDefault().ToString().ToLower(), username = loginDto.Username, id = user.Id, profImage = user.ProfImage, status = user.Status});
     }
 
     [HttpPost("logout")]

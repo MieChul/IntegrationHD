@@ -43,8 +43,8 @@ public class UserController : ControllerBase
     }
 
     [AllowAnonymous]
-    [HttpPost("get-username")]
-    public async Task<IActionResult> GetUsername([FromBody] string contact)
+    [HttpGet("get-username/{contact}")]
+    public async Task<IActionResult> GetUsername(string contact)
     {
         var result = await _userService.GetUsernameAsync(contact);
         if (string.IsNullOrEmpty(result)) return NotFound("User not found.");

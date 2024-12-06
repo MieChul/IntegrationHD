@@ -1,4 +1,4 @@
-<div class="container-fluid bg-transparent userInfo">
+<div class="container-fluid bg-transparent userInfo" *ngIf="form">
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
         <div class="row">
             <div class="col-lg-3">
@@ -6,11 +6,12 @@
                     <div class="card-body">
                         <div class="row mb-3">
                             <span>Upload Profile Image</span>
-                            <div class="cursor-pointer" (click)="file.click();removeClass('profImg')">
-                                <img alt="" onerror="this.onerror=null; this.src='/assets/defaultProfile.jpg'" class="rounded-circle img-fluid" id="profImg">
-                                <input [hidden]="true" #file type="file" accept="image/*"
-                                    onchange="document.getElementById('profImg').src = window.URL.createObjectURL(this.files[0])"
-                                    (change)="upload($event, 'profileImage')">
+                            <div class="cursor-pointer mb-2" (click)="triggerFileUpload()">
+                                <img [src]="form.get('profImage')?.value || '/assets/defaultProfile.jpg'"
+                                    class="rounded-circle img-fluid" alt="Profile Image" (error)="setDefaultImage()"
+                                    id="profImg" />
+                                <input type="file" accept="image/*" (change)="upload($event, 'profileImage')"
+                                    style="display: none" #fileInput />
                             </div>
                             <div class="form-floating"
                                 *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
@@ -25,29 +26,27 @@
                             </div>
                         </div>
                         <div class="row mb-3" *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
-                            <div class=" col-sm-9">
-                                <div class="input-group">
-                                    <input class="form-control dobbox" [ngModelOptions]="{standalone: true}"
-                                        placeholder="Birth Date yyyy-mm-dd" name="dp" [(ngModel)]="birthDate"
-                                        ngbDatepicker #d="ngbDatepicker" [minDate]="{year: 1960, month:1, day: 1}"
-                                        (ngModelChange)="calculateAge()" autocomplete="off"
-                                        [ngClass]="{ 'is-invalid': submitted && dobError }">
-
-
-                                    <button class="btn btn-outline-secondary bi bi-calendar3 input-group-text"
-                                        (click)="d.toggle()" type="button"></button>
-                                </div>
-                                <div *ngIf="submitted && dobError" class="invalid-feedback d-block">
-                                    Birth Date is required
-                                </div>
+                            <div class="col-sm-8">
+                                <mat-form-field appearance="outline" class="w-100">
+                                    <mat-label>Birth Date</mat-label>
+                                    <input matInput [matDatepicker]="picker" placeholder="Birth Date yyyy-mm-dd"
+                                        formControlName="birthDate" [min]="minDate" autocomplete="off"
+                                        (dateChange)="calculateAge()" />
+                                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                                    <mat-datepicker #picker></mat-datepicker>
+                                    <mat-error
+                                        *ngIf="form.get('birthDate')?.hasError('required') && form.get('birthDate')?.touched">
+                                        Birth Date is required
+                                    </mat-error>
+                                </mat-form-field>
                             </div>
-                            <div class="form-floating col-sm-3">
-                                <input readonly class="form-control" [(ngModel)]="age"
-                                    [ngModelOptions]="{standalone: true}" id="floatingInput" placeholder="Age"
-                                    autocomplete="off" value="0">
-                                <label for="floatingInput" class="form-label-floating">Age</label>
+                            <div class="form-floating col-sm-4">
+                                <mat-form-field appearance="outline" class="w-100">
+                                    <mat-label>Age</mat-label>
+                                    <input matInput readonly formControlName="age" id="floatingInput" placeholder="Age"
+                                        autocomplete="off" />
+                                </mat-form-field>
                             </div>
-
                         </div>
                         <div class="row mb-3" *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
                             <div class="btn-group flex-wrap">
@@ -89,14 +88,24 @@
             <div class="col-lg-9">
                 <div class="card bg-danger text-center" *ngIf="isRejected">
                     <div class="row">
-                        <div class="col top-warning"><i class="bi bi-exclamation-triangle-fill"></i> Your application was rejected. Please resubmit with corrections.
+                        <div class="col top-warning"><i class="bi bi-exclamation-triangle-fill"></i> Your application
+                            was rejected. Please resubmit with corrections.
                             <a class="warning cursor-pointer" (click)="open(content)">Show Admin Comments</a>
                         </div>
                     </div>
                 </div>
                 <div class="card bg-warning text-center" *ngIf="isSaved">
                     <div class="row">
-                        <div class="col top-warning"><i class="bi bi-exclamation-triangle-fill"></i> Your application is saved. Please complete the application and submit for admin to review.
+                        <div class="col top-warning"><i class="bi bi-exclamation-triangle-fill"></i> Your application is
+                            saved. Please complete the application and submit for admin to review.
+                        </div>
+                    </div>
+                </div>
+                <div class="card bg-success text-center" *ngIf="isSubmitted">
+                    <div class="row">
+                        <div class="col top-warning"><i class="bi bi-exclamation-triangle-fill"></i> Thank you!! Your
+                            application is submitted and is under review. Once approved you will be able to use the
+                            application.
                         </div>
                     </div>
                 </div>
@@ -116,7 +125,8 @@
                     </li>
                     <li class="nav-item" *ngIf="this.user.role != 'patient'">
                         <div class="nav-link" id="hosp_info" #hosp_info (click)="changeTab('hosp_info',hosp_info)"><i
-                                class="bi bi-hospital"></i>{{this.user.role === 'physician' ? 'Hospital/Clinic' : 'Basic Information'}}</div>
+                                class="bi bi-hospital"></i>{{this.user.role === 'physician' ? 'Hospital/Clinic' : 'Basic
+                            Information'}}</div>
                     </li>
                     <li class="nav-item" *ngIf="this.user.role != 'physician' &&  this.user.role != 'patient' ">
                         <div class="nav-link" id="auth_per" #auth_per (click)="changeTab('auth_per',auth_per)"><i
@@ -236,7 +246,8 @@
                                             placeholder="Houe/ Flat Number" autocomplete="off"
                                             [ngClass]="{ 'is-invalid': submitted && f['address1'].errors }">
                                         <div *ngIf="submitted && f['address1'].errors" class="invalid-feedback">
-                                            <div *ngIf="f['address1'].errors['required']">Houe/ Flat Number is required</div>
+                                            <div *ngIf="f['address1'].errors['required']">Houe/ Flat Number is required
+                                            </div>
                                         </div>
                                         <label for="address1" class="form-label-floating">Houe/ Flat Number<i
                                                 class="danger">*</i></label>
@@ -247,7 +258,8 @@
                                             placeholder="Building / Society" autocomplete="off"
                                             [ngClass]="{ 'is-invalid': submitted && f['address2'].errors }">
                                         <div *ngIf="submitted && f['address2'].errors" class="invalid-feedback">
-                                            <div *ngIf="f['address2'].errors['required']">Building / Society is required</div>
+                                            <div *ngIf="f['address2'].errors['required']">Building / Society is required
+                                            </div>
                                         </div>
                                         <label for="address2" class="form-label-floating">Building / Society<i
                                                 class="danger">*</i></label>
@@ -268,37 +280,7 @@
                                 </div>
                                 <hr>
                                 <div class="row">
-                                    <div class="col">
-                                        <select formControlName="city" class="form-select"
-                                            aria-label="Default select example"
-                                            [ngClass]="{ 'is-invalid': submitted && f['city'].errors }">
-                                            <option selected>select city</option>
-                                            <option value="Mumbai">Mumbai</option>
-                                            <option value="Bangalore">Bangalore</option>
-                                            <option value="Pune">Pune</option>
-                                        </select>
-                                        <div *ngIf="submitted && f['city'].errors" class="invalid-feedback d-flex">
-                                            <div *ngIf="f['city'].errors['required']">City is required</div>
-                                        </div>
-                                    </div>
-                                    <div class="col">
-                                        <select formControlName="state" class="form-select"
-                                            aria-label="Default select example"
-                                            [ngClass]="{ 'is-invalid': submitted && f['state'].errors }">
-                                            <option selected>select state</option>
-                                            <option value="Maharashtra">Maharashtra</option>
-                                            <option value="Karnataka">Karnataka</option>
-                                            <option value="Gujrat">Gujrat</option>
-
-                                        </select>
-                                        <div *ngIf="submitted && f['state'].errors" class="invalid-feedback d-flex">
-                                            <div *ngIf="f['state'].errors['required']">State is required</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <hr>
-                                <div class="row">
-                                    <div class="form-floating mb-3 col-sm-6">
+                                        <div class="form-floating mb-3 col">
                                         <input type="text" formControlName="pincode" class="form-control" id="pincode"
                                             placeholder="Pin Code" autocomplete="off"
                                             [ngClass]="{ 'is-invalid': submitted && f['pincode'].errors }">
@@ -308,7 +290,44 @@
                                         <label for="pincode" class="form-label-floating">Pin Code<i
                                                 class="danger">*</i></label>
                                     </div>
+                                    <div class="col">
+                                        <mat-form-field appearance="fill" class="full-width">
+                                            <mat-label>Select State</mat-label>
+                                            <mat-select formControlName="state"
+                                                (selectionChange)="onStateChange($event)">
+                                                <mat-option>
+                                                    <ngx-mat-select-search [formControl]="stateFilterCtrl"
+                                                        placeholderLabel="Search state"></ngx-mat-select-search>
+                                                </mat-option>
+                                                <mat-option *ngFor="let state of filteredStates | async"
+                                                    [value]="state.isoCode">
+                                                    {{ state.name }}
+                                                </mat-option>
+                                            </mat-select>
+                                            <mat-error *ngIf="submitted && f['state'].errors">State is
+                                                required</mat-error>
+                                        </mat-form-field>
+                                    </div>
+
+                                    <div class="col">
+                                        <mat-form-field appearance="fill" class="full-width">
+                                            <mat-label>Select City</mat-label>
+                                            <mat-select formControlName="city">
+                                                <mat-option>
+                                                    <ngx-mat-select-search [formControl]="cityFilterCtrl"
+                                                        placeholderLabel="Search city"></ngx-mat-select-search>
+                                                </mat-option>
+                                                <mat-option *ngFor="let city of filteredCities | async"
+                                                    [value]="city.name">
+                                                    {{ city.name }}
+                                                </mat-option>
+                                            </mat-select>
+                                            <mat-error *ngIf="submitted && f['city'].errors">City is
+                                                required</mat-error>
+                                        </mat-form-field>
+                                    </div>
                                 </div>
+                                <hr>
                             </div>
                         </div>
                     </div>
@@ -318,11 +337,15 @@
                                 <p class="mb-4"><span class="text-primary font-italic me-1">Qualification
                                         Documents</span>
                                 </p>
+                                <mat-checkbox formControlName="acceptTerms">
+    I confirm I am Qualified Registered Medical Practioner and do not wish to provide qualification documens or medical registration certificate copy. I take full responsibility of legal use of healthdesk as physician.
+  </mat-checkbox>
                                 <div class="row mb-1" formGroupName="graduation">
                                     <span class="text-success font-italic mb-2">Graduation<i class="danger">*</i></span>
                                     <div class="form-floating mb-3 col-sm-4">
                                         <input type="text" class="form-control" id="year" placeholder="Year"
-                                            autocomplete="off" formControlName="year" [ngClass]="{ 'is-invalid': submitted && gYearError }">
+                                            autocomplete="off" formControlName="year"
+                                            [ngClass]="{ 'is-invalid': submitted && gYearError }">
                                         <div *ngIf="submitted && gYearError" class="invalid-feedback d-flex">
                                             <div>Year is required</div>
                                         </div>
@@ -331,24 +354,29 @@
 
                                     <div class="form-floating mb-3 col-sm-4">
                                         <input type="text" class="form-control" id="institute" placeholder="Institute"
-                                            autocomplete="off" formControlName="institute" [ngClass]="{ 'is-invalid': submitted && gInstituteError }">
+                                            autocomplete="off" formControlName="institute"
+                                            [ngClass]="{ 'is-invalid': submitted && gInstituteError }">
                                         <div *ngIf="submitted && gInstituteError" class="invalid-feedback d-flex">
                                             <div>Institute is required</div>
                                         </div>
                                         <label for="institute" class="form-label-floating">Name Of Institute</label>
                                     </div>
                                     <div class="form-floating mb-3 col-sm-4">
-                                        <div class="row">   <div class="col-sm-9">
-                                            <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
-                                                id="formFile" (change)="upload($event, 'graduation')" [ngClass]="{ 'is-invalid': submitted && gDocError }">
-                                        <div *ngIf="submitted && gDocError" class="invalid-feedback d-flex">
-                                            <div>Document is required</div>
+                                        <div class="row">
+                                            <div class="col-sm-9">
+                                                <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
+                                                    id="formFile" (change)="upload($event, 'graduation')"
+                                                    [ngClass]="{ 'is-invalid': submitted && gDocError }">
+                                                <div *ngIf="submitted && gDocError" class="invalid-feedback d-flex">
+                                                    <div>Document is required</div>
+                                                </div>
+                                            </div>
+                                            <div *ngIf="user.graduation.document" class="form-floating mb-3 col-sm-3">
+                                                <div (click)="view(user.graduation.document)" class="btn btn-primary">
+                                                    View</div>
+                                            </div>
                                         </div>
-                                        </div>
-                                        <div *ngIf="user.graduation.document" class="form-floating mb-3 col-sm-3">  
-                                            <div (click)="view(user.graduation.document)"  class="btn btn-primary"> View</div>
-                                        </div></div>
-                                        
+
                                     </div>
                                 </div>
                                 <hr>
@@ -366,14 +394,18 @@
                                         <label for="institute" class="form-label-floating">Name Of Institute</label>
                                     </div>
                                     <div class="form-floating mb-3 col-sm-4">
-                                        <div class="row">   <div class="col-sm-9">
-                                            <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
-                                            id="formFile" (change)="upload($event, 'postGraduation')">
+                                        <div class="row">
+                                            <div class="col-sm-9">
+                                                <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
+                                                    id="formFile" (change)="upload($event, 'postGraduation')">
+                                            </div>
+                                            <div *ngIf="user.postGraduation.document"
+                                                class="form-floating mb-3 col-sm-3">
+                                                <div (click)="view(user.postGraduation.document)"
+                                                    class="btn btn-primary"> View</div>
+                                            </div>
                                         </div>
-                                        <div *ngIf="user.postGraduation.document" class="form-floating mb-3 col-sm-3">
-                                            <div (click)="view(user.postGraduation.document)"  class="btn btn-primary"> View</div>
-                                        </div></div>
-                                        
+
                                     </div>
                                 </div>
                                 <hr>
@@ -391,13 +423,17 @@
                                         <label for="institute" class="form-label-floating">Name Of Institute</label>
                                     </div>
                                     <div class="form-floating mb-3 col-sm-4">
-                                        <div class="row">   <div class="col-sm-9">
-                                            <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
-                                            id="formFile" (change)="upload($event, 'superSpecialization')">
+                                        <div class="row">
+                                            <div class="col-sm-9">
+                                                <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
+                                                    id="formFile" (change)="upload($event, 'superSpecialization')">
+                                            </div>
+                                            <div *ngIf="user.superSpecialization.document"
+                                                class="form-floating mb-3 col-sm-3">
+                                                <div (click)="view(user.superSpecialization.document)"
+                                                    class="btn btn-primary"> View</div>
+                                            </div>
                                         </div>
-                                        <div *ngIf="user.superSpecialization.document" class="form-floating mb-3 col-sm-3">
-                                            <div (click)="view(user.superSpecialization.document)"  class="btn btn-primary"> View</div>
-                                        </div></div> 
                                     </div>
                                 </div>
                                 <hr>
@@ -415,13 +451,17 @@
                                         <label for="institute" class="form-label-floating">Name Of Institute</label>
                                     </div>
                                     <div class="form-floating mb-3 col-sm-4">
-                                        <div class="row">   <div class="col-sm-9">
-                                            <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
-                                            id="formFile" (change)="upload($event, 'additionalQualification')">
+                                        <div class="row">
+                                            <div class="col-sm-9">
+                                                <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
+                                                    id="formFile" (change)="upload($event, 'additionalQualification')">
+                                            </div>
+                                            <div *ngIf="user.additionalQualification.document"
+                                                class="form-floating mb-3 col-sm-3">
+                                                <div (click)="view(user.additionalQualification.document)"
+                                                    class="btn btn-primary"> View</div>
+                                            </div>
                                         </div>
-                                        <div *ngIf="user.additionalQualification.document" class="form-floating mb-3 col-sm-3">
-                                            <div (click)="view(user.additionalQualification.document)"  class="btn btn-primary"> View</div>
-                                        </div></div> 
                                     </div>
                                 </div>
                                 <hr>
@@ -440,13 +480,17 @@
                                         <label for="councilName" class="form-label-floating">Council Name</label>
                                     </div>
                                     <div class="form-floating mb-3 col-sm-4">
-                                        <div class="row">   <div class="col-sm-9">
-                                            <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
-                                            id="formFile" (change)="upload($event, 'medicalRegistration')">
+                                        <div class="row">
+                                            <div class="col-sm-9">
+                                                <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
+                                                    id="formFile" (change)="upload($event, 'medicalRegistration')">
+                                            </div>
+                                            <div *ngIf="user.medicalRegistration.document"
+                                                class="form-floating mb-3 col-sm-3">
+                                                <div (click)="view(user.medicalRegistration.document)"
+                                                    class="btn btn-primary"> View</div>
+                                            </div>
                                         </div>
-                                        <div *ngIf="user.medicalRegistration.document" class="form-floating mb-3 col-sm-3">
-                                            <div (click)="view(user.medicalRegistration.document)"  class="btn btn-primary"> View</div>
-                                        </div></div> 
                                     </div>
                                 </div>
                                 <hr>
@@ -527,35 +571,6 @@
                             </div>
                             <hr>
                             <div class="row">
-                                <div class="col">
-                                    <select class="form-select" aria-label="Default select example"
-                                        formControlName="clinicCity"
-                                        [ngClass]="{ 'is-invalid': submitted && f['clinicCity'].errors }">
-                                        <option selected>select city</option>
-                                        <option value="Mumbai">Mumbai</option>
-                                        <option value="Bangalore">Bangalore</option>
-                                        <option value="Pune">Pune</option>
-                                    </select>
-                                    <div *ngIf="submitted && f['clinicCity'].errors" class="invalid-feedback d-flex">
-                                        <div *ngIf="f['clinicCity'].errors['required']">City is required</div>
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <select class="form-select" aria-label="Default select example"
-                                        formControlName="clinicState"
-                                        [ngClass]="{ 'is-invalid': submitted && f['clinicState'].errors }">
-                                        <option selected>select state</option>
-                                        <option value="Maharashtra">Maharashtra</option>
-                                        <option value="Karnataka">Karnataka</option>
-                                        <option value="Gujrat">Gujrat</option>
-                                    </select>
-                                    <div *ngIf="submitted && f['clinicState'].errors" class="invalid-feedback d-flex">
-                                        <div *ngIf="f['clinicState'].errors['required']">State is required</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="row">
                                 <div class="form-floating mb-3 col-sm-6">
                                     <input type="text" class="form-control" id="email" placeholder="Pin Code"
                                         autocomplete="off" formControlName="clinicPincode"
@@ -566,7 +581,44 @@
                                     <label for="mobile" class="form-label-floating">Pin Code<i
                                             class="danger">*</i></label>
                                 </div>
+                                <div class="col">
+                                        <mat-form-field appearance="fill" class="full-width">
+                                            <mat-label>Select State</mat-label>
+                                            <mat-select formControlName="clinicState"
+                                                (selectionChange)="onStateChange($event)">
+                                                <mat-option>
+                                                    <ngx-mat-select-search [formControl]="clinicStateFilterCtrl"
+                                                        placeholderLabel="Search state"></ngx-mat-select-search>
+                                                </mat-option>
+                                                <mat-option *ngFor="let clinicState of filteredClinicStates | async"
+                                                    [value]="clinicState.isoCode">
+                                                    {{ clinicState.name }}
+                                                </mat-option>
+                                            </mat-select>
+                                            <mat-error *ngIf="submitted && f['clinicState'].errors">State is
+                                                required</mat-error>
+                                        </mat-form-field>
+                                    </div>
+
+                                    <div class="col">
+                                        <mat-form-field appearance="fill" class="full-width">
+                                            <mat-label>Select City</mat-label>
+                                            <mat-select formControlName="clinicCity">
+                                                <mat-option>
+                                                    <ngx-mat-select-search [formControl]="clinicCityFilterCtrl"
+                                                        placeholderLabel="Search clinicCity"></ngx-mat-select-search>
+                                                </mat-option>
+                                                <mat-option *ngFor="let clinicCity of filteredClinicCities | async"
+                                                    [value]="clinicCity.name">
+                                                    {{ clinicCity.name }}
+                                                </mat-option>
+                                            </mat-select>
+                                            <mat-error *ngIf="submitted && f['clinicCity'].errors">City is
+                                                required</mat-error>
+                                        </mat-form-field>
+                                    </div>
                             </div>
+                            <hr>
                         </div>
                     </div>
                 </div>
@@ -658,16 +710,17 @@
                     <div class="card bg-light">
                         <div class="row card-body">
                             <div class="text-center">
-                                <button type="button"
-                                class="btn btn-outline-primary col-sm-2 m-1 text-center" (click)="save()">Save</button>
-                            <button type="submit"
-                                class="btn btn-outline-success col-sm-2 m-1 text-center">Submit</button>
-                            <button type="button" class="btn btn-outline-primary col-sm-2 m-1 text-center"
-                                (click)="reload()">Reload</button>
-                            <button *ngIf="!isRejected && !isSaved" type="button" class="btn btn-outline-secondary col-sm-2 m-1 text-center"
-                                (click)="nagivateToRole()">Back</button>
-                                </div>
-                            
+                                <button type="button" class="btn btn-outline-primary col-sm-2 m-1 text-center"
+                                    (click)="save()">Save</button>
+                                <button type="submit"
+                                    class="btn btn-outline-success col-sm-2 m-1 text-center">Submit</button>
+                                <button type="button" class="btn btn-outline-primary col-sm-2 m-1 text-center"
+                                    (click)="reload()">Reload</button>
+                                <button *ngIf="!isRejected && !isSaved" type="button"
+                                    class="btn btn-outline-secondary col-sm-2 m-1 text-center"
+                                    (click)="nagivateToRole()">Back</button>
+                            </div>
+
                         </div>
                         <div class="invalid-feedback d-flex" *ngIf="errorsFound">There are errors in the submitted
                             application, please fix them and submit again.</div>

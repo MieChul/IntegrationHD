@@ -1,3 +1,5 @@
+using HealthDesk.Application.Interfaces;
+using HealthDesk.Application.Services;
 using HealthDesk.Core;
 using HealthDesk.Infrastructure;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +20,7 @@ public static class ServiceCollectionExtensions
     services.AddScoped<IMessageService, MessageService>();
     services.AddScoped<IUserService, UserService>();
     services.AddScoped<IAuthService, AuthService>();
+     services.AddScoped<IAccountService, AccountService>();
     #endregion
 
     #region Repositories

@@ -140,4 +140,24 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
   navigateVerifyPassword() {
     this.router.navigate(['/verify-forgot-password']);
   }
+
+  moveToNext(event: KeyboardEvent, index: number) {
+    const target = event.target as HTMLInputElement;
+  
+    // Move focus to the next box if a number is entered
+    if (event.key >= '0' && event.key <= '9') {
+      const nextInput = target.nextElementSibling as HTMLInputElement;
+      if (nextInput) {
+        nextInput.focus();
+      }
+    }
+  
+    // Handle Backspace: Move focus to the previous box
+    if (event.key === 'Backspace') {
+      const prevInput = target.previousElementSibling as HTMLInputElement;
+      if (prevInput) {
+        prevInput.focus();
+      }
+    }
+  }
 }
