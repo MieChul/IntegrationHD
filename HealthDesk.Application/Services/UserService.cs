@@ -37,7 +37,7 @@ public class UserService : IUserService
     public async Task<bool> IsTaken(string name, string value)
     {
         var found = await _userRepository.GetByDynamicPropertyAsync(name, value);
-        return found != null;
+        return found != null && !string.IsNullOrEmpty(found.Username);
     }
 
 
