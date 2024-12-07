@@ -178,6 +178,8 @@ public class User : BaseEntity
     public List<PatientAppointment> PatientAppointments { get; set; }
     [BsonElement("role")]
     public string Role { get; set; }
+    [BsonElement("no_doc_consent")]
+    public bool NoDocConsentProvided { get; set; }
 }
 
 public class DOBEntity

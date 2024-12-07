@@ -104,6 +104,8 @@ public class UpdateUserInfoRequestDto
 
     public bool IsSave { get; set; } = false;
     public string? ProfImage { get; set; } = string.Empty;
+
+    public bool NoDocConsentProvided { get; set; } = false;
 }
 
 public class DOB

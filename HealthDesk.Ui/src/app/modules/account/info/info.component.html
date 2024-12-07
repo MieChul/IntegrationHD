@@ -337,7 +337,7 @@
                                 <p class="mb-4"><span class="text-primary font-italic me-1">Qualification
                                         Documents</span>
                                 </p>
-                                <mat-checkbox formControlName="acceptTerms">
+                                <mat-checkbox formControlName="noDocConsentProvided">
     I confirm I am Qualified Registered Medical Practioner and do not wish to provide qualification documens or medical registration certificate copy. I take full responsibility of legal use of healthdesk as physician.
   </mat-checkbox>
                                 <div class="row mb-1" formGroupName="graduation">
@@ -368,7 +368,7 @@
                                                     id="formFile" (change)="upload($event, 'graduation')"
                                                     [ngClass]="{ 'is-invalid': submitted && gDocError }">
                                                 <div *ngIf="submitted && gDocError" class="invalid-feedback d-flex">
-                                                    <div>Document is required</div>
+                                                    <div>Give consent by checking above or Document is required</div>
                                                 </div>
                                             </div>
                                             <div *ngIf="user.graduation.document" class="form-floating mb-3 col-sm-3">
@@ -585,7 +585,7 @@
                                         <mat-form-field appearance="fill" class="full-width">
                                             <mat-label>Select State</mat-label>
                                             <mat-select formControlName="clinicState"
-                                                (selectionChange)="onStateChange($event)">
+                                                (selectionChange)="onClinicStateChange($event)">
                                                 <mat-option>
                                                     <ngx-mat-select-search [formControl]="clinicStateFilterCtrl"
                                                         placeholderLabel="Search state"></ngx-mat-select-search>

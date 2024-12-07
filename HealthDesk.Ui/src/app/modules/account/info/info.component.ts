@@ -40,7 +40,7 @@ export class InfoComponent {
   states: any[] = [];
   cities: any[] = [];
   clinicstates: any[] = [];
-  clinicities: any[] = [];
+  clinicCities: any[] = [];
   stateFilterCtrl = new FormControl();
   cityFilterCtrl = new FormControl();
   filteredStates = new BehaviorSubject<any[]>([]);
@@ -91,7 +91,7 @@ export class InfoComponent {
       )
       .subscribe(this.filteredCities);
 
-      this.clinicStateFilterCtrl.valueChanges
+    this.clinicStateFilterCtrl.valueChanges
       .pipe(
         debounceTime(200),
         startWith(''),
@@ -108,7 +108,7 @@ export class InfoComponent {
         debounceTime(200),
         startWith(''),
         map((searchTerm) =>
-          this.clinicities.filter((city) =>
+          this.clinicCities.filter((city) =>
             city.name.toLowerCase().includes(searchTerm.toLowerCase())
           )
         )
@@ -122,7 +122,7 @@ export class InfoComponent {
   }
 
   onStateChange(event: any): void {
-    const stateCode = event? event.value :  this.form.get('state')?.value;
+    const stateCode = event ? event.value : this.form.get('state')?.value;
     if (stateCode) {
       this.cities = City.getCitiesOfState('IN', stateCode);
       this.filteredCities.next(this.cities);// Reset city selection
@@ -132,12 +132,12 @@ export class InfoComponent {
   }
 
   onClinicStateChange(event: any): void {
-    const stateCode = event? event.value :  this.form.get('clinicState')?.value;
+    const stateCode = event ? event.value : this.form.get('clinicState')?.value;
     if (stateCode) {
-      this.clinicities = City.getCitiesOfState('IN', stateCode);
-      this.filteredClinicCities.next(this.clinicities);// Reset city selection
+      this.clinicCities = City.getCitiesOfState('IN', stateCode);
+      this.filteredClinicCities.next(this.clinicCities);// Reset city selection
     } else {
-      this.clinicities = [];
+      this.clinicCities = [];
     }
   }
 
@@ -184,6 +184,7 @@ export class InfoComponent {
       state: [this.user.state],
       area: [this.user.area],
       pincode: [this.user.pincode],
+      noDocConsentProvided: [this.user.noDocConsentProvided],
       graduation: new FormGroup({
         year: new FormControl(this.user.graduation?.year),
         institute: new FormControl(this.user.graduation?.institute),
@@ -241,6 +242,7 @@ export class InfoComponent {
       this.updateValidators();
       this.calculateAge();
       this.onStateChange(null);
+      this.onClinicStateChange(null);
     }
   }
 
@@ -359,6 +361,15 @@ export class InfoComponent {
       }
       else
         this.gInstituteError = false;
+    }
+
+    if (!this.form.value.noDocConsentProvided) {
+        if (!this.form.value.graduation.document) {
+          this.gDocError = true;
+          return;
+      }
+      else
+          this.gDocError = false;
     }
 
 

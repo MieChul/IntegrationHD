@@ -133,10 +133,8 @@ export class AppointmentsComponent implements OnInit {
   scheduleNewAppointment(): void {
     this.isEditing = false;
     this.appointmentForm.reset();
-    if (this.appointmentModal) {
       const modal = new Modal(this.appointmentModal.nativeElement);
       modal.show();
-    }
   }
 
   saveAppointment(): void {

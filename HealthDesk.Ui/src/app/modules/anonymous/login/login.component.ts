@@ -22,7 +22,7 @@ export class LoginComponent implements OnInit {
     private router: Router,
     private authService: AuthService,
     private notificationService: NotificationService,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Initialize form group with controls
@@ -42,12 +42,15 @@ export class LoginComponent implements OnInit {
       this.loaderService.show();
 
       const { username, password } = this.loginForm.value;
-     
+
 
       this.authService.login(username, password).subscribe({
         next: (user) => {
           this.loaderService.hide();
-          this.router.navigate([`/${user.role}`]);
+          if ((user.role != 'physician ' || user.role != 'patient') && user.status !== 'Approved')
+            this.router.navigate([`/account`]);
+          else
+            this.router.navigate([`/${user.role}`]);
         },
         error: (err) => {
           this.loaderService.hide();

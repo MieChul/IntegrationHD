@@ -46,7 +46,7 @@ export class UserInfoComponent implements OnInit {
             });
         }
        else
-       this.router.navigateByUrl('admin/userlist');
+       this.router.navigateByUrl('admin/');
     }
 
     ngAfterViewInit() {
@@ -85,7 +85,7 @@ export class UserInfoComponent implements OnInit {
   }
 
     back() {
-        this.router.navigateByUrl('admin/userlist');
+        this.router.navigateByUrl('admin/');
     }
 
     onSubmit(value: string) {
@@ -102,7 +102,7 @@ export class UserInfoComponent implements OnInit {
             .pipe(first())
             .subscribe({
                 next: () => {
-                    this.router.navigateByUrl('admin/userlist');
+                    this.router.navigateByUrl('admin/');
                    this. modalService.dismissAll();
                 },
                 error: error => {

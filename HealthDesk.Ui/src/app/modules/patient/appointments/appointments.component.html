@@ -57,4 +57,46 @@
       </table>
     </div>
   </div>
+  <div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel" aria-hidden="true" #appointmentModal>
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="appointmentModalLabel">
+            {{ isEditing ? 'Edit Appointment' : 'Schedule New Appointment' }}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="appointmentForm">
+            <div class="mb-3">
+              <label for="doctorName" class="form-label">Doctor Name</label>
+              <select id="doctorName" formControlName="doctorName" class="form-select">
+                <option *ngFor="let doctor of doctors" [value]="doctor">{{ doctor }}</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="appointmentDate" class="form-label">Appointment Date</label>
+              <input type="date" id="appointmentDate" formControlName="appointmentDate" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label for="appointmentTime" class="form-label">Appointment Time</label>
+              <input type="time" id="appointmentTime" formControlName="appointmentTime" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label for="clinicName" class="form-label">Clinic Name</label>
+              <select id="clinicName" formControlName="clinicName" class="form-select">
+                <option *ngFor="let clinic of clinics" [value]="clinic">{{ clinic }}</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" (click)="saveAppointment()">
+            {{ isEditing ? 'Save Changes' : 'Add Appointment' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
   

@@ -140,7 +140,7 @@ public class AccountService : IAccountService
                 };
             }
 
-
+            user.NoDocConsentProvided = model.NoDocConsentProvided;
             await _userRepository.UpdateAsync(user);
 
             if (!model.IsSave)
