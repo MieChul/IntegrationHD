@@ -210,7 +210,7 @@ export class InfoComponent {
         councilName: new FormControl(this.user.medicalRegistration?.councilName),
         document: new FormControl(this.user.medicalRegistration?.document)
       }),
-      birthDate: [this.user.birthDate, Validators.required],
+      birthDate: [this.user.birthDate],
       age: [{ value: 0, disabled: true }],
       dob: [],
       clinicName: [this.user.clinicName],
@@ -274,6 +274,7 @@ export class InfoComponent {
       authLastName: isOtherRoles ? [Validators.required] : [],
       authDesignation: isOtherRoles ? [Validators.required] : [],
       authMob: isOtherRoles ? [Validators.required] : [],
+      birthDate:isPatientOrPhysician ? [Validators.required] : []
     };
 
     // Apply validations
@@ -363,7 +364,7 @@ export class InfoComponent {
         this.gInstituteError = false;
     }
 
-    if (!this.form.value.noDocConsentProvided) {
+    if (!this.form.value.noDocConsentProvided && this.user.role === 'physician') {
         if (!this.form.value.graduation.document) {
           this.gDocError = true;
           return;

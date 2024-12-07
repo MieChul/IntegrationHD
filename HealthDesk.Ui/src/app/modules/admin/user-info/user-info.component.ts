@@ -38,7 +38,7 @@ export class UserInfoComponent implements OnInit {
             .pipe(first())
             .subscribe(x => {
                 this.user =x;
-                this.user.role ='physician';
+                this.user.role =this.user.role || 'physician';
                 this.gender = this.user.gender;
                 if (this.user.role != 'patient' && this.user.role != 'physician')
                 this.tab = 'hosp_info';
@@ -102,7 +102,7 @@ export class UserInfoComponent implements OnInit {
             .pipe(first())
             .subscribe({
                 next: () => {
-                    this.router.navigateByUrl('admin/');
+                    this.router.navigateByUrl('/admin');
                    this. modalService.dismissAll();
                 },
                 error: error => {

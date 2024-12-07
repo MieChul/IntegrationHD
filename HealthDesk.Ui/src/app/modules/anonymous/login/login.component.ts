@@ -47,8 +47,13 @@ export class LoginComponent implements OnInit {
       this.authService.login(username, password).subscribe({
         next: (user) => {
           this.loaderService.hide();
-          if ((user.role != 'physician ' || user.role != 'patient') && user.status !== 'Approved')
-            this.router.navigate([`/account`]);
+          if (user.role === 'admin')
+            this.router.navigate([`/admin`]);
+          else if (user.role !== 'physician' && user.role !== 'patient')
+            if (user.status !== 'Approved')
+              this.router.navigate([`/account`]);
+            else
+              this.router.navigate([`organization/${user.role}`]);
           else
             this.router.navigate([`/${user.role}`]);
         },
