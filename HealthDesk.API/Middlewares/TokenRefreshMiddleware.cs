@@ -5,7 +5,6 @@ using HealthDesk.Application;
 using Microsoft.IdentityModel.Tokens;
 
 namespace HealthDesk.API;
-
 public class TokenRefreshMiddleware
 {
     private readonly RequestDelegate _next;
@@ -22,12 +21,11 @@ public class TokenRefreshMiddleware
         var accessToken = context.Request.Cookies["AccessToken"];
         var tokenHandler = new JwtSecurityTokenHandler();
 
-
         if (!string.IsNullOrEmpty(accessToken))
         {
             try
             {
-                // Validate the access token to check for expiration
+                // Validate the access token
                 tokenHandler.ValidateToken(accessToken, new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
@@ -35,55 +33,54 @@ public class TokenRefreshMiddleware
                     ValidateIssuer = false,
                     ValidateAudience = false,
                     ClockSkew = TimeSpan.Zero
-                }, out SecurityToken validatedToken);
+                }, out _);
 
-                // Token is valid, proceed with the next middleware
+                // Token is valid, proceed to next middleware
                 await _next(context);
                 return;
             }
             catch (SecurityTokenExpiredException)
             {
-                // Access token is expired, proceed to refresh it
-                var jwtToken = tokenHandler.ReadToken(accessToken) as JwtSecurityToken;
-                var userId = jwtToken?.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value;
-
-                if (userId == null)
+                // Access token expired, refresh it
+                var refreshToken = context.Request.Cookies["RefreshToken"];
+                if (string.IsNullOrEmpty(refreshToken))
                 {
-                    // No valid user ID found, unauthorized request
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    await context.Response.WriteAsync("Unauthorized: User ID missing in expired token.");
-                    return; ;
+                    await context.Response.WriteAsync("Unauthorized: Refresh token not found.");
+                    return;
                 }
-                var newAccessToken = string.Empty;
+
+                string newAccessToken;
                 using (var scope = serviceProvider.CreateScope())
                 {
-                    var _authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
-                    newAccessToken = await _authService.RefreshAccessToken(userId);
+                    var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
+                    newAccessToken = await authService.RefreshAccessToken(refreshToken);
                 }
 
                 if (!string.IsNullOrEmpty(newAccessToken))
                 {
-                    // Set the new access token as an HttpOnly cookie
                     context.Response.Cookies.Append("AccessToken", newAccessToken, new CookieOptions
                     {
                         HttpOnly = true,
-                        Secure = true, // Only allow over HTTPS in production
-                        SameSite = SameSiteMode.Strict,
+                        Secure = false,
+                        SameSite = SameSiteMode.None,
+                        Path = "/",
                         Expires = DateTime.UtcNow.AddMinutes(15)
                     });
+
+                    await _next(context);
                 }
                 else
                 {
-
-                    // Unable to refresh access token, send unauthorized response
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    await context.Response.WriteAsync("Unauthorized: Refresh token is invalid or expired.");
-                    return;
+                    await context.Response.WriteAsync("Unauthorized: Unable to refresh access token.");
                 }
+
+                return;
             }
         }
 
-        // Continue with the request
+        // Proceed to the next middleware if no token is provided
         await _next(context);
     }
 }

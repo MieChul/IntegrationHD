@@ -3,7 +3,9 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first } from 'rxjs/operators';
 import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { AuthService } from '../../../shared/services/auth.service';
 import { AccountService } from '../../services/account.service';
+import { AdminService } from '../../services/admin.service';
 
 @Component({ templateUrl: 'user-info.component.html' })
 export class UserInfoComponent implements OnInit {
@@ -21,40 +23,37 @@ export class UserInfoComponent implements OnInit {
     dobError: any = false;
     private modalService = inject(NgbModal);
     closeResult = '';
-    comments :any='';
-    gender:any;
-    commentError : any = false;
+    comments: any = '';
+    gender: any;
+    commentError: any = false;
     constructor(
-        private formBuilder: FormBuilder,
-        private route: ActivatedRoute,
         private router: Router,
-        private accountService: AccountService
-    ) { }   
+        private accountService: AccountService,
+        private adminService: AdminService) { }
 
     ngOnInit() {
-        if(history.state.id)
-        {
+        if (history.state.id) {
             this.accountService.getById(history.state.id)
-            .pipe(first())
-            .subscribe(x => {
-                this.user =x;
-                this.user.role =this.user.role || 'physician';
-                this.gender = this.user.gender;
-                if (this.user.role != 'patient' && this.user.role != 'physician')
-                this.tab = 'hosp_info';
-              
-            });
+                .pipe(first())
+                .subscribe(x => {
+                    this.user = x;
+                    this.user.role = this.user.role || 'physician';
+                    this.gender = this.user.gender;
+                    if (this.user.role != 'patient' && this.user.role != 'physician')
+                        this.tab = 'hosp_info';
+
+                });
         }
-       else
-       this.router.navigateByUrl('admin/');
+        else
+            this.router.navigateByUrl('admin/');
     }
 
     ngAfterViewInit() {
         var element = document.getElementById(this.tab);
         element?.classList.add('active');
 
-        var prof =document.getElementById('profImg') as HTMLImageElement;
-        prof.src =this.user.profImage;
+        var prof = document.getElementById('profImg') as HTMLImageElement;
+        prof.src = this.user.profImage;
         this.calculateAge();
     }
 
@@ -66,23 +65,23 @@ export class UserInfoComponent implements OnInit {
 
     }
 
-    
-  calculateAge(): void {
-    const birthDateValue = this.user.birthDate;
 
-    if (birthDateValue) {
-      const today = new Date();
-      const birthDate = new Date(birthDateValue);
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const monthDiff = today.getMonth() - birthDate.getMonth();
+    calculateAge(): void {
+        const birthDateValue = this.user.birthDate;
 
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-      }
+        if (birthDateValue) {
+            const today = new Date();
+            const birthDate = new Date(birthDateValue);
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
 
-      this.age = age;
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+
+            this.age = age;
+        }
     }
-  }
 
     back() {
         this.router.navigateByUrl('admin/');
@@ -92,18 +91,17 @@ export class UserInfoComponent implements OnInit {
         this.submitted = true;
         this.updateErrors = false;
 
-        if(value == 'Rejected' && !this.comments)
-        {
+        if (value == 'Rejected' && !this.comments) {
             this.commentError = true;
             return;
         }
 
-        this.accountService.adminAction(this.user.id, value, this.comments)
+        this.adminService.adminAction(this.user.id, value, this.comments)
             .pipe(first())
             .subscribe({
                 next: () => {
                     this.router.navigateByUrl('/admin');
-                   this. modalService.dismissAll();
+                    this.modalService.dismissAll();
                 },
                 error: error => {
                     this.updateErrors = true;
@@ -112,7 +110,7 @@ export class UserInfoComponent implements OnInit {
             });
     }
 
-    
+
     open(content: TemplateRef<any>) {
         this.modalService.open(content, { ariaLabelledBy: 'modal-basic-title' }).result.then(
             (result) => {
@@ -139,9 +137,8 @@ export class UserInfoComponent implements OnInit {
         if (!word) return word;
         return word[0].toUpperCase() + word.substr(1).toLowerCase();
     }
-    
-    view(path:string)
-    {
+
+    view(path: string) {
         window.open(path, "_blank");
     }
 }

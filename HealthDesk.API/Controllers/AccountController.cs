@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HealthDesk.API.Controllers;
 [ApiController]
+//[Authorize]
 [Route("api/[controller]")]
 public class AccountController : ControllerBase
 {
@@ -37,6 +38,7 @@ IAccountService accountService
         _accountService.RegisterUserInfo(id, model);
         return Ok(new { message = "User updated successfully" });
     }
+
     [HttpPost("uploadFile")]
     public async Task<object> UploadFile([FromForm] IFormFile file, [FromForm] string id, [FromForm] string propName)
     {
@@ -66,26 +68,5 @@ IAccountService accountService
 
         _accountService.Update(id, model);
         return Ok(new { fileName = res });
-    }
-
-    [HttpPost("registerPatientInfo/{id}")]
-    public IActionResult RegisterPatientInfo(string id, RegisterPatientInfoDto model)
-    {
-        _accountService.RegisterPatientInfo(id, model);
-        return Ok(new { message = "User updated successfully" });
-    }
-
-    [HttpGet("users")]
-    public async Task<IActionResult> GetAll()
-    {
-        var users = await _accountService.GetAll();
-        return Ok(users);
-    }
-
-    [HttpPost("adminAction/{id}")]
-    public async Task<IActionResult> AdminAction(string id, AdminActionDto model)
-    {
-        await _accountService.AdminAction(id, model.Status, model.Comments);
-        return Ok(new { message = "User updated successfully" });
     }
 }

@@ -109,6 +109,12 @@
                         </div>
                     </div>
                 </div>
+                <div class="card bg-success text-center" *ngIf="userData.role !=='physician' && userData.isConfirm">
+                    <div class="row">
+                        <div class="col top-info"><i class="bi bi-exclamation-triangle-fill"></i> Please confirm the details you had shared for previous roles to use application as {{userData.role}}.
+                        </div>
+                    </div>
+                </div>
                 <ul class="nav nav-tabs">
                     <li class="nav-item " *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
                         <div class="nav-link" id="p_info" #p_info aria-current="page"
@@ -712,13 +718,12 @@
                             <div class="text-center">
                                 <button type="button" class="btn btn-outline-primary col-sm-2 m-1 text-center"
                                     (click)="save()">Save</button>
-                                <button type="submit"
+                                <button *ngIf="!isSubmitted && !(user.status === 'Approved')" type="submit"
                                     class="btn btn-outline-success col-sm-2 m-1 text-center">Submit</button>
+                                    <button *ngIf="userData.isConfirm" type="button" class="btn btn-outline-primary col-sm-2 m-1 text-center"
+                                    (click)="confirm()">Confirm</button>
                                 <button type="button" class="btn btn-outline-primary col-sm-2 m-1 text-center"
                                     (click)="reload()">Reload</button>
-                                <button *ngIf="!isRejected && !isSaved" type="button"
-                                    class="btn btn-outline-secondary col-sm-2 m-1 text-center"
-                                    (click)="nagivateToRole()">Back</button>
                             </div>
 
                         </div>

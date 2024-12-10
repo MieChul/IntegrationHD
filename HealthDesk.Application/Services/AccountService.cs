@@ -14,12 +14,6 @@ public class AccountService : IAccountService
         _messageService = messageService;
     }
 
-    public async Task<List<User>> GetAll()
-    {
-        var user = await _userRepository.GetAllAsync();
-        return user.ToList();
-    }
-
     public async Task<User> GetById(string id)
     {
         var userEntity = await _userRepository.GetByIdAsync(id);
@@ -186,21 +180,5 @@ public class AccountService : IAccountService
             user.LastName = model.LastName;
         }
         await _userRepository.UpdateAsync(user);
-    }
-
-    public async Task AdminAction(string id, string value, string comments)
-    {
-        var user = await _userRepository.GetByIdAsync(id);
-
-
-
-        // hash password if it was entered
-        if (user != null)
-        {
-            user.Status = value;
-            user.RejectionComments = comments;
-            await _userRepository.UpdateAsync(user);
-        }
-
     }
 }

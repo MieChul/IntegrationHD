@@ -32,7 +32,7 @@ public class AuthController : Controller
         // Set the access token in an HttpOnly cookie
         await _authService.SetTokenCookies(HttpContext, user);
         // Return the user's role or any additional info, but not the token itself
-        return Ok(new { role = user.Roles.FirstOrDefault().ToString().ToLower(), username = loginDto.Username, id = user.Id, profImage = user.ProfImage, status = user.Status});
+        return Ok(new { role = user.Roles.FirstOrDefault().ToString().ToLower(), username = loginDto.Username, id = user.Id, profImage = user.ProfImage, status = user.Status });
     }
 
     [HttpPost("logout")]
@@ -42,5 +42,12 @@ public class AuthController : Controller
         Response.Cookies.Delete("AccessToken");
         Response.Cookies.Delete("RefreshToken");
         return Ok(new { message = "Logged out successfully" });
+    }
+
+    [HttpGet("redirect-to-login")]
+    public IActionResult RedirectToLogin()
+    {
+        // Redirect to the frontend login page
+       return Unauthorized(new { message = "You need to log in." });
     }
 }

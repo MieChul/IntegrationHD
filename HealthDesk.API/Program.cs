@@ -1,6 +1,7 @@
 
 using HealthDesk.API;
 using HealthDesk.Application.Extensions;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +11,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: allowedOrigins, policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "https://HealthDesk.com", "http://localhost:90")  // Update with allowed origins
+        policy.WithOrigins("http://localhost:4200")  // Update with allowed origins
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials(); 
@@ -31,7 +32,16 @@ builder.Services.RegisterServices(builder.Configuration);
 //     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
 // });
 
-builder.Services.AddAuthentication(); 
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
+    {
+        options.Cookie.HttpOnly = true; // Prevent JavaScript access to the cookie
+        options.Cookie.SecurePolicy = CookieSecurePolicy.None; // Enforce HTTPS (use 'None' for local testing if needed)
+        options.Cookie.Path ="/";
+        options.Cookie.SameSite = SameSiteMode.None; // Support cross-origin requests with cookies
+         options.LoginPath = "/api/auth/redirect-to-login"; // Redirect to the Angular login page
+        options.LogoutPath = "/api/auth/redirect-to-login"; // Optional: Redirect after logout
+        options.AccessDeniedPath = "/api/auth/redirect-to-login";
+    });
 
 var app = builder.Build();
 app.UseStaticFiles();

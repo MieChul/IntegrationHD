@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "62meJjWT1c12qof95WIdcJTWq523G4lJYhyssindIhSIJjYZ8X8UEtdeERB7eNj5k8V5jIZqRU8a7fzlBMDKAA==",
+  "dgSpecHash": "QXvDqUSAx3B89TBd/ZXYqWKPapQIijpmVHQywHVu6JiCeiWnRj57vo0IW5j9jgOd8VjyeGdDs0ZXZYnUy/sV4Q==",
   "success": true,
-  "projectFilePath": "C:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.api\\HealthDesk.API.csproj",
+  "projectFilePath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.API\\HealthDesk.API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\admin\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\admin\\.nuget\\packages\\dnsclient\\1.6.1\\dnsclient.1.6.1.nupkg.sha512",

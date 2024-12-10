@@ -19,34 +19,5 @@ export class AppComponent {
   }
 
   ngOnInit(): void {
-    this.checkUserRole();
-    this.setNavItemsBasedOnRole();
-  }
-
-  checkUserRole() {
-    const userRole = sessionStorage.getItem('role');
-    if (userRole)
-      this.showLayout = true;
-  }
-
-  setNavItemsBasedOnRole() {
-    const role = sessionStorage.getItem('role');
-    this.showLayout = !!role && role !== 'admin';
-    if( this.showLayout)
-    {
-      if (role === 'physician') {
-        this.navItems = [
-          { icon: 'patient', label: 'Patients' },
-          { icon: 'schedule', label: 'Schedule' },
-          { icon: 'report', label: 'Reports' }
-        ];
-      } else if (role === 'patient') {
-        this.navItems = [
-          { icon: 'profile', label: 'My Profile' },
-          { icon: 'appointment', label: 'Appointments' },
-          { icon: 'history', label: 'History' }
-        ];
-      }
-    }
   }
 }

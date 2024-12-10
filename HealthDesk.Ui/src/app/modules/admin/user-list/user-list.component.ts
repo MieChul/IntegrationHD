@@ -2,8 +2,7 @@ import { Component, OnInit, inject, TemplateRef } from '@angular/core';
 import { first } from 'rxjs/operators';
 import { Router, ActivatedRoute } from '@angular/router';
 import * as _ from 'lodash';
-import { AccountService } from '../../services/account.service';
-
+import { AdminService } from '../../services/admin.service';
 
 @Component({ templateUrl: 'user-list.component.html' })
 
@@ -17,14 +16,13 @@ export class UserListComponent implements OnInit {
     closeResult = '';
 
 
-    constructor(private accountService: AccountService, private route: ActivatedRoute,
+    constructor(private adminService: AdminService, private route: ActivatedRoute,
         private router: Router,) { }
 
     ngOnInit() {
-        this.accountService.getAll()
+        this.adminService.getAll()
             .pipe(first())
             .subscribe(users => { this.users = users.filter(t => t.role != 'admin'); this.filterRecords('All'); });
-
     }
 
     filterRecords(type: string) {
@@ -60,5 +58,4 @@ export class UserListComponent implements OnInit {
             }
         );
     }
-
 }

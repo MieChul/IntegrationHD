@@ -1,13 +1,31 @@
+using HealthDesk.Application.DTO;
+using HealthDesk.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HealthDesk.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Admin")] // Restrict access to Admins only
+//[Authorize(Roles = "Admin")] // Restrict access to Admins only
 public class AdminController : ControllerBase
 {
-    public AdminController()
+    private IAdminService _adminService;
+    public AdminController(IAdminService adminService)
     {
+        _adminService = adminService;
+    }
+
+    [HttpPost("adminAction/{id}")]
+    public async Task<IActionResult> AdminAction(string id, AdminActionDto model)
+    {
+        await _adminService.AdminAction(id, model.Status, model.Comments);
+        return Ok(new { message = "User updated successfully" });
+    }
+
+    [HttpGet("users")]
+    public async Task<IActionResult> GetAll()
+    {
+        var users = await _adminService.GetAll();
+        return Ok(users);
     }
 }

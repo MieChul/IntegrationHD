@@ -20,7 +20,8 @@ public static class ServiceCollectionExtensions
     services.AddScoped<IMessageService, MessageService>();
     services.AddScoped<IUserService, UserService>();
     services.AddScoped<IAuthService, AuthService>();
-     services.AddScoped<IAccountService, AccountService>();
+    services.AddScoped<IAccountService, AccountService>();
+    services.AddScoped<IAdminService, AdminService>();
     #endregion
 
     #region Repositories

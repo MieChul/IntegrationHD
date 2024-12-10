@@ -7,8 +7,8 @@ import { switchMap, take } from 'rxjs/operators';
 import { AuthStateService } from '../../../shared/guards/auth-state.service';
 import { LoaderService } from '../../../shared/services/loader.service';
 import { NotificationService } from '../../../shared/services/notification.service';
-import { OtpService } from '../services/otp.service';
-import { UserService } from '../services/user.service';
+import { OtpService } from '../../services/otp.service';
+import { UserService } from '../../services/user.service';
 
 
 @Component({

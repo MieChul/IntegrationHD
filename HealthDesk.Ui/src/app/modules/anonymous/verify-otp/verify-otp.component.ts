@@ -7,7 +7,7 @@ import { take } from 'rxjs/operators';
 import { AuthStateService } from '../../../shared/guards/auth-state.service';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { LoaderService } from '../../../shared/services/loader.service';
-import { OtpService } from '../services/otp.service';
+import { OtpService } from '../../services/otp.service';
 
 @Component({
   selector: 'app-verify-otp',

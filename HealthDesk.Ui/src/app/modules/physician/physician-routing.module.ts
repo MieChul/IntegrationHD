@@ -18,6 +18,7 @@ import { ViewMedicalJournalComponent } from './view-medical-journal/view-medical
 import { AddProfileComponent } from './add-profile/add-profile.component';
 import { CustomizePrescriptionComponent } from './customize-prescription/customize-prescription.component';
 import { SelectTemplateComponent } from './select-template/select-template.component';
+import { ManageClinicComponent } from './manage-clinic/manage-clinic.component';
 
 const routes: Routes = [{
   path: '', component: PhysicianComponent,
@@ -39,6 +40,7 @@ const routes: Routes = [{
     { path: 'add-profile', component: AddProfileComponent },
     { path: 'customize-prescription', component: CustomizePrescriptionComponent },
     { path: 'select-template', component: SelectTemplateComponent },
+    { path: 'manage-clinic', component: ManageClinicComponent }
   ]
 }
 ];

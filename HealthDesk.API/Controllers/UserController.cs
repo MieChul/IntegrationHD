@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HealthDesk.API.Controllers;
 [ApiController]
+[AllowAnonymous]
 [Route("api/[controller]")]
 public class UserController : ControllerBase
 {
@@ -13,7 +14,7 @@ public class UserController : ControllerBase
         _userService = userService;
     }
 
-    [AllowAnonymous]
+
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserRegistrationDto user)
     {
@@ -42,7 +43,6 @@ public class UserController : ControllerBase
         return Ok(new { Message = result });
     }
 
-    [AllowAnonymous]
     [HttpGet("get-username/{contact}")]
     public async Task<IActionResult> GetUsername(string contact)
     {
@@ -52,7 +52,6 @@ public class UserController : ControllerBase
         return Ok(new { Username = result });
     }
 
-    [AllowAnonymous]
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] PasswordResetDto resetDto)
     {

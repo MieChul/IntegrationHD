@@ -1,0 +1,95 @@
+<div class="container" *ngIf="this.clinics">
+  <h1 class="animated-heading">
+    <i class="bi bi-geo me-2"></i>Manage Clinics
+  </h1>
+
+  <div class="row mb-3 align-items-center">
+    <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
+      <div class="mb-2 me-3">
+        <label for="searchClinic" class="form-label label-modern shadow">Search by Name</label>
+        <input 
+          type="text" 
+          id="searchClinic" 
+          class="form-control" 
+          placeholder="Search Clinics" 
+          [(ngModel)]="searchValue" 
+          (input)="searchClinic()" />
+      </div>
+    </div>
+    <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
+      <button class="btn btn-primary" (click)="openAddClinicPopup()">Add Clinic</button>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover table-modern">
+      <thead>
+        <tr>
+          <th (click)="sortTable('name')">Name</th>
+          <th (click)="sortTable('address')">Address</th>
+          <th (click)="sortTable('timing')">Timing</th>
+          <th (click)="sortTable('isActive')">Is Active</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let clinic of filteredClinics">
+          <td>{{ clinic.name }}</td>
+          <td>{{ clinic.address }}</td>
+          <td>{{ clinic.timing }}</td>
+          <td>
+            <span *ngIf="clinic.isActive" class="badge bg-success">Yes</span>
+            <span *ngIf="!clinic.isActive" class="badge bg-danger">No</span>
+          </td>
+          <td>
+            <button class="btn btn-warning btn-sm me-1" (click)="editClinic(clinic)">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-danger btn-sm" (click)="deleteClinic(clinic.id)">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add/Edit Clinic Modal -->
+<div class="modal fade" id="clinicModal" tabindex="-1" aria-labelledby="clinicModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="clinicModalLabel">{{ isEditMode ? 'Edit Clinic' : 'Add Clinic' }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label for="clinicName" class="form-label label-modern shadow">Name</label>
+            <input type="text" id="clinicName" class="form-control" [(ngModel)]="currentClinic.name" />
+          </div>
+          <div class="mb-3">
+            <label for="clinicAddress" class="form-label label-modern shadow">Address</label>
+            <input type="text" id="clinicAddress" class="form-control" [(ngModel)]="currentClinic.address" />
+          </div>
+          <div class="mb-3">
+            <label for="clinicTiming" class="form-label label-modern shadow">Timing</label>
+            <input type="text" id="clinicTiming" class="form-control" [(ngModel)]="currentClinic.timing" />
+          </div>
+          <div class="mb-3">
+            <label for="clinicIsActive" class="form-label label-modern shadow">Is Active</label>
+            <select id="clinicIsActive" class="form-select" [(ngModel)]="currentClinic.isActive">
+              <option [value]="true">Yes</option>
+              <option [value]="false">No</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" (click)="saveClinic()">{{ isEditMode ? 'Save Changes' : 'Add Clinic' }}</button>
+      </div>
+    </div>
+  </div>
+</div>

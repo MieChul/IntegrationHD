@@ -6,6 +6,7 @@ import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, debounceTime, first, map, startWith } from 'rxjs';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { Country, State, City } from 'country-state-city';
+import { AuthService } from '../../../shared/services/auth.service';
 
 @Component({
   selector: 'app-info',
@@ -55,7 +56,8 @@ export class InfoComponent {
     private route: ActivatedRoute,
     private router: Router,
     private accountService: AccountService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private authService:AuthService
   ) {
   }
 
@@ -142,7 +144,7 @@ export class InfoComponent {
   }
 
   initializeUserAndForm() {
-    this.userData = this.accountService.userValue;
+    this.userData = this.authService.userValue;
     if (this.userData) {
 
       this.accountService
@@ -151,7 +153,7 @@ export class InfoComponent {
         .subscribe((user) => {
           this.initializeHospitals(this.user.hospitals || []);
           this.user = user;
-          this.user.role = this.user.role || 'physician';
+          this.user.role = this.userData.role || this.user.role || 'physician';
           if (this.user.status === 'Rejected') this.isRejected = true;
           if (this.user.status === 'Saved') this.isSaved = true;
           if (this.user.status === 'Submitted') this.isSubmitted = true;
@@ -325,6 +327,16 @@ export class InfoComponent {
     window.location.reload();
   }
 
+  confirm() {
+    this.userData.isConfirm = false;
+    sessionStorage.setItem('user', JSON.stringify(this.userData));
+
+    if (this.userData.role !== 'physician' && this.userData.role !== 'patient')
+        this.router.navigate([`/organization/${this.userData.role}`]);
+    else
+      this.router.navigate([`/${this.userData.role}`]);
+  }
+
   onSubmit() {
     this.submitted = true;
     this.errorsFound = false;
@@ -398,6 +410,7 @@ export class InfoComponent {
       .pipe(first())
       .subscribe({
         next: () => {
+          if(!this.isSubmitted && !(this.user.status === 'Approved'))
           this.isSaved = true;
           this.reload();
           window.alert("Saved!");

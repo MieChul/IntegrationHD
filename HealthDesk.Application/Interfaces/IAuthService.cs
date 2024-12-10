@@ -9,5 +9,4 @@ public interface IAuthService
         Task SetTokenCookies(HttpContext context, UserDto user);
         Task<string> GenerateRefreshToken(string userId);
         Task<string?> RefreshAccessToken(string userId);
-        Task InvalidateUserTokens(string userId);
     }

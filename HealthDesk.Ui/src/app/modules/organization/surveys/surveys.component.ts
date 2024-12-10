@@ -56,11 +56,7 @@ export class SurveysComponent implements OnInit {
   }
 
   shareSurvey(survey: any) {
-    this.surveyShareLink = this.generateSurveyLink(survey);
-    this.isLinkCopied = false;
-
-    const modal = new Modal(this.shareSurveyModal.nativeElement);
-    modal.show();
+    this.router.navigate(['organization/pharma/share-survey', survey.id]);
   }
 
   generateSurveyLink(survey: any): string {

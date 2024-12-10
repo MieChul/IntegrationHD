@@ -29,7 +29,7 @@ public class AuthService : IAuthService
             return null;
         }
 
-        var userDto = new UserDto
+        return new UserDto
         {
             Id = user.Id,
             Status = user.Status,
@@ -37,8 +37,6 @@ public class AuthService : IAuthService
             Roles = user.Roles,
             ProfImage = user.ProfImage
         };
-
-        return userDto; // Return user instead of token
     }
 
     public async Task<string> GenerateRefreshToken(string userId)
@@ -54,21 +52,19 @@ public class AuthService : IAuthService
         return refreshToken.Token;
     }
 
-    public async Task InvalidateUserTokens(string userId) =>
-               await _refreshTokenRepository.DeleteByUserIdAsync(userId);
-
-    public async Task<string?> RefreshAccessToken(string userId)
+    public async Task<string?> RefreshAccessToken(string refreshToken)
     {
         // Validate the refresh token
-        var tokenEntry = await _refreshTokenRepository.GetByDynamicPropertyAsync("UserId", userId);
+        var tokenEntry = await _refreshTokenRepository.GetByDynamicPropertyAsync("Token", refreshToken);
         if (tokenEntry == null || tokenEntry.ExpiryDate <= DateTime.UtcNow || tokenEntry.IsRevoked)
         {
-            await InvalidateUserTokens(userId);
             return null;// Invalid, expired, or revoked token
         }
 
         // Retrieve the user and generate a new access token
         var user = await _userRepository.GetByIdAsync(tokenEntry.UserId);
+        if (user == null) return null;
+
         var userDto = new UserDto
         {
             Id = user.Id,
@@ -77,47 +73,52 @@ public class AuthService : IAuthService
             Roles = user.Roles
         };
 
-        return user != null ? GenerateToken(userDto) : null;
+        return GenerateAccessToken(userDto);
     }
 
     public async Task SetTokenCookies(HttpContext context, UserDto user)
     {
-        var accessToken = GenerateToken(user);
+        // Generate access and refresh tokens
+        var accessToken = GenerateAccessToken(user);
         var refreshToken = await GenerateRefreshToken(user.Id);
 
-        // Cookie options for the access token
-        var accessTokenOptions = new CookieOptions
+        // Set access token cookie
+        context.Response.Cookies.Append("AccessToken", accessToken, new CookieOptions
         {
-            HttpOnly = true, // Prevent JavaScript access
-                             // Secure = true, // Only allow over HTTPS
-                             // SameSite = SameSiteMode.Strict,
-                             // Remove Secure for local testing if you're not using HTTPS
-            SameSite = SameSiteMode.Lax, // Use Lax or None for cross-site cookies
+            HttpOnly = true,
+            Secure = false, // Use true in production
+            SameSite = SameSiteMode.None,
+            Path = "/",
             Expires = DateTime.UtcNow.AddMinutes(15) // Short-lived access token
-        };
+        });
 
-
-        // Set cookies in the response
-        context.Response.Cookies.Append("AccessToken", accessToken, accessTokenOptions);
-        var refreshTokenEntity = new RefreshToken
+        // Set refresh token cookie
+        context.Response.Cookies.Append("RefreshToken", refreshToken, new CookieOptions
         {
-            UserId = user.Id,
-            Token = refreshToken,
-            ExpiryDate = DateTime.UtcNow.Date,
-            IsRevoked = false
-        };
-        await _refreshTokenRepository.AddAsync(refreshTokenEntity);
+            HttpOnly = true,
+            Secure = false, // Use true in production
+            SameSite = SameSiteMode.None,
+            Path = "/",
+            Expires = DateTime.UtcNow.AddDays(1) // Long-lived refresh token
+        });
     }
 
-    private string GenerateToken(UserDto user)
+    private string GenerateAccessToken(UserDto user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
-        var claims = new List<Claim> { new Claim(ClaimTypes.Name, user.Username), new Claim(ClaimTypes.NameIdentifier, user.Id) };
+
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.NameIdentifier, user.Id)
+        };
+
         foreach (var role in user.Roles)
         {
             claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
         }
+
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),

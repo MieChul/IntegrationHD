@@ -12,6 +12,7 @@ import { SurveyFormComponent } from './survey-form/survey-form.component';
 import { SurveysComponent } from './surveys/surveys.component';
 import { ViewSurveyResponseComponent } from './view-survey-response/view-survey-response.component';
 import { SharedModule } from '../../shared/shared.module';
+import { ShareSurveyComponent } from './share-survey/share-survey.component';
 
 
 @NgModule({
@@ -24,7 +25,8 @@ import { SharedModule } from '../../shared/shared.module';
     PharmacyLandingComponent,
     SurveyFormComponent,
     SurveysComponent,
-    ViewSurveyResponseComponent
+    ViewSurveyResponseComponent,
+    ShareSurveyComponent
   ],
   imports: [
     SharedModule,
