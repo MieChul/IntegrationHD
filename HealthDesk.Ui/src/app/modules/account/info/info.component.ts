@@ -38,6 +38,8 @@ export class InfoComponent {
   gDocError: any = false;
   minDate: Date = new Date(1960, 0, 1);
   isSubmitted: boolean = false;
+  emailSameError: boolean = false;
+  mobileSameError: boolean = false;
   states: any[] = [];
   cities: any[] = [];
   clinicstates: any[] = [];
@@ -178,7 +180,7 @@ export class InfoComponent {
       mobile2: [this.user.mobile2, Validators.pattern('(0|91)?[6-9][0-9]{9}')],
       email1: [this.user.email, Validators.email],
       email2: [this.user.email2, Validators.email],
-      aadhar: [this.user.aadhar, Validators.pattern('^[2-9]{1}[0-9]{3}\\s[0-9]{4}\\s[0-9]{4}$')],
+      aadhar: [this.user.aadhar, Validators.pattern('^[2-9]{1}[0-9]{3}\\s?[0-9]{4}\\s?[0-9]{4}$')],
       pan: [this.user.pan, Validators.pattern('[A-Z]{5}[0-9]{4}[A-Z]{1}')],
       address1: [this.user.address1],
       address2: [this.user.address2],
@@ -386,7 +388,24 @@ export class InfoComponent {
           this.gDocError = false;
     }
 
+if(this.user.role ==='physician' || this.user.role ==='patient')
+{
+  if(this.form.value.mobile1 === this.form.value.mobile2)
+  {
+    this.mobileSameError = true;
+    return;
+  }
+  else
+  this.mobileSameError = false;
 
+  if(this.form.value.email1 === this.form.value.email2)
+    {
+      this.emailSameError = true;
+      return;
+    }
+    else
+    this.emailSameError = false;
+}
 
     this.form.value.isSave = false;
     this.accountService.registerUserInfo(this.user.id, this.form.value)

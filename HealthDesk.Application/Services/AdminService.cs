@@ -1,6 +1,7 @@
 
 using HealthDesk.Application.Interfaces;
 using HealthDesk.Core;
+using HealthDesk.Core.Enum;
 using static HealthDesk.Application.UserRegistrationDto;
 
 namespace HealthDesk.Application.Services;
@@ -27,14 +28,32 @@ public class AdminService : IAdminService
 
             if (string.IsNullOrEmpty(user.Mobile))
                 _messageService.SendEmail(user.Email, "Congratulations, Your application for using HealthDesk has been approved.", "Hello " + user.FirstName + ", We are pleased to inform that your application has been approved for using HealtDesk App.\n Login using User name:" + user.Username + "\n Thank You, Admin HealthDesk");
-              else
+            else
                 _messageService.SendSms(user.Mobile, "Congratulations " + user.FirstName + ", Your application for using HealthDesk has been approved. Login using User name:" + user.Username);
         }
     }
 
-      public async Task<List<User>> GetAll()
+    public async Task<List<dynamic>> GetAll()
     {
-        var user = await _userRepository.GetAllAsync();
-        return user.ToList();
+        var users = await _userRepository.GetAllAsync();
+
+        var userList = users
+     .Where(u => !u.Roles.Any(role => role == Role.Admin)) // Exclude Admin role
+     .Select(u => (dynamic)new
+     {
+         UserName = u.Username,
+         Name = u.Roles.Any(role => role == Role.Physician || role == Role.Patient)
+             ? $"{u.FirstName} {u.LastName}"
+             : u.OrgName,
+         LastName = u.LastName,
+         Contact = !string.IsNullOrEmpty(u.Mobile) ? u.Mobile : u.Email,
+         Role = u.Roles.FirstOrDefault().ToString(),
+         Status = u.Status,
+         City = u.Roles.Any(role => role == Role.Physician || role == Role.Patient)
+             ? u.City
+             : u.ClinicCity,
+     }).ToList();
+
+        return userList.ToList();
     }
 }

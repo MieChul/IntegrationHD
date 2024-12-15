@@ -85,7 +85,7 @@ export class VerifyForgotPasswordComponent implements OnInit, OnDestroy {
           error: (error) => {
             this.loader.hide();
             if (error.status === 404) {
-              this.notificationService.showError('Not registered with app. Please SignUp');
+              this.notificationService.showError('Not registered with app. Please Register');
             } else {
               console.error('Failed to send OTP', error);
               this.notificationService.showError('Failed to send OTP. Please try again');

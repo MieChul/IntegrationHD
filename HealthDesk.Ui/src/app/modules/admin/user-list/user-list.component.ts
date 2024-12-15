@@ -22,7 +22,7 @@ export class UserListComponent implements OnInit {
     ngOnInit() {
         this.adminService.getAll()
             .pipe(first())
-            .subscribe(users => { this.users = users.filter(t => t.role != 'admin'); this.filterRecords('All'); });
+            .subscribe(users => { this.users = users; this.filterRecords('All'); });
     }
 
     filterRecords(type: string) {

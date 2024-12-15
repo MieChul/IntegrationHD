@@ -191,7 +191,10 @@
                                         <div *ngIf="submitted && f['mobile2'].errors" class="invalid-feedback">
                                             <div *ngIf="f['mobile2'].invalid">Mobile number is invalid</div>
                                         </div>
-                                        <label for="mobile1" class="form-label-floating">Mobile 1</label>
+                                        <div *ngIf="submitted && mobileSameError">
+                                            <span  class="danger">Both mobile numbers are same. Please correct.</span>
+                                        </div>
+                                        <label for="mobile1" class="form-label-floating">Mobile 2</label>
 
                                     </div>
                                 </div>
@@ -214,7 +217,10 @@
                                         <div *ngIf="submitted && f['email2'].errors" class="invalid-feedback">
                                             <div *ngIf="f['email2'].invalid">Email is invalid</div>
                                         </div>
-                                        <label for="email1" class="form-label-floating">Email 1</label>
+                                        <div *ngIf="submitted && emailSameError">
+                                            <span class="danger">Both email ids are same. Please correct.</span>
+                                        </div>
+                                        <label for="email1" class="form-label-floating">Email 2</label>
                                     </div>
                                 </div>
                                 <hr>
@@ -341,6 +347,36 @@
                     <div *ngIf="tab =='q_info'">
                         <div class="card mb-4">
                             <div class="card-body">
+                                <p class="mb-4"><span class="text-primary font-italic me-1">Medical Registration</span>
+                                </p>
+                                <div class="row" formGroupName="medicalRegistration">
+                                    <div class="form-floating col-sm-4">
+                                        <input type="text" class="form-control" id="certificateNumber"
+                                            placeholder="Certificate Number" autocomplete="off"
+                                            formControlName="certificateNumber">
+                                        <label for="certificateNumber" class="form-label-floating">Certification
+                                            Number</label>
+                                    </div>
+                                    <div class="form-floating col-sm-4">
+                                        <input type="text" class="form-control" id="councilName"
+                                            placeholder="Council Name" autocomplete="off" formControlName="councilName">
+                                        <label for="councilName" class="form-label-floating">Council Name</label>
+                                    </div>
+                                    <div class="form-floating mb-3 col-sm-4">
+                                        <div class="row">
+                                            <div class="col-sm-9">
+                                                <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
+                                                    id="formFile" (change)="upload($event, 'medicalRegistration')">
+                                            </div>
+                                            <div *ngIf="user.medicalRegistration.document"
+                                                class="form-floating mb-3 col-sm-3">
+                                                <div (click)="view(user.medicalRegistration.document)"
+                                                    class="btn btn-primary"> View</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr>
                                 <p class="mb-4"><span class="text-primary font-italic me-1">Qualification
                                         Documents</span>
                                 </p>
@@ -473,35 +509,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <hr>
-                                <div class="row" formGroupName="medicalRegistration">
-                                    <span class="text-success font-italic mb-2">Medical Registration</span>
-                                    <div class="form-floating col-sm-4">
-                                        <input type="text" class="form-control" id="certificateNumber"
-                                            placeholder="Certificate Number" autocomplete="off"
-                                            formControlName="certificateNumber">
-                                        <label for="certificateNumber" class="form-label-floating">Certification
-                                            Number</label>
-                                    </div>
-                                    <div class="form-floating col-sm-4">
-                                        <input type="text" class="form-control" id="councilName"
-                                            placeholder="Council Name" autocomplete="off" formControlName="councilName">
-                                        <label for="councilName" class="form-label-floating">Council Name</label>
-                                    </div>
-                                    <div class="form-floating mb-3 col-sm-4">
-                                        <div class="row">
-                                            <div class="col-sm-9">
-                                                <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
-                                                    id="formFile" (change)="upload($event, 'medicalRegistration')">
-                                            </div>
-                                            <div *ngIf="user.medicalRegistration.document"
-                                                class="form-floating mb-3 col-sm-3">
-                                                <div (click)="view(user.medicalRegistration.document)"
-                                                    class="btn btn-primary"> View</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                
                                 <hr>
                             </div>
                         </div>
