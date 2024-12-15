@@ -237,14 +237,15 @@ export class InfoComponent {
       hospitals: this.formBuilder.array([]),
       profImage: [this.user.profImage || '/assets/defaultProfile.jpg']
     });
+
+    this.onStateChange(null);
+    this.onClinicStateChange(null);
   }
 
   ngAfterViewChecked() {
     if (this.form) {
       this.updateValidators();
       this.calculateAge();
-      this.onStateChange(null);
-      this.onClinicStateChange(null);
     }
   }
 
