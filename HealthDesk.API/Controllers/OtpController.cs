@@ -9,18 +9,26 @@ namespace HealthDesk.API.Controllers;
 public class OtpController : ControllerBase
 {
     private readonly IOtpService _otpService;
+    private readonly IUserService _userService;
 
-    public OtpController(IOtpService otpService)
+    public OtpController(IOtpService otpService, IUserService userService)
     {
         _otpService = otpService;
+        _userService = userService;
     }
 
     [HttpPost("send")]
-    public IActionResult SendOtp([FromBody] SendOtpRequest request)
+    public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
+        }
+
+        var prop = request.IsEmail ? "email": "mobile";
+        if (await _userService.IsTaken(prop, request.Contact))
+        {
+            return BadRequest($"{char.ToUpper(prop[0])}{prop[1..]} is already registered. Please use login.");
         }
         var otp = _otpService.GenerateOtp();
         var otpToken = _otpService.GenerateOtpToken(otp, request.Contact);

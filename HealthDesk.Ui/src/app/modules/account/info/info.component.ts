@@ -7,6 +7,7 @@ import { BehaviorSubject, debounceTime, first, map, startWith } from 'rxjs';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { Country, State, City } from 'country-state-city';
 import { AuthService } from '../../../shared/services/auth.service';
+import { LoaderService } from '../../../shared/services/loader.service';
 
 @Component({
   selector: 'app-info',
@@ -59,13 +60,15 @@ export class InfoComponent {
     private router: Router,
     private accountService: AccountService,
     private notificationService: NotificationService,
-    private authService:AuthService
+    private authService: AuthService,
+    private loaderService: LoaderService,
   ) {
   }
 
   @ViewChild('fileInput') fileInput!: ElementRef;
 
   ngOnInit() {
+    this.loaderService.show();
     this.initializeUserAndForm();
     this.states = State.getStatesOfCountry('IN');
     this.clinicstates = State.getStatesOfCountry('IN');
@@ -173,7 +176,10 @@ export class InfoComponent {
     this.form = this.formBuilder.group({
       displayName: [this.user.displayName],
       firstName: [this.user.firstName || ''],
-      middleName: [this.user.middleName || ''],
+      middleName: [
+        this.user.middleName || '',
+        [Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,25}$/)],
+      ],
       lastName: [this.user.lastName || ''],
       gender: [this.user.gender],
       mobile1: [this.user.mobile],
@@ -190,23 +196,39 @@ export class InfoComponent {
       pincode: [this.user.pincode],
       noDocConsentProvided: [this.user.noDocConsentProvided],
       graduation: new FormGroup({
-        year: new FormControl(this.user.graduation?.year),
-        institute: new FormControl(this.user.graduation?.institute),
+        year: new FormControl(this.user.graduation?.year, [
+          Validators.pattern(/^(19|20)\d{2}$/), // Matches valid years from 1900 to 2099
+        ]),
+        institute: new FormControl(this.user.graduation?.institute, [
+          Validators.pattern(/^[a-zA-Z0-9\s,.'-]{2,100}$/), // Allows alphanumeric, spaces, commas, periods, and dashes
+        ]),
         document: new FormControl(this.user.graduation?.document)
       }),
       postGraduation: new FormGroup({
-        year: new FormControl(this.user.postGraduation?.year),
-        institute: new FormControl(this.user.postGraduation?.institute),
+        year: new FormControl(this.user.postGraduation?.year, [
+          Validators.pattern(/^(19|20)\d{2}$/), // Matches valid years from 1900 to 2099
+        ]),
+        institute: new FormControl(this.user.postGraduation?.institute, [
+          Validators.pattern(/^[a-zA-Z0-9\s,.'-]{2,50}$/), // Allows alphanumeric, spaces, commas, periods, and dashes
+        ]),
         document: new FormControl(this.user.postGraduation?.document)
       }),
       superSpecialization: new FormGroup({
-        year: new FormControl(this.user.superSpecialization?.year),
-        institute: new FormControl(this.user.superSpecialization?.institute),
+        year: new FormControl(this.user.superSpecialization?.year, [
+          Validators.pattern(/^(19|20)\d{2}$/), // Matches valid years from 1900 to 2099
+        ]),
+        institute: new FormControl(this.user.superSpecialization?.institute, [
+          Validators.pattern(/^[a-zA-Z0-9\s,.'-]{2,50}$/), // Allows alphanumeric, spaces, commas, periods, and dashes
+        ]),
         document: new FormControl(this.user.superSpecialization?.document)
       }),
       additionalQualification: new FormGroup({
-        year: new FormControl(this.user.additionalQualification?.year),
-        institute: new FormControl(this.user.additionalQualification?.institute),
+        year: new FormControl(this.user.additionalQualification?.year, [
+          Validators.pattern(/^(19|20)\d{2}$/), // Matches valid years from 1900 to 2099
+        ]),
+        institute: new FormControl(this.user.additionalQualification?.institute, [
+          Validators.pattern(/^[a-zA-Z0-9\s,.'-]{2,50}$/), // Allows alphanumeric, spaces, commas, periods, and dashes
+        ]),
         document: new FormControl(this.user.additionalQualification?.document)
       }),
       medicalRegistration: new FormGroup({
@@ -232,7 +254,7 @@ export class InfoComponent {
       authDept: [this.user.authDept],
       landLine: [this.user.landLine],
       authMob: [this.user.authMob],
-      authEmail: [this.user.authEmail],
+      authEmail: [this.user.email],
       bloodGroup: [this.user.bloodGroup],
       relationId: [this.user.relationId],
       isSave: [],
@@ -242,6 +264,7 @@ export class InfoComponent {
 
     this.onStateChange(null);
     this.onClinicStateChange(null);
+    this.loaderService.hide();
   }
 
   ngAfterViewChecked() {
@@ -256,30 +279,30 @@ export class InfoComponent {
     const isPhysician = this.user.role === 'physician';
     const isNonPatient = this.user.role !== 'patient';
     const isOtherRoles = this.user.role !== 'patient' && this.user.role !== 'physician';
-
+    const nameValidator = Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,25}$/);
     // Define control and validation map
     const validationMap: { [key: string]: any } = {
       displayName: isPatientOrPhysician ? [Validators.required] : [],
-      firstName: isPatientOrPhysician ? [Validators.required] : [],
-      lastName: isPatientOrPhysician ? [Validators.required] : [],
+      firstName: isPatientOrPhysician ? [Validators.required, nameValidator] : [],
+      lastName: isPatientOrPhysician ? [Validators.required, nameValidator] : [],
       gender: isPatientOrPhysician ? [Validators.required] : [],
       address1: isPatientOrPhysician ? [Validators.required] : [],
       address2: isPatientOrPhysician ? [Validators.required] : [],
       city: isPatientOrPhysician ? [Validators.required] : [],
       state: isPatientOrPhysician ? [Validators.required] : [],
       area: isPatientOrPhysician ? [Validators.required] : [],
-      pincode: isPatientOrPhysician ? [Validators.required] : [],
+      pincode: isPatientOrPhysician ? [Validators.required, Validators.pattern(/^[1-9][0-9]{5}$/)] : [],
       clinicName: isPhysician ? [Validators.required] : [],
       clinicArea: isNonPatient ? [Validators.required] : [],
       clinicCity: isNonPatient ? [Validators.required] : [],
       clinicState: isNonPatient ? [Validators.required] : [],
-      clinicPincode: isNonPatient ? [Validators.required] : [],
+      clinicPincode: isNonPatient ? [Validators.required, Validators.pattern(/^[1-9][0-9]{5}$/)] : [],
       orgName: isOtherRoles ? [Validators.required] : [],
-      authFirstName: isOtherRoles ? [Validators.required] : [],
-      authLastName: isOtherRoles ? [Validators.required] : [],
+      authFirstName: isOtherRoles ? [Validators.required, nameValidator] : [],
+      authLastName: isOtherRoles ? [Validators.required, nameValidator] : [],
       authDesignation: isOtherRoles ? [Validators.required] : [],
       authMob: isOtherRoles ? [Validators.required] : [],
-      birthDate:isPatientOrPhysician ? [Validators.required] : []
+      birthDate: isPatientOrPhysician ? [Validators.required] : []
     };
 
     // Apply validations
@@ -331,21 +354,24 @@ export class InfoComponent {
   }
 
   confirm() {
+    this.userData.confirmed = true;
     this.userData.isConfirm = false;
     sessionStorage.setItem('user', JSON.stringify(this.userData));
 
     if (this.userData.role !== 'physician' && this.userData.role !== 'patient')
-        this.router.navigate([`/organization/${this.userData.role}`]);
+      this.router.navigate([`/organization/${this.userData.role}`]);
     else
       this.router.navigate([`/${this.userData.role}`]);
   }
 
   onSubmit() {
+    this.loaderService.show();
     this.submitted = true;
     this.errorsFound = false;
     this.updateErrors = false;
     //stop here if form is invalid
     if (this.form.invalid) {
+      this.loaderService.hide();
       this.errorsFound = true;
 
       if (this.user.role == 'physician') {
@@ -359,20 +385,24 @@ export class InfoComponent {
         else
           this.gInstituteError = false;
       }
-
+      this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
       return;
     }
 
     if (this.user.role == 'physician') {
       if (!this.form.value.graduation.year) {
+        this.loaderService.hide();
         this.gYearError = true;
+        this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
         return;
       }
       else
         this.gYearError = false;
 
       if (!this.form.value.graduation.institute) {
+        this.loaderService.hide();
         this.gInstituteError = true;
+        this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
         return;
       }
       else
@@ -380,48 +410,54 @@ export class InfoComponent {
     }
 
     if (!this.form.value.noDocConsentProvided && this.user.role === 'physician') {
-        if (!this.form.value.graduation.document) {
-          this.gDocError = true;
-          return;
+      if (!this.form.value.graduation.document) {
+        this.loaderService.hide();
+        this.gDocError = true;
+        this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
+        return;
       }
       else
-          this.gDocError = false;
+        this.gDocError = false;
     }
 
-if(this.user.role ==='physician' || this.user.role ==='patient')
-{
-  if(this.form.value.mobile1 === this.form.value.mobile2)
-  {
-    this.mobileSameError = true;
-    return;
-  }
-  else
-  this.mobileSameError = false;
+    if (this.user.role === 'physician' || this.user.role === 'patient') {
+      if (this.form.value.mobile1 === this.form.value.mobile2) {
+        this.loaderService.hide();
+        this.mobileSameError = true;
+        this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
+        return;
+      }
+      else
+        this.mobileSameError = false;
 
-  if(this.form.value.email1 === this.form.value.email2)
-    {
-      this.emailSameError = true;
-      return;
+      if (this.form.value.email1 === this.form.value.email2) {
+        this.loaderService.hide();
+        this.emailSameError = true;
+        this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
+        return;
+      }
+      else
+        this.emailSameError = false;
     }
-    else
-    this.emailSameError = false;
-}
-
     this.form.value.isSave = false;
     this.accountService.registerUserInfo(this.user.id, this.form.value)
       .pipe(first())
       .subscribe({
         next: () => {
+          this.loaderService.hide();
           this.reload();
+          this.notificationService.showSuccess('Application has been submitted.');
         },
         error: error => {
+          this.loaderService.hide();
+          this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
           this.updateErrors = true;
-          this.updateErrorsMessage = error;
         }
       });
   }
 
   save() {
+    this.loaderService.show();
     this.errorsFound = false;
     this.updateErrors = false;
 
@@ -430,14 +466,16 @@ if(this.user.role ==='physician' || this.user.role ==='patient')
       .pipe(first())
       .subscribe({
         next: () => {
-          if(!this.isSubmitted && !(this.user.status === 'Approved'))
-          this.isSaved = true;
+          this.loaderService.hide();
+          if (!this.isSubmitted && !(this.user.status === 'Approved'))
+            this.isSaved = true;
           this.reload();
-          window.alert("Saved!");
+          this.notificationService.showSuccess('Application has been saved.');
         },
         error: error => {
+          this.loaderService.hide();
           this.updateErrors = true;
-          this.updateErrorsMessage = error;
+          this.notificationService.showError('Something went wrong, Please try again after sometime.');
         }
       });
   }
@@ -470,6 +508,7 @@ if(this.user.role ==='physician' || this.user.role ==='patient')
   }
 
   upload(event: any, propName: string) {
+    this.loaderService.show();
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
 
@@ -494,6 +533,7 @@ if(this.user.role ==='physician' || this.user.role ==='patient')
     }
 
     if (!isValid) {
+      this.loaderService.hide();
       console.error("Invalid file type or size.");
       this.updateErrors = true;
 
@@ -523,6 +563,7 @@ if(this.user.role ==='physician' || this.user.role ==='patient')
       .pipe(first())
       .subscribe({
         next: (response: any) => {
+          this.loaderService.hide();
           switch (propName) {
             case 'graduation':
               this.form.value.graduation.document = response.fileName;
@@ -547,8 +588,9 @@ if(this.user.role ==='physician' || this.user.role ==='patient')
           }
         },
         error: (error) => {
+          this.loaderService.hide();
           this.updateErrors = true;
-          this.updateErrorsMessage = error;
+          this.notificationService.showError(`Something wrong with the file. Please try again or use different file format`);
         }
       });
   }

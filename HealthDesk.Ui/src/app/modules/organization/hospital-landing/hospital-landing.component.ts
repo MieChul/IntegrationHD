@@ -4,12 +4,18 @@ import {
   ViewChild,
   AfterViewInit
 } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { Modal } from 'bootstrap';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import * as bootstrap from 'bootstrap';
 
 interface Physician {
-  name: string;
+  id: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
   qualification: string;
   speciality: string;
   opdTiming: string;
@@ -36,6 +42,31 @@ export class HospitalLandingComponent implements OnInit, AfterViewInit {
   // Data arrays
   physicians: Physician[] = [];
   services: Service[] = [];
+  selectedPhysicianId: string = '';
+  registeredPhysicians: Physician[] = [
+    {
+      id: '1',
+      firstName: 'Dr. John',
+      middleName: 'A',
+      lastName: 'Doe',
+      qualification: 'MBBS, MD',
+      speciality: 'Cardiology',
+      opdTiming: 'Mon-Fri 10 AM - 2 PM',
+      comment: 'Expert in heart diseases'
+    },
+    {
+      id: '2',
+      firstName: 'Dr. Jane',
+      middleName: 'B',
+      lastName: 'Smith',
+      qualification: 'MBBS',
+      speciality: 'Pediatrics',
+      opdTiming: 'Mon-Wed 9 AM - 12 PM',
+      comment: 'Child specialist'
+    }
+  ];
+
+
 
   // Filtered arrays for display
   filteredPhysicians: Physician[] = [];
@@ -44,6 +75,8 @@ export class HospitalLandingComponent implements OnInit, AfterViewInit {
   // Search texts
   physicianSearchText: string = '';
   serviceSearchText: string = '';
+  specialitySearchText: string = '';
+  opdSearchText: string = '';
 
   // Forms
   physicianForm!: FormGroup;
@@ -54,10 +87,11 @@ export class HospitalLandingComponent implements OnInit, AfterViewInit {
   serviceModalRef!: NgbModalRef;
 
   // Flags
+  manualEntryEnabled: boolean = false;
   isEditPhysician: boolean = false;
   isEditService: boolean = false;
 
-  constructor(private fb: FormBuilder, private modalService: NgbModal) {}
+  constructor(private fb: FormBuilder, private modalService: NgbModal) { }
 
   ngOnInit(): void {
     this.initForms();
@@ -75,7 +109,10 @@ export class HospitalLandingComponent implements OnInit, AfterViewInit {
 
   initForms(): void {
     this.physicianForm = this.fb.group({
-      name: [''],
+      physicianSelect: [''],
+      firstName: ['', [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,49}$/)]],
+      middleName: ['', [Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,49}$/)]], // Optional
+      lastName: ['', [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,49}$/)]],
       qualification: [''],
       speciality: [''],
       opdTiming: [''],
@@ -90,53 +127,29 @@ export class HospitalLandingComponent implements OnInit, AfterViewInit {
   }
 
   loadDummyData(): void {
-    // Dummy data for physicians
     this.physicians = [
       {
-        name: 'Dr. A. Sharma',
+        id: '3',
+        firstName: 'Arjun',
+        middleName: 'Kumar',
+        lastName: 'Sharma',
         qualification: 'MBBS, MD',
         speciality: 'Cardiology',
         opdTiming: 'Mon-Fri 10 AM - 2 PM',
         comment: 'Expert in heart diseases'
       },
       {
-        name: 'Dr. S. Gupta',
+        id: '4',
+        firstName: 'Sanjay',
+        middleName: '',
+        lastName: 'Gupta',
         qualification: 'MBBS, MS',
         speciality: 'Orthopedics',
         opdTiming: 'Mon-Sat 9 AM - 1 PM',
         comment: 'Specializes in bone surgery'
-      },
-      {
-        name: 'Dr. R. Singh',
-        qualification: 'MBBS, DCH',
-        speciality: 'Pediatrics',
-        opdTiming: 'Mon-Fri 11 AM - 4 PM',
-        comment: 'Child specialist'
-      },
-      {
-        name: 'Dr. K. Verma',
-        qualification: 'MBBS, MD',
-        speciality: 'Dermatology',
-        opdTiming: 'Tue-Thu 12 PM - 5 PM',
-        comment: 'Skin specialist'
-      },
-      {
-        name: 'Dr. L. Patel',
-        qualification: 'MBBS, MD',
-        speciality: 'Neurology',
-        opdTiming: 'Mon-Fri 9 AM - 12 PM',
-        comment: 'Expert in neurological disorders'
-      },
-      {
-        name: 'Dr. M. Das',
-        qualification: 'MBBS, MS',
-        speciality: 'ENT',
-        opdTiming: 'Wed-Sat 2 PM - 6 PM',
-        comment: 'Ear, Nose, Throat specialist'
       }
     ];
 
-    // Dummy data for services
     this.services = [
       {
         name: 'Emergency Services',
@@ -147,26 +160,6 @@ export class HospitalLandingComponent implements OnInit, AfterViewInit {
         name: 'Radiology',
         specification: 'X-Ray, MRI, CT Scan',
         comment: 'Advanced imaging services'
-      },
-      {
-        name: 'Laboratory Services',
-        specification: 'Blood Tests, Biopsy',
-        comment: 'Accurate diagnostic tests'
-      },
-      {
-        name: 'Physiotherapy',
-        specification: 'Rehabilitation and Therapy',
-        comment: 'Post-surgery recovery'
-      },
-      {
-        name: 'Pharmacy',
-        specification: 'In-house Pharmacy',
-        comment: 'All medicines available'
-      },
-      {
-        name: 'Ambulance Services',
-        specification: 'Advanced Life Support Ambulances',
-        comment: 'Quick patient transport'
       }
     ];
 
@@ -184,7 +177,7 @@ export class HospitalLandingComponent implements OnInit, AfterViewInit {
       this.physicianForm.patchValue(physician);
     }
 
-    const modal = new Modal(this.physicianModal.nativeElement);
+    const modal = new bootstrap.Modal(document.getElementById('physicianModal')!);
     modal.show();
   }
 
@@ -197,7 +190,10 @@ export class HospitalLandingComponent implements OnInit, AfterViewInit {
     const formValues = this.physicianForm.value;
 
     const physician: Physician = {
-      name: formValues.name,
+      id: formValues.id,
+      firstName: formValues.firstName,
+      middleName: formValues.middleName || '', // Optional
+      lastName: formValues.lastName,
       qualification: formValues.qualification,
       speciality: formValues.speciality,
       opdTiming: formValues.opdTiming,
@@ -206,7 +202,7 @@ export class HospitalLandingComponent implements OnInit, AfterViewInit {
 
     if (this.isEditPhysician) {
       const index = this.physicians.findIndex(
-        p => p.name === physician.name
+        p => p.firstName === physician.firstName && p.lastName === physician.lastName
       );
       if (index !== -1) {
         this.physicians[index] = physician;
@@ -216,7 +212,7 @@ export class HospitalLandingComponent implements OnInit, AfterViewInit {
     }
 
     this.filterPhysicians();
-    this.closePhysicianDialog();
+    this.manualEntryEnabled = false;
   }
 
   deletePhysician(physician: Physician): void {
@@ -227,21 +223,66 @@ export class HospitalLandingComponent implements OnInit, AfterViewInit {
   }
 
   filterPhysicians(): void {
-    if (this.physicianSearchText) {
-      this.filteredPhysicians = this.physicians.filter(p =>
-        p.name
-          .toLowerCase()
-          .includes(this.physicianSearchText.toLowerCase())
-      );
-    } else {
-      this.filteredPhysicians = [...this.physicians];
-    }
+    this.filteredPhysicians = this.physicians.filter(physician => {
+      const matchesName = this.physicianSearchText
+        ? physician.firstName.toLowerCase().includes(this.physicianSearchText.toLowerCase()) ||
+        physician.lastName.toLowerCase().includes(this.physicianSearchText.toLowerCase())
+        : true;
+
+      const matchesSpeciality = this.specialitySearchText
+        ? physician.speciality.toLowerCase().includes(this.specialitySearchText.toLowerCase())
+        : true;
+
+      const matchesOpdTiming = this.opdSearchText
+        ? physician.opdTiming.toLowerCase().includes(this.opdSearchText.toLowerCase())
+        : true;
+
+      return matchesName && matchesSpeciality && matchesOpdTiming;
+    });
   }
 
   sortPhysicianTable(column: keyof Physician): void {
     this.filteredPhysicians.sort((a, b) =>
-      a[column] > b[column] ? 1 : -1
+      (a[column] || '').toLowerCase() > (b[column] || '').toLowerCase() ? 1 : -1
     );
+  }
+
+  exportToExcel(): void {
+    // Define the headers matching the HTML table
+    const headers = [
+      'First Name',
+      'Middle Name',
+      'Last Name',
+      'Qualification',
+      'Speciality',
+      'OPD Days & Time',
+      'Comment'
+    ];
+
+    // Map the data to include headers
+    const dataToExport = this.filteredPhysicians.map(physician => ({
+      'First Name': physician.firstName,
+      'Middle Name': physician.middleName || '-', // Use '-' if middle name is missing
+      'Last Name': physician.lastName,
+      'Qualification': physician.qualification,
+      'Speciality': physician.speciality,
+      'OPD Days & Time': physician.opdTiming,
+      'Comment': physician.comment
+    }));
+
+    // Add headers as the first row
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport, { header: headers });
+
+    // Create a new workbook and append the worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Physicians');
+
+    // Write workbook to an Excel file
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+
+    // Save the file
+    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    saveAs(blob, `Physicians_${new Date().toISOString()}.xlsx`);
   }
 
   // Service Methods
@@ -254,7 +295,7 @@ export class HospitalLandingComponent implements OnInit, AfterViewInit {
       this.serviceForm.patchValue(service);
     }
 
-    const modal = new Modal(this.serviceModal.nativeElement);
+    const modal = new bootstrap.Modal(document.getElementById('serviceModal')!);
     modal.show();
   }
 
@@ -273,9 +314,7 @@ export class HospitalLandingComponent implements OnInit, AfterViewInit {
     };
 
     if (this.isEditService) {
-      const index = this.services.findIndex(
-        s => s.name === service.name
-      );
+      const index = this.services.findIndex(s => s.name === service.name);
       if (index !== -1) {
         this.services[index] = service;
       }
@@ -297,9 +336,7 @@ export class HospitalLandingComponent implements OnInit, AfterViewInit {
   filterServices(): void {
     if (this.serviceSearchText) {
       this.filteredServices = this.services.filter(s =>
-        s.name
-          .toLowerCase()
-          .includes(this.serviceSearchText.toLowerCase())
+        s.name.toLowerCase().includes(this.serviceSearchText.toLowerCase())
       );
     } else {
       this.filteredServices = [...this.services];
@@ -308,7 +345,26 @@ export class HospitalLandingComponent implements OnInit, AfterViewInit {
 
   sortServiceTable(column: keyof Service): void {
     this.filteredServices.sort((a, b) =>
-      a[column] > b[column] ? 1 : -1
+      (a[column] || '').toLowerCase() > (b[column] || '').toLowerCase() ? 1 : -1
     );
+  }
+
+  onPhysicianSelect(event: Event): void {
+    const target = event.target as HTMLSelectElement; // Cast to HTMLSelectElement
+    const value = target.value;
+
+    if (value === 'manual') {
+      this.manualEntryEnabled = true;
+      this.physicianForm.reset(); // Reset the form for manual entry
+    } else if (value) {
+      this.manualEntryEnabled = false;
+      const selectedPhysician = this.registeredPhysicians.find(p => p.id === value);
+      if (selectedPhysician) {
+        this.physicianForm.patchValue(selectedPhysician); // Autofill the form
+      }
+    } else {
+      this.manualEntryEnabled = false;
+      this.physicianForm.reset(); // Reset if no selection
+    }
   }
 }

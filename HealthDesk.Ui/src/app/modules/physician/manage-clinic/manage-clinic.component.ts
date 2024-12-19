@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import * as bootstrap from 'bootstrap';
 
 @Component({
@@ -12,13 +13,20 @@ export class ManageClinicComponent implements OnInit {
   searchValue: string = ''; // Search term
   sortKey: string = ''; // Current sort column
   sortDirection: string = 'asc'; // Current sort direction
+  clinicForm!: FormGroup;
 
   currentClinic: any = {}; // Clinic currently being added/edited
   isEditMode: boolean = false; // Whether we're editing or adding
 
-  constructor() {}
+  constructor(private fb: FormBuilder) {}
 
   ngOnInit(): void {
+    this.clinicForm = this.fb.group({
+      name: [''],
+      address: [''],
+      timing: [''],
+      isActive: [true]
+    });
     // Mock initial data
     this.clinics = [
       { id: 1, name: 'Clinic A', address: '123 Main St', timing: '9 AM - 5 PM', isActive: true },
@@ -53,29 +61,31 @@ export class ManageClinicComponent implements OnInit {
 
   // Open Add Clinic modal
   openAddClinicPopup(): void {
-    this.currentClinic = { name: '', address: '', timing: '', isActive: true }; // Reset form
     this.isEditMode = false;
+    this.clinicForm.reset({ name: '', address: '', timing: '', isActive: true });
     const modal = new bootstrap.Modal(document.getElementById('clinicModal')!);
     modal.show();
   }
-
-  // Open Edit Clinic modal
+  
   editClinic(clinic: any): void {
-    this.currentClinic = { ...clinic }; // Copy clinic data
     this.isEditMode = true;
+    this.clinicForm.patchValue(clinic);
     const modal = new bootstrap.Modal(document.getElementById('clinicModal')!);
     modal.show();
   }
 
   // Save clinic (add or edit)
   saveClinic(): void {
+    const formValues = this.clinicForm.value;
+  
     if (this.isEditMode) {
       const index = this.clinics.findIndex(c => c.id === this.currentClinic.id);
-      if (index !== -1) this.clinics[index] = { ...this.currentClinic };
+      if (index !== -1) this.clinics[index] = { ...this.currentClinic, ...formValues };
     } else {
-      this.currentClinic.id = this.clinics.length + 1;
-      this.clinics.push({ ...this.currentClinic });
+      const newClinic = { ...formValues, id: this.clinics.length + 1 };
+      this.clinics.push(newClinic);
     }
+  
     this.filteredClinics = [...this.clinics];
     bootstrap.Modal.getInstance(document.getElementById('clinicModal')!)?.hide();
   }

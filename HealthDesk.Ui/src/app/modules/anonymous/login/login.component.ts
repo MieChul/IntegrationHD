@@ -72,4 +72,8 @@ export class LoginComponent implements OnInit {
   navigateVerifyPassword() {
     this.router.navigate(['/verify-forgot-password']);
   }
+
+  onEnterKey() {
+    this.onSubmit();
+  }
 }

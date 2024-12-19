@@ -9,7 +9,7 @@
     <div class="collapse navbar-collapse" [ngClass]="{ 'show': isMenuOpen }">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item">
-          <a class="nav-link nav-bold" mat-button href="/{{userData.role}}">Dashboard</a>
+          <a class="nav-link nav-bold" mat-button [attr.href]="getDashboardLink(userData.role)">Dashboard</a>
         </li>
         <li class="nav-item">
           <a class="nav-link nav-bold" mat-button href="#">About Us</a>
@@ -19,16 +19,18 @@
         </li>
         <li class="nav-item">
           <button mat-button [matMenuTriggerFor]="profileMenu">
-            <img src="{{profImg}}" alt="Profile" class="profile-img" id="headerprofImg"> {{ userData.username }}
+            <img src="{{ profImg }}" alt="Profile" class="profile-img" id="headerprofImg"> {{ userData.username }}
           </button>
           <mat-menu #profileMenu="matMenu">
             <button class="pointer-cursor" mat-menu-item (click)="router.navigate(['account/'])">
               <mat-icon>person</mat-icon> My Profile
             </button>
-            <mat-divider *ngIf="userData.status ==='Approved'"></mat-divider>
-            <button *ngIf="userData.status ==='Approved'" mat-menu-item (click)="handleSwitchRole()">
-              <mat-icon>settings</mat-icon> {{ switchRole }}
-            </button>
+            <div *ngIf="userData.status === 'Approved' && userData.role !== 'admin' && userData.role !== 'pharmaceutical'">
+              <mat-divider></mat-divider>
+              <button mat-menu-item (click)="handleSwitchRole()">
+                <mat-icon>settings</mat-icon> {{ switchRole }}
+              </button>
+            </div>
             <mat-divider></mat-divider>
             <button mat-menu-item (click)="logout()">
               <mat-icon>logout</mat-icon> Logout
@@ -44,15 +46,33 @@
 </header>
 <div id="roleSelectionPopup" class="modal" style="display: none;">
   <div class="capsule-container">
-    <div class="popup-header">
+    <div class="logo-container">
+      <div class="logo-animated"></div>
       <h2>HealthDesk</h2>
-      <h3>Select Your Role</h3>
     </div>
+
+    <h3 class="page-header">Select Your Role</h3>
     <div class="roles-container">
-      <button class="role-option" (click)="selectRole('Hospital')">Hospital</button>
-      <button class="role-option" (click)="selectRole('Nutraceutical')">Nutraceutical</button>
-      <button class="role-option" (click)="selectRole('Laboratory')">Laboratory</button>
+      <div class="row">
+        <ng-container *ngIf="userData.role.toLowerCase() !== 'hospital'">
+          <div class="role-tile col m-1" (click)="selectRole('Hospital')">
+            <img src="assets/hospital.png" alt="Hospital" />
+            <div class="role-title">Hospital</div>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="userData.role.toLowerCase() !== 'laboratory'">
+          <div class="role-tile col m-1" (click)="selectRole('Laboratory')">
+            <img src="assets/lab.png" alt="Laboratory" />
+            <div class="role-title">Laboratory</div>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="userData.role.toLowerCase() !== 'nutraceutical'">
+          <div class="role-tile col m-1" (click)="selectRole('Nutraceutical')">
+            <img src="assets/neutra.png" alt="Nutraceutical" />
+            <div class="role-title">Pharmacy</div>
+          </div>
+        </ng-container>
+      </div>
     </div>
-    <button class="close-btn" (click)="closeRoleSelectionPopup()">Close</button>
   </div>
 </div>

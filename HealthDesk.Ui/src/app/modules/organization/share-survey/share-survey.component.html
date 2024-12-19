@@ -1,67 +1,67 @@
 <div class="container">
-    <h1 class="animated-heading">
-      <i class="bi bi-share me-2"></i>Share Survey: {{ surveyTitle }}
-    </h1>
-  
-    <!-- Survey URL Section -->
-    <div class="input-group mb-4">
-      <input
-        type="text"
-        class="form-control"
-        [(ngModel)]="surveyShareLink"
-        readonly
-        placeholder="Survey Link"
-      />
-      <button class="btn btn-outline-secondary" type="button" (click)="copyLink()">Copy</button>
-    </div>
-    <p *ngIf="isLinkCopied" class="text-success">Link copied to clipboard!</p>
-  
-    <!-- Search Bar -->
-    <div class="input-group mb-3">
-      <input
-        type="text"
-        class="form-control"
-        placeholder="Search by Doctor Name"
-        [(ngModel)]="searchValue"
-        (input)="filterDoctors()"
-      />
-    </div>
-  
-    <!-- Doctors Table -->
-    <div class="table-responsive">
-      <table class="table table-hover table-modern">
-        <thead>
-          <tr>
-            <th>Doctor Name</th>
-            <th>Speciality</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let doctor of filteredDoctors">
-            <td>{{ doctor.name }}</td>
-            <td>{{ doctor.speciality }}</td>
-            <td>
-              <input
-                type="checkbox"
-                [(ngModel)]="doctor.selected"
-                [checked]="doctor.selected"
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  
-    <!-- Send Button -->
-    <div class="text-end mt-3">
-        <button
-          class="btn btn-primary"
-          [disabled]="!hasSelectedDoctors()"
-          (click)="sendSurvey()"
-        >
-          Send Survey
-        </button>
-      </div>
+  <h1 class="animated-heading">
+    <i class="bi bi-share me-2"></i>Share Survey: {{ surveyTitle }}
+  </h1>
+
+  <!-- Survey URL Section -->
+  <div class="input-group mb-4">
+    <input type="text" class="form-control" [(ngModel)]="surveyShareLink" readonly placeholder="Survey Link" />
+    <button class="btn btn-outline-secondary" type="button" (click)="copyLink()">Copy</button>
   </div>
-  
+  <p *ngIf="isLinkCopied" class="text-success">Link copied to clipboard!</p>
+  <div class="row mb-3 align-items-center">
+    <!-- Search Bar -->
+    <div class="col">
+      <div class="mb-2 me-3">
+        <label for="doctorSearch" class="form-label label-modern shadow">Search by Physician</label>
+        <input type="text" id="doctorSearch" class="form-control" [(ngModel)]="searchValue"
+          (ngModelChange)="filterDoctors()" />
+      </div>
+    </div>
+    <div class="col">
+      <div class="mb-2 me-3">
+        <label for="specialitySearch" class="form-label label-modern shadow">Search by Speciality</label>
+        <input type="text" id="specialitySearch" class="form-control" [(ngModel)]="specialitySearchText"
+          (ngModelChange)="filterDoctors()" />
+      </div>
+    </div>
+    <div class="col">
+      <div class="mb-2 me-3">
+        <label for="opdSearch" class="form-label label-modern shadow">Search by City</label>
+        <input type="text" id="opdSearch" class="form-control" [(ngModel)]="citySearchText"
+          (ngModelChange)="filterDoctors()" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Doctors Table -->
+  <div class="table-responsive">
+    <table class="table table-hover table-modern">
+      <thead>
+        <tr>
+          <th>Physician Name</th>
+          <th>Speciality</th>
+          <th>City</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let doctor of filteredDoctors">
+          <td>{{ doctor.name }}</td>
+          <td>{{ doctor.speciality }}</td>
+          <td>{{ doctor.city }}</td>
+          <td>
+            <input type="checkbox" [(ngModel)]="doctor.selected" [checked]="doctor.selected" />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Send Button -->
+  <div class="text-end mt-3">
+    <button class="btn btn-primary" [disabled]="!hasSelectedDoctors()" (click)="sendSurvey()">
+      Send Survey
+    </button>
+  </div>
+</div>

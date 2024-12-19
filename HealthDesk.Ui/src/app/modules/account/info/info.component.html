@@ -152,14 +152,20 @@
                                             id="firtNames" placeholder="First Name" autocomplete="off"
                                             [ngClass]="{ 'is-invalid': submitted && f['firstName'].errors }">
                                         <div *ngIf="submitted && f['firstName'].errors" class="invalid-feedback">
-                                            <div>First Name is required</div>
+                                            <div *ngIf="f['firstName'].errors['required']">First Name is required</div>
+                                            <div *ngIf="f['firstName'].errors['pattern']">Please enter a valid first
+                                                name.</div>
                                         </div>
                                         <label for="firtsNames" class="form-label-floating">First Name<i
                                                 class="danger">*</i></label>
                                     </div>
                                     <div class="form-floating mb-3 col-sm-4">
                                         <input type="text" class="form-control" id="middleName"
-                                            placeholder="Middle Name" autocomplete="off" formControlName="middleName">
+                                            placeholder="Middle Name" autocomplete="off" formControlName="middleName"
+                                            [ngClass]="{ 'is-invalid': submitted && f['middleName'].errors }">
+                                        <div *ngIf="submitted && f['middleName'].errors" class="invalid-feedback">
+                                            <div>Please enter a valid middle name.</div>
+                                        </div>
                                         <label for="middleName" class="form-label-floating">Middle Name</label>
                                     </div>
 
@@ -168,7 +174,9 @@
                                             placeholder="Last Name" autocomplete="off"
                                             [ngClass]="{ 'is-invalid': submitted && f['lastName'].errors }">
                                         <div *ngIf="submitted && f['lastName'].errors" class="invalid-feedback">
-                                            <div>Last Name is required</div>
+                                            <div *ngIf="f['lastName'].errors['required']">Last Name is required</div>
+                                            <div *ngIf="f['lastName'].errors['pattern']">Please enter a valid last name.
+                                            </div>
                                         </div>
                                         <label for="lastName" class="form-label-floating">Last Name<i
                                                 class="danger">*</i></label>
@@ -192,7 +200,7 @@
                                             <div *ngIf="f['mobile2'].invalid">Mobile number is invalid</div>
                                         </div>
                                         <div *ngIf="submitted && mobileSameError">
-                                            <span  class="danger">Both mobile numbers are same. Please correct.</span>
+                                            <span class="danger">Both mobile numbers are same. Please correct.</span>
                                         </div>
                                         <label for="mobile1" class="form-label-floating">Mobile 2</label>
 
@@ -298,7 +306,9 @@
                                             placeholder="Pin Code" autocomplete="off"
                                             [ngClass]="{ 'is-invalid': submitted && f['pincode'].errors }">
                                         <div *ngIf="submitted && f['pincode'].errors" class="invalid-feedback">
-                                            <div>Pincode is required</div>
+                                            <div *ngIf="f['pincode'].errors['required']">Pincode is required</div>
+                                            <div *ngIf="f['pincode'].errors['pattern']">Please enter a valid 6-digit
+                                                Indian pincode.</div>
                                         </div>
                                         <label for="pincode" class="form-label-floating">Pin Code<i
                                                 class="danger">*</i></label>
@@ -390,9 +400,15 @@
                                     <div class="form-floating mb-3 col-sm-4">
                                         <input type="text" class="form-control" id="year" placeholder="Year"
                                             autocomplete="off" formControlName="year"
-                                            [ngClass]="{ 'is-invalid': submitted && gYearError }">
+                                            [ngClass]="{ 'is-invalid': submitted && (gYearError || f['graduation'].get('year')?.errors) }">
                                         <div *ngIf="submitted && gYearError" class="invalid-feedback d-flex">
                                             <div>Year is required</div>
+                                        </div>
+                                        <div *ngIf="submitted && f['graduation'].get('year')?.errors"
+                                            class="invalid-feedback">
+                                            <div *ngIf="f['graduation'].get('year')?.errors?.['pattern']">
+                                                Please enter a valid year (e.g., 1990 or 2023).
+                                            </div>
                                         </div>
                                         <label for="year" class="form-label-floating">Year Of passing</label>
                                     </div>
@@ -400,9 +416,15 @@
                                     <div class="form-floating mb-3 col-sm-4">
                                         <input type="text" class="form-control" id="institute" placeholder="Institute"
                                             autocomplete="off" formControlName="institute"
-                                            [ngClass]="{ 'is-invalid': submitted && gInstituteError }">
+                                            [ngClass]="{ 'is-invalid': submitted && (gInstituteError ||  f['graduation'].get('institute')?.errors) }">
                                         <div *ngIf="submitted && gInstituteError" class="invalid-feedback d-flex">
                                             <div>Institute is required</div>
+                                        </div>
+                                        <div *ngIf="submitted && f['graduation'].get('institute')?.errors"
+                                            class="invalid-feedback">
+                                            <div *ngIf="f['graduation'].get('institute')?.errors?.['pattern']">
+                                                Please enter a valid institute name.
+                                            </div>
                                         </div>
                                         <label for="institute" class="form-label-floating">Name Of Institute</label>
                                     </div>
@@ -509,7 +531,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <hr>
                             </div>
                         </div>
@@ -593,7 +615,9 @@
                                         autocomplete="off" formControlName="clinicPincode"
                                         [ngClass]="{ 'is-invalid': submitted && f['clinicPincode'].errors }">
                                     <div *ngIf="submitted && f['clinicPincode'].errors" class="invalid-feedback">
-                                        <div>Pincode is required</div>
+                                        <div *ngIf="f['clinicPincode'].errors['required']">Pincode is required</div>
+                                        <div *ngIf="f['clinicPincode'].errors['pattern']">Please enter a valid 6-digit
+                                            Indian pincode.</div>
                                     </div>
                                     <label for="mobile" class="form-label-floating">Pin Code<i
                                             class="danger">*</i></label>
@@ -650,7 +674,9 @@
                                         autocomplete="off" formControlName="authFirstName"
                                         [ngClass]="{ 'is-invalid': submitted && f['authFirstName'].errors }">
                                     <div *ngIf="submitted && f['authFirstName'].errors" class="invalid-feedback">
-                                        <div>First Name is required</div>
+                                        <div *ngIf="f['authFirstName'].errors['required']">First Name is required</div>
+                                        <div *ngIf="f['authFirstName'].errors['pattern']">Please enter a valid first
+                                            name.</div>
                                     </div>
                                     <label for="firtsName" class="form-label-floating">First Name<i
                                             class="danger">*</i></label>
@@ -666,7 +692,9 @@
                                         autocomplete="off" formControlName="authLastName"
                                         [ngClass]="{ 'is-invalid': submitted && f['authLastName'].errors }">
                                     <div *ngIf="submitted && f['authLastName'].errors" class="invalid-feedback">
-                                        <div>Last Name is required</div>
+                                        <div *ngIf="f['authLastName'].errors['required']">Last Name is required</div>
+                                        <div *ngIf="f['authLastName'].errors['pattern']">Please enter a valid last name.
+                                        </div>
                                     </div>
                                     <label for="lastName" class="form-label-floating">Last Name<i
                                             class="danger">*</i></label>
@@ -712,7 +740,8 @@
                                 <div class="form-floating mb-3 col-sm-3">
                                     <input type="text" class="form-control" id="email1" placeholder="Email"
                                         autocomplete="off" formControlName="authEmail"
-                                        [ngClass]="{ 'is-invalid': submitted && f['authEmail'].errors }">
+                                        [ngClass]="{ 'is-invalid': submitted && f['authEmail'].errors }"
+                                        [readOnly]="true">
                                     <div *ngIf="submitted && f['authEmail'].errors" class="invalid-feedback">
                                         <div *ngIf="f['authEmail'].invalid">Email is invalid</div>
                                     </div>
@@ -739,9 +768,6 @@
                             </div>
 
                         </div>
-                        <div class="invalid-feedback d-flex" *ngIf="errorsFound">There are errors in the submitted
-                            application, please fix them and submit again.</div>
-                        <div class="invalid-feedback d-flex" *ngIf="updateErrors">{{updateErrorsMessage}}</div>
                     </div>
                 </div>
             </div>

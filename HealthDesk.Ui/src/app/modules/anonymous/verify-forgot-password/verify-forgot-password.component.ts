@@ -186,4 +186,14 @@ export class VerifyForgotPasswordComponent implements OnInit, OnDestroy {
       }
     }
   }
+
+  areAllOtpFilled(): boolean {
+    return this.otpControls.controls.every(control => control.value.trim() !== '');
+  }
+
+  onEnterKey() {
+    if (this.areAllOtpFilled()) {
+      this.verifyOtp();
+    }
+  }
 }

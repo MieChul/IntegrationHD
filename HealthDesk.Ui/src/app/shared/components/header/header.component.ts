@@ -65,16 +65,24 @@ export class HeaderComponent implements OnInit {
     }
   }
 
-  updateSessionAndNavigate(role: string) {
-    this.userData.role = role;
-    this.userData.isConfirm = true;
-    sessionStorage.setItem('user', JSON.stringify(this.userData));
-    this.router.navigate(['account/']);
-  }
+  updateSessionAndNavigate(role: string): void {
+    this.userData.role =role;
+    if (role === 'patient' || role === 'physician') {
+        if (!this.userData.confirmed) {
+            this.userData.isConfirm = true;
+            this.router.navigate(['account/']);
+        } else {
+            this.router.navigate([`${role}/`]);
+        }
+    } else {
+        this.router.navigate([`organization/${role}`]);
+    }
+}
+
 
   openRoleSelectionPopup() {
     const modal = document.getElementById('roleSelectionPopup')!;
-    modal.style.display = 'block';
+    modal.style.display = 'flex';
   }
 
   closeRoleSelectionPopup() {
@@ -94,5 +102,13 @@ export class HeaderComponent implements OnInit {
 
   toggleMenu(): void {
     this.isMenuOpen = !this.isMenuOpen;
+  }
+
+  getDashboardLink(role: string): string {
+    if (role === 'physician' || role === 'patient') {
+      return `/${role}`;
+    } else {
+      return `/organization/${role}`;
+    }
   }
 }

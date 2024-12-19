@@ -8,6 +8,8 @@ import {
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { Modal } from 'bootstrap';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 interface Product {
   brandName: string;
@@ -338,4 +340,44 @@ export class PharmaLandingComponent implements OnInit, AfterViewInit {
       a[column] > b[column] ? 1 : -1
     );
   }
+
+  exportToExcel(): void {
+    // Define the headers matching the HTML table
+    const headers = [
+      'Brand Name',
+      'Generic Name',
+      'Drug Class',
+      'Dosage Form',
+      'Strength',
+      'Pack Shot',
+      'Approval Agency',
+      'Comment'
+    ];
+  
+    // Map the data to include headers
+    const dataToExport = this.filteredProducts.map(product => ({
+      'Brand Name': product.brandName,
+      'Generic Name': product.genericName,
+      'Drug Class': product.drugClass,
+      'Dosage Form': product.dosageForm,
+      'Strength': product.strength,
+      'Pack Shot': product.packShot ? 'View Available' : 'Not Available',
+      'Approval Agency': product.approvalAgency,
+      'Comment': product.comment
+    }));
+  
+    // Add headers as the first row
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport, { header: headers });
+  
+    // Create a new workbook and append the worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Brand Library');
+  
+    // Write workbook to an Excel file
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  
+    // Save the file
+    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    saveAs(blob, `Brand_Library_${new Date().toISOString()}.xlsx`);
+  }  
 }

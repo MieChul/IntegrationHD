@@ -36,10 +36,10 @@
     <div *ngIf="isOtpSent" class="otp-section" [formGroup]="verifyOtpForm">
       <h4 class="otp-title">Enter OTP</h4>
       <div formArrayName="otp" class="otp-inputs">
-        <input maxlength="1" *ngFor="let control of otpControls.controls; let i = index" [formControlName]="i" class="otp-input" (keyup)="moveToNext($event, i)">
+        <input maxlength="1" *ngFor="let control of otpControls.controls; let i = index" [formControlName]="i" class="otp-input" (keyup)="moveToNext($event, i)" (keydown.enter)="onEnterKey()">
       </div>
   
-      <button mat-raised-button color="primary" class="full-width login-button m-2" (click)="verifyOtp()">Verify OTP</button>
+      <button mat-raised-button color="primary" class="full-width login-button m-2" (click)="verifyOtp()" [disabled]="!areAllOtpFilled()">Verify OTP</button>
     </div>
   
     <div class="divider">or</div>

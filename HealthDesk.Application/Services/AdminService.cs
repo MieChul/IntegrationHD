@@ -41,6 +41,7 @@ public class AdminService : IAdminService
      .Where(u => !u.Roles.Any(role => role == Role.Admin)) // Exclude Admin role
      .Select(u => (dynamic)new
      {
+         Id = u.Id,
          UserName = u.Username,
          Name = u.Roles.Any(role => role == Role.Physician || role == Role.Patient)
              ? $"{u.FirstName} {u.LastName}"

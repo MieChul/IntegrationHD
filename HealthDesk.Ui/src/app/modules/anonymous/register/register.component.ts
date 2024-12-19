@@ -109,4 +109,8 @@ export class RegisterComponent implements OnInit {
   navigateVerifyPassword() {
     this.router.navigate(['/verify-forgot-password']);
   }
+
+  onEnterKey() {
+    this.onSubmit();
+  }
 }

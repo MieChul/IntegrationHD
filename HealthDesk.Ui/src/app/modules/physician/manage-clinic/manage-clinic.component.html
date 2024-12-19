@@ -64,22 +64,22 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form>
+        <form [formGroup]="clinicForm">
           <div class="mb-3">
             <label for="clinicName" class="form-label label-modern shadow">Name</label>
-            <input type="text" id="clinicName" class="form-control" [(ngModel)]="currentClinic.name" />
+            <input type="text" id="clinicName" class="form-control" formControlName="name" />
           </div>
           <div class="mb-3">
             <label for="clinicAddress" class="form-label label-modern shadow">Address</label>
-            <input type="text" id="clinicAddress" class="form-control" [(ngModel)]="currentClinic.address" />
+            <input type="text" id="clinicAddress" class="form-control" formControlName="address" />
           </div>
           <div class="mb-3">
             <label for="clinicTiming" class="form-label label-modern shadow">Timing</label>
-            <input type="text" id="clinicTiming" class="form-control" [(ngModel)]="currentClinic.timing" />
+            <input type="text" id="clinicTiming" class="form-control" formControlName="timing" />
           </div>
           <div class="mb-3">
             <label for="clinicIsActive" class="form-label label-modern shadow">Is Active</label>
-            <select id="clinicIsActive" class="form-select" [(ngModel)]="currentClinic.isActive">
+            <select id="clinicIsActive" class="form-select" formControlName="isActive">
               <option [value]="true">Yes</option>
               <option [value]="false">No</option>
             </select>
@@ -88,7 +88,9 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" (click)="saveClinic()">{{ isEditMode ? 'Save Changes' : 'Add Clinic' }}</button>
+        <button type="button" class="btn btn-primary" (click)="saveClinic()">
+          {{ isEditMode ? 'Save Changes' : 'Add Clinic' }}
+        </button>
       </div>
     </div>
   </div>

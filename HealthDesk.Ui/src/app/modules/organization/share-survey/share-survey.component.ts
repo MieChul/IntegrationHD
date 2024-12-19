@@ -12,11 +12,13 @@ export class ShareSurveyComponent implements OnInit {
   surveyShareLink: string = ''; // Survey share link
   isLinkCopied: boolean = false; // Link copied flag
   searchValue: string = ''; // Search input value
+  specialitySearchText: string = '';
+  citySearchText: string = '';
 
   doctors: any[] = []; // All doctors list
   filteredDoctors: any[] = []; // Filtered list for display
 
-  constructor(private route: ActivatedRoute, private router: Router) {}
+  constructor(private route: ActivatedRoute, private router: Router) { }
 
   ngOnInit(): void {
     // Get survey ID from route and mock survey details
@@ -26,9 +28,9 @@ export class ShareSurveyComponent implements OnInit {
 
     // Mock doctors data
     this.doctors = [
-      { name: 'Dr. Alice', speciality: 'Cardiologist', selected: false },
-      { name: 'Dr. Bob', speciality: 'Dermatologist', selected: false },
-      { name: 'Dr. Charlie', speciality: 'Neurologist', selected: false },
+      { name: 'Dr. Kapil Bhanushali', speciality: 'Cardiologist', city: 'Mumbai', selected: false },
+      { name: 'Dr. Raghuvendra Iyer', speciality: 'Dermatologist', city: 'Hyderabad', selected: false },
+      { name: 'Dr. Sonali Langde', speciality: 'Neurologist', city: 'Bengaluru', selected: false },
     ];
     this.filteredDoctors = [...this.doctors];
   }
@@ -41,12 +43,24 @@ export class ShareSurveyComponent implements OnInit {
     });
   }
 
-  // Filter doctors by name
+
   filterDoctors(): void {
-    const searchTerm = this.searchValue.toLowerCase();
-    this.filteredDoctors = this.doctors.filter((doctor) =>
-      doctor.name.toLowerCase().includes(searchTerm)
-    );
+    this.filteredDoctors = this.doctors.filter(doc => {
+      const matchesName = this.searchValue
+        ? doc.name.toLowerCase().includes(this.searchValue.toLowerCase())
+        : true;
+
+      const matchesSpeciality = this.specialitySearchText
+        ? doc.speciality.toLowerCase().includes(this.specialitySearchText.toLowerCase())
+        : true;
+
+      const matchesOpdTiming = this.citySearchText
+        ? doc.city.toLowerCase().includes(this.citySearchText.toLowerCase())
+        : true;
+
+      // Return true only if all non-empty conditions match
+      return matchesName && matchesSpeciality && matchesOpdTiming;
+    });
   }
 
   // Send survey to selected doctors
@@ -64,7 +78,7 @@ export class ShareSurveyComponent implements OnInit {
       alert('No doctors selected!');
     }
 
-    
+
   }
   hasSelectedDoctors(): boolean {
     return this.filteredDoctors.some(d => d.selected);

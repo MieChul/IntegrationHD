@@ -1,6 +1,6 @@
 <div class="container">
     <h1 class="animated-heading">
-      <i class="bi bi-flask me-2"></i>Laboratory Data Management
+      <i class="bi bi-flask me-2"></i>Laboratory
     </h1>
   
     <div class="row mb-3 align-items-center">
@@ -19,9 +19,10 @@
         </div>
       </div>
       <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
-        <button class="btn btn-primary" (click)="openTestDialog()">
+        <button class="btn btn-primary m-1" (click)="openTestDialog()">
           Add Laboratory Test
         </button>
+        <button class="btn btn-success m-1" (click)="exportToExcel()">Export to Excel</button>
       </div>
     </div>
   

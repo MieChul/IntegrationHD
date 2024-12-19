@@ -32,7 +32,7 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
     private authStateService: AuthStateService,
     private notificationService: NotificationService,
     private route: ActivatedRoute,
-    private loader:LoaderService
+    private loader: LoaderService
   ) { }
 
   ngOnInit(): void {
@@ -75,10 +75,14 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
           this.startCountdown();
           this.loader.hide();
         },
-        error: (error) => {
+        error: (e) => {
           this.loader.hide();
-          this.notificationService.showError('Failed to send OTP. Please try again.')
-        } 
+          this.loader.hide();
+          if (e.error)
+            this.notificationService.showError(e.error);
+          else
+            this.notificationService.showError('OTP sending failed. Try again after sometime.');
+        }
       });
     }
   }
@@ -119,10 +123,12 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
           this.notificationService.showError('Invalid OTP');
         }
       },
-      error: (error) => {
+      error: (e) => {
         this.loader.hide();
-        console.error('OTP verification failed', error);
-        this.notificationService.showError('OTP verification failed. Try again after sometime.');
+        if (e.error)
+          this.notificationService.showError(e.error);
+        else
+          this.notificationService.showError('OTP verification failed. Try again after sometime.');
       }
     });
   }
@@ -143,7 +149,7 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
 
   moveToNext(event: KeyboardEvent, index: number) {
     const target = event.target as HTMLInputElement;
-  
+
     // Move focus to the next box if a number is entered
     if (event.key >= '0' && event.key <= '9') {
       const nextInput = target.nextElementSibling as HTMLInputElement;
@@ -151,13 +157,23 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
         nextInput.focus();
       }
     }
-  
+
     // Handle Backspace: Move focus to the previous box
     if (event.key === 'Backspace') {
       const prevInput = target.previousElementSibling as HTMLInputElement;
       if (prevInput) {
         prevInput.focus();
       }
+    }
+  }
+
+  areAllOtpFilled(): boolean {
+    return this.otpControls.controls.every(control => control.value.trim() !== '');
+  }
+
+  onEnterKey() {
+    if (this.areAllOtpFilled()) {
+      this.verifyOtp();
     }
   }
 }

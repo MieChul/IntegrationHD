@@ -1,6 +1,6 @@
 <div class="container">
     <h1 class="animated-heading">
-        <i class="bi bi-box-seam me-2"></i>Pharmacy Management
+        <i class="bi bi-box-seam me-2"></i>Pharmacy
     </h1>
 
     <div>
@@ -13,9 +13,10 @@
                 </div>
             </div>
             <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
-                <button class="btn btn-primary" (click)="openBrandDialog()">
-                    Add Brand
-                </button>
+              <button class="btn btn-primary m-1" (click)="openBrandDialog()">
+                Add Brand
+            </button>
+              <button class="btn btn-success m-1" (click)="exportToExcel()">Export to Excel</button>
             </div>
         </div>
 

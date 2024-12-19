@@ -9,17 +9,17 @@
       <div class="form-row">
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Role *</mat-label>
-          <input class="disabled-bold" matInput formControlName="role" readonly>
+          <input class="disabled-bold" matInput formControlName="role" readonly (keydown.enter)="onEnterKey()">
         </mat-form-field>
   
         <mat-form-field appearance="outline" class="full-width" *ngIf="prefilledMobile">
           <mat-label>Mobile Number</mat-label>
-          <input matInput formControlName="mobile" placeholder="Enter mobile number">
+          <input matInput formControlName="mobile" placeholder="Enter mobile number" (keydown.enter)="onEnterKey()">
         </mat-form-field>
   
         <mat-form-field appearance="outline" class="full-width" *ngIf="prefilledEmail">
           <mat-label>Email</mat-label>
-          <input matInput formControlName="email" placeholder="Enter email">
+          <input matInput formControlName="email" placeholder="Enter email" (keydown.enter)="onEnterKey()">
         </mat-form-field>
       </div>
   
@@ -28,7 +28,7 @@
         <!-- Title Field -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Username</mat-label>
-          <input matInput formControlName="username" placeholder="Enter username">
+          <input matInput formControlName="username" placeholder="Enter username" (keydown.enter)="onEnterKey()">
           <button mat-icon-button matSuffix matTooltip="A lphanumeric bweteen 5 to 15 characters long and symbols (. @) allowed. ">
             <mat-icon>info</mat-icon>
           </button>
@@ -43,7 +43,7 @@
       <div class="form-row">
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Password</mat-label>
-          <input matInput formControlName="password" type="password" placeholder="Enter password">
+          <input matInput formControlName="password" type="password" placeholder="Enter password" (keydown.enter)="onEnterKey()">
           <button mat-icon-button matSuffix matTooltip="6+ characters, alphanumeric, and symbols (_@.$&*-)">
             <mat-icon>info</mat-icon>
           </button>
@@ -55,7 +55,7 @@
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Confirm Password</mat-label>
           <input matInput formControlName="confirmPassword" required [type]="hide ? 'password' : 'text'"
-            placeholder="Confirm password">
+            placeholder="Confirm password" (keydown.enter)="onEnterKey()">
           <div mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Show password'" class="m-1 cursor-pointer">
             <mat-icon>{{ hide ? 'visibility_off' : 'visibility' }}</mat-icon>
           </div>
