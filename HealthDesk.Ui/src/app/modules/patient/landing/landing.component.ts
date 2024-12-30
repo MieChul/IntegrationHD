@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from '../../../shared/services/auth.service';
+import { AccountService } from '../../services/account.service';
 
 @Component({
   selector: 'app-landing',
@@ -8,11 +8,15 @@ import { AuthService } from '../../../shared/services/auth.service';
 })
 export class LandingComponent implements OnInit {
   showSidebar = true;
-  constructor(private authService: AuthService) { }
+  constructor(private accountService: AccountService) { }
   userData: any = {};
 
-  ngOnInit(): void { 
+  ngOnInit(): void {
     this.showSidebar = location.pathname !== 'patient/';
-    this.userData = this.authService.userValue;
+    this.accountService.getUserData().subscribe({
+      next: (data) => {
+        this.userData = data; // Assign the result to a variable
+      }
+    });
   }
 }

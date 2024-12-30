@@ -25,7 +25,13 @@
             <button class="pointer-cursor" mat-menu-item (click)="router.navigate(['account/'])">
               <mat-icon>person</mat-icon> My Profile
             </button>
-            <div *ngIf="userData.status === 'Approved' && userData.role !== 'admin' && userData.role !== 'pharmaceutical'">
+            <div *ngIf="userData.role === 'patient' && userData.status ==='Approved'">
+              <mat-divider></mat-divider>
+              <button mat-menu-item (click)="addDependent()">
+                <mat-icon>person_add</mat-icon>{{ dependentText }}
+              </button>
+            </div>
+            <div *ngIf="userData.status ==='Approved' && userData.role !== 'admin' && userData.role !== 'pharmaceutical'">
               <mat-divider></mat-divider>
               <button mat-menu-item (click)="handleSwitchRole()">
                 <mat-icon>settings</mat-icon> {{ switchRole }}
@@ -54,21 +60,21 @@
     <h3 class="page-header">Select Your Role</h3>
     <div class="roles-container">
       <div class="row">
-        <ng-container *ngIf="userData.role.toLowerCase() !== 'hospital'">
+        <ng-container *ngIf="currRole.toLowerCase() !== 'hospital'">
           <div class="role-tile col m-1" (click)="selectRole('Hospital')">
             <img src="assets/hospital.png" alt="Hospital" />
             <div class="role-title">Hospital</div>
           </div>
         </ng-container>
-        <ng-container *ngIf="userData.role.toLowerCase() !== 'laboratory'">
+        <ng-container *ngIf="currRole.toLowerCase() !== 'laboratory'">
           <div class="role-tile col m-1" (click)="selectRole('Laboratory')">
             <img src="assets/lab.png" alt="Laboratory" />
             <div class="role-title">Laboratory</div>
           </div>
         </ng-container>
-        <ng-container *ngIf="userData.role.toLowerCase() !== 'nutraceutical'">
-          <div class="role-tile col m-1" (click)="selectRole('Nutraceutical')">
-            <img src="assets/neutra.png" alt="Nutraceutical" />
+        <ng-container *ngIf="currRole.toLowerCase() !== 'pharmacy'">
+          <div class="role-tile col m-1" (click)="selectRole('Pharmacy')">
+            <img src="assets/neutra.png" alt="Pharmacy" />
             <div class="role-title">Pharmacy</div>
           </div>
         </ng-container>

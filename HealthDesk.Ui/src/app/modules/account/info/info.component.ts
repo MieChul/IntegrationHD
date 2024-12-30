@@ -28,8 +28,6 @@ export class InfoComponent {
   updateErrors: any = false;
   dobError: any = false;
   closeResult: any = '';
-  isRejected: any = false;
-  isSaved: any = false;
   userData: any;
   fileToUpload!: any;
   url!: any;
@@ -38,7 +36,6 @@ export class InfoComponent {
   gInstituteError: any = false;
   gDocError: any = false;
   minDate: Date = new Date(1960, 0, 1);
-  isSubmitted: boolean = false;
   emailSameError: boolean = false;
   mobileSameError: boolean = false;
   states: any[] = [];
@@ -69,59 +66,66 @@ export class InfoComponent {
 
   ngOnInit() {
     this.loaderService.show();
-    this.initializeUserAndForm();
-    this.states = State.getStatesOfCountry('IN');
-    this.clinicstates = State.getStatesOfCountry('IN');
-    this.filteredStates.next(this.states);
-    this.filteredClinicStates.next(this.clinicstates);
-    this.stateFilterCtrl.valueChanges
-      .pipe(
-        debounceTime(200),
-        startWith(''),
-        map((searchTerm) =>
-          this.states.filter((state) =>
-            state.name.toLowerCase().includes(searchTerm.toLowerCase())
+    this.userData = this.accountService.getUserData().subscribe({
+      next: (data) => {
+        this.userData = data; // Assign the result to a variable
+        this.initializeUserAndForm();
+        this.states = State.getStatesOfCountry('IN');
+        this.clinicstates = State.getStatesOfCountry('IN');
+        this.filteredStates.next(this.states);
+        this.filteredClinicStates.next(this.clinicstates);
+        this.stateFilterCtrl.valueChanges
+          .pipe(
+            debounceTime(200),
+            startWith(''),
+            map((searchTerm) =>
+              this.states.filter((state) =>
+                state.name.toLowerCase().includes(searchTerm.toLowerCase())
+              )
+            )
           )
-        )
-      )
-      .subscribe(this.filteredStates);
+          .subscribe(this.filteredStates);
 
-    this.cityFilterCtrl.valueChanges
-      .pipe(
-        debounceTime(200),
-        startWith(''),
-        map((searchTerm) =>
-          this.cities.filter((city) =>
-            city.name.toLowerCase().includes(searchTerm.toLowerCase())
+        this.cityFilterCtrl.valueChanges
+          .pipe(
+            debounceTime(200),
+            startWith(''),
+            map((searchTerm) =>
+              this.cities.filter((city) =>
+                city.name.toLowerCase().includes(searchTerm.toLowerCase())
+              )
+            )
           )
-        )
-      )
-      .subscribe(this.filteredCities);
+          .subscribe(this.filteredCities);
 
-    this.clinicStateFilterCtrl.valueChanges
-      .pipe(
-        debounceTime(200),
-        startWith(''),
-        map((searchTerm) =>
-          this.clinicstates.filter((state) =>
-            state.name.toLowerCase().includes(searchTerm.toLowerCase())
+        this.clinicStateFilterCtrl.valueChanges
+          .pipe(
+            debounceTime(200),
+            startWith(''),
+            map((searchTerm) =>
+              this.clinicstates.filter((state) =>
+                state.name.toLowerCase().includes(searchTerm.toLowerCase())
+              )
+            )
           )
-        )
-      )
-      .subscribe(this.filteredClinicStates);
+          .subscribe(this.filteredClinicStates);
 
-    this.clinicCityFilterCtrl.valueChanges
-      .pipe(
-        debounceTime(200),
-        startWith(''),
-        map((searchTerm) =>
-          this.clinicCities.filter((city) =>
-            city.name.toLowerCase().includes(searchTerm.toLowerCase())
+        this.clinicCityFilterCtrl.valueChanges
+          .pipe(
+            debounceTime(200),
+            startWith(''),
+            map((searchTerm) =>
+              this.clinicCities.filter((city) =>
+                city.name.toLowerCase().includes(searchTerm.toLowerCase())
+              )
+            )
           )
-        )
-      )
-      .subscribe(this.filteredClinicCities);
-
+          .subscribe(this.filteredClinicCities);
+      },
+      error: (error) => {
+        this.loaderService.hide();
+      }
+    });
   }
 
   triggerFileUpload(): void {
@@ -149,7 +153,6 @@ export class InfoComponent {
   }
 
   initializeUserAndForm() {
-    this.userData = this.authService.userValue;
     if (this.userData) {
 
       this.accountService
@@ -159,9 +162,6 @@ export class InfoComponent {
           this.initializeHospitals(this.user.hospitals || []);
           this.user = user;
           this.user.role = this.userData.role || this.user.role || 'physician';
-          if (this.user.status === 'Rejected') this.isRejected = true;
-          if (this.user.status === 'Saved') this.isSaved = true;
-          if (this.user.status === 'Submitted') this.isSubmitted = true;
 
           if (this.user.role != 'patient' && this.user.role != 'physician')
             this.tab = 'hosp_info';
@@ -174,6 +174,7 @@ export class InfoComponent {
 
   private initForm(): void {
     this.form = this.formBuilder.group({
+      role: [this.user.role],
       displayName: [this.user.displayName],
       firstName: [this.user.firstName || ''],
       middleName: [
@@ -353,17 +354,6 @@ export class InfoComponent {
     window.location.reload();
   }
 
-  confirm() {
-    this.userData.confirmed = true;
-    this.userData.isConfirm = false;
-    sessionStorage.setItem('user', JSON.stringify(this.userData));
-
-    if (this.userData.role !== 'physician' && this.userData.role !== 'patient')
-      this.router.navigate([`/organization/${this.userData.role}`]);
-    else
-      this.router.navigate([`/${this.userData.role}`]);
-  }
-
   onSubmit() {
     this.loaderService.show();
     this.submitted = true;
@@ -430,7 +420,7 @@ export class InfoComponent {
       else
         this.mobileSameError = false;
 
-      if (this.form.value.email1 === this.form.value.email2) {
+      if (this.form.value.email1 && this.form.value.email1 === this.form.value.email2) {
         this.loaderService.hide();
         this.emailSameError = true;
         this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
@@ -445,8 +435,20 @@ export class InfoComponent {
       .subscribe({
         next: () => {
           this.loaderService.hide();
-          this.reload();
           this.notificationService.showSuccess('Application has been submitted.');
+          if (this.userData.role !== 'physician') {
+            this.userData.status = "Approved";
+            if (this.userData.role !== 'patient')
+              this.router.navigate([`/organization/${this.userData.role}`]);
+            else
+              this.router.navigate([`/${this.userData.role}`]);
+          }
+          else
+          {
+            this.reload();
+            this.userData.status = "Submitted";
+          }
+
         },
         error: error => {
           this.loaderService.hide();
@@ -467,10 +469,9 @@ export class InfoComponent {
       .subscribe({
         next: () => {
           this.loaderService.hide();
-          if (!this.isSubmitted && !(this.user.status === 'Approved'))
-            this.isSaved = true;
-          this.reload();
+          this.userData.status = this.user.status;
           this.notificationService.showSuccess('Application has been saved.');
+          this.reload();
         },
         error: error => {
           this.loaderService.hide();

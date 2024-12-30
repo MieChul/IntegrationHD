@@ -11,25 +11,29 @@ import { Router } from '@angular/router';
 })
 export class AuthService {
   private userSubject: BehaviorSubject<User | null>;
-  public user: Observable<User | null>;
+  public user$: Observable<User | null>; // Expose as observable for reactive subscriptions
   private apiUrl = environment.apiUrl + '/auth';
 
   constructor(private router: Router, private http: HttpClient) {
-    this.userSubject = new BehaviorSubject(JSON.parse(sessionStorage.getItem('user')!));
-    this.user = this.userSubject.asObservable();
+    const savedUser = sessionStorage.getItem('user');
+    this.userSubject = new BehaviorSubject<User | null>(savedUser ? JSON.parse(savedUser) : null);
+    this.user$ = this.userSubject.asObservable(); // Expose userSubject as observable
   }
 
-  public get userValue() {
+  // Getter for synchronous access
+  public get userData(): User | null {
     return this.userSubject.value;
   }
 
+  // Login function
   login(username: string, password: string): Observable<any> {
     return this.http.post(
       `${this.apiUrl}/login`,
-      { username, password }, { withCredentials: true }// Send cookies with the request
+      { username, password }, 
+      { withCredentials: true } // Send cookies with the request
     ).pipe(
-      tap((user: any) => {
-        // Store role and username in sessionStorage after login
+      tap((user: User) => {
+        // Store user in sessionStorage after login
         sessionStorage.setItem('user', JSON.stringify(user));
         this.userSubject.next(user);
         return user;
@@ -37,6 +41,7 @@ export class AuthService {
     );
   }
 
+  // Logout function
   logout(): void {
     this.http.post(`${this.apiUrl}/logout`, {}, { withCredentials: true }).subscribe({
       next: () => {
@@ -48,4 +53,12 @@ export class AuthService {
     });
   }
 
+  // Update user state after refreshing or modifying user details
+  updateUserState(user: User): void {
+    // Update sessionStorage
+    sessionStorage.setItem('user', JSON.stringify(user));
+
+    // Notify all subscribers of the updated user
+    this.userSubject.next(user);
+  }
 }

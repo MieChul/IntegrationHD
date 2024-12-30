@@ -1,6 +1,8 @@
 
 using HealthDesk.Application.Interfaces;
 using HealthDesk.Core;
+using HealthDesk.Core.Enum;
+using Microsoft.AspNetCore.Http;
 using static HealthDesk.Application.UserRegistrationDto;
 
 namespace HealthDesk.Application.Services;
@@ -18,20 +20,13 @@ public class AccountService : IAccountService
     {
         var userEntity = await _userRepository.GetByIdAsync(id);
         if (userEntity == null) throw new KeyNotFoundException("User not found");
-        // var userDto = new UpdateUserInfoRequestDto();
-        // GenericMapper.Map<User, UpdateUserInfoRequestDto>(userEntity, userDto);
-        // userDto.Role = userEntity.Roles.FirstOrDefault().ToString().ToLower();
-        userEntity.Role=userEntity.Roles.FirstOrDefault().ToString().ToLower();
         return userEntity;
     }
 
-    public void RegisterPatientInfo(string id, RegisterPatientInfoDto model)
-    {
-        throw new NotImplementedException();
-    }
 
     public async Task RegisterUserInfo(string id, UpdateUserInfoRequestDto model)
     {
+
         var user = await _userRepository.GetByIdAsync(id);
         if (user != null)
         {
@@ -69,7 +64,18 @@ public class AccountService : IAccountService
             user.LandLine = model.LandLine;
             user.AuthMob = model.AuthMob;
             user.AuthEmail = model.AuthEmail;
-            user.Status = model.IsSave ? "Saved" : "Submitted";
+            user.Roles.ForEach(r =>
+            {
+                if (r.Role.ToString().ToLower() == model.Role)
+                {
+                    r.Status = model.IsSave && (r.Status != "Submitted" || r.Status != "Approved") ? "Saved" : r.Role == Role.Physician ? "Submitted" : "Approved";
+                }
+            });
+
+            if (user.Roles.Any(u => u.Status == "Approved"))
+                user.CanSwitch = true;
+
+
             user.ProfImage = model.ProfImage;
             if (model.DOB != null)
             {
@@ -136,12 +142,57 @@ public class AccountService : IAccountService
 
             user.NoDocConsentProvided = model.NoDocConsentProvided;
             await _userRepository.UpdateAsync(user);
+            if (!string.IsNullOrEmpty(user.DependentId))
+            {
+                var userEntity = await _userRepository.GetByIdAsync(user.DependentId);
+                userEntity.DependentName = $"{user.FirstName} {user.LastName}";
+                await _userRepository.UpdateAsync(userEntity);
+            }
 
             if (!model.IsSave)
             {
                 _messageService.SendEmail("ganesh.divekar@gmail.com;raomithul@gmail.com", "HealthApp: New application has been submitted for review.", "Name :" + model.FirstName + " Mob:" + model.Mobile1);
             }
         }
+    }
+
+    public async Task<dynamic> SwithRole(string id, string role)
+    {
+        var userEntity = await _userRepository.GetByIdAsync(id);
+        if (userEntity == null) throw new KeyNotFoundException("User not found");
+
+        if (userEntity.Roles.Any(r => r.Role.ToString().ToLower() == role && r.Status == "Approved"))
+            return new { role = role, username = userEntity.Username, id = userEntity.Id, profImage = userEntity.ProfImage, status = "Approved", canswitch = userEntity.CanSwitch, dependentId = userEntity.DependentId, dependentName = userEntity.DependentName, hasDependent = userEntity.HasDependent };
+        else if (CanSwitch(role, userEntity.Roles))
+        {
+            if (!userEntity.Roles.Any(r => r.Role.ToString().ToLower() == role))
+            {
+                userEntity.Roles.Add(new UserRole { Role = (Role)Enum.Parse(typeof(Role), role, true), Status = "New" });
+                _userRepository.UpdateAsync(userEntity);
+            }
+            return new { role = role, username = userEntity.Username, id = userEntity.Id, profImage = userEntity.ProfImage, status = "New", canswitch = userEntity.CanSwitch, dependentId = userEntity.DependentId, dependentName = userEntity.DependentName, hasDependent = userEntity.HasDependent };
+        }
+
+        else
+            throw new KeyNotFoundException("Cannot Switch");
+    }
+
+    private bool CanSwitch(string role, List<UserRole> currentRoles)
+    {
+        var roleCat1 = new HashSet<string> { "physician", "patient" };
+        var roleCat2 = new HashSet<string> { "hospital", "laboratory", "pharmacy" };
+
+        // Check if the role belongs to one of the categories
+        bool isRoleInCat1 = roleCat1.Contains(role);
+        bool isRoleInCat2 = roleCat2.Contains(role);
+
+        // Ensure all current roles belong to one category only
+        bool areCurrentRolesInCat1 = currentRoles.All(r => roleCat1.Contains(r.Role.ToString().ToLower()));
+        bool areCurrentRolesInCat2 = currentRoles.All(r => roleCat2.Contains(r.Role.ToString().ToLower()));
+
+        // Return true if both the role and currentRoles belong to the same category
+        return (isRoleInCat1 && areCurrentRolesInCat1) || (isRoleInCat2 && areCurrentRolesInCat2);
+
     }
 
     public async Task Update(string id, UpdateRequestDto model)
@@ -180,5 +231,105 @@ public class AccountService : IAccountService
             user.LastName = model.LastName;
         }
         await _userRepository.UpdateAsync(user);
+    }
+
+    public async Task<UserDto> RefreshUserDetails(string id, string role)
+    {
+        var userEntity = await _userRepository.GetByIdAsync(id);
+        if (userEntity == null) throw new KeyNotFoundException("User not found");
+
+        var status = userEntity.Roles.Where(r => r.Role.ToString().ToLower() == role).FirstOrDefault()?.Status ?? "";
+        var userDto = new UserDto();
+        if (!string.IsNullOrEmpty(status))
+        {
+            userDto.Id = userEntity.Id;
+            userDto.Username = userEntity.Username;
+            userDto.Status = status;
+            userDto.ProfImage = userEntity.ProfImage;
+            userDto.CanSwitch = userEntity.CanSwitch;
+            userDto.DependentId = userEntity.DependentId;
+            userDto.DependentName = userEntity.DependentName;
+            userDto.HasDependent = userEntity.HasDependent;
+        }
+        else
+            throw new KeyNotFoundException("Role not found");
+
+        return userDto;
+    }
+
+    public async Task<UserDto> AddDependent(string id)
+    {
+        // Fetch the parent user by ID
+        var userEntity = await _userRepository.GetByIdAsync(id);
+        if (userEntity == null)
+            throw new KeyNotFoundException("User not found");
+
+        // Check if a dependent already exists for this user
+        User existingDependent = null;
+        if (!string.IsNullOrEmpty(userEntity.DependentId))
+            existingDependent = await _userRepository.GetByIdAsync(userEntity.DependentId);
+        else
+            existingDependent = await _userRepository.GetByDynamicPropertyAsync("DependentId", userEntity.Id);
+
+        if (existingDependent != null)
+        {
+            // Map existing dependent to UserDto
+            return new UserDto
+            {
+                Id = existingDependent.Id,
+                Username = existingDependent.Username,
+                Status = existingDependent.Roles?.FirstOrDefault()?.Status ?? "Unknown",
+                ProfImage = existingDependent.ProfImage, // Populate if profile image exists
+                CanSwitch = existingDependent.CanSwitch,
+                DependentId = existingDependent.DependentId,
+                DependentName = existingDependent.DependentName,
+                HasDependent = existingDependent.HasDependent
+            };
+        }
+
+        // Initialize a new dependent user
+        var user = new User
+        {
+            Roles = new List<UserRole> { new UserRole { Role = Role.Patient, Status = "New" } },
+            PasswordHash = userEntity.PasswordHash,
+            Mobile = userEntity.Mobile,
+            Email = userEntity.Email,
+            Username = userEntity.Username,
+            DependentId = userEntity.Id,
+            DependentName = $"{userEntity.FirstName} {userEntity.LastName}",
+            HasDependent = false
+        };
+
+        // Add the new dependent to the database
+        try
+        {
+            await _userRepository.AddAsync(user);
+            // Ensure the ID is retrieved
+            if (string.IsNullOrEmpty(user.Id))
+                throw new InvalidOperationException("Failed to retrieve the generated ID for the new user.");
+
+            userEntity.HasDependent = true;
+            userEntity.DependentName = $"{user.FirstName} {user.LastName}";
+            await _userRepository.UpdateAsync(userEntity);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("Failed to add the dependent user.", ex);
+        }
+
+        // Map the new user to a DTO
+        var userDto = new UserDto
+        {
+            Id = user.Id,
+            Username = userEntity.Username,
+            Status = "New",
+            ProfImage = "",
+            CanSwitch = false,
+            DependentId = user.DependentId,
+            DependentName = $"{userEntity.FirstName} {userEntity.LastName}",
+            HasDependent = false
+        };
+
+        return userDto;
     }
 }

@@ -1,125 +1,92 @@
-import { Component, OnInit, ViewChild, ElementRef, TemplateRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { NgbTooltipConfig, NgbDateStruct, NgbDate, NgbDatepicker } from '@ng-bootstrap/ng-bootstrap';
+import { NgbTooltipConfig } from '@ng-bootstrap/ng-bootstrap';
 import { Modal } from 'bootstrap';
 import { Appointment } from '../../../shared/models/appointment';
+import { IndexedDbService } from '../../../shared/services/indexed.service';
 
 @Component({
   selector: 'app-manage-appointments',
   templateUrl: './manage-appointments.component.html',
   styleUrls: ['./manage-appointments.component.scss'],
-  providers: [NgbTooltipConfig]
+  providers: [NgbTooltipConfig],
 })
 export class ManageAppointmentsComponent implements OnInit {
   @ViewChild('proposeTimeModal') proposeTimeModal!: ElementRef;
   @ViewChild('rejectReasonModal') rejectReasonModal!: ElementRef;
-  @ViewChild('t') dateTemplate!: TemplateRef<any>; // Add this line
-  @ViewChild('dateRangePicker') dateRangePicker!: NgbDatepicker;
+
   appointmentsForm!: FormGroup;
+  proposeTimeForm!: FormGroup;
+  rejectReasonForm!: FormGroup;
+
   pendingAppointments: Appointment[] = [];
   filteredPendingAppointments: Appointment[] = [];
   acceptedAppointments: Appointment[] = [];
   rejectedAppointments: Appointment[] = [];
-  proposeTimeForm!: FormGroup;
-  rejectReasonForm!: FormGroup;
-  selectedAppointment!: Appointment;
-  clinics: string[] = ['Clinic A', 'Clinic B', 'Clinic C'];
-  sortDirection: { [key: string]: string } = {};
-  dateRange: { startDate: NgbDateStruct | null, endDate: NgbDateStruct | null } = { startDate: null, endDate: null };
-  
 
-  constructor(private fb: FormBuilder, config: NgbTooltipConfig) {
+  selectedAppointment!: Appointment;
+  clinics: string[] = ['Apollo', 'Sigma', 'Medi Health'];
+  sortDirection: { [key: string]: string } = {};
+
+  constructor(private fb: FormBuilder, config: NgbTooltipConfig, private indexedDbService: IndexedDbService) {
     config.placement = 'top';
     config.triggers = 'hover';
   }
 
   ngOnInit(): void {
-    this.appointmentsForm = this.fb.group({
-      startDate: [''],
-      endDate: ['']
-    });
-    this.proposeTimeForm = this.fb.group({
-      newDate: [''],
-      newTime: [''],
-      clinicName: ['']
-    });
-
-    this.rejectReasonForm = this.fb.group({
-      reason: ['']
-    });
-
-    // Load appointments
+    this.initializeForms();
     this.loadAppointments();
   }
 
-  loadAppointments(): void {
-    // Adding static data for demonstration
-    this.pendingAppointments = [
-      {
-        patientName: 'John Doe',
-        appointmentDate: new Date('2024-08-01'),
-        appointmentTime: '10:00 AM',
-        clinicName: 'Clinic A',
-        mobileNumber: '9876543210'
-      },
-      {
-        patientName: 'Jane Smith',
-        appointmentDate: new Date('2024-08-02'),
-        appointmentTime: '11:00 AM',
-        clinicName: 'Clinic B',
-        mobileNumber: '9876543211',
-        proposed: true,
-        newDate: new Date('2024-08-03'),
-        newTime: '11:30 AM'
-      },
-      {
-        patientName: 'Rajesh Kumar',
-        appointmentDate: new Date('2024-07-15'),
-        appointmentTime: '09:00 AM',
-        clinicName: 'Clinic C',
-        mobileNumber: '9876543212'
-      },
-      {
-        patientName: 'Anita Singh',
-        appointmentDate: new Date('2024-07-16'),
-        appointmentTime: '10:30 AM',
-        clinicName: 'Clinic A',
-        mobileNumber: '9876543213'
-      }
-    ];
+  private initializeForms(): void {
+    this.appointmentsForm = this.fb.group({
+      startDate: [''],
+      endDate: [''],
+    });
 
-    this.acceptedAppointments = [
-      {
-        patientName: 'Michael Brown',
-        appointmentDate: new Date('2024-07-20'),
-        appointmentTime: '09:00 AM',
-        clinicName: 'Clinic A',
-        mobileNumber: '9876543214'
-      },
-      {
-        patientName: 'Emily Davis',
-        appointmentDate: new Date('2024-07-21'),
-        appointmentTime: '12:00 PM',
-        clinicName: 'Clinic C',
-        mobileNumber: '9876543215'
-      }
-    ];
+    this.proposeTimeForm = this.fb.group({
+      newDate: [''],
+      newTime: [''],
+      clinicName: [''],
+    });
 
-    this.rejectedAppointments = [
-      {
-        patientName: 'Chris Wilson',
-        appointmentDate: new Date('2024-07-19'),
-        appointmentTime: '02:00 PM',
-        clinicName: 'Clinic B',
-        mobileNumber: '9876543216',
-        reason: 'Patient request'
-      }
-    ];
-
-    this.filteredPendingAppointments = [...this.pendingAppointments];
+    this.rejectReasonForm = this.fb.group({
+      reason: [''],
+    });
   }
 
- 
+  async loadAppointments(): Promise<void> {
+    const appointments = await this.indexedDbService.getAppointments();
+  
+    const now = new Date();
+  
+    // Map appointments to conform to the `Appointment` interface
+    const mappedAppointments = appointments.map((appointment) => ({
+      ...appointment,
+      appointmentDate: new Date(appointment.appointmentDate), // Convert string to Date
+      newDate: appointment.proposedDate ? new Date(appointment.proposedDate) : undefined,
+    })) as Appointment[];
+  
+    // Filter appointments into categories
+    this.pendingAppointments = mappedAppointments.filter(
+      (a) =>
+        // Future appointments
+        (a.status === 'pending' || a.status === 'proposed') // Include pending and proposed
+    );
+  
+    this.acceptedAppointments = mappedAppointments.filter(
+      (a) =>
+        // Future appointments
+        (a.status === 'accepted') // Include pending and proposed
+    );
+  
+    this.rejectedAppointments = mappedAppointments.filter(
+      (a) => a.status === 'rejected' // Include only rejected appointments
+    );
+  
+    // Default to showing pending appointments in the filtered list
+    this.filteredPendingAppointments = [...this.pendingAppointments];
+  }
 
   filterAppointmentsByDate(): void {
     const startDate = this.appointmentsForm.get('startDate')?.value;
@@ -129,8 +96,8 @@ export class ManageAppointmentsComponent implements OnInit {
       const start = new Date(startDate);
       const end = new Date(endDate);
 
-      this.filteredPendingAppointments = this.pendingAppointments.filter(appointment => {
-        const appointmentDate = new Date(appointment.appointmentDate);
+      this.filteredPendingAppointments = this.pendingAppointments.filter((appointment) => {
+        const appointmentDate = appointment.appointmentDate;
         return appointmentDate >= start && appointmentDate <= end;
       });
     } else {
@@ -138,79 +105,91 @@ export class ManageAppointmentsComponent implements OnInit {
     }
   }
 
-  after(start: NgbDateStruct, end: NgbDateStruct): boolean {
-    if (start.year === end.year) {
-      if (start.month === end.month) {
-        return start.day < end.day;
-      }
-      return start.month < end.month;
+  async acceptAppointment(appointment: Appointment): Promise<void> {
+    await this.indexedDbService.updateAppointment(appointment.id, {
+      status: 'accepted',
+    });
+    await this.loadAppointments();
+  }
+
+  proposeNewTime(appointment: Appointment): void {
+    this.selectedAppointment = { ...appointment };
+    this.proposeTimeForm.patchValue({
+      newDate: this.selectedAppointment.newDate
+        ? this.selectedAppointment.newDate.toISOString().substring(0, 10)
+        : '',
+      newTime: this.selectedAppointment.newTime || '',
+      clinicName: this.selectedAppointment.clinicName || '',
+    });
+  
+    const modal = new Modal(this.proposeTimeModal.nativeElement);
+    modal.show();
+  }
+
+  async confirmReject(): Promise<void> {
+    const reason = this.rejectReasonForm.value.reason;
+    if (this.selectedAppointment) {
+      await this.indexedDbService.updateAppointment(this.selectedAppointment.id, {
+        status: 'rejected',
+        reason,
+      });
+      await this.loadAppointments();
     }
-    return start.year < end.year;
+
+    const rejectReasonModalInstance = Modal.getInstance(this.rejectReasonModal.nativeElement);
+    rejectReasonModalInstance?.hide();
+  }
+
+  rejectAppointment(appointment: Appointment): void {
+    this.selectedAppointment = appointment;
+    const modalInstance = new Modal(this.rejectReasonModal.nativeElement);
+    modalInstance.show();
   }
 
   sortAppointments(column: keyof Appointment): void {
     const direction = this.sortDirection[column] === 'asc' ? 'desc' : 'asc';
     this.sortDirection[column] = direction;
-    this.filteredPendingAppointments.sort((a, b) => {
-      const aValue = a[column] ?? '';
-      const bValue = b[column] ?? '';
 
-      if (aValue < bValue) {
-        return direction === 'asc' ? -1 : 1;
-      } else if (aValue > bValue) {
-        return direction === 'asc' ? 1 : -1;
-      } else {
-        return 0;
-      }
-    });
+    this.filteredPendingAppointments.sort((a, b) => this.compareValues(a[column], b[column], direction));
   }
 
-  acceptAppointment(appointment: Appointment): void {
-    this.acceptedAppointments.push(appointment);
-    this.pendingAppointments = this.pendingAppointments.filter(app => app !== appointment);
-    this.filteredPendingAppointments = this.filteredPendingAppointments.filter(app => app !== appointment);
-  }
-
-  proposeNewTime(appointment: Appointment): void {
-    this.selectedAppointment = appointment;
-    const proposeTimeModalInstance = new Modal(this.proposeTimeModal.nativeElement);
-    proposeTimeModalInstance.show();
-  }
-
-  saveProposedTime(): void {
-    const proposeTimeModalInstance = Modal.getInstance(this.proposeTimeModal.nativeElement);
-    proposeTimeModalInstance?.hide();
-    // Update the appointment status
-    if (this.selectedAppointment) {
-      this.selectedAppointment.proposed = true;
-      this.selectedAppointment.newDate = this.proposeTimeForm.value.newDate;
-      this.selectedAppointment.newTime = this.proposeTimeForm.value.newTime;
-      this.selectedAppointment.clinicName = this.proposeTimeForm.value.clinicName;
+  private compareValues(a: unknown, b: unknown, direction: string): number {
+    if (a instanceof Date && b instanceof Date) {
+      return direction === 'asc' ? a.getTime() - b.getTime() : b.getTime() - a.getTime();
+    } else if (typeof a === 'string' && typeof b === 'string') {
+      return direction === 'asc' ? a.localeCompare(b) : b.localeCompare(a);
+    } else if (typeof a === 'boolean' && typeof b === 'boolean') {
+      return direction === 'asc' ? Number(a) - Number(b) : Number(b) - Number(a);
+    } else {
+      return 0;
     }
-  }
-
-  rejectAppointment(appointment: Appointment): void {
-    this.selectedAppointment = appointment;
-    const rejectReasonModalInstance = new Modal(this.rejectReasonModal.nativeElement);
-    rejectReasonModalInstance.show();
-  }
-
-  confirmReject(): void {
-    const reason = this.rejectReasonForm.value.reason;
-    if (this.selectedAppointment) {
-      // Handle reject appointment with reason
-      this.selectedAppointment.reason = reason;
-      this.rejectedAppointments.push(this.selectedAppointment);
-      this.pendingAppointments = this.pendingAppointments.filter(app => app !== this.selectedAppointment);
-      this.filteredPendingAppointments = this.filteredPendingAppointments.filter(app => app !== this.selectedAppointment);
-    }
-    const rejectReasonModalInstance = Modal.getInstance(this.rejectReasonModal.nativeElement);
-    rejectReasonModalInstance?.hide();
   }
 
   isUpcoming(appointment: Appointment): boolean {
     const today = new Date();
-    const appointmentDate = new Date(appointment.appointmentDate);
-    return appointmentDate >= today;
+    return appointment.appointmentDate >= today;
+  }
+
+  async saveProposedTime(): Promise<void> {
+    if (this.selectedAppointment) {
+      const proposedDate = this.proposeTimeForm.get('newDate')?.value;
+      const proposedTime = this.proposeTimeForm.get('newTime')?.value;
+      const proposedClinicName = this.proposeTimeForm.get('clinicName')?.value;
+  
+      if (proposedDate && proposedTime && proposedClinicName) {
+        await this.indexedDbService.updateAppointment(this.selectedAppointment.id, {
+          status: 'proposed',
+          proposedDate,
+          proposedTime,
+          proposedClinicName,
+        });
+        await this.loadAppointments();
+  
+        const modal = Modal.getInstance(this.proposeTimeModal.nativeElement);
+        modal?.hide();
+      } else {
+        alert('All fields are required to propose a new time.');
+      }
+    }
   }
 }

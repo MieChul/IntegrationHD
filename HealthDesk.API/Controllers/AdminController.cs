@@ -18,7 +18,7 @@ public class AdminController : ControllerBase
     [HttpPost("adminAction/{id}")]
     public async Task<IActionResult> AdminAction(string id, AdminActionDto model)
     {
-        await _adminService.AdminAction(id, model.Status, model.Comments);
+        await _adminService.AdminAction(id, model.Role, model.Status, model.Comments);
         return Ok(new { message = "User updated successfully" });
     }
 

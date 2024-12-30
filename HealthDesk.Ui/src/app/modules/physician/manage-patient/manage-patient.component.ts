@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./manage-patient.component.scss']
 })
 export class ManagePatientComponent implements OnInit, AfterViewInit {
-  patients :any[]= [];
+  patients: any[] = [];
   nameError: string | null = null;
   ageError: string | null = null;
   mobileError: string | null = null;
@@ -18,14 +18,16 @@ export class ManagePatientComponent implements OnInit, AfterViewInit {
   sortDirection = 'asc';
   sortKey = '';
   showAddPatientPopup = false;
-  newPatient = { name: '', age: 0, mobile: '', lastVisited: '', gender:'' };
+  newPatient = { id: 0, name: '', age: 0, mobile: '', lastVisited: '', gender: '', abhaId: '', secondaryId: '' };
   showHistory = false;
   patientHistory: any[] = [];
   currentPatient: any;
-  showModel:boolean = false;
+  showModel: boolean = false;
   genderError: string | null = null;
+  abhaError: string | null = null;
+  secondaryIdError:string | null = null;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   ngOnInit(): void {
     this.destroyTooltips();
@@ -65,7 +67,7 @@ export class ManagePatientComponent implements OnInit, AfterViewInit {
     );
   }
 
-  sortTable(key : string): void {
+  sortTable(key: string): void {
     this.sortKey = key;
     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     this.filteredPatients.sort((a, b) => {
@@ -87,36 +89,41 @@ export class ManagePatientComponent implements OnInit, AfterViewInit {
 
   addPatient(): void {
     this.destroyTooltips();
+
+    // Validate inputs
     const isValidName = this.validateName(this.newPatient.name);
     const isValidAge = this.validateAge(this.newPatient.age);
     const isValidPhone = this.validatePhone(this.newPatient.mobile);
     const isValidGender = this.validateGender(this.newPatient.gender);
+    const isValidAbha = this.validateAlphanumeric('abhaId', this.newPatient.abhaId);
+    const isValidSecondary = this.validateAlphanumeric('secondaryId', this.newPatient.secondaryId);
 
-    if (!isValidName || !isValidAge || !isValidPhone) {
+    if (!isValidName || !isValidAge || !isValidPhone || !isValidGender || !isValidAbha || !isValidSecondary) {
       return;
     }
-    const newId = this.patients.length + 1;
-    const newPatient = { 
-      id: newId, 
-      name: this.newPatient.name, 
-      age: this.newPatient.age, 
-      mobile: this.newPatient.mobile, 
-      lastVisited: new Date().toISOString().split('T')[0],
-      view: false, 
-      history: false,
-      gender: this.newPatient.gender,  
-    };
-  
-    // Add to IndexedDB
-    this.addPatientToIndexedDB(newPatient);
-    
-    this.patients.push(newPatient);
-    this.filteredPatients = [...this.patients];
-  
+
+    if (this.newPatient.id) {
+      // Update existing patient
+      const index = this.patients.findIndex((p) => p.id === this.newPatient.id);
+      if (index !== -1) {
+        this.patients[index] = { ...this.newPatient };
+        this.filteredPatients = [...this.patients];
+        this.updatePatientInIndexedDB(this.newPatient); // Update in IndexedDB
+      }
+    } else {
+      // Add new patient
+      const newId = this.patients.length > 0 ? Math.max(...this.patients.map((p) => p.id)) + 1 : 1;
+      const newPatient = { ...this.newPatient, id: newId, lastVisited: new Date().toISOString().split('T')[0] };
+      this.addPatientToIndexedDB(newPatient); // Add to IndexedDB
+      this.patients.push(newPatient);
+      this.filteredPatients = [...this.patients];
+    }
+
     const addPatientModal = bootstrap.Modal.getInstance(document.getElementById('addPatientModal')!);
     addPatientModal?.hide();
     this.resetForm();
   }
+
 
   async addPatientToIndexedDB(patient: any) {
     const db = await this.openIndexedDB();
@@ -126,14 +133,22 @@ export class ManagePatientComponent implements OnInit, AfterViewInit {
     transaction.oncomplete = () => console.log('Patient added to IndexedDB');
   }
 
+  async updatePatientInIndexedDB(patient: any) {
+    const db = await this.openIndexedDB();
+    const transaction = db.transaction(['patients'], 'readwrite');
+    const store = transaction.objectStore('patients');
+    store.put(patient);
+    transaction.oncomplete = () => console.log('Patient updated in IndexedDB');
+  }
+
   resetForm() {
-    this.newPatient = { name: '', age: 0, mobile: '', lastVisited: '', gender:'' };
+    this.newPatient = { id:0, name: '', age: 0, mobile: '', lastVisited: '', gender: '', abhaId:'',secondaryId:'' };
   }
 
   openIndexedDB(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open('prescriptionsDB', 2);
-  
+
       request.onupgradeneeded = (event: any) => {
         const db = event.target.result;
         if (!db.objectStoreNames.contains('patients')) {
@@ -142,15 +157,15 @@ export class ManagePatientComponent implements OnInit, AfterViewInit {
         let pdfStore;
         if (!db.objectStoreNames.contains('pdfs')) {
           pdfStore = db.createObjectStore('pdfs', { keyPath: 'name' }); // Ensure keyPath is 'name'
-      } else {
-        pdfStore = event.currentTarget.transaction?.objectStore('pdfs');
-      }
+        } else {
+          pdfStore = event.currentTarget.transaction?.objectStore('pdfs');
+        }
 
         if (!pdfStore.indexNames.contains('patientId')) {
           pdfStore.createIndex('patientId', 'patientId', { unique: false });
         }
       };
-  
+
       request.onsuccess = (event: any) => resolve(event.target.result);
       request.onerror = (event: any) => reject(event.target.error);
     });
@@ -184,20 +199,20 @@ export class ManagePatientComponent implements OnInit, AfterViewInit {
     this.router.navigate(['physician/generate-certificate'], { state: { patient } });
   }
 
-  
+
   async getUniquePatientsFromIndexedDB() {
     const db = await this.openIndexedDB();
     const transaction = db.transaction(['patients'], 'readonly');
     const store = transaction.objectStore('patients');
     const getAllRequest = store.getAll();
-  
+
     getAllRequest.onsuccess = () => {
       this.patients = getAllRequest.result;
       this.filteredPatients = [...this.patients];
     };
   }
-  
-  viewPatient(patient: any, pdfid:number = 0): void {
+
+  viewPatient(patient: any, pdfid: number = 0): void {
     this.getLatestPdfByPatientId(patient.id, pdfid).then(async (pdfName) => {
       if (pdfName) {
         try {
@@ -216,35 +231,33 @@ export class ManagePatientComponent implements OnInit, AfterViewInit {
       }
     });
   }
-  async getLatestPdfByPatientId(patientId: number, pdfId:number = 0): Promise<string | null> {
+  async getLatestPdfByPatientId(patientId: number, pdfId: number = 0): Promise<string | null> {
     const db = await this.openIndexedDB();
     const transaction = db.transaction(['pdfs'], 'readonly');
     const store = transaction.objectStore('pdfs');
     const index = store.index('patientId');
     const getAllRequest = index.getAll(patientId);
-  
+
     return new Promise((resolve) => {
       getAllRequest.onsuccess = () => {
         const pdfs = getAllRequest.result;
         if (pdfs && pdfs.length > 0) {
-          
+
           // Get the latest PDF
-          if(pdfId > 0)
-          {
+          if (pdfId > 0) {
             const latestPdf = pdfs.filter(pdf =>
-              pdf.prescriptionId ==pdfId
+              pdf.prescriptionId == pdfId
             );
             resolve(latestPdf[0].name);
           }
-          else
-          {
+          else {
             const latestPdf = pdfs.reduce((latest, current) => {
               return new Date(latest.date) > new Date(current.date) ? latest : current;
             });
             resolve(latestPdf.name);
           }
 
-         
+
         } else {
           resolve(null);
         }
@@ -257,7 +270,7 @@ export class ManagePatientComponent implements OnInit, AfterViewInit {
     const transaction = db.transaction(['pdfs'], 'readonly');
     const store = transaction.objectStore('pdfs');
     const getRequest = store.get(pdfName);
-  
+
     return new Promise((resolve, reject) => {
       getRequest.onsuccess = () => {
         const result = getRequest.result;
@@ -267,7 +280,7 @@ export class ManagePatientComponent implements OnInit, AfterViewInit {
           resolve(null);
         }
       };
-  
+
       getRequest.onerror = () => {
         reject('Error fetching PDF from IndexedDB');
       };
@@ -279,7 +292,7 @@ export class ManagePatientComponent implements OnInit, AfterViewInit {
     const store = transaction.objectStore('pdfs');
     const index = store.index('patientId');
     const countRequest = index.count(patientId);
-  
+
     return new Promise((resolve) => {
       countRequest.onsuccess = () => resolve(countRequest.result > 1);
     });
@@ -300,7 +313,7 @@ export class ManagePatientComponent implements OnInit, AfterViewInit {
       this.currentPatient = patient;
     });
   }
-  
+
   // Fetch all PDFs except the latest one by patient ID
   async getHistoryByPatientId(patientId: number): Promise<any[]> {
     const db = await this.openIndexedDB();
@@ -308,7 +321,7 @@ export class ManagePatientComponent implements OnInit, AfterViewInit {
     const store = transaction.objectStore('pdfs');
     const index = store.index('patientId');
     const getAllRequest = index.getAll(patientId);
-  
+
     return new Promise((resolve) => {
       getAllRequest.onsuccess = () => {
         const pdfs = getAllRequest.result;
@@ -324,7 +337,7 @@ export class ManagePatientComponent implements OnInit, AfterViewInit {
       };
     });
   }
-  
+
   destroyTooltips() {
     const tooltips = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltips.forEach(tooltipTriggerEl => {
@@ -335,22 +348,7 @@ export class ManagePatientComponent implements OnInit, AfterViewInit {
     });
   }
 
-  validateName(name: string): boolean {
-    const nameRegex = /^[a-zA-Z\s]+$/;
-    if (!nameRegex.test(name)) {
-      this.nameError = 'Name can only contain letters and spaces.';
-      return false;
-    }
 
-    // Check for unique name
-    if (this.patients.some(patient => patient.name.toLowerCase() === name.toLowerCase())) {
-      this.nameError = 'Patient with this name already exists.';
-      return false;
-    }
-
-    this.nameError = null;
-    return true;
-  }
 
   validateAge(age: number): boolean {
     if (age < 1 || age > 150) {
@@ -362,6 +360,42 @@ export class ManagePatientComponent implements OnInit, AfterViewInit {
     return true;
   }
 
+  validateAlphanumeric(field: string, value: string): boolean {
+    const alphanumericRegex = /^[a-zA-Z0-9]+$/;
+    if (!alphanumericRegex.test(value)) {
+      if (field === 'abhaId') {
+        this.abhaError = 'ABHA Id must be alphanumeric.';
+      } else if (field === 'secondaryId') {
+        this.secondaryIdError = 'Secondary Id must be alphanumeric.';
+      }
+      return false;
+    }
+
+    if (field === 'abhaId') {
+      this.abhaError = null;
+    } else if (field === 'secondaryId') {
+      this.secondaryIdError = null;
+    }
+
+    return true;
+  }
+  validateName(name: string): boolean {
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    if (!nameRegex.test(name)) {
+      this.nameError = 'Name can only contain letters and spaces.';
+      return false;
+    }
+
+    // Skip unique validation if editing
+    if (!this.newPatient.id && this.patients.some(patient => patient.name.toLowerCase() === name.toLowerCase())) {
+      this.nameError = 'Patient with this name already exists.';
+      return false;
+    }
+
+    this.nameError = null;
+    return true;
+  }
+
   validatePhone(phone: string): boolean {
     const phoneRegex = /^[789]\d{9}$/;
     if (!phoneRegex.test(phone)) {
@@ -369,7 +403,8 @@ export class ManagePatientComponent implements OnInit, AfterViewInit {
       return false;
     }
 
-    if (this.patients.some(patient => patient.mobile === phone)) {
+    // Skip unique validation if editing
+    if (!this.newPatient.id && this.patients.some(patient => patient.mobile === phone)) {
       this.mobileError = 'A patient with this phone number already exists.';
       return false;
     }
@@ -383,9 +418,14 @@ export class ManagePatientComponent implements OnInit, AfterViewInit {
       this.genderError = 'Please select a gender.';
       return false;
     }
-    
+
     this.genderError = null;
     return true;
   }
-
+  editPatient(patient: any): void {
+    this.newPatient = { ...patient }; // Clone the patient object into the form model
+    this.showModel = true;
+    const addPatientModal = new bootstrap.Modal(document.getElementById('addPatientModal')!);
+    addPatientModal.show();
+  }
 }

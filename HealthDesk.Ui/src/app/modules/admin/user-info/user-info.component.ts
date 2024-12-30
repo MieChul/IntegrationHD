@@ -41,15 +41,14 @@ export class UserInfoComponent implements OnInit {
                 .subscribe(x => {
                     this.loaderService.hide();
                     this.user = x;
-                    this.user.role = this.user.role || 'physician';
+                    this.user.role = history.state.role;
                     this.gender = this.user.gender;
                     if (this.user.role != 'patient' && this.user.role != 'physician')
                         this.tab = 'hosp_info';
 
                 });
         }
-        else
-        {
+        else {
             this.loaderService.hide();
             this.router.navigateByUrl('/admin');
         }
@@ -106,7 +105,7 @@ export class UserInfoComponent implements OnInit {
             return;
         }
 
-        this.adminService.adminAction(this.user.id, value, this.comments)
+        this.adminService.adminAction(this.user.id, this.user.role, value, this.comments)
             .pipe(first())
             .subscribe({
                 next: () => {

@@ -38,15 +38,15 @@
                 <p class="card-text">Submitted by: {{ case.submittedBy }}</p>
                 <p class="card-text">Speciality: {{ case.speciality }}</p>
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                  <button class="btn btn-primary" (click)="viewCase(case.id)">View</button>
-                  <div>
-                    <button class="btn btn-outline-secondary me-1" (click)="likeCase(case.id)">
+                  <button class="btn btn-primary btn-sm" (click)="viewCase(case.id)">View</button>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary btn-sm" (click)="likeCase(case.id)">
                       <i class="bi bi-hand-thumbs-up"></i> Like <span>{{ case.likeCount }}</span>
                     </button>
-                    <button class="btn btn-outline-secondary me-1" (click)="viewComments(case.id)">
+                    <button class="btn btn-outline-secondary btn-sm" (click)="viewComments(case.id)">
                       <i class="bi bi-chat-dots"></i> Comments <span>{{ case.comments.length }}</span>
                     </button>
-                    <button class="btn btn-outline-secondary" (click)="shareCase(case.id)">
+                    <button class="btn btn-outline-secondary btn-sm" (click)="shareCase(case.id)">
                       <i class="bi bi-share"></i> Share
                     </button>
                   </div>

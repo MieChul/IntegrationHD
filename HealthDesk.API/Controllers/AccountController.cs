@@ -69,4 +69,26 @@ IAccountService accountService
         _accountService.Update(id, model);
         return Ok(new { fileName = res });
     }
+
+    [HttpPost("switch/{id}")]
+    public async Task<IActionResult> Switch(string id, [FromQuery] string role)
+    {
+        var data = await _accountService.SwithRole(id, role);
+
+        return Ok(new { data });
+    }
+
+    [HttpPost("refreshUserDetails/{id}")]
+    public async Task<IActionResult> RefreshUserDetails(string id, [FromQuery] string role)
+    {
+        var user = await _accountService.RefreshUserDetails(id, role);
+        return Ok(new { role = role, username = user.Username, id = user.Id, profImage = user.ProfImage, status = user.Status, canswitch = user.CanSwitch, dependentId = user.DependentId, dependentName = user.DependentName, hasDependent = user.HasDependent });
+    }
+
+    [HttpPost("addDependent/{id}")]
+    public async Task<IActionResult> AddDependent(string id)
+    {
+        var user = await _accountService.AddDependent(id);
+        return Ok(new { role = "patient", username = user.Username, id = user.Id, profImage = user.ProfImage, status = user.Status, canswitch = user.CanSwitch, dependentId = user.DependentId, dependentName = user.DependentName, hasDependent = user.HasDependent });
+    }
 }

@@ -49,11 +49,12 @@ export class UserListComponent implements OnInit {
         return word[0].toUpperCase() + word.substr(1).toLowerCase();
     }
 
-    userClicked(id: string) {
+    userClicked(id: string, role: string) {
         this.router.navigate(['admin/userInfo'],
             {
                 state: {
                     id: id,
+                    role: role.toLowerCase()
                 }
             }
         );

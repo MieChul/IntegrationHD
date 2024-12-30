@@ -1,66 +1,139 @@
 <div class="container">
-    <h2 class="animated-heading">
-      <i class="bi bi-star me-2"></i>Search & Rate Doctors
-    </h2>
-    
-    <!-- Filter and Search Bar -->
-    <div class="row mb-4">
-      <div class="col-md-4">
-        <input type="text" class="form-control" placeholder="Search by Doctor's Name" [(ngModel)]="searchName">
-      </div>
-      <div class="col-md-4">
-        <input type="text" class="form-control" placeholder="Search by Location" [(ngModel)]="searchLocation">
-      </div>
-      <div class="col-md-4">
-        <select class="form-select" [(ngModel)]="sortOrder">
-          <option value="highest">Sort by Highest Rating</option>
-          <option value="lowest">Sort by Lowest Rating</option>
-        </select>
-      </div>
+  <h1 class="animated-heading">
+    <i class="bi bi-star-fill me-2"></i>Review and Rate
+</h1>
+
+  <!-- Tabs for Categories -->
+  <ul class="nav nav-tabs mb-4">
+    <li class="nav-item" (click)="switchTab('physician')">
+      <a class="nav-link" [class.active]="currentTab === 'physician'">Physicians</a>
+    </li>
+    <li class="nav-item" (click)="switchTab('hospital')">
+      <a class="nav-link" [class.active]="currentTab === 'hospital'">Hospitals</a>
+    </li>
+    <li class="nav-item" (click)="switchTab('laboratory')">
+      <a class="nav-link" [class.active]="currentTab === 'laboratory'">Laboratories</a>
+    </li>
+    <li class="nav-item" (click)="switchTab('pharmacy')">
+      <a class="nav-link" [class.active]="currentTab === 'pharmacy'">Pharmacies</a>
+    </li>
+  </ul>
+
+  <!-- Search and Sort -->
+  <div class="row mb-3">
+    <div *ngIf="currentTab === 'physician'" class="col-md-4">
+      <input type="text" class="form-control" placeholder="Search by Location" [(ngModel)]="searchCriteria.location">
     </div>
-    
-    <!-- Doctors List -->
-    <div class="row">
-      <div *ngFor="let doctor of filteredDoctors()" class="col-md-4 col-sm-6 mb-4">
-        <div class="card fade-in">
-          <div class="card-body">
-            <h5 class="card-title">{{ doctor.name }}</h5>
-            <p class="card-text">{{ doctor.location }}</p>
-            <p class="card-text"><strong>Degree:</strong> {{ doctor.degree }}</p>
-            <p class="card-text">
-              <i class="bi bi-star-fill"></i> {{ doctor.rating }} ({{ doctor.reviews }} reviews)
-            </p>
-            <button class="btn btn-primary" (click)="openReviewModal(doctor)">View & Rate</button>
+    <div *ngIf="currentTab === 'physician'" class="col-md-4">
+      <input type="text" class="form-control" placeholder="Search by Speciality" [(ngModel)]="searchCriteria.speciality">
+    </div>
+    <div *ngIf="currentTab === 'physician'" class="col-md-4">
+      <input type="text" class="form-control" placeholder="Search by Timing" [(ngModel)]="searchCriteria.time">
+    </div>
+    <div *ngIf="currentTab === 'hospital'" class="col-md-4">
+      <input type="text" class="form-control" placeholder="Search by Location" [(ngModel)]="searchCriteria.location">
+    </div>
+    <div *ngIf="currentTab === 'hospital'" class="col-md-4">
+      <input type="text" class="form-control" placeholder="Search by Service Type" [(ngModel)]="searchCriteria.service">
+    </div>
+    <div *ngIf="currentTab === 'hospital'" class="col-md-4">
+      <input type="text" class="form-control" placeholder="Search by Physician" [(ngModel)]="searchCriteria.physician">
+    </div>
+    <div *ngIf="currentTab === 'laboratory'" class="col-md-6">
+      <input type="text" class="form-control" placeholder="Search by Location" [(ngModel)]="searchCriteria.location">
+    </div>
+    <div *ngIf="currentTab === 'laboratory'" class="col-md-6">
+      <input type="text" class="form-control" placeholder="Search by Test Name" [(ngModel)]="searchCriteria.testName">
+    </div>
+    <div *ngIf="currentTab === 'pharmacy'" class="col-md-6">
+      <input type="text" class="form-control" placeholder="Search by Location" [(ngModel)]="searchCriteria.location">
+    </div>
+    <div *ngIf="currentTab === 'pharmacy'" class="col-md-6">
+      <input type="text" class="form-control" placeholder="Search by Drug Name" [(ngModel)]="searchCriteria.drugName">
+    </div>
+  </div>
+
+  <!-- Sort by Rating -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <select class="form-select" [(ngModel)]="sortOrder" (change)="onSortChange()">
+        <option value="highest">Sort by Highest Rating</option>
+        <option value="lowest">Sort by Lowest Rating</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Entity Cards -->
+  <div class="row">
+    <div *ngFor="let entity of filteredEntities()" class="col-md-4 mb-4">
+      <div class="card modern-card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">{{ entity.name }}</h5>
+          <p *ngIf="entity.location" class="card-text"><strong>Location:</strong> {{ entity.location }}</p>
+          <p *ngIf="entity.speciality" class="card-text"><strong>Speciality:</strong> {{ entity.speciality }}</p>
+          <p *ngIf="entity.timing" class="card-text"><strong>Timing:</strong> {{ entity.timing }}</p>
+          <div *ngIf="entity.services" class="card-text">
+            <strong>Services:</strong>
+            <ul>
+              <li *ngFor="let service of entity.services">{{ service }}</li>
+            </ul>
           </div>
+          <div *ngIf="entity.physicians" class="card-text">
+            <strong>Physicians:</strong>
+            <ul>
+              <li *ngFor="let physician of entity.physicians">
+                {{ physician.name }} ({{ physician.speciality }})
+              </li>
+            </ul>
+          </div>
+          <p *ngIf="entity.testName" class="card-text"><strong>Test Name:</strong> {{ entity.testName }}</p>
+          <p *ngIf="entity.drugName" class="card-text"><strong>Drug Name:</strong> {{ entity.drugName }}</p>
+          <p class="card-text"><strong>Rating:</strong> {{ entity.rating.toFixed(1) }}</p>
+          <button class="btn btn-primary mt-2" (click)="openReviewModal(entity)">View & Rate</button>
+          <button *ngIf="currentTab === 'physician'" class="btn btn-secondary mt-2 m-1" (click)="redirectToAppointments()">Book Appointment</button>
         </div>
       </div>
     </div>
   </div>
-  
+
   <!-- Review Modal -->
   <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true" #reviewModal>
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="reviewModalLabel">Reviews for {{ selectedDoctor?.name }}</h5>
+          <h5 class="modal-title" id="reviewModalLabel">Reviews for {{ selectedEntity?.name }}</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <div *ngFor="let review of selectedDoctor?.reviews">
-            <p><strong>{{ review.author }}</strong>: {{ review.comment }}</p>
+          <!-- User Review -->
+          <h6>Your Review</h6>
+          <div *ngIf="userReview">
+            <p><strong>{{ userReview.user }}</strong>: {{ userReview.comment }} <span class="text-warning">({{ userReview.rating }}/5)</span></p>
+          </div>
+          <div *ngIf="!userReview">
+            <p>No review submitted yet.</p>
+          </div>
+          <hr />
+
+          <!-- Other Reviews -->
+          <h6>Other Reviews</h6>
+          <div *ngFor="let review of getOtherReviews()">
+            <p><strong>{{ review.user }}</strong>: {{ review.comment }} <span class="text-warning">({{ review.rating }}/5)</span></p>
           </div>
           <hr>
-          <h6>Add Your Review:</h6>
+
+          <!-- Add/Update Review -->
+          <h6>Add/Update Your Review:</h6>
           <form [formGroup]="reviewForm">
             <div class="mb-3">
-                <label for="rating" class="form-label">Rating</label>
-                <div class="star-rating">
-                  <i *ngFor="let star of [1, 2, 3, 4, 5]" 
-                     class="bi"
-                     [ngClass]="{'bi-star-fill': star <= reviewForm.get('rating')?.value, 'bi-star': star > reviewForm.get('rating')?.value}"
-                     (click)="setRating(star)"></i>
-                </div>
+              <label for="rating" class="form-label">Rating</label>
+              <div class="star-rating">
+                <i *ngFor="let star of [1, 2, 3, 4, 5]"
+                   class="bi"
+                   [ngClass]="{'bi-star-fill': star <= reviewForm.get('rating')?.value, 'bi-star': star > reviewForm.get('rating')?.value}"
+                   (click)="setRating(star)"></i>
               </div>
+            </div>
             <div class="mb-3">
               <label for="comment" class="form-label">Comment</label>
               <textarea formControlName="comment" class="form-control"></textarea>
@@ -69,9 +142,9 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" (click)="submitReview()">Submit Review</button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="submitReview()">Submit Review</button>
         </div>
       </div>
     </div>
   </div>
-  
+</div>

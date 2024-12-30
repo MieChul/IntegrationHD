@@ -39,7 +39,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr scope="row" *ngFor="let user of filteredUsers; index as i" class="cursor-pointer" (click)="userClicked(user.id)">
+                            <tr scope="row" *ngFor="let user of filteredUsers; index as i" class="cursor-pointer" (click)="userClicked(user.id, user.role)">
                                 <td>{{i+1}}</td>
                                 <td>{{user.name}}</td>
                                 <td>{{user.contact}}</td>

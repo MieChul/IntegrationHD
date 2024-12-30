@@ -9,7 +9,8 @@ public class User : BaseEntity
     public string PasswordHash { get; set; }
     public string Email { get; set; }
     public string Mobile { get; set; }
-    public List<Role> Roles { get; set; } = new List<Role>();
+    [BsonElement("user_roles")]
+    public List<UserRole> Roles { get; set; } = new();
     [BsonElement("u_id")]
     public string UniqueId { get; set; }
 
@@ -17,10 +18,6 @@ public class User : BaseEntity
     public string FirstName { get; set; } = string.Empty;
     [BsonElement("l_name")]
     public string LastName { get; set; } = string.Empty;
-
-
-    [BsonElement("status")]
-    public string Status { get; set; } = string.Empty;
 
     [BsonElement("display_ame")]
     public string? DisplayName { get; set; } = string.Empty;
@@ -176,10 +173,16 @@ public class User : BaseEntity
     public List<PatientSelfRecording> PatientSelfRecording { get; set; }
     [BsonElement("patient_appointment")]
     public List<PatientAppointment> PatientAppointments { get; set; }
-    [BsonElement("role")]
-    public string Role { get; set; }
     [BsonElement("no_doc_consent")]
     public bool NoDocConsentProvided { get; set; }
+    [BsonElement("can_switch")]
+    public bool CanSwitch { get; set; }
+    [BsonElement("dependant_Id")]
+    public string DependentId { get; set; }
+    [BsonElement("dependant_name")]
+    public string DependentName { get; set; }
+    [BsonElement("has_dependent")]
+    public bool HasDependent { get; set; }
 }
 
 public class DOBEntity
@@ -354,4 +357,14 @@ public class PatientAppointment
     public string TypeId { get; set; } = string.Empty;
     [BsonElement("type")]
     public string Type { get; set; } = string.Empty;
+}
+
+public class UserRole
+{
+    [BsonElement("role")]
+
+    public Role Role { get; set; }
+
+    [BsonElement("status")]
+    public string Status { get; set; } = string.Empty;
 }

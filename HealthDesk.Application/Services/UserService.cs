@@ -46,7 +46,8 @@ public class UserService : IUserService
 
         var user = new User();
         GenericMapper.Map<UserRegistrationDto, User>(userDto, user);
-        user.Roles = new List<Role> { (Role)userDto.RoleId };
+        user.Roles = new List<UserRole>();
+        user.Roles.Add(new UserRole() { Role = (Role)userDto.RoleId, Status = "New" });
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userDto.Password);
         await _userRepository.AddAsync(user);
         return "User registered successfully";

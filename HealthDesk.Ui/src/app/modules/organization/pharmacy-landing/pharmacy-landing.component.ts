@@ -10,6 +10,8 @@ import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { Modal } from 'bootstrap';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import { Router } from '@angular/router';
+import { AccountService } from '../../services/account.service';
 
 interface Brand {
   brandOwner: string;
@@ -43,15 +45,24 @@ export class PharmacyLandingComponent implements OnInit, AfterViewInit{
   drugClasses: string[] = ['Antipyretic', 'Analgesic', 'Antibiotic', 'Antacid', 'Antihypertensive'];
   dosageForms: string[] = ['Tablet', 'Capsule', 'Syrup', 'Injection', 'Ointment'];
   approvalAgencies: string[] = ['CDSCO', 'FDA', 'EMA'];
-
+  userData : any;
     // Pack Shot file
     selectedPackShotFile: File | null = null;
 
-    constructor(private fb: FormBuilder, private modalService: NgbModal) {}
+    constructor(private router: Router,private fb: FormBuilder, private modalService: NgbModal,  private accountService: AccountService) {}
 
     ngOnInit(): void {
-      this.initForms();
-      this.loadInitialData();
+      this.accountService.getUserData().subscribe({
+        next: (data) => {
+          this.userData = data;
+          if (this.userData.status == 'Approved') {
+            this.initForms();
+            this.loadInitialData();
+          }
+          else
+            this.router.navigate(['/account']);
+        }
+      });
     }
 
     

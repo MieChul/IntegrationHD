@@ -10,6 +10,8 @@ import { Modal } from 'bootstrap';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import * as bootstrap from 'bootstrap';
+import { AccountService } from '../../services/account.service';
+import { Router } from '@angular/router';
 
 interface Physician {
   id: string;
@@ -90,12 +92,22 @@ export class HospitalLandingComponent implements OnInit, AfterViewInit {
   manualEntryEnabled: boolean = false;
   isEditPhysician: boolean = false;
   isEditService: boolean = false;
-
-  constructor(private fb: FormBuilder, private modalService: NgbModal) { }
+  userData: any;
+  constructor(private router: Router, private fb: FormBuilder, private modalService: NgbModal, private accountService: AccountService) { }
 
   ngOnInit(): void {
-    this.initForms();
-    this.loadDummyData();
+    this.accountService.getUserData().subscribe({
+      next: (data) => {
+        this.userData = data;
+        if (this.userData.status == 'Approved') {
+          this.initForms();
+          this.loadDummyData();
+        }
+        else
+          this.router.navigate(['/account']);
+      }
+    });
+
   }
 
   ngAfterViewInit(): void {

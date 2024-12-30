@@ -86,7 +86,7 @@
                 </div>
             </div>
             <div class="col-lg-9">
-                <div class="card bg-danger text-center" *ngIf="isRejected">
+                <div class="card bg-danger text-center" *ngIf="userData.status ==='Rejected'">
                     <div class="row">
                         <div class="col top-warning"><i class="bi bi-exclamation-triangle-fill"></i> Your application
                             was rejected. Please resubmit with corrections.
@@ -94,14 +94,14 @@
                         </div>
                     </div>
                 </div>
-                <div class="card bg-warning text-center" *ngIf="isSaved">
+                <div class="card bg-warning text-center" *ngIf="userData.status ==='Saved'">
                     <div class="row">
                         <div class="col top-warning"><i class="bi bi-exclamation-triangle-fill"></i> Your application is
                             saved. Please complete the application and submit for admin to review.
                         </div>
                     </div>
                 </div>
-                <div class="card bg-success text-center" *ngIf="isSubmitted">
+                <div class="card bg-success text-center" *ngIf="userData.status ==='Submitted'">
                     <div class="row">
                         <div class="col top-warning"><i class="bi bi-exclamation-triangle-fill"></i> Thank you!! Your
                             application is submitted and is under review. Once approved you will be able to use the
@@ -758,15 +758,11 @@
                             <div class="text-center">
                                 <button type="button" class="btn btn-outline-primary col-sm-2 m-1 text-center"
                                     (click)="save()">Save</button>
-                                <button *ngIf="!isSubmitted && !(user.status === 'Approved')" type="submit"
+                                <button *ngIf="!(user.status === 'Submitted') && !(user.status === 'Approved')" type="submit"
                                     class="btn btn-outline-success col-sm-2 m-1 text-center">Submit</button>
-                                <button *ngIf="userData.isConfirm" type="button"
-                                    class="btn btn-outline-primary col-sm-2 m-1 text-center"
-                                    (click)="confirm()">Confirm</button>
                                 <button type="button" class="btn btn-outline-primary col-sm-2 m-1 text-center"
                                     (click)="reload()">Reload</button>
                             </div>
-
                         </div>
                     </div>
                 </div>

@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { AccountService } from '../../../modules/services/account.service';
+import { NotificationService } from '../../services/notification.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -9,22 +11,30 @@ import { Router } from '@angular/router';
 })
 export class HeaderComponent implements OnInit {
   userData: any = {};
-  isMenuOpen : boolean = false;
-  profImg : string = '/assets/defaultProfile.jpg'
+  isMenuOpen: boolean = false;
+  profImg: string = '/assets/defaultProfile.jpg'
   switchRole: string = '';
-  constructor(public router: Router, private authService: AuthService) { 
+  currRole: string = '';
+  dependentText: string = '';
+  constructor(public router: Router, private authService: AuthService, private accountService: AccountService, private notificationService: NotificationService) {
 
   }
 
   ngOnInit(): void {
-    this.userData = this.authService.userValue;
-    this.profImg =this.userData.profImage || '/assets/defaultProfile.jpg'
-    this.setSwitchRoleText();
-    const darkMode = localStorage.getItem('darkMode') === 'true';
-    if (darkMode) {
-      document.body.classList.add('dark-mode');
-      this.updateDarkModeLabel(true);
-    }
+    this.userData = this.accountService.getUserData().subscribe({
+      next: (data) => {
+        this.userData = data; // Assign the result to a variable
+        this.currRole = this.userData.role;
+        this.profImg = this.userData.profImage || '/assets/defaultProfile.jpg'
+        this.setSwitchRoleText();
+        this.setDependentText();
+        const darkMode = localStorage.getItem('darkMode') === 'true';
+        if (darkMode) {
+          document.body.classList.add('dark-mode');
+          this.updateDarkModeLabel(true);
+        }
+      }
+    });
   }
 
   toggleDarkMode(): void {
@@ -46,12 +56,21 @@ export class HeaderComponent implements OnInit {
       this.switchRole = 'Switch to Patient';
     } else if (this.userData.role === 'patient') {
       this.switchRole = 'Switch to Physician';
-    } else if (['laboratory', 'nutraceutical', 'hospital'].includes(this.userData.role.toLowerCase())) {
+    } else if (['laboratory', 'pharmacy', 'hospital'].includes(this.userData.role.toLowerCase())) {
       this.switchRole = 'Switch Role';
     } else {
       this.switchRole = '';
     }
   }
+
+  setDependentText() {
+    if (this.userData.hasDependent || this.userData.dependentId) {
+      this.dependentText = 'Use App as ' + (this.userData.dependentName.trim() ? this.userData.dependentName : 'Dependent');
+    } else {
+      this.dependentText = 'Add Dependant';
+    } 
+  }
+
 
   handleSwitchRole() {
     if (this.switchRole === 'Switch to Patient') {
@@ -66,18 +85,20 @@ export class HeaderComponent implements OnInit {
   }
 
   updateSessionAndNavigate(role: string): void {
-    this.userData.role =role;
-    if (role === 'patient' || role === 'physician') {
-        if (!this.userData.confirmed) {
-            this.userData.isConfirm = true;
-            this.router.navigate(['account/']);
+    this.accountService.switchRole(this.userData.id, role).subscribe({
+      next: (u) => {
+        this.currRole = role;
+        if (u.data.status === 'Approved') {
+          role === 'patient' || role === 'physician' ? this.router.navigate([`${role}/`]) : this.router.navigate([`organization/${role}`]);
         } else {
-            this.router.navigate([`${role}/`]);
+          this.router.navigate(['account/']);
         }
-    } else {
-        this.router.navigate([`organization/${role}`]);
-    }
-}
+      },
+      error: (err) => {
+        this.notificationService.showError('Something went wrong. Please try again.');
+      }
+    });
+  }
 
 
   openRoleSelectionPopup() {
@@ -110,5 +131,22 @@ export class HeaderComponent implements OnInit {
     } else {
       return `/organization/${role}`;
     }
+  }
+
+  addDependent() {
+
+    this.accountService.addDependent(this.userData.id).subscribe({
+      next: (u) => {
+        if (u.status === 'Approved') {
+          this.router.navigate([`patient/`]);
+          window.location.reload();
+        } else {
+          this.router.navigate(['account/']);
+        }
+      },
+      error: (err) => {
+        this.notificationService.showError('Something went wrong. Please try again.');
+      }
+    });
   }
 }

@@ -68,6 +68,8 @@
               <th (click)="sortTable('name')">Patient Name</th>
               <th (click)="sortTable('age')">Age</th>
               <th (click)="sortTable('mobile')">Mobile Number</th>
+              <th (click)="sortTable('abhaId')">ABHA Id</th>
+              <th (click)="sortTable('secondaryId')">Secondary Id</th>
               <th (click)="sortTable('lastVisited')">Last Visited Date</th>
               <th>Action</th>
             </tr>
@@ -78,10 +80,15 @@
               <td>{{ patient.name }}</td>
               <td>{{ patient.age }}</td>
               <td>{{ patient.mobile }}</td>
+              <td>{{ patient.abhaId }}</td>
+              <td>{{ patient.secondaryId }}</td>
               <td>{{ patient.lastVisited | date: 'dd/MM/yyyy' }}</td>
               <td>
                 <div class="action-buttons">
-                  <button class="btn btn-info btn-sm m-1 pointer-cursor"  (click)="viewPatient(patient)" data-bs-toggle="tooltip" data-bs-placement="top" title="View">
+                  <button class="btn btn-primary btn-sm m-1 pointer-cursor" (click)="editPatient(patient)" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit Patient">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-info btn-sm m-1 pointer-cursor"  (click)="viewPatient(patient)" data-bs-toggle="tooltip" data-bs-placement="top" title="View Prescription">
                     <i class="bi bi-eye"></i>
                   </button>
                   <button class="btn btn-warning btn-sm  m-1 pointer-cursor" (click)="viewHistory(patient)"  data-bs-toggle="tooltip" data-bs-placement="top" title="History">
@@ -169,6 +176,32 @@
                 required />
               <label for="mobile">Mobile Number</label>
               <span *ngIf="mobileError" class="text-danger mt-1 mb-3">{{ mobileError }}</span>
+            </div>
+            <div class="form-floating mb-3">
+              <input 
+                type="text" 
+                id="abhaId" 
+                [(ngModel)]="newPatient.abhaId" 
+                name="abhaId" 
+                class="form-control" 
+                placeholder="ABHA Id" 
+                required />
+              <label for="abhaId">ABHA Id</label>
+              <span *ngIf="abhaError" class="text-danger mt-1 mb-3">{{ abhaError }}</span>
+            </div>
+            
+            <!-- Secondary Id Input -->
+            <div class="form-floating mb-3">
+              <input 
+                type="text" 
+                id="secondaryId" 
+                [(ngModel)]="newPatient.secondaryId" 
+                name="secondaryId" 
+                class="form-control" 
+                placeholder="Secondary Id" 
+                required />
+              <label for="secondaryId">Secondary Id</label>
+              <span *ngIf="secondaryIdError" class="text-danger mt-1 mb-3">{{ secondaryIdError }}</span>
             </div>
   
             <div class="modal-footer">

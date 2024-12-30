@@ -15,14 +15,20 @@ public class AdminService : IAdminService
         _messageService = messageService;
     }
 
-    public async Task AdminAction(string id, string value, string comments)
+    public async Task AdminAction(string id, string userRole, string value, string comments)
     {
         var user = await _userRepository.GetByIdAsync(id);
 
         // hash password if it was entered
-        if (user != null)
+        if (user != null && user.Roles.Any(role => role.Role.ToString().ToLower() == userRole))
         {
-            user.Status = value;
+            user.Roles.ForEach(r =>
+            {
+                if (r.Role.ToString().ToLower() == userRole)
+                {
+                    r.Status = value;
+                }
+            });
             user.RejectionComments = comments;
             await _userRepository.UpdateAsync(user);
 
@@ -38,23 +44,24 @@ public class AdminService : IAdminService
         var users = await _userRepository.GetAllAsync();
 
         var userList = users
-     .Where(u => !u.Roles.Any(role => role == Role.Admin)) // Exclude Admin role
-     .Select(u => (dynamic)new
-     {
-         Id = u.Id,
-         UserName = u.Username,
-         Name = u.Roles.Any(role => role == Role.Physician || role == Role.Patient)
-             ? $"{u.FirstName} {u.LastName}"
-             : u.OrgName,
-         LastName = u.LastName,
-         Contact = !string.IsNullOrEmpty(u.Mobile) ? u.Mobile : u.Email,
-         Role = u.Roles.FirstOrDefault().ToString(),
-         Status = u.Status,
-         City = u.Roles.Any(role => role == Role.Physician || role == Role.Patient)
-             ? u.City
-             : u.ClinicCity,
-     }).ToList();
+            .Where(user => user.Roles.All(role => role.Role != Role.Admin)) // Exclude users with Admin role
+            .SelectMany(user => user.Roles.Select(role => (dynamic)new // Cast to dynamic
+            {
+                Id = user.Id,
+                UserName = user.Username,
+                Name = (role.Role == Role.Physician || role.Role == Role.Patient)
+                    ? $"{user.FirstName} {user.LastName}"
+                    : user.OrgName,
+                LastName = user.LastName,
+                Contact = !string.IsNullOrEmpty(user.Mobile) ? user.Mobile : user.Email,
+                Role = role.Role.ToString(), // Role from the current iteration
+                Status = role.Status,
+                City = (role.Role == Role.Physician || role.Role == Role.Patient)
+                    ? user.City
+                    : user.ClinicCity
+            }))
+            .ToList();
 
-        return userList.ToList();
+        return userList; 
     }
 }

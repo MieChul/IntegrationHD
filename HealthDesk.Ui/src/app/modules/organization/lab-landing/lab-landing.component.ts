@@ -9,6 +9,8 @@ import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { Modal } from 'bootstrap';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import { Router } from '@angular/router';
+import { AccountService } from '../../services/account.service';
 
 interface LaboratoryTest {
   name: string;
@@ -44,12 +46,21 @@ export class LabLandingComponent implements OnInit, AfterViewInit {
 
   // Flags
   isEditTest: boolean = false;
-
-  constructor(private fb: FormBuilder, private modalService: NgbModal) {}
+  userData:any;
+  constructor(private router: Router, private fb: FormBuilder, private modalService: NgbModal, private accountService: AccountService) {}
 
   ngOnInit(): void {
-    this.initForm();
-    this.loadDummyData();
+    this.accountService.getUserData().subscribe({
+      next: (data) => {
+        this.userData = data;
+        if (this.userData.status == 'Approved') {
+          this.initForm();
+          this.loadDummyData();
+        }
+        else
+          this.router.navigate(['/account']);
+      }
+    });
   }
 
   ngAfterViewInit(): void {

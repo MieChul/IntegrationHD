@@ -24,9 +24,12 @@ public class UserDto
     public string Id { get; set; }
     public string Username { get; set; }
     public string Status { get; set; }
-    public List<Role> Roles { get; set; } = new List<Role>();
+    public List<UserRoleDto> Roles { get; set; } = new();
     public string ProfImage { get; set; }
-
+    public bool CanSwitch { get; set; }
+    public string DependentId { get; set; }
+    public bool HasDependent { get; internal set; }
+    public string DependentName { get; internal set; }
 }
 
 public class UserRegistrationDto
@@ -149,4 +152,10 @@ public class RegisterPatientInfoDto
     public string? Pincode { get; set; } = string.Empty;
 
     public string? BloodGroup { get; set; } = string.Empty;
+}
+
+public class UserRoleDto
+{
+    public Role Role { get; set; }
+    public string Status { get; set; } = string.Empty;
 }

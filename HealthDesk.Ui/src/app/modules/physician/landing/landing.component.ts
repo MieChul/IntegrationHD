@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from '../../../shared/services/auth.service';
+import { AccountService } from '../../services/account.service';
 
 @Component({
   selector: 'app-landing',
@@ -9,12 +9,16 @@ import { AuthService } from '../../../shared/services/auth.service';
 export class LandingComponent implements OnInit {
   showSidebar = true;
   userData: any = {};
-  constructor(private authService: AuthService) { }
+  constructor(private accountService: AccountService) { }
 
   ngOnInit(): void {
-    this.userData = this.authService.userValue;
-    this.showSidebar = location.pathname !== '/';
+    this.accountService.getUserData().subscribe({
+      next: (data) => {
+        this.userData = data; // Assign the result to a variable
+        this.showSidebar = location.pathname !== '/';
     this.openIndexedDB();
+      }
+    }); 
   }
 
   openIndexedDB(): Promise<IDBDatabase> {

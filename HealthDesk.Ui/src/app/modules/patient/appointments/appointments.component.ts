@@ -1,29 +1,16 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Modal } from 'bootstrap';
-
-interface Appointment {
-  doctorName: string;
-  appointmentDate: Date;
-  appointmentTime: string;
-  clinicName: string;
-  status: 'pending' | 'past' | 'cancelled';
-  cancelledBy?: 'doctor' | 'patient';
-  reason?: string;
-  proposedNewTime?: string;
-  proposedNewDate?: Date;
-  appointmentStatus: string
-}
+import { IndexedDbService } from '../../../shared/services/indexed.service';
+import { Appointment } from '../../../shared/models/appointment';
 
 @Component({
   selector: 'app-appointments',
   templateUrl: './appointments.component.html',
-  styleUrls: ['./appointments.component.scss']
+  styleUrls: ['./appointments.component.scss'],
 })
-
 export class AppointmentsComponent implements OnInit {
   @ViewChild('appointmentModal') appointmentModal!: ElementRef;
-  @ViewChild('infoModal') infoModal!: ElementRef;
   @ViewChild('cancelModal') cancelModal!: ElementRef;
 
   pendingAppointments: Appointment[] = [];
@@ -31,175 +18,192 @@ export class AppointmentsComponent implements OnInit {
   cancelledAppointments: Appointment[] = [];
   filteredAppointments: Appointment[] = [];
   appointmentForm!: FormGroup;
-  selectedAppointment: Appointment = {doctorName:'', appointmentDate: new Date(), appointmentTime: '', clinicName:'', status:'pending', appointmentStatus :'Accepted'};
+  selectedAppointment: Appointment = {
+    id: '',
+    physicianName: '',
+    clinicName: '',
+    appointmentDate: new Date(),
+    appointmentTime: '',
+    status: 'pending',
+    patientName: '',
+    mobileNumber: '',
+    reason: '',
+  };
   isEditing: boolean = false;
 
-  // Lists for doctors and clinics
-  doctors: string[] = ['Dr. Arjun Mehta', 'Dr. Priya Sharma', 'Dr. Rahul Desai'];
-  clinics: string[] = ['Apollo Clinic', 'Fortis Hospital', 'Max Healthcare'];
+  doctors: string[] = [];
+  clinics: string[] = ['Apollo', 'Sigma', 'Medi Health'];
 
-  
+  constructor(private fb: FormBuilder, private indexedDbService: IndexedDbService) {}
 
-  constructor(private fb: FormBuilder) {}
-
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.initializeForm();
-    this.loadDummyData();
+    await this.seedData();
+    await this.loadAppointments();
   }
 
-  initializeForm(): void {
+  private initializeForm(): void {
     this.appointmentForm = this.fb.group({
-      doctorName: [''],
-      appointmentDate: [''],
+      physicianName: [''],
+      appointmentDate: [''], // Date in 'yyyy-MM-dd' format
       appointmentTime: [''],
-      clinicName: ['']
+      clinicName: [''],
     });
   }
 
-  loadDummyData(): void {
-    this.pendingAppointments = [
-      {
-        doctorName: 'Dr. Arjun Mehta',
-        appointmentDate: new Date('2024-08-01'),
-        appointmentTime: '10:00 AM',
-        clinicName: 'Apollo Clinic',
-        status: 'pending',
-        appointmentStatus :'Accepted'
-      },
-      {
-        doctorName: 'Dr. Priya Sharma',
-        appointmentDate: new Date('2024-07-15'),
-        appointmentTime: '02:00 PM',
-        clinicName: 'Fortis Hospital',
-        status: 'pending',
-        appointmentStatus :'Pending'
-      },
-      {
-        doctorName: 'Dr. Rahul Desai',
-        appointmentDate: new Date('2024-08-05'),
-        appointmentTime: '11:30 AM',
-        clinicName: 'Max Healthcare',
-        status: 'pending',
-        proposedNewDate:new Date(),
-        proposedNewTime:'10:30 am',
-        appointmentStatus :'New Time Proposed'
-      }
+  private async seedData(): Promise<void> {
+    const physicians = [
+      { name: 'Dr. Physician', clinics: ['Apollo', 'Sigma', 'Medi Health'] },
     ];
+    const patient = { name: 'Patient', mobile: '9930506961' };
 
-    this.pastAppointments = [
-      {
-        doctorName: 'Dr. Arjun Mehta',
-        appointmentDate: new Date('2024-08-01'),
-        appointmentTime: '10:00 AM',
-        clinicName: 'Apollo Clinic',
-        status: 'past',
-        appointmentStatus :'Accepted'
-      },
-      {
-        doctorName: 'Dr. Priya Sharma',
-        appointmentDate: new Date('2024-07-15'),
-        appointmentTime: '02:00 PM',
-        clinicName: 'Fortis Hospital',
-        status: 'past',
-        appointmentStatus :'Accepted'
-      }
-    ];
+    for (const doc of physicians) {
+      await this.indexedDbService.addPhysician(doc);
+    }
+    await this.indexedDbService.addPatient(patient);
 
-    this.cancelledAppointments = [
-      {
-        doctorName: 'Dr. Rahul Desai',
-        appointmentDate: new Date('2024-08-05'),
-        appointmentTime: '11:30 AM',
-        clinicName: 'Max Healthcare',
-        cancelledBy:'doctor',
-        reason:'Appointment full',
-        status: 'cancelled',
-        appointmentStatus :'Cancelled'
-      }
-    ];
+    // Load doctors dynamically after seeding
+    this.doctors = (await this.indexedDbService.getPhysicians()).map((doc) => doc.name);
+  }
 
+  async loadAppointments(): Promise<void> {
+    const appointments = await this.indexedDbService.getAppointments();
+  
+    const now = new Date();
+  
+    this.pendingAppointments = appointments
+      .filter(
+        (a) =>
+          a.status === 'pending' ||
+          a.status === 'proposed' || // Include proposed appointments in pending
+          (a.status === 'accepted' && new Date(a.appointmentDate) >= now)
+      )
+      .map(this.mapAppointmentDates);
+  
+    this.pastAppointments = appointments
+      .filter((a) => new Date(a.appointmentDate) < now) // Filter by date for past appointments
+      .map(this.mapAppointmentDates);
+  
+    this.cancelledAppointments = appointments
+      .filter((a) => a.status === 'cancelled' || a.status==='rejected') // Include only cancelled appointments
+      .map(this.mapAppointmentDates);
+  
     this.filteredAppointments = [...this.pendingAppointments];
+  }
+  
+  private mapAppointmentDates(appointment: any): Appointment {
+    return {
+      ...appointment,
+      appointmentDate: new Date(appointment.appointmentDate), // Convert ISO string to Date
+      newDate: appointment.newDate ? new Date(appointment.newDate) : undefined,
+      reason: appointment.reason ?? '', // Ensure reason is initialized
+    };
   }
 
   filterAppointments(status: 'pending' | 'past' | 'cancelled'): void {
-    if(status === 'pending')
-      this.filteredAppointments = [...this.pendingAppointments];
-    else if(status === 'past')
-      this.filteredAppointments = [...this.pastAppointments];
-    else if(status === 'cancelled')
-      this.filteredAppointments = [...this.cancelledAppointments];
-  } 
+    switch (status) {
+      case 'pending':
+        this.filteredAppointments = [...this.pendingAppointments];
+        break;
+      case 'past':
+        this.filteredAppointments = [...this.pastAppointments];
+        break;
+      case 'cancelled':
+        this.filteredAppointments = [...this.cancelledAppointments];
+        break;
+    }
+  }
 
   scheduleNewAppointment(): void {
     this.isEditing = false;
     this.appointmentForm.reset();
-      const modal = new Modal(this.appointmentModal.nativeElement);
-      modal.show();
+    const modal = new Modal(this.appointmentModal.nativeElement);
+    modal.show();
   }
 
-  saveAppointment(): void {
-    if (this.isEditing) {
+  async saveAppointment(): Promise<void> {
+    const formData = this.appointmentForm.value;
+  
+    if (this.isEditing && this.selectedAppointment.id) {
       // Update existing appointment
-      Object.assign(this.selectedAppointment, this.appointmentForm.value);
+      const updatedAppointment: Partial<Appointment> = {
+        physicianName: formData.physicianName,
+        clinicName: formData.clinicName,
+        appointmentDate: new Date(formData.appointmentDate),
+        appointmentTime: formData.appointmentTime,
+      };
+  
+      const dbAppointment = this.convertToIndexedDBAppointment(updatedAppointment);
+      await this.indexedDbService.updateAppointment(this.selectedAppointment.id, dbAppointment);
     } else {
-      // Add new appointment
-      this.pendingAppointments.push({ ...this.appointmentForm.value, status: 'pending' });
+      // Create new appointment
+      const newAppointment: Appointment = {
+        id: crypto.randomUUID(),
+        physicianName: formData.physicianName,
+        clinicName: formData.clinicName,
+        appointmentDate: new Date(formData.appointmentDate),
+        appointmentTime: formData.appointmentTime,
+        status: 'pending',
+        patientName: 'Patient',
+        mobileNumber: '9930506961',
+      };
+  
+      const dbAppointment = this.convertToIndexedDBAppointment(newAppointment);
+      await this.indexedDbService.addAppointment(dbAppointment);
     }
+  
+    await this.loadAppointments();
+  
+    const modal = Modal.getInstance(this.appointmentModal.nativeElement);
+    modal?.hide();
+  }
 
-    this.filterAppointments('pending');
-    if (this.appointmentModal) {
-      const modal = Modal.getInstance(this.appointmentModal.nativeElement);
-      if (modal) {
-        modal.hide();
-      }
-    }
+  private convertToIndexedDBAppointment(appointment: Partial<Appointment>): any {
+    return {
+      ...appointment,
+      appointmentDate: appointment.appointmentDate
+        ? appointment.appointmentDate.toISOString()
+        : undefined, // Convert Date to ISO string
+      newDate: appointment.newDate ? appointment.newDate.toISOString() : undefined, // Convert Date to ISO string
+    };
   }
 
   editAppointment(appointment: Appointment): void {
     this.isEditing = true;
     this.selectedAppointment = appointment;
-    this.appointmentForm.patchValue(appointment);
-    if (this.appointmentModal) {
-      const modal = new Modal(this.appointmentModal.nativeElement);
-      modal.show();
-    }
+    this.appointmentForm.patchValue({
+      physicianName: appointment.physicianName,
+      appointmentDate: appointment.appointmentDate.toISOString().substring(0, 10),
+      appointmentTime: appointment.appointmentTime,
+      clinicName: appointment.clinicName,
+    });
+
+    const modal = new Modal(this.appointmentModal.nativeElement);
+    modal.show();
   }
 
-  deleteAppointment(appointment: Appointment): void {
-    this.pendingAppointments = this.pendingAppointments.filter(a => a !== appointment);
-    this.filterAppointments('pending');
+  async cancelAppointment(reason: string): Promise<void> {
+    if (this.selectedAppointment) {
+      await this.indexedDbService.updateAppointment(this.selectedAppointment.id, {
+        status: 'cancelled', // Ensure 'cancelled' is used here
+        reason,
+      });
+      await this.loadAppointments();
+  
+      const modal = Modal.getInstance(this.cancelModal.nativeElement);
+      modal?.hide();
+    }
   }
 
   openCancelModal(appointment: Appointment): void {
-    this.selectedAppointment = appointment;
-    if (this.cancelModal) {
-      const modal = new Modal(this.cancelModal.nativeElement);
-      modal.show();
-    }
+    this.selectedAppointment = { ...appointment }; // Clone the object to avoid mutating the original
+    const modal = new Modal(this.cancelModal.nativeElement);
+    modal.show();
   }
-
-  cancelAppointment(reason: string): void {
-    if (this.selectedAppointment) {
-      this.selectedAppointment.status = 'cancelled';
-      this.selectedAppointment.reason = reason;
-      this.selectedAppointment.cancelledBy = 'patient'; // Assume the patient is cancelling
-      this.cancelledAppointments.push(this.selectedAppointment);
-      this.pendingAppointments = this.pendingAppointments.filter(a => a !== this.selectedAppointment);
-      this.filterAppointments('pending');
-      if (this.cancelModal) {
-        const modal = Modal.getInstance(this.cancelModal.nativeElement);
-        if (modal) {
-          modal.hide();
-        }
-      }
-    }
-  }
-
-  openInfoModal(appointment: Appointment): void {
-    this.selectedAppointment = appointment;
-    if (this.infoModal) {
-      const modal = new Modal(this.infoModal.nativeElement);
-      modal.show();
-    }
+  async acceptAppointment(appointment: Appointment): Promise<void> {
+    await this.indexedDbService.updateAppointment(appointment.id, {
+      status: 'accepted',
+    });
+    await this.loadAppointments();
   }
 }

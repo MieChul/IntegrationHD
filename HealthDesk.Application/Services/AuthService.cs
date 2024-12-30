@@ -29,14 +29,21 @@ public class AuthService : IAuthService
             return null;
         }
 
-        return new UserDto
+        var userDto = new UserDto
         {
             Id = user.Id,
-            Status = user.Status,
             Username = user.Username,
-            Roles = user.Roles,
-            ProfImage = user.ProfImage
+            Roles = new List<UserRoleDto>(),
+            ProfImage = user.ProfImage,
+            CanSwitch = user.CanSwitch,
+            DependentId = user.DependentId,
+            DependentName = user.DependentName,
+            HasDependent = user.HasDependent
         };
+
+        user.Roles.ForEach(u => userDto.Roles.Add(new UserRoleDto { Role = u.Role, Status = u.Status }));
+
+        return userDto;
     }
 
     public async Task<string> GenerateRefreshToken(string userId)
@@ -68,10 +75,13 @@ public class AuthService : IAuthService
         var userDto = new UserDto
         {
             Id = user.Id,
-            Status = user.Status,
             Username = user.Username,
-            Roles = user.Roles
+            Roles = new List<UserRoleDto>(),
+            ProfImage = user.ProfImage
         };
+
+        user.Roles.ForEach(u => userDto.Roles.Add(new UserRoleDto { Role = u.Role, Status = u.Status }));
+
 
         return GenerateAccessToken(userDto);
     }

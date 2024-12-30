@@ -10,14 +10,14 @@ const organizationModule = () => import('./modules/organization/organization.mod
 const adminModule = () => import('./modules/admin/admin.module').then(x => x.AdminModule);
 const accountModule = () => import('./modules/account/account.module').then(x => x.AccountModule);
 const routes: Routes = [
-    { path: 'physician', loadChildren: physicianModule, canActivate: [RoleGuard], data: { roles: ['physician'] } },
-    { path: 'patient', loadChildren: patientModule, canActivate: [RoleGuard], data: { roles: ['patient'] } },
-    { path: 'organization', loadChildren: organizationModule, canActivate: [RoleGuard], data: { roles: ['hospital','laboratory','pharmaceutical','nutraceutical'] } },
+    { path: 'physician', loadChildren: physicianModule, canActivate: [RoleGuard], data: { roles: ['patient','physician'] } },
+    { path: 'patient', loadChildren: patientModule, canActivate: [RoleGuard], data: { roles: ['physician','patient'] } },
+    { path: 'organization', loadChildren: organizationModule, canActivate: [RoleGuard], data: { roles: ['hospital','laboratory','pharmaceutical','pharmacy'] } },
     { path: '', loadChildren: anonymousModule },
     { path: 'about-us', component: AboutUsComponent },
     { path: 'contact-us', component: ContactUsComponent },
     { path: 'admin', loadChildren: adminModule, canActivate: [RoleGuard], data: { roles: ['admin'] } },
-    { path: 'account', loadChildren: accountModule, canActivate: [RoleGuard], data: { roles: ['physician', 'patient', 'hospital','laboratory','pharmaceutical','nutraceutical'] } },
+    { path: 'account', loadChildren: accountModule, canActivate: [RoleGuard], data: { roles: ['physician', 'patient', 'hospital','laboratory','pharmaceutical','pharmacy'] } },
 ];
 
 @NgModule({

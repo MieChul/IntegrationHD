@@ -14,12 +14,12 @@ export class AdminService {
     constructor(private router: Router, private http: HttpClient, private authService: AuthService) {
     }
 
-    adminAction(id: string, value:string, comments:string){
-        return this.http.post(`${this.apiUrl}/adminAction/${id}`, {status : value, comments: comments})
-        .pipe(map(x => {
-            return x;
-        }));
-    }  
+    adminAction(id: string, role: string, value: string, comments: string) {
+        return this.http.post(`${this.apiUrl}/adminAction/${id}`, { role: role, status: value, comments: comments })
+            .pipe(map(x => {
+                return x;
+            }));
+    }
 
     getAll() {
         return this.http.get<User[]>(`${this.apiUrl}/users`, {

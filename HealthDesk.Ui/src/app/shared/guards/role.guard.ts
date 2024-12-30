@@ -1,7 +1,6 @@
 // src/app/guards/role.guard.ts
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
-import { AccountService } from '../../modules/services/account.service';
 import { AuthService } from '../services/auth.service';
 
 @Injectable({
@@ -12,7 +11,7 @@ export class RoleGuard implements CanActivate {
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
     const expectedRoles: string[] = route.data['roles'];
-    const userRole = this.authService.userValue?.role || ''; // Retrieve the role from sessionStorage
+    const userRole = this.authService.userData?.role || ''; // Retrieve the role from sessionStorage
 
     // Check if the user is logged in (role is present)
     if (!userRole || !expectedRoles || !expectedRoles.includes(userRole)) {
