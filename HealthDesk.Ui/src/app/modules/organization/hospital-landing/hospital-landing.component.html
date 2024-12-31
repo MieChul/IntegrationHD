@@ -1,257 +1,27 @@
 <div class="container">
   <h1 class="animated-heading">
-    <i class="bi bi-hospital me-2"></i>Hospital
+    Welocme!! How can I help you today?
   </h1>
-
-  <!-- Tabs -->
-  <ul class="nav nav-tabs mb-3">
-    <li class="nav-item">
-      <a class="nav-link" [ngClass]="{ active: selectedTab === 'physicianList' }"
-        (click)="selectTab('physicianList')">Physician List</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" [ngClass]="{ active: selectedTab === 'services' }"
-        (click)="selectTab('services')">Services</a>
-    </li>
-  </ul>
-
-  <!-- Tab Content -->
-  <div class="tab-content">
-    <!-- Physician List Tab -->
-    <div *ngIf="selectedTab === 'physicianList'">
-      <div class="row mb-3 align-items-center">
-        <div class="col">
-          <div class="mb-2 me-3">
-            <label for="physicianSearch" class="form-label label-modern shadow">Search by Physician</label>
-            <input type="text" id="physicianSearch" class="form-control" [(ngModel)]="physicianSearchText"
-              (ngModelChange)="filterPhysicians()" />
-          </div>
+  <div class="row justify-content-center mb-2">
+    <div class="col card small">
+      <div class="h-100 fade-in">
+        <img src="assets/design-prescription.png" class="card-img-top" alt="">
+        <div class="card-body">
+          <h5 class="card-title">Hospital Management</h5>
+          <p class="card-text">Manage Hospital.</p>
+          <a href="organization/hospital/hospital-management" class="btn btn-primary">Go to Hospital Management</a>
         </div>
-        <div class="col">
-          <div class="mb-2 me-3">
-            <label for="specialitySearch" class="form-label label-modern shadow">Search by Speciality</label>
-            <input type="text" id="specialitySearch" class="form-control" [(ngModel)]="specialitySearchText"
-              (ngModelChange)="filterPhysicians()" />
-          </div>
-        </div>
-        <div class="col">
-          <div class="mb-2 me-3">
-            <label for="opdSearch" class="form-label label-modern shadow">Search by OPD Time</label>
-            <input type="text" id="opdSearch" class="form-control" [(ngModel)]="opdSearchText"
-              (ngModelChange)="filterPhysicians()" />
-          </div>
-        </div>
-        <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
-          <button class="btn btn-primary me-2" (click)="openPhysicianDialog()">Add Physician</button>
-          <button class="btn btn-success" (click)="exportToExcel()">Export to Excel</button>
-        </div>
-      </div>
-
-      <div class="table-responsive">
-        <table class="table table-hover table-modern">
-          <thead>
-            <tr>
-              <th (click)="sortPhysicianTable('firstName')">First Name</th>
-              <th (click)="sortPhysicianTable('middleName')">Middle Name</th>
-              <th (click)="sortPhysicianTable('lastName')">Last Name</th>
-              <th (click)="sortPhysicianTable('qualification')">Qualification</th>
-              <th (click)="sortPhysicianTable('speciality')">Speciality</th>
-              <th (click)="sortPhysicianTable('opdTiming')">OPD Days & Time</th>
-              <th>Comment</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let physician of filteredPhysicians">
-              <td>{{ physician.firstName }}</td>
-              <td>{{ physician.middleName || '-' }}</td>
-              <td>{{ physician.lastName }}</td>
-              <td>{{ physician.qualification }}</td>
-              <td>{{ physician.speciality }}</td>
-              <td>{{ physician.opdTiming }}</td>
-              <td>{{ physician.comment }}</td>
-              <td>
-                <button class="btn btn-warning btn-sm me-1" (click)="openPhysicianDialog(physician)">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-danger btn-sm" (click)="deletePhysician(physician)">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
       </div>
     </div>
-
-    <!-- Services Tab -->
-    <div *ngIf="selectedTab === 'services'">
-      <div class="row mb-3 align-items-center">
-        <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
-          <div class="mb-2 me-3">
-            <label for="serviceSearch" class="form-label label-modern shadow">Search by Service</label>
-            <input type="text" id="serviceSearch" class="form-control" [(ngModel)]="serviceSearchText"
-              (ngModelChange)="filterServices()" />
-          </div>
+    <div class="col card small">
+      <div class="h-100 fade-in">
+        <img src="assets/patient-record.png" class="card-img-top" alt="">
+        <div class="card-body">
+          <h5 class="card-title">Cases</h5>
+          <p class="card-text">View and manage Cases.</p>
+          <a href="organization/hospital/cases" class="btn btn-primary">Go to Cases</a>
         </div>
-        <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
-          <button class="btn btn-primary" (click)="openServiceDialog()">Add Service</button>
-        </div>
-      </div>
-
-      <div class="table-responsive">
-        <table class="table table-hover table-modern">
-          <thead>
-            <tr>
-              <th (click)="sortServiceTable('name')">Facility/Service</th>
-              <th (click)="sortServiceTable('specification')">Specification</th>
-              <th>Comment</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let service of filteredServices">
-              <td>{{ service.name }}</td>
-              <td>{{ service.specification }}</td>
-              <td>{{ service.comment }}</td>
-              <td>
-                <button class="btn btn-warning btn-sm me-1" (click)="openServiceDialog(service)">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-danger btn-sm" (click)="deleteService(service)">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
       </div>
     </div>
   </div>
-</div>
-
-<!-- Add/Edit Physician Modal -->
-<div class="modal fade" id="physicianModal" tabindex="-1" aria-labelledby="physicianModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="physicianModalLabel">{{ isEditPhysician ? 'Edit Physician' : 'Add Physician' }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form [formGroup]="physicianForm">
-          <div class="mb-3"  *ngIf="!manualEntryEnabled">
-            <label for="selectPhysician" class="form-label label-modern shadow">Select Physician</label>
-            <select id="selectPhysician" class="form-control" formControlName="physicianSelect" (change)="onPhysicianSelect($event)">
-              <option value="">-- Select Physician --</option>
-              <option value="manual">Add Manually</option>
-              <option *ngFor="let physician of registeredPhysicians" [value]="physician.id">
-                {{ physician.firstName }} {{ physician.lastName }}
-              </option>
-            </select>
-          </div>
-      
-          <!-- Physician Details -->
-          <div *ngIf="manualEntryEnabled">
-            <div class="mb-3">
-              <label for="firstName" class="form-label label-modern shadow">First Name</label>
-              <input type="text" id="firstName" formControlName="firstName" class="form-control" />
-            </div>
-            <div class="mb-3">
-              <label for="middleName" class="form-label label-modern shadow">Middle Name (Optional)</label>
-              <input type="text" id="middleName" formControlName="middleName" class="form-control" />
-            </div>
-            <div class="mb-3">
-              <label for="lastName" class="form-label label-modern shadow">Last Name</label>
-              <input type="text" id="lastName" formControlName="lastName" class="form-control" />
-            </div>
-            <div class="mb-3">
-              <label for="qualification" class="form-label label-modern shadow">Qualification</label>
-              <input type="text" id="qualification" formControlName="qualification" class="form-control" />
-            </div>
-            <div class="mb-3">
-              <label for="speciality" class="form-label label-modern shadow">Speciality</label>
-              <input type="text" id="speciality" formControlName="speciality" class="form-control" />
-            </div>
-            <div class="mb-3">
-              <label for="opdTiming" class="form-label label-modern shadow">OPD Days & Time</label>
-              <input type="text" id="opdTiming" formControlName="opdTiming" class="form-control" placeholder="e.g., Mon-Fri 9 AM - 5 PM" />
-            </div>
-            <div class="mb-3">
-              <label for="comment" class="form-label label-modern shadow">Comment</label>
-              <textarea id="comment" formControlName="comment" class="form-control"></textarea>
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="savePhysician()">
-          {{ isEditPhysician ? 'Save Changes' : 'Add Physician' }}
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- Add/Edit Service Modal -->
-
-<div class="modal fade" id="serviceModal" tabindex="-1" aria-labelledby="serviceModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="serviceModalLabel">{{ isEditService? 'Edit Service' : 'Add Service' }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-
-        <form [formGroup]="serviceForm">
-
-          <div class="mb-3">
-
-            <label for="name" class="form-label label-modern shadow">Facility/Service</label>
-
-            <input type="text" id="name" formControlName="name" class="form-control" />
-
-          </div>
-
-          <div class="mb-3">
-
-            <label for="specification" class="form-label label-modern shadow">Specification</label>
-
-            <input type="text" id="specification" formControlName="specification" class="form-control" />
-
-          </div>
-
-          <div class="mb-3">
-
-            <label for="comment" class="form-label label-modern shadow">Comment</label>
-
-            <textarea id="comment" formControlName="comment" class="form-control"></textarea>
-
-          </div>
-
-        </form>
-
-      </div>
-
-      <div class="modal-footer">
-
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-
-          Close
-
-        </button>
-
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="saveService()">
-
-          {{ isEditService ? 'Save Changes' : 'Add Service' }}
-
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-
 </div>

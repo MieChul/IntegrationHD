@@ -1,32 +1,31 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AccountService } from '../services/account.service';
 
 @Component({
   selector: 'app-patient',
   templateUrl: './patient.component.html',
   styleUrl: './patient.component.scss',
-  encapsulation: ViewEncapsulation.None 
+  encapsulation: ViewEncapsulation.None
 })
 export class PatientComponent implements OnInit {
-  showSidebar: boolean = true;
-  patientNavLinks = [
-    { url: '/patient', tooltip: 'Home', iconClass: 'bi bi-house' },
-    { url: '/patient/history', tooltip: 'Medical Hitory', iconClass: 'bi bi-file-medical' },
-    { url: '/patient/treatment', tooltip: 'Current Treatment & Pill Remainder', iconClass: 'bi bi-people' },
-    { url: '/patient/appointments', tooltip: 'Appointments', iconClass: 'bi bi-calendar' },
-    { url: '/patient/self-recording', tooltip: 'Self Recording Data', iconClass: 'bi bi-journal-medical' },
-    { url: '/patient/refill', tooltip: 'Medicine Refill & Complaince', iconClass: 'bi bi-folder2-open' },
-    { url: '/patient/daily-activity', tooltip: 'Record Daily Activity', iconClass: 'bi bi-clipboard-data' },
-    { url: '/patient/rate', tooltip: 'Search and Rate Doctors', iconClass: 'bi bi-clipboard-data' },
-    { url: '/patient/remidies', tooltip: 'Home Remidies', iconClass: 'bi bi-clipboard-data' }
-  ];
+  patientNavLinks: any = [];
 
-  constructor(private router: Router, private route: ActivatedRoute) { }
+  constructor(private router: Router, private route: ActivatedRoute, private accountService: AccountService) { }
 
   ngOnInit(): void {
-    this.route.data.subscribe(data => {
-      if (data['showSidebar'] !== undefined) {
-        this.showSidebar = data['showSidebar'];
+    this.accountService.getUserData().subscribe({
+      next: (data) => {
+        this.patientNavLinks = [
+          { url: data.status === 'Approved' ? '/patient/history' : '/account', tooltip: 'Medical Hitory', iconClass: 'bi bi-file-medical' },
+          { url: data.status === 'Approved' ? '/patient/treatment' : '/account', tooltip: 'Current Treatment & Pill Remainder', iconClass: 'bi bi-people' },
+          { url: data.status === 'Approved' ? '/patient/appointments' : '/account', tooltip: 'Appointments', iconClass: 'bi bi-calendar' },
+          { url: data.status === 'Approved' ? '/patient/self-recording' : '/account', tooltip: 'Self Recording Data', iconClass: 'bi bi-journal-medical' },
+          { url: data.status === 'Approved' ? '/patient/refill' : '/account', tooltip: 'Medicine Refill & Complaince', iconClass: 'bi bi-folder2-open' },
+          { url: data.status === 'Approved' ? '/patient/daily-activity' : '/account', tooltip: 'Record Daily Activity', iconClass: 'bi bi-clipboard-data' },
+          { url: data.status === 'Approved' ? '/patient/rate' : '/account', tooltip: 'Search and Rate Doctors', iconClass: 'bi bi-clipboard-data' },
+          { url: data.status === 'Approved' ? '/patient/remidies' : '/account', tooltip: 'Home Remidies', iconClass: 'bi bi-clipboard-data' }
+        ]
       }
     });
   }

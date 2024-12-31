@@ -13,6 +13,10 @@ import { SurveysComponent } from './surveys/surveys.component';
 import { ViewSurveyResponseComponent } from './view-survey-response/view-survey-response.component';
 import { SharedModule } from '../../shared/shared.module';
 import { ShareSurveyComponent } from './share-survey/share-survey.component';
+import { HospitalCasesComponent } from './hospital-cases/hospital-cases.component';
+import { HospitalManagementComponent } from './hospital-management/hospital-management.component';
+import { HospitalViewCaseComponent } from './hospital-view-case/hospital-view-case.component';
+import { HospitalNewCaseComponent } from './hospital-new-case/hospital-new-case.component';
 
 
 @NgModule({
@@ -26,7 +30,11 @@ import { ShareSurveyComponent } from './share-survey/share-survey.component';
     SurveyFormComponent,
     SurveysComponent,
     ViewSurveyResponseComponent,
-    ShareSurveyComponent
+    ShareSurveyComponent,
+    HospitalCasesComponent,
+    HospitalManagementComponent,
+    HospitalViewCaseComponent,
+    HospitalNewCaseComponent
   ],
   imports: [
     SharedModule,

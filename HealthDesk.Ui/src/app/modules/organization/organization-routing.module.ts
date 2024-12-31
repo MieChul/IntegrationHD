@@ -11,6 +11,10 @@ import { HospitalLandingComponent } from './hospital-landing/hospital-landing.co
 import { PharmaLandingComponent } from './pharma/pharma-landing.component';
 import { PharmaComponent } from './pharma/pharma.component';
 import { ShareSurveyComponent } from './share-survey/share-survey.component';
+import { HospitalManagementComponent } from './hospital-management/hospital-management.component';
+import { HospitalCasesComponent } from './hospital-cases/hospital-cases.component';
+import { HospitalViewCaseComponent } from './hospital-view-case/hospital-view-case.component';
+import { HospitalNewCaseComponent } from './hospital-new-case/hospital-new-case.component';
 
 const routes: Routes = [{ path: '', component: OrganizationComponent,
   children: [
@@ -24,6 +28,10 @@ const routes: Routes = [{ path: '', component: OrganizationComponent,
     { path: 'pharma/survey/:id', component: SurveyFormComponent },
     { path: 'pharma/view-survey-response/:id', component: ViewSurveyResponseComponent },
     { path: 'pharma/share-survey/:id', component: ShareSurveyComponent },
+    { path: 'hospital/hospital-management', component: HospitalManagementComponent},
+    { path: 'hospital/cases', component: HospitalCasesComponent},
+    { path: 'hospital/view-case/:id', component: HospitalViewCaseComponent},
+    { path: 'hospital/new-case', component: HospitalNewCaseComponent}
   
     // Add other routes here pharma-management 
   ]
