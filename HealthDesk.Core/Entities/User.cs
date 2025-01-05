@@ -183,6 +183,8 @@ public class User : BaseEntity
     public string DependentName { get; set; }
     [BsonElement("has_dependent")]
     public bool HasDependent { get; set; }
+    [BsonElement("clinic_image")]
+    public string ClinicImage { get; set; }
 }
 
 public class DOBEntity
@@ -361,6 +363,9 @@ public class PatientAppointment
 
 public class UserRole
 {
+    [BsonElement("id")]
+    public string Id { get; set; }
+    
     [BsonElement("role")]
 
     public Role Role { get; set; }

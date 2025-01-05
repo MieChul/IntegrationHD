@@ -2,10 +2,9 @@
 using HealthDesk.Application.Interfaces;
 using HealthDesk.Core;
 using HealthDesk.Core.Enum;
-using Microsoft.AspNetCore.Http;
-using static HealthDesk.Application.UserRegistrationDto;
+using HealthDesk.Infrastructure;
 
-namespace HealthDesk.Application.Services;
+namespace HealthDesk.Application;
 public class AccountService : IAccountService
 {
     private readonly IUserRepository _userRepository;
@@ -77,6 +76,7 @@ public class AccountService : IAccountService
 
 
             user.ProfImage = model.ProfImage;
+            user.ClinicImage = model.ClinicImage;
             if (model.DOB != null)
             {
                 user.DOB = new DOBEntity
@@ -213,6 +213,8 @@ public class AccountService : IAccountService
             //     user.Role = model.Role;
             if (!string.IsNullOrEmpty(model.ProfImage))
                 user.ProfImage = model.ProfImage;
+            else if (!string.IsNullOrEmpty(model.ClinicImage))
+                user.ClinicImage = model.ClinicImage;
             else if (!string.IsNullOrEmpty(model.GDoc))
                 user.Graduation.Document = model.GDoc;
             else if (!string.IsNullOrEmpty(model.PDoc))

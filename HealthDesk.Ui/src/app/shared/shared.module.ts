@@ -25,6 +25,8 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
+import { NgxMatTimepickerModule } from 'ngx-mat-timepicker';
+import { MatRadioModule } from '@angular/material/radio'; 
 
 @NgModule({
   declarations: [
@@ -57,7 +59,9 @@ SidebarComponent,
     MatDividerModule,
     MatSlideToggleModule,
     MatCheckboxModule,
-    NgxMatSelectSearchModule
+    NgxMatSelectSearchModule,
+    NgxMatTimepickerModule,
+    MatRadioModule  
   ],
   exports: [
     LoaderComponent,
@@ -85,7 +89,9 @@ SidebarComponent,
     MatDividerModule,
     MatSlideToggleModule,
     MatCheckboxModule,
-    NgxMatSelectSearchModule
+    NgxMatSelectSearchModule,
+    NgxMatTimepickerModule,
+    MatRadioModule 
   ]
 })
 export class SharedModule { }

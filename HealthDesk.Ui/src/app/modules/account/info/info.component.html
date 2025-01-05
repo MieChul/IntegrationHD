@@ -7,12 +7,21 @@
                         <div class="row mb-3">
                             <span>Upload Profile Image</span>
                             <div class="cursor-pointer mb-2" (click)="triggerFileUpload()">
-                                <img [src]="form.get('profImage')?.value || '/assets/defaultProfile.jpg'"
-                                    class="rounded-circle img-fluid" alt="Profile Image" (error)="setDefaultImage()"
-                                    id="profImg" />
-                                <input type="file" accept="image/*" (change)="upload($event, 'profileImage')"
-                                    style="display: none" #fileInput />
-                            </div>
+                                <img
+                                  [src]="form.get('profImage')?.value || '/assets/defaultProfile.jpg'"
+                                  class="rounded-circle img-fluid"
+                                  alt="Profile Image"
+                                  (error)="setDefaultImage()"
+                                  id="profImg"
+                                />
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  (change)="upload($event, 'profileImage')"
+                                  style="display: none"
+                                  #fileInput
+                                />
+                              </div>
                             <div class="form-floating"
                                 *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
                                 <input type="text" formControlName="displayName" class="form-control" id="floatingInput"
@@ -34,11 +43,12 @@
                                         (dateChange)="calculateAge()" />
                                     <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                                     <mat-datepicker #picker></mat-datepicker>
-                                    <mat-error
-                                        *ngIf="form.get('birthDate')?.hasError('required') && form.get('birthDate')?.touched">
-                                        Birth Date is required
-                                    </mat-error>
                                 </mat-form-field>
+                                <div class="invalid-feedback d-block"
+                                    *ngIf="form.get('birthDate')?.hasError('required') && submitted">
+                                    Birth Date is required
+                                </div>
+
                             </div>
                             <div class="form-floating col-sm-4">
                                 <mat-form-field appearance="outline" class="w-100">
@@ -327,9 +337,11 @@
                                                     {{ state.name }}
                                                 </mat-option>
                                             </mat-select>
-                                            <mat-error *ngIf="submitted && f['state'].errors">State is
-                                                required</mat-error>
                                         </mat-form-field>
+                                        <div class="invalid-feedback d-block" *ngIf="submitted && f['state'].errors">
+                                            State is
+                                            required
+                                        </div>
                                     </div>
 
                                     <div class="col">
@@ -345,9 +357,10 @@
                                                     {{ city.name }}
                                                 </mat-option>
                                             </mat-select>
-                                            <mat-error *ngIf="submitted && f['city'].errors">City is
-                                                required</mat-error>
                                         </mat-form-field>
+                                        <div class="invalid-feedback d-block" *ngIf="submitted && f['city'].errors">City is
+                                            required
+                                        </div>
                                     </div>
                                 </div>
                                 <hr>
@@ -363,24 +376,52 @@
                                     <div class="form-floating col-sm-4">
                                         <input type="text" class="form-control" id="certificateNumber"
                                             placeholder="Certificate Number" autocomplete="off"
-                                            formControlName="certificateNumber">
+                                            formControlName="certificateNumber"
+                                            [ngClass]="{ 'is-invalid': submitted && (certificateNumberError || f['medicalRegistration'].get('certificateNumber')?.errors) }">
+                                        <div *ngIf="submitted && certificateNumberError"
+                                            class="invalid-feedback d-flex">
+                                            <div>Certificate Number is required</div>
+                                        </div>
+                                        <div *ngIf="submitted &&  f['medicalRegistration'].get('certificateNumber')?.errors"
+                                            class="invalid-feedback">
+                                            <div
+                                                *ngIf=" f['medicalRegistration'].get('certificateNumber')?.errors?.['pattern']">
+                                                Please enter a valid Certificate Number.
+                                            </div>
+                                        </div>
                                         <label for="certificateNumber" class="form-label-floating">Certification
-                                            Number</label>
+                                            Number<i class="danger">*</i></label>
                                     </div>
                                     <div class="form-floating col-sm-4">
                                         <input type="text" class="form-control" id="councilName"
-                                            placeholder="Council Name" autocomplete="off" formControlName="councilName">
-                                        <label for="councilName" class="form-label-floating">Council Name</label>
+                                            placeholder="Council Name" autocomplete="off" formControlName="councilName"
+                                            [ngClass]="{ 'is-invalid': submitted && (councilError || f['medicalRegistration'].get('councilName')?.errors) }">
+                                        <div *ngIf="submitted && councilError" class="invalid-feedback d-flex">
+                                            <div>Council Name is required</div>
+                                        </div>
+                                        <div *ngIf="submitted && f['medicalRegistration'].get('councilName')?.errors"
+                                            class="invalid-feedback">
+                                            <div
+                                                *ngIf="f['medicalRegistration'].get('councilName')?.errors?.['pattern']">
+                                                Please enter a valid Council Name.
+                                            </div>
+                                        </div>
+                                        <label for="councilName" class="form-label-floating">Council Name<i
+                                                class="danger">*</i></label>
                                     </div>
                                     <div class="form-floating mb-3 col-sm-4">
                                         <div class="row">
                                             <div class="col-sm-9">
                                                 <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
-                                                    id="formFile" (change)="upload($event, 'medicalRegistration')">
+                                                    id="formFile" (change)="upload($event, 'medicalRegistration')"
+                                                    [ngClass]="{ 'is-invalid': submitted && docError }">
+                                                <div *ngIf="submitted && docError" class="invalid-feedback d-flex">
+                                                    <div> Document is required</div>
+                                                </div>
                                             </div>
-                                            <div *ngIf="user.medicalRegistration.document"
+                                            <div *ngIf="user.medicalRegistration?.document"
                                                 class="form-floating mb-3 col-sm-3">
-                                                <div (click)="view(user.medicalRegistration.document)"
+                                                <div (click)="view(user.medicalRegistration?.document)"
                                                     class="btn btn-primary"> View</div>
                                             </div>
                                         </div>
@@ -574,11 +615,11 @@
                                             class="danger">*</i></label>
                                 </div>
                                 <div *ngIf="user.role=='physician'" class="cursor-pointer col-sm-6"
-                                    (click)="file.click();removeClass('hospImg');">
+                                    (click)="triggerFileUploadClinic()">
                                     <label>Hospital/Clinic Image</label>
-                                    <img alt="avatar" class="rounded-circle-hosp img-fluid profileImage" id="hospImg">
-                                    <input [hidden]="true" #file type="file" accept="image/*"
-                                        onchange="document.getElementById('hospImg').src = window.URL.createObjectURL(this.files[0])">
+                                    <img class="rounded-circle-hosp img-fluid profileImage" id="hospImg" [src]="form.get('clinicImage')?.value || '/assets/defaultProfile.jpg'" (error)="setDefaultImage()">
+                                    <input type="file" accept="image/*" (change)="upload($event, 'clinicImage')"
+                                    style="display: none" #fileInputClinic />
                                 </div>
                             </div>
                             <hr>
@@ -636,9 +677,10 @@
                                                 {{ clinicState.name }}
                                             </mat-option>
                                         </mat-select>
-                                        <mat-error *ngIf="submitted && f['clinicState'].errors">State is
-                                            required</mat-error>
                                     </mat-form-field>
+                                    <div class="invalid-feedback d-block" *ngIf="submitted && f['clinicState'].errors">State is
+                                        required
+                                        </div>
                                 </div>
 
                                 <div class="col">
@@ -657,6 +699,9 @@
                                         <mat-error *ngIf="submitted && f['clinicCity'].errors">City is
                                             required</mat-error>
                                     </mat-form-field>
+                                    <div class="invalid-feedback d-block"  *ngIf="submitted && f['clinicCity'].errors">City is
+                                        required
+                                        </div>
                                 </div>
                             </div>
                             <hr>
@@ -758,7 +803,8 @@
                             <div class="text-center">
                                 <button type="button" class="btn btn-outline-primary col-sm-2 m-1 text-center"
                                     (click)="save()">Save</button>
-                                <button *ngIf="!(user.status === 'Submitted') && !(user.status === 'Approved')" type="submit"
+                                <button *ngIf="!(user.status === 'Submitted') && !(user.status === 'Approved')"
+                                    type="submit"
                                     class="btn btn-outline-success col-sm-2 m-1 text-center">Submit</button>
                                 <button type="button" class="btn btn-outline-primary col-sm-2 m-1 text-center"
                                     (click)="reload()">Reload</button>

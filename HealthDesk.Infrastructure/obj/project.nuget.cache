@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "/V0iwxnlGmnCJTeIFuYaVespk95w/muW3VD7gK6CnMIT5F7l2bZVanUYbF9SpSd9LueYhShfV90B//XRIbaRMQ==",
+  "dgSpecHash": "Ekg34WxzWVUsNdFvGn6F1HKTqjCUIRmVj1EZwCVRP/3uUeYTYG4l1cXjbkB/xIwak2bch3+S5DgGtEddGDkHUQ==",
   "success": true,
-  "projectFilePath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj",
+  "projectFilePath": "C:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\admin\\.nuget\\packages\\dnsclient\\1.6.1\\dnsclient.1.6.1.nupkg.sha512",
     "C:\\Users\\admin\\.nuget\\packages\\microsoft.extensions.configuration\\8.0.0\\microsoft.extensions.configuration.8.0.0.nupkg.sha512",

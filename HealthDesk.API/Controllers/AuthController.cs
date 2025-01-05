@@ -1,5 +1,4 @@
 using HealthDesk.Application;
-using HealthDesk.Core.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

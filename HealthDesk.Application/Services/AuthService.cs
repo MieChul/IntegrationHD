@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Text;
 using HealthDesk.Core;
+using HealthDesk.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;

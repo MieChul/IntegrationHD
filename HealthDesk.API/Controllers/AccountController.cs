@@ -1,7 +1,5 @@
 using HealthDesk.Application;
-using HealthDesk.Application.DTO;
 using HealthDesk.Application.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HealthDesk.API.Controllers;
@@ -12,9 +10,7 @@ public class AccountController : ControllerBase
 {
     private IAccountService _accountService;
 
-    public AccountController(
-IAccountService accountService
-)
+    public AccountController(IAccountService accountService)
     {
         _accountService = accountService;
     }
@@ -40,33 +36,52 @@ IAccountService accountService
     }
 
     [HttpPost("uploadFile")]
-    public async Task<object> UploadFile([FromForm] IFormFile file, [FromForm] string id, [FromForm] string propName)
+    public async Task<IActionResult> UploadFile([FromForm] IFormFile file, [FromForm] string id, [FromForm] string propName)
     {
         string extension = Path.GetExtension(file.FileName);
-        var filename = id + '_' + propName + extension;
-        var tempFilename = $@"..\HealthDesk.UI\src\assets\documents\{filename}";
+        var filename = $"{propName}{extension}";
+        var folderPath = Path.Combine("..", "HealthDesk.UI", "src", "assets", "documents", id);
 
-        using (var fileStream = new FileStream(tempFilename, FileMode.Create))
+        // Ensure the folder exists
+        if (!Directory.Exists(folderPath))
+        {
+            Directory.CreateDirectory(folderPath);
+        }
+
+        var filePath = Path.Combine(folderPath, filename);
+
+        // Check if file already exists
+        if (System.IO.File.Exists(filePath))
+        {
+            // Optionally log or handle the replacement
+            System.IO.File.Delete(filePath); // Delete existing file if needed
+        }
+
+        // Save the new file
+        using (var fileStream = new FileStream(filePath, FileMode.Create))
         {
             await file.CopyToAsync(fileStream);
         }
-        var res = $@"/assets/documents/{filename}";
+
+        var res = $@"/assets/documents/{id}/{filename}";
         var model = new UpdateRequestDto();
 
-        if (propName.Equals("profileImage"))
+        // Map the uploaded file path to the correct property
+        if (propName.Equals("profileImage", StringComparison.OrdinalIgnoreCase))
             model.ProfImage = res;
-        else if (propName.Equals("graduation"))
+        else if (propName.Equals("clinicImage", StringComparison.OrdinalIgnoreCase))
+            model.ClinicImage = res;
+        else if (propName.Equals("graduation", StringComparison.OrdinalIgnoreCase))
             model.GDoc = res;
-        else if (propName.Equals("postGraduation"))
+        else if (propName.Equals("postGraduation", StringComparison.OrdinalIgnoreCase))
             model.PDoc = res;
-        else if (propName.Equals("superSpecialization"))
+        else if (propName.Equals("superSpecialization", StringComparison.OrdinalIgnoreCase))
             model.SDoc = res;
-        else if (propName.Equals("additionalQualification"))
+        else if (propName.Equals("additionalQualification", StringComparison.OrdinalIgnoreCase))
             model.ADoc = res;
-        else if (propName.Equals("medicalRegistration"))
+        else if (propName.Equals("medicalRegistration", StringComparison.OrdinalIgnoreCase))
             model.MDoc = res;
 
-        _accountService.Update(id, model);
         return Ok(new { fileName = res });
     }
 

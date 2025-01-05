@@ -6,14 +6,15 @@
   <div class="row mb-3 align-items-center">
     <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
       <div class="mb-2 me-3">
-        <label for="searchClinic" class="form-label label-modern shadow">Search by Name</label>
-        <input 
-          type="text" 
-          id="searchClinic" 
-          class="form-control" 
-          placeholder="Search Clinics" 
-          [(ngModel)]="searchValue" 
-          (input)="searchClinic()" />
+        <mat-form-field class="w-100">
+          <mat-label>Search Clinics</mat-label>
+          <input
+            matInput
+            placeholder="Search by Name or Address"
+            [(ngModel)]="searchValue"
+            (input)="searchClinic()"
+          />
+        </mat-form-field>
       </div>
     </div>
     <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
@@ -28,6 +29,7 @@
           <th (click)="sortTable('name')">Name</th>
           <th (click)="sortTable('address')">Address</th>
           <th (click)="sortTable('timing')">Timing</th>
+          <th (click)="sortTable('days')">Days</th>
           <th (click)="sortTable('isActive')">Is Active</th>
           <th>Action</th>
         </tr>
@@ -35,14 +37,15 @@
       <tbody>
         <tr *ngFor="let clinic of filteredClinics">
           <td>{{ clinic.name }}</td>
-          <td>{{ clinic.address }}</td>
+          <td>{{ clinic.fullAddress }}</td>
           <td>{{ clinic.timing }}</td>
+          <td>{{ clinic.days }}</td>
           <td>
             <span *ngIf="clinic.isActive" class="badge bg-success">Yes</span>
             <span *ngIf="!clinic.isActive" class="badge bg-danger">No</span>
           </td>
           <td>
-            <button class="btn btn-warning btn-sm me-1" (click)="editClinic(clinic)">
+            <button class="btn btn-warning btn-sm me-1" (click)="openEditClinicPopup(clinic)">
               <i class="bi bi-pencil"></i>
             </button>
             <button class="btn btn-danger btn-sm" (click)="deleteClinic(clinic.id)">
@@ -53,45 +56,141 @@
       </tbody>
     </table>
   </div>
-</div>
 
-<!-- Add/Edit Clinic Modal -->
-<div class="modal fade" id="clinicModal" tabindex="-1" aria-labelledby="clinicModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="clinicModalLabel">{{ isEditMode ? 'Edit Clinic' : 'Add Clinic' }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form [formGroup]="clinicForm">
-          <div class="mb-3">
-            <label for="clinicName" class="form-label label-modern shadow">Name</label>
-            <input type="text" id="clinicName" class="form-control" formControlName="name" />
-          </div>
-          <div class="mb-3">
-            <label for="clinicAddress" class="form-label label-modern shadow">Address</label>
-            <input type="text" id="clinicAddress" class="form-control" formControlName="address" />
-          </div>
-          <div class="mb-3">
-            <label for="clinicTiming" class="form-label label-modern shadow">Timing</label>
-            <input type="text" id="clinicTiming" class="form-control" formControlName="timing" />
-          </div>
-          <div class="mb-3">
-            <label for="clinicIsActive" class="form-label label-modern shadow">Is Active</label>
-            <select id="clinicIsActive" class="form-select" formControlName="isActive">
-              <option [value]="true">Yes</option>
-              <option [value]="false">No</option>
-            </select>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" (click)="saveClinic()">
-          {{ isEditMode ? 'Save Changes' : 'Add Clinic' }}
-        </button>
+  <!-- Add/Edit Clinic Modal -->
+  <div class="modal fade" id="clinicModal" tabindex="-1" aria-labelledby="clinicModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="clinicModalLabel">{{ isEditMode ? 'Edit Clinic' : 'Add Clinic' }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="clinicForm">
+            <div class="row g-3">
+              <!-- Name -->
+              <div class="col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Clinic Name</mat-label>
+                  <input matInput formControlName="name" maxlength="25" required />
+                  <mat-error *ngIf="submitted && clinicForm.get('name')?.hasError('required')">Name is required</mat-error>
+                  <mat-error *ngIf="clinicForm.get('name')?.hasError('maxlength')">Max 25 characters allowed</mat-error>
+                  <mat-error *ngIf="clinicForm.get('name')?.hasError('pattern')">Only alphanumeric characters allowed</mat-error>
+                </mat-form-field>
+              </div>
+              <!-- House/Flat Number -->
+              <div class="col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>House/Flat Number</mat-label>
+                  <input matInput formControlName="houseNumber" maxlength="50" />
+                  <mat-error *ngIf="clinicForm.get('houseNumber')?.hasError('maxlength')">Max 50 characters allowed</mat-error>
+                  <mat-error *ngIf="clinicForm.get('houseNumber')?.hasError('pattern')">Only alphanumeric characters allowed</mat-error>
+                </mat-form-field>
+              </div>
+              <!-- Building/Society -->
+              <div class="col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Building/Society</mat-label>
+                  <input matInput formControlName="building" maxlength="50" />
+                  <mat-error *ngIf="clinicForm.get('building')?.hasError('maxlength')">Max 50 characters allowed</mat-error>
+                  <mat-error *ngIf="clinicForm.get('building')?.hasError('pattern')">Only alphanumeric characters allowed</mat-error>
+                </mat-form-field>
+              </div>
+              <!-- Area/Locality -->
+              <div class="col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Area/Locality</mat-label>
+                  <input matInput formControlName="area" maxlength="100" required />
+                  <mat-error *ngIf="submitted && clinicForm.get('area')?.hasError('required')">Area is required</mat-error>
+                  <mat-error *ngIf="clinicForm.get('area')?.hasError('maxlength')">Max 100 characters allowed</mat-error>
+                  <mat-error *ngIf="clinicForm.get('area')?.hasError('pattern')">Only alphanumeric characters allowed</mat-error>
+                </mat-form-field>
+              </div>
+              <!-- Pin Code -->
+              <div class="col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Pin Code</mat-label>
+                  <input matInput formControlName="pincode" maxlength="6" required />
+                  <mat-error *ngIf="submitted && clinicForm.get('pincode')?.hasError('required')">Pin Code is required</mat-error>
+                  <mat-error *ngIf="clinicForm.get('pincode')?.hasError('pattern')">Invalid Pin Code</mat-error>
+                </mat-form-field>
+              </div>
+              <!-- State -->
+              <div class="col-md-6">
+                <mat-form-field appearance="fill" class="full-width">
+                  <mat-label>Select State</mat-label>
+                  <mat-select formControlName="state"
+                      (selectionChange)="onStateChange($event)">
+                      <mat-option>
+                          <ngx-mat-select-search [formControl]="stateFilterCtrl"
+                              placeholderLabel="Search state"></ngx-mat-select-search>
+                      </mat-option>
+                      <mat-option *ngFor="let state of filteredStates | async"
+                          [value]="state.isoCode">
+                          {{ state.name }}
+                      </mat-option>
+                  </mat-select>
+              </mat-form-field>
+              </div>
+              <div class="col-md-6">
+                <mat-form-field appearance="fill" class="w-100">
+                  <mat-label>Select City</mat-label>
+                  <mat-select formControlName="city" disableOptionCentering>
+                    <!-- Prevent dropdown from closing when clicking on the search box -->
+                    <mat-option>
+                      <ngx-mat-select-search
+                        [formControl]="cityFilterCtrl"
+                        placeholderLabel="Search city"
+                        (click)="$event.stopPropagation()"
+                      ></ngx-mat-select-search>
+                    </mat-option>
+                    <mat-option *ngFor="let city of filteredCities | async" [value]="city.name">
+                      {{ city.name }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="submitted && clinicForm.get('city')?.hasError('required')">City is required</mat-error>
+                </mat-form-field>
+              </div>
+              <!-- Timing -->
+              <div class="col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Timing</mat-label>
+                  <input
+                    matInput
+                    [ngxMatTimepicker]="timePicker"
+                    formControlName="timing"
+                    placeholder="Select Timing"
+                  />
+                  <ngx-mat-timepicker-toggle
+                    [for]="timePicker"
+                    matSuffix
+                  ></ngx-mat-timepicker-toggle>
+                  <ngx-mat-timepicker #timePicker></ngx-mat-timepicker>
+                  <mat-error *ngIf="submitted && clinicForm.get('timing')?.hasError('required')">Timing is required</mat-error>
+                </mat-form-field>
+              </div>
+              <!-- Days -->
+              <div class="col-md-6">
+                <label>Days</label>
+                <div>
+                  <mat-checkbox *ngFor="let day of days" [formControl]="getDayControl(day)">
+                    {{ day }}
+                  </mat-checkbox>
+                  <mat-error *ngIf="submitted && clinicForm.get('days')?.hasError('daysRequired')">
+                    At least one day must be selected
+                  </mat-error>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" (click)="saveClinic()">
+            {{ isEditMode ? 'Save Changes' : 'Add Clinic' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
-</div>
+  

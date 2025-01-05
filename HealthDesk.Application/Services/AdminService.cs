@@ -1,10 +1,9 @@
 
 using HealthDesk.Application.Interfaces;
-using HealthDesk.Core;
 using HealthDesk.Core.Enum;
-using static HealthDesk.Application.UserRegistrationDto;
+using HealthDesk.Infrastructure;
 
-namespace HealthDesk.Application.Services;
+namespace HealthDesk.Application;
 public class AdminService : IAdminService
 {
     private readonly IUserRepository _userRepository;
@@ -56,6 +55,7 @@ public class AdminService : IAdminService
                 Contact = !string.IsNullOrEmpty(user.Mobile) ? user.Mobile : user.Email,
                 Role = role.Role.ToString(), // Role from the current iteration
                 Status = role.Status,
+                DependentName =user.DependentName,
                 City = (role.Role == Role.Physician || role.Role == Role.Patient)
                     ? user.City
                     : user.ClinicCity

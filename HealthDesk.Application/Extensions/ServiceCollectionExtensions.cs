@@ -1,6 +1,4 @@
 using HealthDesk.Application.Interfaces;
-using HealthDesk.Application.Services;
-using HealthDesk.Core;
 using HealthDesk.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +20,12 @@ public static class ServiceCollectionExtensions
     services.AddScoped<IAuthService, AuthService>();
     services.AddScoped<IAccountService, AccountService>();
     services.AddScoped<IAdminService, AdminService>();
+    services.AddScoped<IHospitalService, HospitalService>();
+    services.AddScoped<ILaboratoryService, LaboratoryService>();
+    services.AddScoped<IPharmacyService, PharmacyService>();
+    services.AddScoped<IPharmaceuticalService, PharmaceuticalService>();
+    services.AddScoped<IPhysicianService, PhysicianService>();
+    services.AddScoped<IPatientService, PatientService>();
     #endregion
 
     #region Repositories
@@ -29,6 +33,12 @@ public static class ServiceCollectionExtensions
     services.AddScoped<ILogRepository, LogRepository>();
     services.AddScoped<IUserRepository, UserRepository>();
     services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+    services.AddScoped<IPatientRepository, PatientRepository>();
+    services.AddScoped<IPhysicianRepository, PhysicianRepository>();
+    services.AddScoped<IHospitalRepository, HospitalRepository>();
+    services.AddScoped<ILaboratoryRepository, LaboratoryRepository>();
+    services.AddScoped<IPharmacyRepository, PharmacyRepository>();
+    services.AddScoped<IPharmaceuticalRepository, PharmaceuticalRepository>();
     #endregion
 
     return services;

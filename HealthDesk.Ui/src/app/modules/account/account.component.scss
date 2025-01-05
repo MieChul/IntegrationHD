@@ -903,5 +903,10 @@ height:500px;
   .bg-physycian{
     background-color: #377b91;
   }
-
+  .mat-mdc-form-field-subscript-wrapper {
+    display: none; /* Hides the container if not needed */
+  }
+  .mat-mdc-form-field {
+    margin-bottom: 0; /* Adjust as needed */
+  }
 

@@ -55,6 +55,7 @@ public class UpdateRequestDto
     public string? SDoc { get; set; } = string.Empty;
     public string? ADoc { get; set; } = string.Empty;
     public string? MDoc { get; set; } = string.Empty;
+    public string? ClinicImage { get; set; } = string.Empty;
 }
 
 public class UpdateUserInfoRequestDto
@@ -109,6 +110,7 @@ public class UpdateUserInfoRequestDto
     public string? ProfImage { get; set; } = string.Empty;
 
     public bool NoDocConsentProvided { get; set; } = false;
+    public string ClinicImage { get; set; }
 }
 
 public class DOB

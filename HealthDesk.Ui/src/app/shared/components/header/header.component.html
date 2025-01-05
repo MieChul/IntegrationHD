@@ -8,13 +8,13 @@
     </button>
     <div class="collapse navbar-collapse" [ngClass]="{ 'show': isMenuOpen }">
       <ul class="navbar-nav ms-auto">
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="userData.role !== 'admin'">
           <a class="nav-link nav-bold" mat-button [attr.href]="getDashboardLink(userData.role)">Dashboard</a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="userData.role !== 'admin'">
           <a class="nav-link nav-bold" mat-button href="#">About Us</a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="userData.role !== 'admin'">
           <a class="nav-link nav-bold" mat-button href="#">Contact Us</a>
         </li>
         <li class="nav-item">
@@ -22,7 +22,7 @@
             <img src="{{ profImg }}" alt="Profile" class="profile-img" id="headerprofImg"> {{ userData.username }}
           </button>
           <mat-menu #profileMenu="matMenu">
-            <button class="pointer-cursor" mat-menu-item (click)="router.navigate(['account/'])">
+            <button class="pointer-cursor" mat-menu-item (click)="router.navigate(['account/'])" *ngIf="userData.role !== 'admin'">
               <mat-icon>person</mat-icon> My Profile
             </button>
             <div *ngIf="userData.role === 'patient' && userData.status ==='Approved'">
@@ -37,7 +37,7 @@
                 <mat-icon>settings</mat-icon> {{ switchRole }}
               </button>
             </div>
-            <mat-divider></mat-divider>
+            <mat-divider *ngIf="userData.role !== 'admin'"></mat-divider>
             <button mat-menu-item (click)="logout()">
               <mat-icon>logout</mat-icon> Logout
             </button>

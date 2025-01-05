@@ -35,6 +35,9 @@ export class InfoComponent {
   gYearError: any = false;
   gInstituteError: any = false;
   gDocError: any = false;
+  certificateNumberError: any = false;
+  councilError: any = false;
+  docError: any = false;
   minDate: Date = new Date(1960, 0, 1);
   emailSameError: boolean = false;
   mobileSameError: boolean = false;
@@ -63,6 +66,7 @@ export class InfoComponent {
   }
 
   @ViewChild('fileInput') fileInput!: ElementRef;
+  @ViewChild('fileInputClinic') fileInputClinic!: ElementRef;
 
   ngOnInit() {
     this.loaderService.show();
@@ -132,6 +136,10 @@ export class InfoComponent {
     this.fileInput.nativeElement.click();
   }
 
+  triggerFileUploadClinic(): void {
+    this.fileInputClinic.nativeElement.click();
+  }
+
   onStateChange(event: any): void {
     const stateCode = event ? event.value : this.form.get('state')?.value;
     if (stateCode) {
@@ -159,7 +167,6 @@ export class InfoComponent {
         .getById(this.userData.id ?? '')
         .pipe(first())
         .subscribe((user) => {
-          this.initializeHospitals(this.user.hospitals || []);
           this.user = user;
           this.user.role = this.userData.role || this.user.role || 'physician';
 
@@ -233,8 +240,12 @@ export class InfoComponent {
         document: new FormControl(this.user.additionalQualification?.document)
       }),
       medicalRegistration: new FormGroup({
-        certificateNumber: new FormControl(this.user.medicalRegistration?.certificateNumber),
-        councilName: new FormControl(this.user.medicalRegistration?.councilName),
+        certificateNumber: new FormControl(this.user.medicalRegistration?.certificateNumber, [
+          Validators.pattern(/^[a-zA-Z0-9\s,.'-]{2,50}$/), // Allows alphanumeric, spaces, commas, periods, and dashes
+        ]),
+        councilName: new FormControl(this.user.medicalRegistration?.councilName, [
+          Validators.pattern(/^[a-zA-Z0-9\s,.'-]{2,50}$/), // Allows alphanumeric, spaces, commas, periods, and dashes
+        ]),
         document: new FormControl(this.user.medicalRegistration?.document)
       }),
       birthDate: [this.user.birthDate],
@@ -259,8 +270,8 @@ export class InfoComponent {
       bloodGroup: [this.user.bloodGroup],
       relationId: [this.user.relationId],
       isSave: [],
-      hospitals: this.formBuilder.array([]),
-      profImage: [this.user.profImage || '/assets/defaultProfile.jpg']
+      profImage: [this.user.profImage || '/assets/defaultProfile.jpg'],
+      clinicImage: [this.user.clinicImage || '/assets/defaultProfile.jpg']
     });
 
     this.onStateChange(null);
@@ -293,6 +304,7 @@ export class InfoComponent {
       state: isPatientOrPhysician ? [Validators.required] : [],
       area: isPatientOrPhysician ? [Validators.required] : [],
       pincode: isPatientOrPhysician ? [Validators.required, Validators.pattern(/^[1-9][0-9]{5}$/)] : [],
+
       clinicName: isPhysician ? [Validators.required] : [],
       clinicArea: isNonPatient ? [Validators.required] : [],
       clinicCity: isNonPatient ? [Validators.required] : [],
@@ -363,40 +375,16 @@ export class InfoComponent {
     if (this.form.invalid) {
       this.loaderService.hide();
       this.errorsFound = true;
-
       if (this.user.role == 'physician') {
-        if (!this.form.value.graduation.year)
-          this.gYearError = true;
-        else
-          this.gYearError = false;
-
-        if (!this.form.value.graduation.institute)
-          this.gInstituteError = true;
-        else
-          this.gInstituteError = false;
+        this.getDocError();
       }
       this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
       return;
     }
 
     if (this.user.role == 'physician') {
-      if (!this.form.value.graduation.year) {
-        this.loaderService.hide();
-        this.gYearError = true;
-        this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
+      if (this.getDocError())
         return;
-      }
-      else
-        this.gYearError = false;
-
-      if (!this.form.value.graduation.institute) {
-        this.loaderService.hide();
-        this.gInstituteError = true;
-        this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
-        return;
-      }
-      else
-        this.gInstituteError = false;
     }
 
     if (!this.form.value.noDocConsentProvided && this.user.role === 'physician') {
@@ -443,8 +431,7 @@ export class InfoComponent {
             else
               this.router.navigate([`/${this.userData.role}`]);
           }
-          else
-          {
+          else {
             this.reload();
             this.userData.status = "Submitted";
           }
@@ -512,54 +499,61 @@ export class InfoComponent {
     this.loaderService.show();
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
-
+  
     if (!file) {
       console.error("No file selected.");
+      this.loaderService.hide();
       return;
     }
-
+  
     // Validation for file type and size
     const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
     const validOtherTypes = [...validImageTypes, 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-
+  
     let isValid = false;
-    let maxSize = 0;
-
-    if (propName === 'profileImage') {
+  
+    if (propName === 'profileImage' || propName === 'clinicImage') {
       // Only image files allowed and size < 1 MB
       isValid = validImageTypes.includes(file.type) && file.size <= 1 * 1024 * 1024; // 1 MB
     } else {
       // Images, PDFs, and DOC files allowed and size < 2 MB
       isValid = validOtherTypes.includes(file.type) && file.size <= 2 * 1024 * 1024; // 2 MB
     }
-
+  
     if (!isValid) {
       this.loaderService.hide();
-      console.error("Invalid file type or size.");
       this.updateErrors = true;
-
+  
       if (propName === 'profileImage') {
         this.notificationService.showError('Invalid file for "Profile Image". Only image files (JPG, PNG, GIF) are allowed, and the size must be less than 1 MB.');
+        this.setDefaultImage();
+      } else if (propName === 'clinicImage') {
+        this.notificationService.showError('Invalid file for "Clinic Image". Only image files (JPG, PNG, GIF) are allowed, and the size must be less than 1 MB.');
         this.setDefaultImage();
       } else {
         this.notificationService.showError(`Invalid file for "${propName}". Only image files (JPG, PNG, GIF), PDFs, or Word documents (DOC, DOCX) are allowed, and the size must be less than 2 MB.`);
       }
       return;
     }
-
-    if (propName === 'profileImage') {
+  
+    // If profileImage or clinicImage, preview the image using FileReader
+    if (propName === 'profileImage' || propName === 'clinicImage') {
       const reader = new FileReader();
       reader.onload = () => {
-        this.form.patchValue({ profImage: reader.result });
+        if (propName === 'profileImage') {
+          this.form.patchValue({ profImage: reader.result });
+        } else if (propName === 'clinicImage') {
+          this.form.patchValue({ clinicImage: reader.result });
+        }
       };
       reader.readAsDataURL(file);
     }
-
+  
     const formData = new FormData();
     formData.append('file', file, file.name);
     formData.append('propName', propName);
     formData.append('id', this.user.id);
-
+  
     this.accountService.uploadFile(formData)
       .pipe(first())
       .subscribe({
@@ -567,22 +561,25 @@ export class InfoComponent {
           this.loaderService.hide();
           switch (propName) {
             case 'graduation':
-              this.form.value.graduation.document = response.fileName;
+              this.form.patchValue({ graduation: { document: response.fileName } });
               break;
             case 'postGraduation':
-              this.form.value.postGraduation.document = response.fileName;
+              this.form.patchValue({ postGraduation: { document: response.fileName } });
               break;
             case 'superSpecialization':
-              this.form.value.superSpecialization.document = response.fileName;
+              this.form.patchValue({ superSpecialization: { document: response.fileName } });
               break;
             case 'additionalQualification':
-              this.form.value.additionalQualification.document = response.fileName;
+              this.form.patchValue({ additionalQualification: { document: response.fileName } });
               break;
             case 'medicalRegistration':
-              this.form.value.medicalRegistration.document = response.fileName;
+              this.form.patchValue({ medicalRegistration: { document: response.fileName } });
               break;
             case 'profileImage':
-              this.form.value.profImage = response.fileName;
+              this.form.patchValue({ profImage: response.fileName });
+              break;
+            case 'clinicImage':
+              this.form.patchValue({ clinicImage: response.fileName });
               break;
             default:
               console.warn(`Unknown propName: ${propName}`);
@@ -591,54 +588,64 @@ export class InfoComponent {
         error: (error) => {
           this.loaderService.hide();
           this.updateErrors = true;
-          this.notificationService.showError(`Something wrong with the file. Please try again or use different file format`);
+          this.notificationService.showError(`Something wrong with the file. Please try again or use a different file format.`);
         }
       });
   }
-
-  removeClass(id: string) {
-    document.getElementById(id)?.classList.remove("profileImage");
-  }
-
+  
   view(path: string) {
     window.open(path, "_blank");
   }
 
-  get hospitals(): FormArray {
-    return this.form.get('hospitals') as FormArray;
-  }
 
-  initializeHospitals(hospitals: any[]) {
-    hospitals.forEach((hospital) => {
-      this.hospitals.push(
-        this.formBuilder.group({
-          clinicName: [hospital.clinicName, Validators.required],
-          clinicAddress1: [hospital.clinicAddress1, Validators.required],
-          clinicAddress2: [hospital.clinicAddress2],
-          clinicCity: [hospital.clinicCity, Validators.required],
-          clinicState: [hospital.clinicState, Validators.required],
-          clinicPincode: [hospital.clinicPincode, Validators.required],
-        })
-      );
-    });
-  }
+  getDocError() {
+    var has_error = false;
 
-  // Add a new hospital
-  addHospital() {
-    this.hospitals.push(
-      this.formBuilder.group({
-        clinicName: ['', Validators.required],
-        clinicAddress1: ['', Validators.required],
-        clinicAddress2: [''],
-        clinicCity: ['', Validators.required],
-        clinicState: ['', Validators.required],
-        clinicPincode: ['', Validators.required],
-      })
-    );
-  }
+    if (!this.form.value.graduation.year) {
+      this.loaderService.hide();
+      this.gYearError = true;
+      this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
+      has_error = true;
+    }
+    else
+      this.gYearError = false;
 
-  removeHospital(index: number) {
-    this.hospitals.removeAt(index);
-  }
+    if (!this.form.value.graduation.institute) {
+      this.loaderService.hide();
+      this.gInstituteError = true;
+      this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
+      has_error = true;
+    }
+    else
+      this.gInstituteError = false;
 
+    if (!this.form.value.medicalRegistration.certificateNumber) {
+      this.loaderService.hide();
+      this.certificateNumberError = true;
+      this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
+      has_error = true;
+    }
+    else
+      this.certificateNumberError = false;
+
+    if (!this.form.value.medicalRegistration.councilName) {
+      this.loaderService.hide();
+      this.councilError = true;
+      this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
+      has_error = true;
+    }
+    else
+      this.councilError = false;
+
+    if (!this.form.value.medicalRegistration.document) {
+      this.loaderService.hide();
+      this.docError = true;
+      this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
+      has_error = true;
+    }
+    else
+      this.docError = false
+
+    return has_error;
+  }
 }
