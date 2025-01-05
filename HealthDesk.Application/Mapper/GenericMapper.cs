@@ -4,71 +4,96 @@ using System.Reflection;
 namespace HealthDesk.Application;
 
 public static class GenericMapper
+{
+    public static TDestination Map<TSource, TDestination>(TSource source, TDestination destination = null)
+        where TDestination : class, new()
     {
-        public static void Map<TSource, TDestination>(TSource source, TDestination destination)
+        if (source == null)
+            throw new ArgumentNullException(nameof(source), "Source cannot be null");
+
+        // Create a new instance of destination if not provided
+        destination ??= new TDestination();
+
+        var sourceProperties = typeof(TSource).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        var destinationProperties = typeof(TDestination).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+        foreach (var sourceProperty in sourceProperties)
         {
-            var sourceProperties = typeof(TSource).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            var destinationProperties = typeof(TDestination).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var destinationProperty = destinationProperties.FirstOrDefault(prop =>
+                prop.Name == sourceProperty.Name &&
+                prop.CanWrite &&
+                AreTypesCompatible(sourceProperty.PropertyType, prop.PropertyType));
 
-            foreach (var sourceProperty in sourceProperties)
+            if (destinationProperty != null)
             {
-                var destinationProperty = destinationProperties.FirstOrDefault(prop => prop.Name == sourceProperty.Name 
-                                                                                       && prop.PropertyType == sourceProperty.PropertyType);
-                
-                if (destinationProperty != null && destinationProperty.CanWrite)
+                var sourceValue = sourceProperty.GetValue(source);
+
+                if (sourceValue == null) continue;
+
+                // Handle collections
+                if (IsList(sourceProperty.PropertyType))
                 {
-                    var sourceValue = sourceProperty.GetValue(source);
-                    if (sourceValue == null) continue;
+                    var sourceList = (IEnumerable)sourceValue;
 
-                    // Check if the property is a list
-                    if (IsList(sourceProperty.PropertyType))
+                    // Ensure destination list is initialized
+                    var destinationList = (IList)destinationProperty.GetValue(destination) ??
+                                          (IList)Activator.CreateInstance(destinationProperty.PropertyType);
+
+                    foreach (var item in sourceList)
                     {
-                        var sourceList = (IEnumerable)sourceValue;
-                        var destinationList = (IList)Activator.CreateInstance(destinationProperty.PropertyType);
-
-                        foreach (var item in sourceList)
+                        if (IsComplexType(item.GetType()))
                         {
-                            // If the list is of a complex type, recursively map each item
-                            if (IsComplexType(item.GetType()))
-                            {
-                                var destinationItem = Activator.CreateInstance(destinationProperty.PropertyType.GenericTypeArguments[0]);
-                                Map(item, destinationItem);
-                                destinationList.Add(destinationItem);
-                            }
-                            else
-                            {
-                                // For primitive types, add directly
-                                destinationList.Add(item);
-                            }
+                            var destinationItem = Activator.CreateInstance(destinationProperty.PropertyType.GenericTypeArguments[0]);
+                            Map(item, destinationItem);
+                            destinationList.Add(destinationItem);
                         }
+                        else
+                        {
+                            destinationList.Add(item);
+                        }
+                    }
 
-                        destinationProperty.SetValue(destination, destinationList);
-                    }
-                    else if (IsComplexType(sourceProperty.PropertyType))
-                    {
-                        // Handle complex nested objects by recursive mapping
-                        var destinationValue = Activator.CreateInstance(destinationProperty.PropertyType);
-                        Map(sourceValue, destinationValue);
-                        destinationProperty.SetValue(destination, destinationValue);
-                    }
-                    else
-                    {
-                        // For simple types, map directly
-                        destinationProperty.SetValue(destination, sourceValue);
-                    }
+                    destinationProperty.SetValue(destination, destinationList);
+                }
+                else if (IsComplexType(sourceProperty.PropertyType))
+                {
+                    // Handle complex nested objects
+                    var destinationValue = destinationProperty.GetValue(destination) ??
+                                           Activator.CreateInstance(destinationProperty.PropertyType);
+                    Map(sourceValue, destinationValue);
+                    destinationProperty.SetValue(destination, destinationValue);
+                }
+                else
+                {
+                    // Handle simple types
+                    destinationProperty.SetValue(destination, sourceValue);
                 }
             }
         }
 
-        // Helper method to check if a type is a list
-        private static bool IsList(Type type)
+        return destination;
+    }
+
+    private static bool AreTypesCompatible(Type sourceType, Type destinationType)
+    {
+        if (destinationType.IsAssignableFrom(sourceType)) return true;
+
+        // Handle nullable types
+        if (destinationType.IsGenericType && destinationType.GetGenericTypeDefinition() == typeof(Nullable<>))
         {
-            return type.IsGenericType && typeof(IEnumerable).IsAssignableFrom(type);
+            return Nullable.GetUnderlyingType(destinationType) == sourceType;
         }
 
-        // Helper method to check if a type is a complex (non-primitive) type
-        private static bool IsComplexType(Type type)
-        {
-            return type.IsClass && type != typeof(string);
-        }
+        return false;
     }
+
+    private static bool IsList(Type type)
+    {
+        return type.IsGenericType && typeof(IEnumerable).IsAssignableFrom(type) && type != typeof(string);
+    }
+
+    private static bool IsComplexType(Type type)
+    {
+        return type.IsClass && type != typeof(string) && !IsList(type);
+    }
+}

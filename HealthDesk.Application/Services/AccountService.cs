@@ -8,11 +8,13 @@ namespace HealthDesk.Application;
 public class AccountService : IAccountService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IPhysicianRepository _physicianRepository;
     private readonly IMessageService _messageService;
-    public AccountService(IUserRepository userRepository, IMessageService messageService)
+    public AccountService(IUserRepository userRepository, IMessageService messageService, IPhysicianRepository physicianRepository)
     {
         _userRepository = userRepository;
         _messageService = messageService;
+        _physicianRepository = physicianRepository;
     }
 
     public async Task<User> GetById(string id)
@@ -147,6 +149,25 @@ public class AccountService : IAccountService
                 var userEntity = await _userRepository.GetByIdAsync(user.DependentId);
                 userEntity.DependentName = $"{user.FirstName} {user.LastName}";
                 await _userRepository.UpdateAsync(userEntity);
+            }
+
+
+
+            var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", user.Id);
+            if (physician != physician)
+            {
+                var physicianClinic = new Clinic()
+                {
+                    Name = model.ClinicName,
+                    FlatNumber = model.ClinicAddress1,
+                    Building = model.ClinicAddress2,
+                    Area = model.ClinicArea,
+                    City = model.ClinicCity,
+                    State = model.ClinicState,
+                    PinCode = model.ClinicPincode,
+                };
+                physician.Clinics.Add(physicianClinic);
+                await _physicianRepository.UpdateAsync(physician);
             }
 
             if (!model.IsSave)

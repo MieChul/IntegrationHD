@@ -1,16 +1,88 @@
 import { Injectable } from '@angular/core';
 import { openDB } from 'idb';
+import { environment } from '../../../environments/environment';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrganizationService {
   db: any;
+  private apiUrl = `${environment.apiUrl}`;
 
-  constructor() {
+  constructor(private http: HttpClient) {
     this.initDB();
   }
 
+  getAllLabTests(id: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${id}/lab-tests`);
+  }
+
+  getLabTestById(id: string, labTestId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}/lab-tests/${labTestId}`);
+  }
+
+  saveLabTest(id: string, labTest: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/lab-tests`, labTest);
+  }
+
+  deleteLabTest(id: string, labTestId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}/lab-tests/${labTestId}`);
+  }
+
+  getAllMedicines(id: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${id}/medicines`);
+  }
+
+  getMedicineById(id: string, medicineId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}/medicines/${medicineId}`);
+  }
+
+  saveMedicine(id: string, medicine: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/medicines`, medicine);
+  }
+
+  deleteMedicine(id: string, medicineId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}/medicines/${medicineId}`);
+  }
+
+  getAllPhysicians(id: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${id}/physicians`);
+  }
+
+  addPhysician(id: string, physicianId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${id}/physicians`, { id: physicianId });
+  }
+
+  deletePhysician(id: string, physicianId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}/physicians/${physicianId}`);
+  }
+
+  getAllServices(id: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${id}/services`);
+  }
+
+  saveService(id: string, service: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${id}/services`, service);
+  }
+
+  deleteService(id: string, serviceId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}/services/${serviceId}`);
+  }
+  
+  getAllBrandLibraries(pharmaceuticalId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${pharmaceuticalId}/brand-library`);
+  }
+
+  saveBrandLibrary(pharmaceuticalId: string, brandLibrary: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${pharmaceuticalId}/brand-library`, brandLibrary);
+  }
+
+  deleteBrandLibrary(pharmaceuticalId: string, brandLibraryId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${pharmaceuticalId}/brand-library/${brandLibraryId}`);
+  }
+  
   async initDB() {
     this.db = await openDB('surveyDB', 1, {
       upgrade(db) {
