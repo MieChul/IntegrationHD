@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace HealthDesk.Core;
 
-public class DosageMaster : BaseEntity
+public class BodySystem : BaseEntity
 {
     [BsonElement("name")]
     public string Name { get; set; }

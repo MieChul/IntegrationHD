@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HealthDesk.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5335a20392d238f9d80d22a78ebf1aba3b789731")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+edd4af7a77f1749e4a1cf16ccfceb7b56dfbc283")]
 [assembly: System.Reflection.AssemblyProductAttribute("HealthDesk.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HealthDesk.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

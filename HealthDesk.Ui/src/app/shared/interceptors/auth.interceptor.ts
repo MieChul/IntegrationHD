@@ -25,14 +25,16 @@ export class AuthInterceptor implements HttpInterceptor {
     // Show loader before processing the request
     this.loaderService.show();
 
+    const isGetRequest = req.method.toLowerCase() === 'get';
+
     return next.handle(req).pipe(
       tap((event) => {
         // Handle successful response
         if (event instanceof HttpResponse) {
           const responseBody = event.body;
 
-          // Check if the response contains a success message
-          if (responseBody?.success === true && responseBody?.message) {
+          // Check if the response contains a success message and is not a GET request
+          if (!isGetRequest && responseBody?.success === true && responseBody?.message) {
             this.notificationService.showSuccess(responseBody.message);
           }
         }
@@ -41,11 +43,11 @@ export class AuthInterceptor implements HttpInterceptor {
         // Handle error response
         this.loaderService.hide();
 
-        // Check if the error is an expected server error
-        if (error.error?.success === false && error.error?.message) {
+        // Check if the error is an expected server error and is not a GET request
+        if (!isGetRequest && error.error?.success === false && error.error?.message) {
           this.notificationService.showError(error.error.message);
-        } else {
-          // Generic error handling for unexpected errors
+        } else if (!isGetRequest) {
+          // Generic error handling for unexpected errors on non-GET requests
           this.notificationService.showError('An unexpected error occurred.');
         }
 
