@@ -25,7 +25,7 @@ public class OtpController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var prop = request.IsEmail ? "email": "mobile";
+        var prop = request.IsEmail ? "email" : "mobile";
         if (await _userService.IsTaken(prop, request.Contact))
         {
             return BadRequest($"{char.ToUpper(prop[0])}{prop[1..]} is already registered. Please use login.");
@@ -47,6 +47,6 @@ public class OtpController : ControllerBase
         {
             return Ok(new { Message = "OTP verified successfully", Valid = true });
         }
-        return Unauthorized("Invalid or expired OTP.");
+        return BadRequest(new { Success = false, Message = "Invalid or expired OTP." });
     }
 }
