@@ -8,19 +8,20 @@ namespace HealthDesk.API.Controllers
     [Route("api/[controller]")]
     public class PharmacyController : ControllerBase
     {
-        private IAccountService _accountService;
-        private IPharmacyService _pharmacyService;
+        private readonly IAccountService _accountService;
+        private readonly IPharmacyService _pharmacyService;
 
         public PharmacyController(IAccountService accountService, IPharmacyService pharmacyService)
         {
             _accountService = accountService;
             _pharmacyService = pharmacyService;
         }
-         [HttpGet("{id}/medicines")]
+
+        [HttpGet("{id}/medicines")]
         public async Task<IActionResult> GetAllMedicines(string id)
         {
             var medicines = await _pharmacyService.GetAllMedicinesAsync(id);
-            return Ok(medicines);
+            return Ok(new { Success = true, Message = "Medicines retrieved successfully.", Data = medicines });
         }
 
         [HttpGet("{id}/medicines/{medicineId}")]
@@ -28,26 +29,26 @@ namespace HealthDesk.API.Controllers
         {
             var medicine = await _pharmacyService.GetMedicineByIdAsync(id, medicineId);
             if (medicine == null)
-                return NotFound("Medicine not found.");
+                return NotFound(new { Success = false, Message = "Medicine not found." });
 
-            return Ok(medicine);
+            return Ok(new { Success = true, Message = "Medicine retrieved successfully.", Data = medicine });
         }
 
         [HttpPost("{id}/medicines")]
         public async Task<IActionResult> SaveMedicine(string id, [FromBody] MedicineDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new { Success = false, Message = "Invalid input.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
 
             await _pharmacyService.SaveMedicineAsync(id, dto);
-            return Ok("Medicine saved successfully.");
+            return Ok(new { Success = true, Message = "Medicine saved successfully." });
         }
 
         [HttpDelete("{id}/medicines/{medicineId}")]
         public async Task<IActionResult> DeleteMedicine(string id, string medicineId)
         {
             await _pharmacyService.DeleteMedicineAsync(id, medicineId);
-            return Ok("Medicine deleted successfully.");
+            return Ok(new { Success = true, Message = "Medicine deleted successfully." });
         }
     }
 }

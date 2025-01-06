@@ -1,5 +1,4 @@
 using HealthDesk.Application;
-using HealthDesk.Application.DTO;
 using HealthDesk.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,9 +8,9 @@ namespace HealthDesk.API.Controllers
     [Route("api/[controller]")]
     public class PhysicianController : ControllerBase
     {
-        private IAccountService _accountService;
-        private IPhysicianService _physicianService;
-        private IPatientService _patientService;
+        private readonly IAccountService _accountService;
+        private readonly IPhysicianService _physicianService;
+        private readonly IPatientService _patientService;
 
         public PhysicianController(IAccountService accountService, IPhysicianService physicianService, IPatientService patientService)
         {
@@ -24,24 +23,120 @@ namespace HealthDesk.API.Controllers
         public async Task<IActionResult> GetClinics(string physicianId)
         {
             var clinics = await _physicianService.GetClinicsAsync(physicianId);
-            return Ok(clinics);
+            return Ok(new { Success = true, Message = "Clinics retrieved successfully.", Data = clinics });
         }
 
         [HttpPost("{physicianId}/clinics")]
         public async Task<IActionResult> AddOrUpdateClinic(string physicianId, [FromBody] PhysicianClinicDto clinicDto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new { Success = false, Message = "Invalid data provided.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
 
             await _physicianService.AddOrUpdateClinicAsync(physicianId, clinicDto);
-            return Ok("Clinic saved successfully.");
+            return Ok(new { Success = true, Message = "Clinic saved successfully." });
         }
 
         [HttpDelete("{physicianId}/clinics/{clinicId}")]
         public async Task<IActionResult> DeleteClinic(string physicianId, string clinicId)
         {
             await _physicianService.DeleteClinicAsync(physicianId, clinicId);
-            return Ok("Clinic deleted successfully.");
+            return Ok(new { Success = true, Message = "Clinic deleted successfully." });
+        }
+
+        [HttpGet("{id}/design-prescriptions")]
+        public async Task<IActionResult> GetAllDesignPrescriptions(string id)
+        {
+            var prescriptions = await _physicianService.GetAllDesignPrescriptionsAsync(id);
+            return Ok(new { Success = true, Message = "Design prescriptions retrieved successfully.", Data = prescriptions });
+        }
+
+        [HttpPost("{id}/design-prescriptions")]
+        public async Task<IActionResult> SaveDesignPrescription(string id, [FromBody] DesignPrescriptionDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { Success = false, Message = "Invalid data provided.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+
+            await _physicianService.SaveDesignPrescriptionAsync(id, dto);
+            return Ok(new { Success = true, Message = "Design prescription saved successfully." });
+        }
+
+        [HttpDelete("{id}/design-prescriptions/{prescriptionId}")]
+        public async Task<IActionResult> DeleteDesignPrescription(string id, string prescriptionId)
+        {
+            await _physicianService.DeleteDesignPrescriptionAsync(id, prescriptionId);
+            return Ok(new { Success = true, Message = "Design prescription deleted successfully." });
+        }
+
+        [HttpGet("{id}/patients")]
+        public async Task<IActionResult> GetAllPatients(string id)
+        {
+            var patients = await _physicianService.GetAllPatientsAsync(id);
+            return Ok(new { Success = true, Message = "Patients retrieved successfully.", Data = patients });
+        }
+
+        [HttpPost("{id}/patients")]
+        public async Task<IActionResult> SavePatient(string id, [FromBody] PatientRecordDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { Success = false, Message = "Invalid data provided.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+
+            await _physicianService.SavePatientAsync(id, dto);
+            return Ok(new { Success = true, Message = "Patient saved successfully." });
+        }
+
+        [HttpDelete("{id}/patients/{patientId}")]
+        public async Task<IActionResult> DeletePatient(string id, string patientId)
+        {
+            await _physicianService.DeletePatientAsync(id, patientId);
+            return Ok(new { Success = true, Message = "Patient deleted successfully." });
+        }
+
+        [HttpGet("{id}/prescriptions/{patientId}")]
+        public async Task<IActionResult> GetPrescriptions(string id, string patientId)
+        {
+            var prescriptions = await _physicianService.GetPrescriptionsAsync(id, patientId);
+            return Ok(new { Success = true, Message = "Prescriptions retrieved successfully.", Data = prescriptions });
+        }
+
+        [HttpPost("{id}/prescriptions")]
+        public async Task<IActionResult> AddPrescription(string id, [FromBody] PrescriptionDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { Success = false, Message = "Invalid data provided.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+
+            var prescriptionId = await _physicianService.AddPrescriptionAsync(id, dto);
+            return Ok(new { Success = true, Message = "Prescription added successfully.", Id = prescriptionId });
+        }
+
+        [HttpPost("{id}/medical-cases")]
+        public async Task<IActionResult> SaveMedicalCase(string id, [FromBody] MedicalCaseDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { Success = false, Message = "Invalid data provided.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+
+            await _physicianService.SaveMedicalCaseAsync(id, dto);
+            return Ok(new { Success = true, Message = "Medical case saved successfully." });
+        }
+
+        [HttpGet("{id}/medical-cases")]
+        public async Task<IActionResult> GetAllMedicalCases(string id)
+        {
+            var medicalCases = await _physicianService.GetAllMedicalCasesAsync(id);
+            return Ok(new { Success = true, Message = "Medical cases retrieved successfully.", Data = medicalCases });
+        }
+
+        [HttpDelete("{id}/medical-cases/{caseId}")]
+        public async Task<IActionResult> DeleteMedicalCase(string id, string caseId)
+        {
+            await _physicianService.DeleteMedicalCaseAsync(id, caseId);
+            return Ok(new { Success = true, Message = "Medical case deleted successfully." });
+        }
+
+        [HttpPost("{id}/medical-cases/{caseId}/increment-likes")]
+        public async Task<IActionResult> IncrementLikes(string id, string caseId)
+        {
+            await _physicianService.IncrementLikesAsync(id, caseId);
+            return Ok(new { Success = true, Message = "Likes incremented successfully." });
         }
     }
 }

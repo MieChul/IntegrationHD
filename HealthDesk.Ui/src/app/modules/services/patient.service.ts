@@ -9,7 +9,7 @@ import { Observable } from 'rxjs';
 export class PatientService {
   private apiUrl = `${environment.apiUrl}/patient`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Medical History
   getMedicalHistory(patientId: string): Observable<any[]> {
@@ -122,5 +122,56 @@ export class PatientService {
 
   updatePatientInfo(patientId: string, info: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/${patientId}/info`, info);
+  }
+  getCompliance(patientId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${patientId}/compliance`);
+  }
+
+  saveCompliance(patientId: string, compliance: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${patientId}/compliance`, compliance);
+  }
+
+  deleteCompliance(patientId: string, complianceId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${patientId}/compliance/${complianceId}`);
+  }
+
+  updatePillsCount(patientId: string, complianceId: string, count: number): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/${patientId}/compliance/${complianceId}/pills-count`, count);
+  }
+
+  getCompliancePercentage(patientId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${patientId}/compliance-percentage`);
+  }
+
+  getActivities(patientId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${patientId}/activities`);
+  }
+
+  saveActivity(patientId: string, activity: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${patientId}/activities`, activity);
+  }
+
+  deleteActivity(patientId: string, activityId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${patientId}/activities/${activityId}`);
+  }
+
+  getComplianceDetails(patientId: string, complianceId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${patientId}/compliance-details/${complianceId}`);
+  }
+  
+  saveComplianceDetail(patientId: string, complianceId: string, detail: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${patientId}/compliance-details/${complianceId}`, detail);
+  }
+
+  getReminders(patientId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${patientId}/reminders`);
+  }
+  
+  saveReminder(patientId: string, reminder: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${patientId}/reminders`, reminder);
+  }
+  
+  deleteReminder(patientId: string, reminderId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${patientId}/reminders/${reminderId}`);
   }
 }

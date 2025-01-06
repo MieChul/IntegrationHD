@@ -14,7 +14,7 @@ public class PatientService : IPatientService
         _messageService = messageService;
     }
 
-   // 1. Medical History
+    // 1. Medical History
     public async Task<IEnumerable<MedicalHistoryDto>> GetMedicalHistoryAsync(string patientId)
     {
         var patient = await GetPatientByIdAsync(patientId);
@@ -316,4 +316,131 @@ public class PatientService : IPatientService
             throw new ArgumentException("Patient not found.");
         return patient;
     }
+    public async Task<IEnumerable<PatientComplianceDto>> GetComplianceAsync(string patientId)
+    {
+        var patient = await _patientRepository.GetByIdAsync(patientId);
+        return patient.Compliance.Select(c => GenericMapper.Map<Compliance, PatientComplianceDto>(c));
+    }
+
+    public async Task AddOrUpdateComplianceAsync(string patientId, PatientComplianceDto dto)
+    {
+        var patient = await _patientRepository.GetByIdAsync(patientId);
+        var compliance = patient.Compliance.FirstOrDefault(c => c.Id == dto.Id) ?? new Compliance { };
+
+        GenericMapper.Map(dto, compliance);
+
+        if (!patient.Compliance.Any(c => c.Id == compliance.Id))
+            patient.Compliance.Add(compliance);
+
+        await _patientRepository.UpdateAsync(patient);
+    }
+
+    public async Task DeleteComplianceAsync(string patientId, string complianceId)
+    {
+        var patient = await _patientRepository.GetByIdAsync(patientId);
+        patient.Compliance.RemoveAll(c => c.Id == complianceId);
+        await _patientRepository.UpdateAsync(patient);
+    }
+
+    public async Task UpdatePillsCountAsync(string patientId, string complianceId, int count)
+    {
+        var patient = await _patientRepository.GetByIdAsync(patientId);
+        var compliance = patient.Compliance.FirstOrDefault(c => c.Id == complianceId);
+        if (compliance != null)
+        {
+            compliance.PillsCount += count;
+            await _patientRepository.UpdateAsync(patient);
+        }
+    }
+
+    public async Task<double> GetCompliancePercentageAsync(string patientId)
+    {
+        var patient = await _patientRepository.GetByIdAsync(patientId);
+        var compliantDetails = patient.Compliance.SelectMany(c => c.ComplianceDetails).Where(cd => cd.IsCompliant).Count();
+        var totalDetails = patient.Compliance.SelectMany(c => c.ComplianceDetails).Count();
+        return totalDetails > 0 ? (double)compliantDetails / totalDetails * 100 : 0;
+    }
+
+    public async Task<IEnumerable<ActivityDto>> GetActivitiesAsync(string patientId)
+    {
+        var patient = await _patientRepository.GetByIdAsync(patientId);
+        return patient.Activities.Select(a => GenericMapper.Map<Activity, ActivityDto>(a));
+    }
+
+    public async Task AddOrUpdateActivityAsync(string patientId, ActivityDto dto)
+    {
+        var patient = await _patientRepository.GetByIdAsync(patientId);
+        var activity = patient.Activities.FirstOrDefault(a => a.Id == dto.Id) ?? new Activity {  };
+
+        GenericMapper.Map(dto, activity);
+
+        if (!patient.Activities.Any(a => a.Id == activity.Id))
+            patient.Activities.Add(activity);
+
+        await _patientRepository.UpdateAsync(patient);
+    }
+
+    public async Task DeleteActivityAsync(string patientId, string activityId)
+    {
+        var patient = await _patientRepository.GetByIdAsync(patientId);
+        patient.Activities.RemoveAll(a => a.Id == activityId);
+        await _patientRepository.UpdateAsync(patient);
+    }
+    public async Task<IEnumerable<ComplianceDetailDto>> GetComplianceDetailsAsync(string patientId, string complianceId)
+    {
+        var patient = await _patientRepository.GetByIdAsync(patientId);
+        var compliance = patient.Compliance.FirstOrDefault(c => c.Id == complianceId);
+
+        if (compliance == null)
+            throw new ArgumentException("Compliance not found.");
+
+        return compliance.ComplianceDetails.Select(cd => GenericMapper.Map<ComplianceDetail, ComplianceDetailDto>(cd));
+    }
+
+    public async Task AddOrUpdateComplianceDetailAsync(string patientId, string complianceId, ComplianceDetailDto dto)
+    {
+        var patient = await _patientRepository.GetByIdAsync(patientId);
+        var compliance = patient.Compliance.FirstOrDefault(c => c.Id == complianceId);
+
+        if (compliance == null)
+            throw new ArgumentException("Compliance not found.");
+
+        var detail = compliance.ComplianceDetails.FirstOrDefault(cd => cd.Id == dto.Id) ?? new ComplianceDetail {};
+        GenericMapper.Map(dto, detail);
+
+        if (!compliance.ComplianceDetails.Any(cd => cd.Id == detail.Id))
+            compliance.ComplianceDetails.Add(detail);
+
+        await _patientRepository.UpdateAsync(patient);
+    }
+
+    public async Task<IEnumerable<ReminderDto>> GetRemindersAsync(string patientId)
+    {
+        var patient = await _patientRepository.GetByIdAsync(patientId);
+        return patient.Compliance.SelectMany(c => c.Reminders).Select(r => GenericMapper.Map<Reminder, ReminderDto>(r));
+    }
+
+    public async Task AddOrUpdateReminderAsync(string patientId, ReminderDto dto)
+    {
+        var patient = await _patientRepository.GetByIdAsync(patientId);
+        var reminder = patient.Compliance.SelectMany(c => c.Reminders).FirstOrDefault(r => r.Id == dto.Id) ?? new Reminder { };
+
+        GenericMapper.Map(dto, reminder);
+
+        if (!patient.Compliance.Any(c => c.Reminders.Contains(reminder)))
+            patient.Compliance.First().Reminders.Add(reminder); // Adding to the first compliance for simplicity
+
+        await _patientRepository.UpdateAsync(patient);
+    }
+
+    public async Task DeleteReminderAsync(string patientId, string reminderId)
+    {
+        var patient = await _patientRepository.GetByIdAsync(patientId);
+
+        foreach (var compliance in patient.Compliance)
+            compliance.Reminders.RemoveAll(r => r.Id == reminderId);
+
+        await _patientRepository.UpdateAsync(patient);
+    }
+
 }

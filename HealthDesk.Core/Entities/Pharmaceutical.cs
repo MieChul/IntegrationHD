@@ -14,9 +14,6 @@ public class Pharmaceutical : BaseEntity
 
     [BsonElement("surveys")]
     public List<Survey> Surveys { get; set; } = new();
-
-    [BsonElement("shared_surveys")]
-    public List<SharedSurvey> SharedSurveys { get; set; } = new(); // Added to support shared surveys
 }
 
 public class BrandLibrary : BaseEntity
@@ -51,6 +48,9 @@ public class Survey : BaseEntity
 
     [BsonElement("questions")]
     public List<Question> Questions { get; set; } = new();
+
+    [BsonElement("shared_with")]
+    public List<string> SharedWith { get; set; }
 }
 
 public class Question : BaseEntity
@@ -74,16 +74,3 @@ public class Question : BaseEntity
     public string Validations { get; set; } // E.g., "Required", "MaxLength:100", etc.
 }
 
-public class SharedSurvey : BaseEntity
-{
-    [BsonElement("survey_id")]
-    [BsonRepresentation(BsonType.ObjectId)]
-    public string SurveyId { get; set; } // Reference from Survey
-
-    [BsonElement("physician_id")]
-    [BsonRepresentation(BsonType.ObjectId)]
-    public string PhysicianId { get; set; } // Reference from Physician
-
-    [BsonElement("is_shared")]
-    public bool IsShared { get; set; } // Indicates if the survey is shared
-}

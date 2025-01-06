@@ -106,8 +106,7 @@ public class UserService : IUserService
                 {
                     UserId = user.Id,
                     BrandLibrary = new List<BrandLibrary>(),
-                    Surveys = new List<Survey>(),
-                    SharedSurveys = new List<SharedSurvey>()
+                    Surveys = new List<Survey>()
                 };
                 await _pharmaceuticalRepository.AddAsync(pharmaceutical);
                 roleId = pharmaceutical.Id;

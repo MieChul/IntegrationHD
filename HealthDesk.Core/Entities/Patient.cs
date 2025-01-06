@@ -249,9 +249,6 @@ public class Compliance : BaseEntity
     [BsonElement("frequency")]
     public string Frequency { get; set; }
 
-    [BsonElement("compliance_percentage")]
-    public double CompliancePercentage { get; set; }
-
     [BsonElement("pills_count")]
     public int PillsCount { get; set; }
 
@@ -276,17 +273,24 @@ public class ComplianceDetail : BaseEntity
 
 public class Reminder : BaseEntity
 {
-    [BsonElement("frequency")]
-    public string Frequency { get; set; }
 
-    [BsonElement("times_of_day")]
+    [BsonElement("frequency_time")]
     public List<string> TimesOfDay { get; set; }
 
     [BsonElement("days")]
-    public List<string> Days { get; set; }
+    public List<FrequencyDays> Days { get; set; }
 
     [BsonElement("instruction")]
     public string Instruction { get; set; }
+}
+
+public class FrequencyDays : BaseEntity
+{
+    public DateTime? FromDate { get; set; }
+    public DateTime? ToDate { get; set; }
+
+    public int FrequencyDayTypeKey { get; set; }
+    public List<string> WeekDaysSelected { get; set; }
 }
 
 public class PatientInfo : BaseEntity

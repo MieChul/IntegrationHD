@@ -14,7 +14,7 @@ public class PharmaceuticalService : IPharmaceuticalService
         _messageService = messageService;
     }
 
-   public async Task<IEnumerable<BrandLibraryDto>> GetAllBrandLibrariesAsync(string pharmaceuticalId)
+    public async Task<IEnumerable<BrandLibraryDto>> GetAllBrandLibrariesAsync(string pharmaceuticalId)
     {
         var pharmaceutical = await GetPharmaceuticalByIdAsync(pharmaceuticalId);
         return pharmaceutical.BrandLibrary.Select(bl => GenericMapper.Map<BrandLibrary, BrandLibraryDto>(bl));
@@ -64,5 +64,53 @@ public class PharmaceuticalService : IPharmaceuticalService
             throw new ArgumentException("Pharmaceutical not found.");
 
         return pharmaceutical;
+    }
+    public async Task<IEnumerable<SurveyDto>> GetSurveysAsync(string pharmaId)
+    {
+        var pharmaceutical = await _pharmaceuticalRepository.GetByIdAsync(pharmaId);
+        return pharmaceutical.Surveys.Select(s => GenericMapper.Map<Survey, SurveyDto>(s));
+    }
+
+    public async Task AddOrUpdateSurveyAsync(string pharmaId, SurveyDto dto)
+    {
+        var pharmaceutical = await _pharmaceuticalRepository.GetByIdAsync(pharmaId);
+        var survey = pharmaceutical.Surveys.FirstOrDefault(s => s.Id == dto.Id) ?? new Survey { };
+
+        GenericMapper.Map(dto, survey);
+
+        if (!pharmaceutical.Surveys.Any(s => s.Id == survey.Id))
+            pharmaceutical.Surveys.Add(survey);
+
+        await _pharmaceuticalRepository.UpdateAsync(pharmaceutical);
+    }
+
+    public async Task DeleteSurveyAsync(string pharmaId, string surveyId)
+    {
+        var pharmaceutical = await _pharmaceuticalRepository.GetByIdAsync(pharmaId);
+        pharmaceutical.Surveys.RemoveAll(s => s.Id == surveyId);
+        await _pharmaceuticalRepository.UpdateAsync(pharmaceutical);
+    }
+
+    public async Task<List<string>> GetSharedWithAsync(string pharmaId, string surveyId)
+    {
+        var pharmaceutical = await _pharmaceuticalRepository.GetByIdAsync(pharmaId);
+        var survey = pharmaceutical.Surveys.FirstOrDefault(s => s.Id == surveyId);
+
+        if (survey == null)
+            throw new ArgumentException("Survey not found.");
+
+        return survey.SharedWith;
+    }
+
+    public async Task AddSharedWithAsync(string pharmaId, string surveyId, List<string> sharedWith)
+    {
+        var pharmaceutical = await _pharmaceuticalRepository.GetByIdAsync(pharmaId);
+        var survey = pharmaceutical.Surveys.FirstOrDefault(s => s.Id == surveyId);
+
+        if (survey == null)
+            throw new ArgumentException("Survey not found.");
+
+        survey.SharedWith = sharedWith;
+        await _pharmaceuticalRepository.UpdateAsync(pharmaceutical);
     }
 }

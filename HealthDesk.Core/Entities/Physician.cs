@@ -157,4 +157,5 @@ public class MedicalCase : BaseEntity
 
     [BsonElement("case_summary")]
     public string CaseSummary { get; set; }
+    public int LikesCount { get; set; } = 0;
 }

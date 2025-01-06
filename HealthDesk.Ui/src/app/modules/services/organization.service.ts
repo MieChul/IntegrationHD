@@ -70,7 +70,7 @@ export class OrganizationService {
   deleteService(id: string, serviceId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}/services/${serviceId}`);
   }
-  
+
   getAllBrandLibraries(pharmaceuticalId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${pharmaceuticalId}/brand-library`);
   }
@@ -82,7 +82,27 @@ export class OrganizationService {
   deleteBrandLibrary(pharmaceuticalId: string, brandLibraryId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${pharmaceuticalId}/brand-library/${brandLibraryId}`);
   }
-  
+
+  getSurveysmain(pharmaId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${pharmaId}/surveys`);
+  }
+
+  saveSurveymain(pharmaId: string, survey: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${pharmaId}/surveys`, survey);
+  }
+
+  deleteSurveymain(pharmaId: string, surveyId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${pharmaId}/surveys/${surveyId}`);
+  }
+
+  getSharedWith(pharmaId: string, surveyId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${pharmaId}/surveys/${surveyId}/shared-with`);
+  }
+
+  addSharedWith(pharmaId: string, surveyId: string, sharedWith: string[]): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${pharmaId}/surveys/${surveyId}/shared-with`, sharedWith);
+  }
+
   async initDB() {
     this.db = await openDB('surveyDB', 1, {
       upgrade(db) {

@@ -93,3 +93,49 @@ public class PatientInfoDto
     public string Occupation { get; set; }
     public string Lifestyle { get; set; }
 }
+
+public class PatientComplianceDto
+{
+    public string Id { get; set; }
+    public string DosageForm { get; set; }
+    public string DrugName { get; set; }
+    public string Strength { get; set; }
+    public string Frequency { get; set; }
+    public double CompliancePercentage { get; set; }
+    public int PillsCount { get; set; }
+    public List<ComplianceDetailDto> ComplianceDetails { get; set; } = new();
+    public List<ReminderDto> Reminders { get; set; } = new();
+}
+
+public class FrequencyDaysDto
+{
+    public DateTime? FromDate { get; set; }
+    public DateTime? ToDate { get; set; }
+    public int FrequencyDayTypeKey { get; set; }
+    public List<string> WeekDaysSelected { get; set; } = new();
+}
+
+public class ActivityDto
+{
+    public string Id { get; set; }
+    public DateTime Date { get; set; }
+    public List<MealDto> Meals { get; set; } = new();
+    public List<ExerciseDto> Exercises { get; set; } = new();
+}
+
+public class MealDto
+{
+    public string Id { get; set; }
+    public string MealType { get; set; }
+    public string Food { get; set; }
+    public string Quantity { get; set; }
+}
+
+public class ExerciseDto
+{
+    public string Id { get; set; }
+    public string Type { get; set; }
+    public int DurationMinutes { get; set; }
+}
+
+

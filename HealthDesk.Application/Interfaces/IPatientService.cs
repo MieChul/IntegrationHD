@@ -45,4 +45,19 @@ public interface IPatientService
     // 9. Patient Info
     Task<PatientInfoDto> GetPatientInfoAsync(string patientId);
     Task UpdatePatientInfoAsync(string patientId, PatientInfoDto dto);
+
+    Task<IEnumerable<PatientComplianceDto>> GetComplianceAsync(string patientId);
+    Task AddOrUpdateComplianceAsync(string patientId, PatientComplianceDto dto);
+    Task DeleteComplianceAsync(string patientId, string complianceId);
+    Task UpdatePillsCountAsync(string patientId, string complianceId, int count);
+    Task<double> GetCompliancePercentageAsync(string patientId);
+
+    Task<IEnumerable<ActivityDto>> GetActivitiesAsync(string patientId);
+    Task AddOrUpdateActivityAsync(string patientId, ActivityDto dto);
+    Task DeleteActivityAsync(string patientId, string activityId);
+    Task<IEnumerable<ComplianceDetailDto>> GetComplianceDetailsAsync(string patientId, string complianceId);
+    Task AddOrUpdateComplianceDetailAsync(string patientId, string complianceId, ComplianceDetailDto dto);
+    Task<IEnumerable<ReminderDto>> GetRemindersAsync(string patientId);
+    Task AddOrUpdateReminderAsync(string patientId, ReminderDto dto);
+    Task DeleteReminderAsync(string patientId, string reminderId);
 }

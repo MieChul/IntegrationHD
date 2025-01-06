@@ -1,4 +1,5 @@
 using HealthDesk.Application;
+using HealthDesk.Application.DTO;
 using HealthDesk.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,9 +9,9 @@ namespace HealthDesk.API.Controllers
     [Route("api/[controller]")]
     public class HospitalController : ControllerBase
     {
-        private IAccountService _accountService;
-        private IPhysicianService _physicianService;
-        private IHospitalService _hospitalService;
+        private readonly IAccountService _accountService;
+        private readonly IPhysicianService _physicianService;
+        private readonly IHospitalService _hospitalService;
 
         public HospitalController(IAccountService accountService, IPhysicianService physicianService, IHospitalService hospitalService)
         {
@@ -18,20 +19,27 @@ namespace HealthDesk.API.Controllers
             _physicianService = physicianService;
             _hospitalService = hospitalService;
         }
+
         // 1. Get all physicians for a hospital
         [HttpGet("{userId}/physicians")]
-        public async Task<IActionResult> GetAllPhysicians(string userId) =>
-            Ok(await _hospitalService.GetAllPhysiciansAsync(userId));
+        public async Task<IActionResult> GetAllPhysicians(string userId)
+        {
+            var physicians = await _hospitalService.GetAllPhysiciansAsync(userId);
+            return Ok(new { Success = true, Message = "Physicians retrieved successfully.", Data = physicians });
+        }
 
         // 2. Add a physician to a hospital
         [HttpPost("{userId}/physicians")]
         public async Task<IActionResult> AddPhysician(string userId, [FromBody] PhysicianDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(new { Success = false, Message = "Invalid input.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+
             if (string.IsNullOrEmpty(dto.Id))
-                return BadRequest("Physician ID is required.");
+                return BadRequest(new { Success = false, Message = "Physician ID is required." });
 
             await _hospitalService.AddPhysicianAsync(userId, dto.Id);
-            return Ok("Physician added successfully.");
+            return Ok(new { Success = true, Message = "Physician added successfully." });
         }
 
         // 3. Delete a physician from a hospital
@@ -39,23 +47,26 @@ namespace HealthDesk.API.Controllers
         public async Task<IActionResult> DeletePhysician(string userId, string physicianId)
         {
             await _hospitalService.DeletePhysicianAsync(userId, physicianId);
-            return Ok("Physician deleted successfully.");
+            return Ok(new { Success = true, Message = "Physician deleted successfully." });
         }
 
         // 4. Get all services for a hospital
         [HttpGet("{userId}/services")]
-        public async Task<IActionResult> GetAllServices(string userId) =>
-            Ok(await _hospitalService.GetAllServicesAsync(userId));
+        public async Task<IActionResult> GetAllServices(string userId)
+        {
+            var services = await _hospitalService.GetAllServicesAsync(userId);
+            return Ok(new { Success = true, Message = "Services retrieved successfully.", Data = services });
+        }
 
         // 5. Add or update a service
         [HttpPost("{userId}/services")]
         public async Task<IActionResult> SaveService(string userId, [FromBody] HospitalServiceDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new { Success = false, Message = "Invalid input.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
 
             await _hospitalService.SaveServiceAsync(userId, dto);
-            return Ok("Service saved successfully.");
+            return Ok(new { Success = true, Message = "Service saved successfully." });
         }
 
         // 6. Delete a service
@@ -63,7 +74,7 @@ namespace HealthDesk.API.Controllers
         public async Task<IActionResult> DeleteService(string userId, string serviceId)
         {
             await _hospitalService.DeleteServiceAsync(userId, serviceId);
-            return Ok("Service deleted successfully.");
+            return Ok(new { Success = true, Message = "Service deleted successfully." });
         }
     }
 }
