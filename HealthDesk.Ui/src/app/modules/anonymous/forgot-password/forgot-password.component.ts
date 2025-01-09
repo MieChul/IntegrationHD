@@ -3,7 +3,6 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationService } from '../../../shared/services/notification.service';
-import { LoaderService } from '../../../shared/services/loader.service';
 import { UserService } from '../../services/user.service';
 
 @Component({
@@ -22,8 +21,7 @@ export class ForgotPasswordComponent implements OnInit {
     private route: ActivatedRoute,
     private userService: UserService,
     private router: Router,
-    private notification: NotificationService,
-    private loader: LoaderService
+    private notification: NotificationService
   ) { }
 
   ngOnInit(): void {
@@ -45,21 +43,18 @@ export class ForgotPasswordComponent implements OnInit {
   }
 
   onSubmit() {
-    this.loader.show();
     if (this.forgotPasswordForm.valid && this.isPasswordMatch()) {
       // Submit the new password
       const newPassword = this.forgotPasswordForm.get('password')?.value;
 
       this.userService.resetPassword(this.contactInfo, newPassword, this.isEmail).subscribe({
         next: () => {
-          this.loader.hide();
           this.notification.showSuccess('Password successfully reset! Redirecting to login...');
           setTimeout(() => {
             this.router.navigate(['/login']);
           }, 3000);
         },
         error: (err) => {
-          this.loader.hide();
           this.notification.showError(err.error.message || 'Password reset failed. Please try again.');
         }
       });
@@ -68,8 +63,6 @@ export class ForgotPasswordComponent implements OnInit {
 
   isPasswordMatch(): boolean {
     var match = this.forgotPasswordForm.get('password')?.value === this.forgotPasswordForm.get('confirmPassword')?.value;
-    if(!match)
-      this.loader.hide();
     return match;
   }
 }

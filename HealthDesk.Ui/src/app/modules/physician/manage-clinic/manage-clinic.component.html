@@ -27,7 +27,7 @@
       <thead>
         <tr>
           <th (click)="sortTable('name')">Name</th>
-          <th (click)="sortTable('address')">Address</th>
+          <th>Address</th>
           <th (click)="sortTable('timing')">Timing</th>
           <th (click)="sortTable('days')">Days</th>
           <th (click)="sortTable('isActive')">Is Active</th>
@@ -37,7 +37,14 @@
       <tbody>
         <tr *ngFor="let clinic of filteredClinics">
           <td>{{ clinic.name }}</td>
-          <td>{{ clinic.fullAddress }}</td>
+          <td> {{
+            (clinic.flatNumber ? clinic.flatNumber + ', ' : '') +
+            (clinic.building ? clinic.building + ', ' : '') +
+            (clinic.area ? clinic.area + ', ' : '') +
+            (clinic.city ? clinic.city + ', ' : '') +
+            (clinic.state ? clinic.state + ', ' : '') +
+            (clinic.pinCode ? clinic.pinCode : '')
+          }}</td>
           <td>{{ clinic.timing }}</td>
           <td>{{ clinic.days }}</td>
           <td>
@@ -82,9 +89,9 @@
               <div class="col-md-6">
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>House/Flat Number</mat-label>
-                  <input matInput formControlName="houseNumber" maxlength="50" />
-                  <mat-error *ngIf="clinicForm.get('houseNumber')?.hasError('maxlength')">Max 50 characters allowed</mat-error>
-                  <mat-error *ngIf="clinicForm.get('houseNumber')?.hasError('pattern')">Only alphanumeric characters allowed</mat-error>
+                  <input matInput formControlName="flatNumber" maxlength="50" />
+                  <mat-error *ngIf="clinicForm.get('flatNumber')?.hasError('maxlength')">Max 50 characters allowed</mat-error>
+                  <mat-error *ngIf="clinicForm.get('flatNumber')?.hasError('pattern')">Only alphanumeric characters allowed</mat-error>
                 </mat-form-field>
               </div>
               <!-- Building/Society -->
@@ -110,9 +117,9 @@
               <div class="col-md-6">
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>Pin Code</mat-label>
-                  <input matInput formControlName="pincode" maxlength="6" required />
-                  <mat-error *ngIf="submitted && clinicForm.get('pincode')?.hasError('required')">Pin Code is required</mat-error>
-                  <mat-error *ngIf="clinicForm.get('pincode')?.hasError('pattern')">Invalid Pin Code</mat-error>
+                  <input matInput formControlName="pinCode" maxlength="6" required />
+                  <mat-error *ngIf="submitted && clinicForm.get('pinCode')?.hasError('required')">Pin Code is required</mat-error>
+                  <mat-error *ngIf="clinicForm.get('pinCode')?.hasError('pattern')">Invalid Pin Code</mat-error>
                 </mat-form-field>
               </div>
               <!-- State -->
@@ -180,6 +187,11 @@
                     At least one day must be selected
                   </mat-error>
                 </div>
+              </div>
+              <div class="col-md-6">
+                <mat-slide-toggle formControlName="isActive" color="primary">
+                  Is Active
+                </mat-slide-toggle>
               </div>
             </div>
           </form>

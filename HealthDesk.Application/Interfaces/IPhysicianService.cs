@@ -26,4 +26,9 @@ public interface IPhysicianService
 
     Task IncrementLikesAsync(string physicianId, string caseId);
 
+    Task<dynamic> GetUserDetailsAsync(string id);
+
+    Task<DesignPrescriptionDto> LoadPrescriptionAsync(string physicianId, string prescriptionId);
+    Task<int> GetDesignPrescriptionCountAsync(string physicianId);
+
 }

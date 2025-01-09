@@ -7,7 +7,6 @@ import { BehaviorSubject, debounceTime, first, map, startWith } from 'rxjs';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { Country, State, City } from 'country-state-city';
 import { AuthService } from '../../../shared/services/auth.service';
-import { LoaderService } from '../../../shared/services/loader.service';
 
 @Component({
   selector: 'app-info',
@@ -60,8 +59,7 @@ export class InfoComponent {
     private router: Router,
     private accountService: AccountService,
     private notificationService: NotificationService,
-    private authService: AuthService,
-    private loaderService: LoaderService,
+    private authService: AuthService
   ) {
   }
 
@@ -69,7 +67,6 @@ export class InfoComponent {
   @ViewChild('fileInputClinic') fileInputClinic!: ElementRef;
 
   ngOnInit() {
-    this.loaderService.show();
     this.userData = this.accountService.getUserData().subscribe({
       next: (data) => {
         this.userData = data; // Assign the result to a variable
@@ -127,7 +124,6 @@ export class InfoComponent {
           .subscribe(this.filteredClinicCities);
       },
       error: (error) => {
-        this.loaderService.hide();
       }
     });
   }
@@ -276,7 +272,6 @@ export class InfoComponent {
 
     this.onStateChange(null);
     this.onClinicStateChange(null);
-    this.loaderService.hide();
   }
 
   ngAfterViewChecked() {
@@ -367,13 +362,11 @@ export class InfoComponent {
   }
 
   onSubmit() {
-    this.loaderService.show();
     this.submitted = true;
     this.errorsFound = false;
     this.updateErrors = false;
     //stop here if form is invalid
     if (this.form.invalid) {
-      this.loaderService.hide();
       this.errorsFound = true;
       if (this.user.role == 'physician') {
         this.getDocError();
@@ -389,7 +382,6 @@ export class InfoComponent {
 
     if (!this.form.value.noDocConsentProvided && this.user.role === 'physician') {
       if (!this.form.value.graduation.document) {
-        this.loaderService.hide();
         this.gDocError = true;
         this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
         return;
@@ -400,7 +392,6 @@ export class InfoComponent {
 
     if (this.user.role === 'physician' || this.user.role === 'patient') {
       if (this.form.value.mobile1 === this.form.value.mobile2) {
-        this.loaderService.hide();
         this.mobileSameError = true;
         this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
         return;
@@ -409,7 +400,6 @@ export class InfoComponent {
         this.mobileSameError = false;
 
       if (this.form.value.email1 && this.form.value.email1 === this.form.value.email2) {
-        this.loaderService.hide();
         this.emailSameError = true;
         this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
         return;
@@ -422,7 +412,6 @@ export class InfoComponent {
       .pipe(first())
       .subscribe({
         next: () => {
-          this.loaderService.hide();
           this.notificationService.showSuccess('Application has been submitted.');
           if (this.userData.role !== 'physician') {
             this.userData.status = "Approved";
@@ -438,7 +427,6 @@ export class InfoComponent {
 
         },
         error: error => {
-          this.loaderService.hide();
           this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
           this.updateErrors = true;
         }
@@ -446,7 +434,6 @@ export class InfoComponent {
   }
 
   save() {
-    this.loaderService.show();
     this.errorsFound = false;
     this.updateErrors = false;
 
@@ -455,13 +442,11 @@ export class InfoComponent {
       .pipe(first())
       .subscribe({
         next: () => {
-          this.loaderService.hide();
           this.userData.status = this.user.status;
           this.notificationService.showSuccess('Application has been saved.');
           this.reload();
         },
         error: error => {
-          this.loaderService.hide();
           this.updateErrors = true;
           this.notificationService.showError('Something went wrong, Please try again after sometime.');
         }
@@ -496,13 +481,11 @@ export class InfoComponent {
   }
 
   upload(event: any, propName: string) {
-    this.loaderService.show();
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
   
     if (!file) {
       console.error("No file selected.");
-      this.loaderService.hide();
       return;
     }
   
@@ -521,7 +504,6 @@ export class InfoComponent {
     }
   
     if (!isValid) {
-      this.loaderService.hide();
       this.updateErrors = true;
   
       if (propName === 'profileImage') {
@@ -558,7 +540,6 @@ export class InfoComponent {
       .pipe(first())
       .subscribe({
         next: (response: any) => {
-          this.loaderService.hide();
           switch (propName) {
             case 'graduation':
               this.form.patchValue({ graduation: { document: response.fileName } });
@@ -586,7 +567,6 @@ export class InfoComponent {
           }
         },
         error: (error) => {
-          this.loaderService.hide();
           this.updateErrors = true;
           this.notificationService.showError(`Something wrong with the file. Please try again or use a different file format.`);
         }
@@ -602,7 +582,6 @@ export class InfoComponent {
     var has_error = false;
 
     if (!this.form.value.graduation.year) {
-      this.loaderService.hide();
       this.gYearError = true;
       this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
       has_error = true;
@@ -611,7 +590,6 @@ export class InfoComponent {
       this.gYearError = false;
 
     if (!this.form.value.graduation.institute) {
-      this.loaderService.hide();
       this.gInstituteError = true;
       this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
       has_error = true;
@@ -620,7 +598,6 @@ export class InfoComponent {
       this.gInstituteError = false;
 
     if (!this.form.value.medicalRegistration.certificateNumber) {
-      this.loaderService.hide();
       this.certificateNumberError = true;
       this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
       has_error = true;
@@ -629,7 +606,6 @@ export class InfoComponent {
       this.certificateNumberError = false;
 
     if (!this.form.value.medicalRegistration.councilName) {
-      this.loaderService.hide();
       this.councilError = true;
       this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
       has_error = true;
@@ -638,7 +614,6 @@ export class InfoComponent {
       this.councilError = false;
 
     if (!this.form.value.medicalRegistration.document) {
-      this.loaderService.hide();
       this.docError = true;
       this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
       has_error = true;

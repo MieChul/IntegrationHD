@@ -3,7 +3,6 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserService } from '../../services/user.service';
-import { LoaderService } from '../../../shared/services/loader.service';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { getRoleId } from '../../../shared/enum/role.enum';
 
@@ -23,7 +22,6 @@ export class RegisterComponent implements OnInit {
     private fb: FormBuilder,
     private router: Router,
     private userService: UserService,
-    private loaderService: LoaderService,
     private notificationService: NotificationService,
     private route: ActivatedRoute
   ) { }
@@ -59,7 +57,6 @@ export class RegisterComponent implements OnInit {
   // Submit the form
   onSubmit(): void {
     if (this.registerForm.valid && this.isPasswordMatch()) {
-      this.loaderService.show();
       var roleId = getRoleId(this.selectedRole)
       // Collect form data
       const userData = {
@@ -73,14 +70,12 @@ export class RegisterComponent implements OnInit {
       // Call register API
       this.userService.register(userData).subscribe({
         next: () => {
-          this.loaderService.hide();
           this.notificationService.showSuccess('Registration successful. Redirecting to login...');
           setTimeout(() => {
             this.router.navigate(['/login']);
           }, 3000); // Redirect to login after successful registration
         },
         error: (err) => {
-          this.loaderService.hide();
           if (err.error) {
             this.notificationService.showError(err.error);
           } else {

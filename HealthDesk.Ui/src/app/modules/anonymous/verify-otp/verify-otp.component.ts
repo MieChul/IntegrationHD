@@ -6,7 +6,6 @@ import { interval, Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { AuthStateService } from '../../../shared/guards/auth-state.service';
 import { NotificationService } from '../../../shared/services/notification.service';
-import { LoaderService } from '../../../shared/services/loader.service';
 import { OtpService } from '../../services/otp.service';
 
 @Component({
@@ -31,8 +30,7 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
     private otpService: OtpService,
     private authStateService: AuthStateService,
     private notificationService: NotificationService,
-    private route: ActivatedRoute,
-    private loader: LoaderService
+    private route: ActivatedRoute
   ) { }
 
   ngOnInit(): void {
@@ -64,7 +62,6 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
   }
 
   sendOtp() {
-    this.loader.show();
     this.isEmail = !(this.selectedRole === 'Physician' || this.selectedRole === 'Patient');
     if (this.verifyOtpForm.get('contact')?.value && this.captchaVerified) {
       this.otpService.sendOtp(this.verifyOtpForm.get('contact')?.value, this.isEmail).subscribe({
@@ -73,11 +70,8 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
           this.otpToken = response.otpToken;
           this.isOtpSent = true;
           this.startCountdown();
-          this.loader.hide();
         },
         error: (e) => {
-          this.loader.hide();
-          this.loader.hide();
           if (e.error)
             this.notificationService.showError(e.error);
           else
@@ -109,13 +103,11 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
   }
 
   verifyOtp() {
-    this.loader.show();
     const contact = this.verifyOtpForm.get('contact')?.value;
     const otp = this.otpControls.value.join(''); // Combine OTP input values
 
     this.otpService.verifyOtp(contact, otp, this.otpToken).subscribe({
       next: (response) => {
-        this.loader.hide();
         if (response.valid) {
           this.authStateService.setOtpVerified(true);
           this.router.navigate(['/register'], { queryParams: { role: this.selectedRole, contact: this.verifyOtpForm.get('contact')?.value, isEmail: this.isEmail } });
@@ -124,7 +116,6 @@ export class VerifyOtpComponent implements OnInit, OnDestroy {
         }
       },
       error: (e) => {
-        this.loader.hide();
         if (e.error)
           this.notificationService.showError(e.error);
         else

@@ -7,21 +7,12 @@
                         <div class="row mb-3">
                             <span>Upload Profile Image</span>
                             <div class="cursor-pointer mb-2" (click)="triggerFileUpload()">
-                                <img
-                                  [src]="form.get('profImage')?.value || '/assets/defaultProfile.jpg'"
-                                  class="rounded-circle img-fluid"
-                                  alt="Profile Image"
-                                  (error)="setDefaultImage()"
-                                  id="profImg"
-                                />
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  (change)="upload($event, 'profileImage')"
-                                  style="display: none"
-                                  #fileInput
-                                />
-                              </div>
+                                <img [src]="form.get('profImage')?.value || '/assets/defaultProfile.jpg'"
+                                    class="rounded-circle img-fluid" alt="Profile Image" (error)="setDefaultImage()"
+                                    id="profImg" />
+                                <input type="file" accept="image/*" (change)="upload($event, 'profileImage')"
+                                    style="display: none" #fileInput />
+                            </div>
                             <div class="form-floating"
                                 *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
                                 <input type="text" formControlName="displayName" class="form-control" id="floatingInput"
@@ -119,7 +110,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card bg-success text-center" *ngIf="userData.role !=='physician' && userData.isConfirm">
+                <div class="card bg-success text-center" *ngIf="userData.role !=='physician' && userData.status ==='Confirm'">
                     <div class="row">
                         <div class="col top-info"><i class="bi bi-exclamation-triangle-fill"></i> Please confirm the
                             details you had shared for previous roles to use application as {{userData.role}}.
@@ -358,7 +349,8 @@
                                                 </mat-option>
                                             </mat-select>
                                         </mat-form-field>
-                                        <div class="invalid-feedback d-block" *ngIf="submitted && f['city'].errors">City is
+                                        <div class="invalid-feedback d-block" *ngIf="submitted && f['city'].errors">City
+                                            is
                                             required
                                         </div>
                                     </div>
@@ -617,9 +609,11 @@
                                 <div *ngIf="user.role=='physician'" class="cursor-pointer col-sm-6"
                                     (click)="triggerFileUploadClinic()">
                                     <label>Hospital/Clinic Image</label>
-                                    <img class="rounded-circle-hosp img-fluid profileImage" id="hospImg" [src]="form.get('clinicImage')?.value || '/assets/defaultProfile.jpg'" (error)="setDefaultImage()">
+                                    <img class="rounded-circle-hosp img-fluid profileImage" id="hospImg"
+                                        [src]="form.get('clinicImage')?.value || '/assets/defaultProfile.jpg'"
+                                        (error)="setDefaultImage()">
                                     <input type="file" accept="image/*" (change)="upload($event, 'clinicImage')"
-                                    style="display: none" #fileInputClinic />
+                                        style="display: none" #fileInputClinic />
                                 </div>
                             </div>
                             <hr>
@@ -678,9 +672,10 @@
                                             </mat-option>
                                         </mat-select>
                                     </mat-form-field>
-                                    <div class="invalid-feedback d-block" *ngIf="submitted && f['clinicState'].errors">State is
+                                    <div class="invalid-feedback d-block" *ngIf="submitted && f['clinicState'].errors">
+                                        State is
                                         required
-                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="col">
@@ -699,9 +694,10 @@
                                         <mat-error *ngIf="submitted && f['clinicCity'].errors">City is
                                             required</mat-error>
                                     </mat-form-field>
-                                    <div class="invalid-feedback d-block"  *ngIf="submitted && f['clinicCity'].errors">City is
+                                    <div class="invalid-feedback d-block" *ngIf="submitted && f['clinicCity'].errors">
+                                        City is
                                         required
-                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <hr>
@@ -803,9 +799,11 @@
                             <div class="text-center">
                                 <button type="button" class="btn btn-outline-primary col-sm-2 m-1 text-center"
                                     (click)="save()">Save</button>
-                                <button *ngIf="!(user.status === 'Submitted') && !(user.status === 'Approved')"
+                                <button *ngIf="userData.status !=='Submitted' && userData.status !== 'Approved'"
                                     type="submit"
                                     class="btn btn-outline-success col-sm-2 m-1 text-center">Submit</button>
+                                <button *ngIf="userData.status ==='Confirm'" type=" submit"
+                                    class="btn btn-outline-success col-sm-2 m-1 text-center">Confirm</button>
                                 <button type="button" class="btn btn-outline-primary col-sm-2 m-1 text-center"
                                     (click)="reload()">Reload</button>
                             </div>

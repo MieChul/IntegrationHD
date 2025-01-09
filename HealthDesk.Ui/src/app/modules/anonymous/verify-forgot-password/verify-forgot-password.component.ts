@@ -5,7 +5,6 @@ import { Router } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
 import { switchMap, take } from 'rxjs/operators';
 import { AuthStateService } from '../../../shared/guards/auth-state.service';
-import { LoaderService } from '../../../shared/services/loader.service';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { OtpService } from '../../services/otp.service';
 import { UserService } from '../../services/user.service';
@@ -30,7 +29,6 @@ export class VerifyForgotPasswordComponent implements OnInit, OnDestroy {
     private router: Router,
     private otpService: OtpService,
     private authStateService: AuthStateService,
-    private loader: LoaderService,
     private notificationService: NotificationService,
     private userService: UserService
   ) { }
@@ -60,7 +58,6 @@ export class VerifyForgotPasswordComponent implements OnInit, OnDestroy {
 
   // Send OTP to the provided contact
   sendOtp() {
-    this.loader.show();
     var isEmail = this.verifyForm.get('email')?.value ? true : false;
     if (this.captchaVerified && (this.verifyForm.get('mobile')?.value || this.verifyForm.get('email')?.value)) {
       let contactInfo = ''
@@ -76,14 +73,12 @@ export class VerifyForgotPasswordComponent implements OnInit, OnDestroy {
           })
         ).subscribe({
           next: (otpResponse) => {
-            this.loader.hide();
             this.notificationService.showSuccess('OTP sent successfully');
             this.otpToken = otpResponse.otpToken; // Store OTP token for verification
             this.isOtpSent = true;
             this.startCountdown();
           },
           error: (error) => {
-            this.loader.hide();
             if (error.status === 404) {
               this.notificationService.showError('Not registered with app. Please Register');
             } else {
@@ -94,7 +89,6 @@ export class VerifyForgotPasswordComponent implements OnInit, OnDestroy {
         });
       
     } else {
-      this.loader.hide();
       this.notificationService.showError('Please verify the captcha and provide a valid contact.');
     }
   }
@@ -124,7 +118,6 @@ export class VerifyForgotPasswordComponent implements OnInit, OnDestroy {
 
   // Verify the OTP and redirect to forgot-password if successful
   verifyOtp() {
-    this.loader.show();
     var isEmail = this.verifyForm.get('email')?.value ? true : false;
     var contact = '';
     if (isEmail)
@@ -135,7 +128,6 @@ export class VerifyForgotPasswordComponent implements OnInit, OnDestroy {
 
     this.otpService.verifyOtp(contact, otp, this.otpToken).subscribe({
       next: (response) => {
-        this.loader.hide();
         if (response.valid) {
           this.authStateService.setOtpVerified(true); // Set OTP as verified
           this.router.navigate(['/forgot-password'], { queryParams: {contact: contact, isEmail: isEmail } });
@@ -145,7 +137,6 @@ export class VerifyForgotPasswordComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        this.loader.hide();
         console.error('OTP verification failed', error);
         this.notificationService.showError('OTP verification failed. Please try again.');
       }

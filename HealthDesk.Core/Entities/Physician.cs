@@ -49,22 +49,120 @@ public class Clinic : BaseEntity
     public string Timing { get; set; }
 
     [BsonElement("days")]
-    public string Days { get; set; }
+    public List<string> Days { get; set; }
 
     [BsonElement("is_active")]
     public bool IsActive { get; set; }
+
+    [BsonElement("is_default")]
+    public bool IsDefault { get; set; }
 }
 
-public class DesignPrescription: BaseEntity
+public class DesignPrescription : BaseEntity
 {
+    [BsonElement("template_id")]
+    public int TemplateId { get; set; }
     [BsonElement("header_url")]
     public string HeaderUrl { get; set; }
 
     [BsonElement("footer_url")]
     public string FooterUrl { get; set; }
 
+    [BsonElement("logo_url")]
+    public string LogoUrl { get; set; }
+
     [BsonElement("is_default")]
     public bool IsDefault { get; set; }
+    [BsonElement("template_name")]
+    public string TemplateName { get; set; }
+
+    [BsonElement("clinic_name_font_type")]
+    public string ClinicNameFontType { get; set; }
+
+    [BsonElement("clinic_name_font_size")]
+    public string ClinicNameFontSize { get; set; }
+
+    [BsonElement("clinic_name_font_color")]
+    public string ClinicNameFontColor { get; set; }
+
+    [BsonElement("clinic_address_font_type")]
+    public string ClinicAddressFontType { get; set; }
+
+    [BsonElement("clinic_address_font_size")]
+    public string ClinicAddressFontSize { get; set; }
+
+    [BsonElement("clinic_address_font_color")]
+    public string ClinicAddressFontColor { get; set; }
+
+    [BsonElement("clinic_phone_font_type")]
+    public string ClinicPhoneFontType { get; set; }
+
+    [BsonElement("clinic_phone_font_size")]
+    public string ClinicPhoneFontSize { get; set; }
+
+    [BsonElement("clinic_phone_font_color")]
+    public string ClinicPhoneFontColor { get; set; }
+
+    [BsonElement("clinic_timings_font_type")]
+    public string ClinicTimingsFontType { get; set; }
+
+    [BsonElement("clinic_timings_font_size")]
+    public string ClinicTimingsFontSize { get; set; }
+
+    [BsonElement("clinic_timings_font_color")]
+    public string ClinicTimingsFontColor { get; set; }
+
+    [BsonElement("physician_name_font_type")]
+    public string PhysicianNameFontType { get; set; }
+
+    [BsonElement("physician_name_font_size")]
+    public string PhysicianNameFontSize { get; set; }
+
+    [BsonElement("physician_name_font_color")]
+    public string PhysicianNameFontColor { get; set; }
+
+    [BsonElement("mrc_number_font_type")]
+    public string MrcNumberFontType { get; set; }
+
+    [BsonElement("mrc_number_font_size")]
+    public string MrcNumberFontSize { get; set; }
+
+    [BsonElement("mrc_number_font_color")]
+    public string MrcNumberFontColor { get; set; }
+
+    [BsonElement("qualification_font_type")]
+    public string QualificationFontType { get; set; }
+
+    [BsonElement("qualification_font_size")]
+    public string QualificationFontSize { get; set; }
+
+    [BsonElement("qualification_font_color")]
+    public string QualificationFontColor { get; set; }
+
+    [BsonElement("footer_text_font_type")]
+    public string FooterTextFontType { get; set; }
+
+    [BsonElement("footer_text_font_size")]
+    public string FooterTextFontSize { get; set; }
+
+    [BsonElement("footer_text_font_color")]
+    public string FooterTextFontColor { get; set; }
+    [BsonElement("physician_name")]
+    public string PhysicianName { get; set; }
+
+    [BsonElement("clinic_address")]
+    public string ClinicAddress { get; set; }
+
+    [BsonElement("clinic_phone")]
+    public string ClinicPhone { get; set; }
+
+    [BsonElement("clinic_timings")]
+    public string ClinicTimings { get; set; }
+
+    [BsonElement("footer_text")]
+    public string FooterText { get; set; }
+
+
 }
 
 public class PatientRecord : BaseEntity

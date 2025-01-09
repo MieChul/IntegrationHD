@@ -38,51 +38,69 @@ public class AccountController : ControllerBase
     [HttpPost("uploadFile")]
     public async Task<IActionResult> UploadFile([FromForm] IFormFile file, [FromForm] string id, [FromForm] string propName)
     {
+        if (file == null || file.Length == 0)
+            return BadRequest("Invalid or empty file.");
+
+        if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(propName))
+            return BadRequest("Invalid ID or property name.");
+
         string extension = Path.GetExtension(file.FileName);
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".pdf" };
+        if (!allowedExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+            return BadRequest("Invalid file type.");
+
         var filename = $"{propName}{extension}";
         var folderPath = Path.Combine("..", "HealthDesk.UI", "src", "assets", "documents", id);
 
-        // Ensure the folder exists
-        if (!Directory.Exists(folderPath))
+        try
         {
+            // Ensure the folder exists
             Directory.CreateDirectory(folderPath);
-        }
 
-        var filePath = Path.Combine(folderPath, filename);
+            var filePath = Path.Combine(folderPath, filename);
 
-        // Check if file already exists
-        if (System.IO.File.Exists(filePath))
+            // Delete existing file if needed
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
+
+            // Save the new file
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream);
+            }
+
+            var res = $@"assets/documents/{id}/{filename}";
+            var model = new UpdateRequestDto();
+
+            var propertyMap = new Dictionary<string, Action<string>>
         {
-            // Optionally log or handle the replacement
-            System.IO.File.Delete(filePath); // Delete existing file if needed
-        }
+            { "profileImage", value => model.ProfImage = value },
+            { "clinicImage", value => model.ClinicImage = value },
+            { "graduation", value => model.GDoc = value },
+            { "postGraduation", value => model.PDoc = value },
+            { "superSpecialization", value => model.SDoc = value },
+            { "additionalQualification", value => model.ADoc = value },
+            { "medicalRegistration", value => model.MDoc = value }
+        };
 
-        // Save the new file
-        using (var fileStream = new FileStream(filePath, FileMode.Create))
+            if (propertyMap.TryGetValue(propName, out var setter))
+            {
+                setter(res);
+            }
+            else
+            {
+                return BadRequest("Invalid property name.");
+            }
+
+            return Ok(new { fileName = res });
+        }
+        catch (Exception ex)
         {
-            await file.CopyToAsync(fileStream);
+            // Log the error (if logging mechanism exists)
+            return StatusCode(500, "An error occurred while uploading the file.");
         }
-
-        var res = $@"/assets/documents/{id}/{filename}";
-        var model = new UpdateRequestDto();
-
-        // Map the uploaded file path to the correct property
-        if (propName.Equals("profileImage", StringComparison.OrdinalIgnoreCase))
-            model.ProfImage = res;
-        else if (propName.Equals("clinicImage", StringComparison.OrdinalIgnoreCase))
-            model.ClinicImage = res;
-        else if (propName.Equals("graduation", StringComparison.OrdinalIgnoreCase))
-            model.GDoc = res;
-        else if (propName.Equals("postGraduation", StringComparison.OrdinalIgnoreCase))
-            model.PDoc = res;
-        else if (propName.Equals("superSpecialization", StringComparison.OrdinalIgnoreCase))
-            model.SDoc = res;
-        else if (propName.Equals("additionalQualification", StringComparison.OrdinalIgnoreCase))
-            model.ADoc = res;
-        else if (propName.Equals("medicalRegistration", StringComparison.OrdinalIgnoreCase))
-            model.MDoc = res;
-
-        return Ok(new { fileName = res });
     }
 
     [HttpPost("switch/{id}")]

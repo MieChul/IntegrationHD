@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LoaderService } from '../../../shared/services/loader.service';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { AuthService } from '../../../shared/services/auth.service';
 
@@ -18,7 +17,6 @@ export class LoginComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private loaderService: LoaderService,
     private router: Router,
     private authService: AuthService,
     private notificationService: NotificationService,
@@ -39,14 +37,12 @@ export class LoginComponent implements OnInit {
 
   onSubmit(): void {
     if (this.loginForm.valid) {
-      this.loaderService.show();
 
       const { username, password } = this.loginForm.value;
 
 
       this.authService.login(username, password).subscribe({
         next: (user) => {
-          this.loaderService.hide();
           if (user.role === 'admin')
             this.router.navigate([`/admin`]);
           else if (user.role !== 'physician' && user.role !== 'patient')
@@ -58,7 +54,6 @@ export class LoginComponent implements OnInit {
             this.router.navigate([`/${user.role}`]);
         },
         error: (err) => {
-          this.loaderService.hide();
           this.notificationService.showError('Incorrect username or password. Please try again.');
         }
       });

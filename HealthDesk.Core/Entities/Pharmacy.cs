@@ -5,9 +5,6 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace HealthDesk.Core;
 public class Pharmacy : BaseEntity
 {
-    [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
-    public string Id { get; set; }
 
     [BsonElement("user_id")]
     [BsonRepresentation(BsonType.ObjectId)]

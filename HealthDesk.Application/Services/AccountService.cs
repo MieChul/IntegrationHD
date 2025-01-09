@@ -69,7 +69,7 @@ public class AccountService : IAccountService
             {
                 if (r.Role.ToString().ToLower() == model.Role)
                 {
-                    r.Status = model.IsSave && (r.Status != "Submitted" || r.Status != "Approved") ? "Saved" : r.Role == Role.Physician ? "Submitted" : "Approved";
+                    r.Status = model.IsSave && r.Status != "Submitted" && r.Status != "Approved" ? "Saved" : r.Role == Role.Physician ? "Submitted" : "Approved";
                 }
             });
 
@@ -154,19 +154,34 @@ public class AccountService : IAccountService
 
 
             var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", user.Id);
-            if (physician != physician)
+            if (physician != null)
             {
-                var physicianClinic = new Clinic()
+                if (!physician.Clinics.Any())
                 {
-                    Name = model.ClinicName,
-                    FlatNumber = model.ClinicAddress1,
-                    Building = model.ClinicAddress2,
-                    Area = model.ClinicArea,
-                    City = model.ClinicCity,
-                    State = model.ClinicState,
-                    PinCode = model.ClinicPincode,
-                };
-                physician.Clinics.Add(physicianClinic);
+                    var physicianClinic = new Clinic()
+                    {
+                        Name = model.ClinicName,
+                        FlatNumber = model.ClinicAddress1,
+                        Building = model.ClinicAddress2,
+                        Area = model.ClinicArea,
+                        City = model.ClinicCity,
+                        State = model.ClinicState,
+                        PinCode = model.ClinicPincode,
+                        IsDefault = true
+                    };
+                    physician.Clinics.Add(physicianClinic);
+                }
+                else
+                {
+                    var physicianClinic = physician.Clinics.Where(c => c.IsDefault).FirstOrDefault();
+                    physicianClinic.Name = model.ClinicName;
+                    physicianClinic.FlatNumber = model.ClinicAddress1;
+                    physicianClinic.Building = model.ClinicAddress2;
+                    physicianClinic.Area = model.ClinicArea;
+                    physicianClinic.City = model.ClinicCity;
+                    physicianClinic.State = model.ClinicState;
+                    physicianClinic.PinCode = model.ClinicPincode;
+                }
                 await _physicianRepository.UpdateAsync(physician);
             }
 
@@ -191,7 +206,7 @@ public class AccountService : IAccountService
                 userEntity.Roles.Add(new UserRole { Role = (Role)Enum.Parse(typeof(Role), role, true), Status = "New" });
                 _userRepository.UpdateAsync(userEntity);
             }
-            return new { role = role, username = userEntity.Username, id = userEntity.Id, profImage = userEntity.ProfImage, status = "New", canswitch = userEntity.CanSwitch, dependentId = userEntity.DependentId, dependentName = userEntity.DependentName, hasDependent = userEntity.HasDependent };
+            return new { role = role, username = userEntity.Username, id = userEntity.Id, profImage = userEntity.ProfImage, status = "Confirm", canswitch = userEntity.CanSwitch, dependentId = userEntity.DependentId, dependentName = userEntity.DependentName, hasDependent = userEntity.HasDependent };
         }
 
         else

@@ -9,6 +9,6 @@
 </ng-container> -->
 
 <ng-container> 
-  <app-loader *ngIf="isLoading | async"></app-loader>
+  <app-loader *ngIf="isLoading$ | async"></app-loader>
   <router-outlet></router-outlet>
 </ng-container> 

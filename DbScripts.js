@@ -2,9 +2,18 @@
 // Select the database to use.
 use('HealthDeskDb');
 // Switch to the HealthDeskDb database
+// db.Users.updateOne(
+//     { 
+//         _id: ObjectId("677de5efad485d59dd0922fd"), 
+//         "user_roles.role": 4 // Match the specific role in the array
+//     }, 
+//     { 
+//         $set: { "user_roles.$.role": 3,  "Email": "admin@admin.com" } // Use $ to update the matched array element
+//     }
+// );
 
 // Fetch the Id of the Admin user (role: 3) from db.Users
-const adminUser = db.Users.findOne({ "roles.role": 3 }, { _id: 1 });
+const adminUser = "677de5efad485d59dd0922fd"
 if (!adminUser) {
     throw new Error("Admin user with role 3 not found in db.Users.");
 }

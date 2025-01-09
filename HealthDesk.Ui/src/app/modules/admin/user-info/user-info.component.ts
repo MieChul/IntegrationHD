@@ -6,7 +6,6 @@ import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AuthService } from '../../../shared/services/auth.service';
 import { AccountService } from '../../services/account.service';
 import { AdminService } from '../../services/admin.service';
-import { LoaderService } from '../../../shared/services/loader.service';
 
 @Component({ templateUrl: 'user-info.component.html' })
 export class UserInfoComponent implements OnInit {
@@ -30,16 +29,13 @@ export class UserInfoComponent implements OnInit {
     constructor(
         private router: Router,
         private accountService: AccountService,
-        private adminService: AdminService,
-        private loaderService: LoaderService,) { }
+        private adminService: AdminService) { }
 
     ngOnInit() {
-        this.loaderService.show();
         if (history.state.id) {
             this.accountService.getById(history.state.id)
                 .pipe(first())
                 .subscribe(x => {
-                    this.loaderService.hide();
                     this.user = x;
                     this.user.role = history.state.role;
                     this.gender = this.user.gender;
@@ -49,7 +45,6 @@ export class UserInfoComponent implements OnInit {
                 });
         }
         else {
-            this.loaderService.hide();
             this.router.navigateByUrl('/admin');
         }
 
@@ -95,12 +90,10 @@ export class UserInfoComponent implements OnInit {
     }
 
     onSubmit(value: string) {
-        this.loaderService.show();
         this.submitted = true;
         this.updateErrors = false;
 
         if (value == 'Rejected' && !this.comments) {
-            this.loaderService.hide();
             this.commentError = true;
             return;
         }
@@ -109,12 +102,10 @@ export class UserInfoComponent implements OnInit {
             .pipe(first())
             .subscribe({
                 next: () => {
-                    this.loaderService.hide();
                     this.router.navigateByUrl('/admin');
                     this.modalService.dismissAll();
                 },
                 error: error => {
-                    this.loaderService.hide();
                     this.updateErrors = true;
                     this.updateErrorsMessage = error;
                 }

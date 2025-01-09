@@ -11,20 +11,25 @@ export class PhysicianService {
 
   constructor(private http: HttpClient) {}
 
-  getClinics(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}`);
+  getClinics(physicianId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${physicianId}/clinics`);
+  }
+  
+  
+  addUpdateClinic(userId: string , clinic: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${userId}/clinics`, clinic);
   }
 
-  addClinic(clinic: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}`, clinic);
+  deleteClinic(physicianId: string, clinicId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${physicianId}/clinics/${clinicId}`);
   }
 
-  updateClinic(clinic: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${clinic.id}`, clinic);
+  loadPrescription(id: string, prescriptionId: string): Observable<any> {
+    const url = `${this.apiUrl}/physicians/${id}/prescriptions/${prescriptionId}`;
+    return this.http.get<any>(url);
   }
-
-  deleteClinic(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`);
+  getUserDetails(id: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${id}/user-details`);
   }
 
   getDesignPrescriptions(id: string): Observable<any[]> {
