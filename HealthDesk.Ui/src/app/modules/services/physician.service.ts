@@ -9,14 +9,14 @@ import { Observable } from 'rxjs';
 export class PhysicianService {
   private apiUrl = `${environment.apiUrl}/physician`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getClinics(physicianId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${physicianId}/clinics`);
   }
-  
-  
-  addUpdateClinic(userId: string , clinic: any): Observable<any> {
+
+
+  addUpdateClinic(userId: string, clinic: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/${userId}/clinics`, clinic);
   }
 
@@ -25,7 +25,7 @@ export class PhysicianService {
   }
 
   loadPrescription(id: string, prescriptionId: string): Observable<any> {
-    const url = `${this.apiUrl}/physicians/${id}/prescriptions/${prescriptionId}`;
+    const url = `${this.apiUrl}/${id}/design-prescriptions/${prescriptionId}`;
     return this.http.get<any>(url);
   }
   getUserDetails(id: string): Observable<any[]> {
@@ -44,6 +44,10 @@ export class PhysicianService {
     return this.http.delete<any>(`${this.apiUrl}/${id}/design-prescriptions/${prescriptionId}`);
   }
 
+  getPatientByMobile(physicianId: string, mobile: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${physicianId}/patients/by-mobile/${mobile}`);
+  }
+  
   getPatients(id: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${id}/patients`);
   }

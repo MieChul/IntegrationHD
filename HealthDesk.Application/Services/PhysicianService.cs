@@ -1,7 +1,9 @@
 
 using HealthDesk.Application.DTO;
 using HealthDesk.Core;
+using HealthDesk.Core.Enum;
 using HealthDesk.Infrastructure;
+using MongoDB.Bson;
 
 namespace HealthDesk.Application;
 public class PhysicianService : IPhysicianService
@@ -9,11 +11,16 @@ public class PhysicianService : IPhysicianService
     private readonly IPhysicianRepository _physicianRepository;
     private readonly IUserRepository _userRepository;
     private readonly IMessageService _messageService;
-    public PhysicianService(IPhysicianRepository physicianRepository, IMessageService messageService, IUserRepository userRepository)
+
+    private readonly IUserService _userService;
+
+    private readonly Random _random = new Random();
+    public PhysicianService(IPhysicianRepository physicianRepository, IMessageService messageService, IUserRepository userRepository, IUserService userService)
     {
         _physicianRepository = physicianRepository;
         _messageService = messageService;
         _userRepository = userRepository;
+        _userService = userService;
     }
 
     public async Task AddOrUpdateClinicAsync(string physicianId, PhysicianClinicDto clinicDto)
@@ -58,28 +65,47 @@ public class PhysicianService : IPhysicianService
 
         return physician.Clinics;
     }
-    public async Task<IEnumerable<DesignPrescriptionDto>> GetAllDesignPrescriptionsAsync(string physicianId)
+    public async Task<dynamic> GetAllDesignPrescriptionsAsync(string physicianId)
     {
-        var physician = await _physicianRepository.GetByIdAsync(physicianId);
-        return physician.DesignPrescriptions.Select(dp => GenericMapper.Map<DesignPrescription, DesignPrescriptionDto>(dp));
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
+        return physician.DesignPrescriptions.Select(dp => new { Id = dp.Id, Name = dp.TemplateName, Clinic = dp.ClinicName, IsDefault = dp.IsDefault });
     }
 
     public async Task DeleteDesignPrescriptionAsync(string physicianId, string prescriptionId)
     {
-        var physician = await _physicianRepository.GetByIdAsync(physicianId);
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
         physician.DesignPrescriptions.RemoveAll(dp => dp.Id == prescriptionId);
         await _physicianRepository.UpdateAsync(physician);
     }
 
     public async Task<IEnumerable<PatientRecordDto>> GetAllPatientsAsync(string physicianId)
     {
-        var physician = await _physicianRepository.GetByIdAsync(physicianId);
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
         return physician.Patients.Select(p => GenericMapper.Map<PatientRecord, PatientRecordDto>(p));
     }
 
     public async Task SavePatientAsync(string physicianId, PatientRecordDto dto)
     {
-        var physician = await _physicianRepository.GetByIdAsync(physicianId);
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
+        var existingUser = await GetPatientByMobileAsync(physicianId, dto.Mobile);
+        if (existingUser == null)
+        {
+            var user = new UserRegistrationDto
+            {
+                Username = dto.Name,
+                RoleId = 2,
+                Password = GenerateRandomString(),
+                Mobile = dto.Mobile
+            };
+            var id = await _userService.Register(user);
+            dto.UserId = id;
+            //_messageService.SendSms(dto.Mobile, "Hi, Welcome to HealthDesk. Your profile is created with Username: " + dto.Name + " and Password: " + user.Password);
+        }
+        else if (string.IsNullOrEmpty(dto.Id))
+        {
+            dto.UserId = existingUser.UserId;
+        }
+
         var patient = GenericMapper.Map<PatientRecordDto, PatientRecord>(dto);
 
         if (string.IsNullOrEmpty(dto.Id))
@@ -217,6 +243,7 @@ public class PhysicianService : IPhysicianService
         if (string.IsNullOrEmpty(dto.Id))
         {
             var newPrescription = GenericMapper.Map<DesignPrescriptionDto, DesignPrescription>(dto);
+            newPrescription.Id = ObjectId.GenerateNewId().ToString();
             physician.DesignPrescriptions.Add(newPrescription);
         }
         else
@@ -229,5 +256,34 @@ public class PhysicianService : IPhysicianService
         }
 
         await _physicianRepository.UpdateAsync(physician);
+    }
+
+    public async Task<dynamic> GetPatientByMobileAsync(string physicianId, string mobile)
+    {
+        // Retrieve user based on the mobile number
+        var user = await _userRepository.GetByDynamicPropertyAsync("Mobile", mobile);
+
+        // Check if the user has a Patient role
+        if (user != null && user.Roles.Any(r => r.Role == Role.Patient))
+        {
+            // Return patient details if found
+            return new
+            {
+                UserId = user.Id,
+                Name = $"{user.FirstName} {user.LastName}",
+                Gender = user.Gender,
+                DateOfBirth = user.BirthDate
+            };
+        }
+
+        // Return null if user does not exist or does not have the Patient role
+        return null;
+    }
+
+    private string GenerateRandomString(int length = 8)
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        return new string(Enumerable.Repeat(chars, length)
+                                    .Select(s => s[_random.Next(s.Length)]).ToArray());
     }
 }

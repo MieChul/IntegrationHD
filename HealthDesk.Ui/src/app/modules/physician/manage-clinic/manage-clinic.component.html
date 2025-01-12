@@ -8,12 +8,7 @@
       <div class="mb-2 me-3">
         <mat-form-field class="w-100">
           <mat-label>Search Clinics</mat-label>
-          <input
-            matInput
-            placeholder="Search by Name or Address"
-            [(ngModel)]="searchValue"
-            (input)="searchClinic()"
-          />
+          <input matInput placeholder="Search by Name or Address" [(ngModel)]="searchValue" (input)="searchClinic()" />
         </mat-form-field>
       </div>
     </div>
@@ -22,7 +17,11 @@
     </div>
   </div>
 
-  <div class="table-responsive">
+  <div *ngIf="filteredClinics.length === 0" class="alert alert-info">
+    No clinics created yet. Click "Add New Clinic" to get started.
+  </div>
+
+  <div *ngIf="filteredClinics.length > 0" class="table-responsive">
     <table class="table table-hover table-modern">
       <thead>
         <tr>
@@ -44,7 +43,7 @@
             (clinic.city ? clinic.city + ', ' : '') +
             (clinic.state ? clinic.state + ', ' : '') +
             (clinic.pinCode ? clinic.pinCode : '')
-          }}</td>
+            }}</td>
           <td>{{ clinic.timing }}</td>
           <td>{{ clinic.days }}</td>
           <td>
@@ -80,9 +79,11 @@
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>Clinic Name</mat-label>
                   <input matInput formControlName="name" maxlength="25" required />
-                  <mat-error *ngIf="submitted && clinicForm.get('name')?.hasError('required')">Name is required</mat-error>
+                  <mat-error *ngIf="submitted && clinicForm.get('name')?.hasError('required')">Name is
+                    required</mat-error>
                   <mat-error *ngIf="clinicForm.get('name')?.hasError('maxlength')">Max 25 characters allowed</mat-error>
-                  <mat-error *ngIf="clinicForm.get('name')?.hasError('pattern')">Only alphanumeric characters allowed</mat-error>
+                  <mat-error *ngIf="clinicForm.get('name')?.hasError('pattern')">Only alphanumeric characters
+                    allowed</mat-error>
                 </mat-form-field>
               </div>
               <!-- House/Flat Number -->
@@ -90,8 +91,10 @@
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>House/Flat Number</mat-label>
                   <input matInput formControlName="flatNumber" maxlength="50" />
-                  <mat-error *ngIf="clinicForm.get('flatNumber')?.hasError('maxlength')">Max 50 characters allowed</mat-error>
-                  <mat-error *ngIf="clinicForm.get('flatNumber')?.hasError('pattern')">Only alphanumeric characters allowed</mat-error>
+                  <mat-error *ngIf="clinicForm.get('flatNumber')?.hasError('maxlength')">Max 50 characters
+                    allowed</mat-error>
+                  <mat-error *ngIf="clinicForm.get('flatNumber')?.hasError('pattern')">Only alphanumeric characters
+                    allowed</mat-error>
                 </mat-form-field>
               </div>
               <!-- Building/Society -->
@@ -99,8 +102,10 @@
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>Building/Society</mat-label>
                   <input matInput formControlName="building" maxlength="50" />
-                  <mat-error *ngIf="clinicForm.get('building')?.hasError('maxlength')">Max 50 characters allowed</mat-error>
-                  <mat-error *ngIf="clinicForm.get('building')?.hasError('pattern')">Only alphanumeric characters allowed</mat-error>
+                  <mat-error *ngIf="clinicForm.get('building')?.hasError('maxlength')">Max 50 characters
+                    allowed</mat-error>
+                  <mat-error *ngIf="clinicForm.get('building')?.hasError('pattern')">Only alphanumeric characters
+                    allowed</mat-error>
                 </mat-form-field>
               </div>
               <!-- Area/Locality -->
@@ -108,9 +113,12 @@
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>Area/Locality</mat-label>
                   <input matInput formControlName="area" maxlength="100" required />
-                  <mat-error *ngIf="submitted && clinicForm.get('area')?.hasError('required')">Area is required</mat-error>
-                  <mat-error *ngIf="clinicForm.get('area')?.hasError('maxlength')">Max 100 characters allowed</mat-error>
-                  <mat-error *ngIf="clinicForm.get('area')?.hasError('pattern')">Only alphanumeric characters allowed</mat-error>
+                  <mat-error *ngIf="submitted && clinicForm.get('area')?.hasError('required')">Area is
+                    required</mat-error>
+                  <mat-error *ngIf="clinicForm.get('area')?.hasError('maxlength')">Max 100 characters
+                    allowed</mat-error>
+                  <mat-error *ngIf="clinicForm.get('area')?.hasError('pattern')">Only alphanumeric characters
+                    allowed</mat-error>
                 </mat-form-field>
               </div>
               <!-- Pin Code -->
@@ -118,7 +126,8 @@
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>Pin Code</mat-label>
                   <input matInput formControlName="pinCode" maxlength="6" required />
-                  <mat-error *ngIf="submitted && clinicForm.get('pinCode')?.hasError('required')">Pin Code is required</mat-error>
+                  <mat-error *ngIf="submitted && clinicForm.get('pinCode')?.hasError('required')">Pin Code is
+                    required</mat-error>
                   <mat-error *ngIf="clinicForm.get('pinCode')?.hasError('pattern')">Invalid Pin Code</mat-error>
                 </mat-form-field>
               </div>
@@ -126,18 +135,16 @@
               <div class="col-md-6">
                 <mat-form-field appearance="fill" class="full-width">
                   <mat-label>Select State</mat-label>
-                  <mat-select formControlName="state"
-                      (selectionChange)="onStateChange($event)">
-                      <mat-option>
-                          <ngx-mat-select-search [formControl]="stateFilterCtrl"
-                              placeholderLabel="Search state"></ngx-mat-select-search>
-                      </mat-option>
-                      <mat-option *ngFor="let state of filteredStates | async"
-                          [value]="state.isoCode">
-                          {{ state.name }}
-                      </mat-option>
+                  <mat-select formControlName="state" (selectionChange)="onStateChange($event)">
+                    <mat-option>
+                      <ngx-mat-select-search [formControl]="stateFilterCtrl"
+                        placeholderLabel="Search state"></ngx-mat-select-search>
+                    </mat-option>
+                    <mat-option *ngFor="let state of filteredStates | async" [value]="state.isoCode">
+                      {{ state.name }}
+                    </mat-option>
                   </mat-select>
-              </mat-form-field>
+                </mat-form-field>
               </div>
               <div class="col-md-6">
                 <mat-form-field appearance="fill" class="w-100">
@@ -145,35 +152,27 @@
                   <mat-select formControlName="city" disableOptionCentering>
                     <!-- Prevent dropdown from closing when clicking on the search box -->
                     <mat-option>
-                      <ngx-mat-select-search
-                        [formControl]="cityFilterCtrl"
-                        placeholderLabel="Search city"
-                        (click)="$event.stopPropagation()"
-                      ></ngx-mat-select-search>
+                      <ngx-mat-select-search [formControl]="cityFilterCtrl" placeholderLabel="Search city"
+                        (click)="$event.stopPropagation()"></ngx-mat-select-search>
                     </mat-option>
                     <mat-option *ngFor="let city of filteredCities | async" [value]="city.name">
                       {{ city.name }}
                     </mat-option>
                   </mat-select>
-                  <mat-error *ngIf="submitted && clinicForm.get('city')?.hasError('required')">City is required</mat-error>
+                  <mat-error *ngIf="submitted && clinicForm.get('city')?.hasError('required')">City is
+                    required</mat-error>
                 </mat-form-field>
               </div>
               <!-- Timing -->
               <div class="col-md-6">
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>Timing</mat-label>
-                  <input
-                    matInput
-                    [ngxMatTimepicker]="timePicker"
-                    formControlName="timing"
-                    placeholder="Select Timing"
-                  />
-                  <ngx-mat-timepicker-toggle
-                    [for]="timePicker"
-                    matSuffix
-                  ></ngx-mat-timepicker-toggle>
+                  <input matInput [ngxMatTimepicker]="timePicker" formControlName="timing"
+                    placeholder="Select Timing" />
+                  <ngx-mat-timepicker-toggle [for]="timePicker" matSuffix></ngx-mat-timepicker-toggle>
                   <ngx-mat-timepicker #timePicker></ngx-mat-timepicker>
-                  <mat-error *ngIf="submitted && clinicForm.get('timing')?.hasError('required')">Timing is required</mat-error>
+                  <mat-error *ngIf="submitted && clinicForm.get('timing')?.hasError('required')">Timing is
+                    required</mat-error>
                 </mat-form-field>
               </div>
               <!-- Days -->
@@ -205,4 +204,3 @@
       </div>
     </div>
   </div>
-  

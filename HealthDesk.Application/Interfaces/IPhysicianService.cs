@@ -8,7 +8,7 @@ public interface IPhysicianService
     Task<IEnumerable<Clinic>> GetClinicsAsync(string physicianId);
     Task AddOrUpdateClinicAsync(string physicianId, PhysicianClinicDto clinicDto);
     Task DeleteClinicAsync(string physicianId, string clinicId);
-    Task<IEnumerable<DesignPrescriptionDto>> GetAllDesignPrescriptionsAsync(string physicianId);
+    Task<dynamic> GetAllDesignPrescriptionsAsync(string physicianId);
     Task SaveDesignPrescriptionAsync(string physicianId, DesignPrescriptionDto dto);
     Task DeleteDesignPrescriptionAsync(string physicianId, string prescriptionId);
 
@@ -30,5 +30,5 @@ public interface IPhysicianService
 
     Task<DesignPrescriptionDto> LoadPrescriptionAsync(string physicianId, string prescriptionId);
     Task<int> GetDesignPrescriptionCountAsync(string physicianId);
-
+    Task<dynamic> GetPatientByMobileAsync(string id, string mobile);
 }

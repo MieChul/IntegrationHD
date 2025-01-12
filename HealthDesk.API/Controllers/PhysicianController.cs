@@ -59,44 +59,37 @@ namespace HealthDesk.API.Controllers
             if (string.IsNullOrEmpty(dto.TemplateName))
                 return BadRequest(new { Success = false, Message = "Template name is required." });
 
+
+
             try
             {
-                // Get the design prescription count for naming the images
                 var designCount = await _physicianService.GetDesignPrescriptionCountAsync(id);
+                if (string.IsNullOrEmpty(dto.Id) || designCount == 0)
+                    designCount++;
+                var directoryPath = Path.Combine("..", "HealthDesk.UI", "src", "assets", "documents", id, "prescription");
 
-                // Create directory structure if not exists
-                var directoryPath = Path.Combine("assets", "documents", id, "prescription");
-                if (!Directory.Exists(directoryPath))
-                {
-                    Directory.CreateDirectory(directoryPath);
-                }
+                Directory.CreateDirectory(directoryPath);
 
                 // Save Header Image
                 var headerFileName = $"header{designCount}.png";
-                var headerFilePath = Path.Combine(directoryPath, headerFileName);
                 if (!string.IsNullOrEmpty(dto.HeaderImage))
                 {
-                    SaveBase64ImageToFile(dto.HeaderImage, headerFilePath);
+                    dto.HeaderUrl = await CreateFile(directoryPath, headerFileName, dto.Id, dto.HeaderImage);
                 }
-                dto.HeaderUrl = $"/assets/documents/{id}/prescription/{headerFileName}";
 
                 // Save Footer Image
                 var footerFileName = $"footer{designCount}.png";
-                var footerFilePath = Path.Combine(directoryPath, footerFileName);
                 if (!string.IsNullOrEmpty(dto.FooterImage))
                 {
-                    SaveBase64ImageToFile(dto.FooterImage, footerFilePath);
+                    dto.FooterUrl = await CreateFile(directoryPath, footerFileName, dto.Id, dto.FooterImage);
                 }
-                dto.FooterUrl = $"/assets/documents/{id}/prescription/{footerFileName}";
 
                 // Save Logo Image
                 var logoFileName = $"logo_image{designCount}.png";
-                var logoFilePath = Path.Combine(directoryPath, logoFileName);
                 if (!string.IsNullOrEmpty(dto.LogoImage))
                 {
-                    SaveBase64ImageToFile(dto.LogoImage, logoFilePath);
+                    dto.LogoUrl = await CreateFile(directoryPath, logoFileName, dto.Id, dto.LogoImage);
                 }
-                dto.LogoUrl = $"/assets/documents/{id}/prescription/{logoFileName}";
 
                 // Save design prescription data (excluding images)
                 await _physicianService.SaveDesignPrescriptionAsync(id, dto);
@@ -109,10 +102,44 @@ namespace HealthDesk.API.Controllers
             }
         }
 
-        private void SaveBase64ImageToFile(string base64Image, string filePath)
+        private async Task<string> CreateFile(string folderPath, string filename, string id, string base64Image)
         {
-            var imageBytes = Convert.FromBase64String(base64Image.Split(",")[1]); // Assumes Base64 includes metadata
-            System.IO.File.WriteAllBytes(filePath, imageBytes);
+            // Construct the full file path
+            var filePath = Path.Combine(folderPath, filename);
+
+            try
+            {
+                // Validate and extract Base64 data
+                if (string.IsNullOrWhiteSpace(base64Image))
+                {
+                    throw new ArgumentException("Base64 image string is null or empty.");
+                }
+
+                var base64Data = base64Image.Contains(",")
+                    ? base64Image.Substring(base64Image.IndexOf(',') + 1)
+                    : base64Image;
+
+                // Convert Base64 string to byte array
+                byte[] imageBytes = Convert.FromBase64String(base64Data);
+
+                // Write the image bytes to the file
+                await System.IO.File.WriteAllBytesAsync(filePath, imageBytes);
+            }
+            catch (FormatException)
+            {
+                throw new Exception("Invalid Base64 string format.");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                throw new Exception("Access denied. Unable to write to the specified file path.");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Unexpected error while saving the image: {ex.Message}");
+            }
+
+            // Return the relative URL for the saved file
+            return $@"assets/documents/{id}/prescription/{filename}";
         }
 
         [HttpDelete("{id}/design-prescriptions/{prescriptionId}")]
@@ -219,6 +246,17 @@ namespace HealthDesk.API.Controllers
             {
                 return StatusCode(500, new { Success = false, Message = "An error occurred while loading the prescription.", Error = ex.Message });
             }
+        }
+
+        [HttpGet("{id}/patients/by-mobile/{mobile}")]
+        public async Task<IActionResult> GetPatientByMobile(string id, string mobile)
+        {
+            var patient = await _physicianService.GetPatientByMobileAsync(id, mobile);
+            if (patient == null)
+            {
+                return Ok(new { Success = false, Message = "Patient not found." });
+            }
+            return Ok(new { Success = true, Data = patient });
         }
     }
 }

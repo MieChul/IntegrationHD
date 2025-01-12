@@ -1,5 +1,6 @@
 
 using System.ComponentModel.DataAnnotations;
+using HealthDesk.Core;
 
 namespace HealthDesk.Application;
 public class PhysicianClinicDto
@@ -41,89 +42,88 @@ public class PhysicianClinicDto
 }
 
 
-public class DesignPrescriptionDto
+public class DesignPrescriptionDto : BaseEntity
 {
-    public string Id { get; set; }
-    public int TemplateId { get; set; }
+    public string? Id { get; set; }
+    public string TemplateId { get; set; }
 
     [Required(ErrorMessage = "Template Name is Required.")]
     [StringLength(25, ErrorMessage = "Name cannot exceed 25 characters.")]
     public string TemplateName { get; set; } // Required field
-    public string HeaderImage { get; set; } // Base64 encoded
-    public string FooterImage { get; set; } // Base64 encoded
-    public string HeaderUrl { get; set; }   // Mapped URL
-    public string FooterUrl { get; set; }   // Mapped URL
-    public bool IsDefault { get; set; }
+    public string? HeaderImage { get; set; } = string.Empty;// Base64 encoded
+    public string? FooterImage { get; set; } = string.Empty;// Base64 encoded
+    public string? HeaderUrl { get; set; } = string.Empty;  // Mapped URL
+    public string? FooterUrl { get; set; } = string.Empty; // Mapped URL
+    public bool IsDefault { get; set; } = false;
 
     [RegularExpression(@"^[a-zA-Z0-9.,' ]+$", ErrorMessage = "Physician Name can only contain alphanumeric characters, dots, commas, and apostrophes.")]
     [StringLength(25, ErrorMessage = "Physician Name cannot exceed 25 characters.")]
-    public string PhysicianName { get; set; }
+    public string? PhysicianName { get; set; } = string.Empty;
 
-    public string PhysicianNameFontType { get; set; }
-    public string PhysicianNameFontSize { get; set; }
-    public string PhysicianNameFontColor { get; set; }
+    public string? PhysicianNameFontType { get; set; } = string.Empty;
+    public string? PhysicianNameFontSize { get; set; } = string.Empty;
+    public string? PhysicianNameFontColor { get; set; } = string.Empty;
 
     [StringLength(100, ErrorMessage = "Address cannot exceed 100 characters.")]
     [Required(ErrorMessage = "Clinic Address is required.")]
-    public string ClinicAddress { get; set; }
+    public string? ClinicAddress { get; set; } = string.Empty;
 
-    public string ClinicAddressFontType { get; set; }
-    public string ClinicAddressFontSize { get; set; }
-    public string ClinicAddressFontColor { get; set; }
+    public string? ClinicAddressFontType { get; set; } = string.Empty;
+    public string? ClinicAddressFontSize { get; set; } = string.Empty;
+    public string? ClinicAddressFontColor { get; set; } = string.Empty;
 
-    public string ClinicName { get; set; }
-    public string ClinicNameFontType { get; set; }
-    public string ClinicNameFontSize { get; set; }
-    public string ClinicNameFontColor { get; set; }
+    public string? ClinicName { get; set; } = string.Empty;
+    public string? ClinicNameFontType { get; set; } = string.Empty;
+    public string? ClinicNameFontSize { get; set; } = string.Empty;
+    public string? ClinicNameFontColor { get; set; } = string.Empty;
 
     [StringLength(200, ErrorMessage = "Footer Text cannot exceed 200 characters.")]
-    public string FooterText { get; set; }
-    public string FooterTextFontType { get; set; }
-    public string FooterTextFontSize { get; set; }
-    public string FooterTextFontColor { get; set; }
+    public string? FooterText { get; set; } = string.Empty;
+    public string? FooterTextFontType { get; set; } = string.Empty;
+    public string? FooterTextFontSize { get; set; } = string.Empty;
+    public string? FooterTextFontColor { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Phone Number is required.")]
     [RegularExpression(@"^[6-9][0-9]{9}$", ErrorMessage = "Invalid Phone Number.")]
-    public string ClinicPhone { get; set; }
-    public string ClinicPhoneFontType { get; set; }
-    public string ClinicPhoneFontSize { get; set; }
-    public string ClinicPhoneFontColor { get; set; }
+    public string? ClinicPhone { get; set; } = string.Empty;
+    public string? ClinicPhoneFontType { get; set; } = string.Empty;
+    public string? ClinicPhoneFontSize { get; set; } = string.Empty;
+    public string? ClinicPhoneFontColor { get; set; } = string.Empty;
 
     [StringLength(50, ErrorMessage = "Timings cannot exceed 50 characters.")]
     [Required(ErrorMessage = "Clinic Timings are required.")]
-    public string ClinicTimings { get; set; }
-    public string ClinicTimingsFontType { get; set; }
-    public string ClinicTimingsFontSize { get; set; }
-    public string ClinicTimingsFontColor { get; set; }
-
+    public string? ClinicTimings { get; set; } = string.Empty;
+    public string? ClinicTimingsFontType { get; set; } = string.Empty;
+    public string? ClinicTimingsFontSize { get; set; } = string.Empty;
+    public string? ClinicTimingsFontColor { get; set; } = string.Empty;
     [Required(ErrorMessage = "MRC Number is required.")]
     [RegularExpression(@"^[a-zA-Z0-9]+$", ErrorMessage = "MRC Number can only contain alphanumeric characters.")]
-    public string MrcNumber { get; set; }
-    public string MrcNumberFontType { get; set; }
-    public string MrcNumberFontSize { get; set; }
-    public string MrcNumberFontColor { get; set; }
+    public string? MrcNumber { get; set; } = string.Empty;
+    public string? MrcNumberFontType { get; set; } = string.Empty;
+    public string? MrcNumberFontSize { get; set; } = string.Empty;
+    public string? MrcNumberFontColor { get; set; } = string.Empty;
 
     [RegularExpression(@"^[a-zA-Z0-9.,' ]+$", ErrorMessage = "Qualification can only contain alphanumeric characters, dots, commas, and apostrophes.")]
     [StringLength(50, ErrorMessage = "Qualification cannot exceed 50 characters.")]
-    public string Qualification { get; set; }
-    public string QualificationFontType { get; set; }
-    public string QualificationFontSize { get; set; }
-    public string QualificationFontColor { get; set; }
+    public string? Qualification { get; set; } = string.Empty;
+    public string? QualificationFontType { get; set; } = string.Empty;
+    public string? QualificationFontSize { get; set; } = string.Empty;
+    public string? QualificationFontColor { get; set; } = string.Empty;
 
-    public string LogoImage { get; set; }
-    public string LogoUrl { get; set; }
+    public string? LogoImage { get; set; } = string.Empty;
+    public string? LogoUrl { get; set; } = string.Empty;
 }
 
 public class PatientRecordDto
 {
-    public string Id { get; set; }
+    public string? Id { get; set; }
+    public string? UserId { get; set; }
     public string Name { get; set; }
     public string Gender { get; set; }
     public DateTime DateOfBirth { get; set; }
     public string Mobile { get; set; }
     public string ABHAID { get; set; }
     public string SecondaryId { get; set; }
-    public string PatientReferenceId { get; set; }
 }
 
 public class PrescriptionDto

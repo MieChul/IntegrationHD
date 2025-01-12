@@ -61,7 +61,7 @@ public class Clinic : BaseEntity
 public class DesignPrescription : BaseEntity
 {
     [BsonElement("template_id")]
-    public int TemplateId { get; set; }
+    public string TemplateId { get; set; }
     [BsonElement("header_url")]
     public string HeaderUrl { get; set; }
 
@@ -161,12 +161,16 @@ public class DesignPrescription : BaseEntity
 
     [BsonElement("footer_text")]
     public string FooterText { get; set; }
-
-
+    [BsonElement("clinic_name")]
+    public string ClinicName { get; set; }
+    [BsonElement("qualification")]
+    public string Qualification { get; set; }
 }
 
 public class PatientRecord : BaseEntity
 {
+     [BsonElement("user_id")]
+    public string UserId { get; set; }
     [BsonElement("name")]
     public string Name { get; set; }
 
@@ -184,9 +188,6 @@ public class PatientRecord : BaseEntity
 
     [BsonElement("secondary_id")]
     public string SecondaryId { get; set; }
-
-    [BsonElement("patient_reference_id")]
-    public string PatientReferenceId { get; set; }
 
     [BsonElement("prescriptions")]
     public List<Prescription> Prescriptions { get; set; } = new();
@@ -257,3 +258,4 @@ public class MedicalCase : BaseEntity
     public string CaseSummary { get; set; }
     public int LikesCount { get; set; } = 0;
 }
+

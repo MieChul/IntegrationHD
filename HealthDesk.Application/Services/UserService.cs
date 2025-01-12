@@ -159,7 +159,7 @@ public class UserService : IUserService
         // Step 4: Save the user with the updated roles
         await _userRepository.AddAsync(user);
 
-        return "User registered successfully and role-specific entry created.";
+        return user.Id;
     }
 
     public async Task<bool> ResetPasswordAsync(string contact, string newPassword, bool isEmail = false)

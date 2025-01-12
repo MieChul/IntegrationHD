@@ -58,7 +58,7 @@ export class CustomizePrescriptionComponent implements OnInit {
         }),
         tap((prescription) => {
           if (prescription) {
-            this.populateForm(prescription);
+            this.populateForm(prescription.data);
           }
         }),
         switchMap(() =>
@@ -85,6 +85,7 @@ export class CustomizePrescriptionComponent implements OnInit {
 
   initializeForm(): void {
     this.prescriptionForm = this.fb.group({
+      id: [''],
       templateId: 0,
       templateName: ['', Validators.required],
       clinicName: [''],
@@ -150,41 +151,45 @@ export class CustomizePrescriptionComponent implements OnInit {
   populateForm(prescription: any): void {
     if (!prescription) return;
 
+    if (prescription.logoUrl)
+      this.logoPreviewUrl = prescription.logoUrl;
+
     this.prescriptionForm.patchValue({
+      id: prescription.id,
       templateId: prescription.templateId,
       templateName: prescription.templateName,
       clinicName: prescription.clinicName,
       clinicNameFontType: prescription.clinicNameFontType,
       clinicNameFontSize: prescription.clinicNameFontSize,
-      clinicNameFontColor: this.parseColor(prescription.clinicNameFontColor),
+      clinicNameFontColor: prescription.clinicNameFontColor,
       clinicAddress: prescription.clinicAddress,
       clinicAddressFontType: prescription.clinicAddressFontType,
       clinicAddressFontSize: prescription.clinicAddressFontSize,
-      clinicAddressFontColor: this.parseColor(prescription.clinicAddressFontColor),
+      clinicAddressFontColor: prescription.clinicAddressFontColor,
       clinicPhone: prescription.clinicPhone,
       clinicPhoneFontType: prescription.clinicPhoneFontType,
       clinicPhoneFontSize: prescription.clinicPhoneFontSize,
-      clinicPhoneFontColor: this.parseColor(prescription.clinicPhoneFontColor),
+      clinicPhoneFontColor: prescription.clinicPhoneFontColor,
       physicianName: prescription.physicianName,
       physicianNameFontType: prescription.physicianNameFontType,
       physicianNameFontSize: prescription.physicianNameFontSize,
-      physicianNameFontColor: this.parseColor(prescription.physicianNameFontColor),
+      physicianNameFontColor: prescription.physicianNameFontColor,
       clinicTimings: prescription.clinicTimings,
       clinicTimingsFontType: prescription.clinicTimingsFontType,
       clinicTimingsFontSize: prescription.clinicTimingsFontSize,
-      clinicTimingsFontColor: this.parseColor(prescription.clinicTimingsFontColor),
+      clinicTimingsFontColor: prescription.clinicTimingsFontColor,
       mrcNumber: prescription.mrcNumber,
       mrcNumberFontType: prescription.mrcNumberFontType,
       mrcNumberFontSize: prescription.mrcNumberFontSize,
-      mrcNumberFontColor: this.parseColor(prescription.mrcNumberFontColor),
+      mrcNumberFontColor: prescription.mrcNumberFontColor,
       qualification: prescription.qualification,
       qualificationFontType: prescription.qualificationFontType,
       qualificationFontSize: prescription.qualificationFontSize,
-      qualificationFontColor: this.parseColor(prescription.qualificationFontColor),
+      qualificationFontColor: prescription.qualificationFontColor,
       footerText: prescription.footerText,
       footerTextFontType: prescription.footerTextFontType,
       footerTextFontSize: prescription.footerTextFontSize,
-      footerTextFontColor: this.parseColor(prescription.footerTextFontColor),
+      footerTextFontColor: prescription.footerTextFontColor,
       isDefault: prescription.isDefault,
       logoImage: [null],
       logoUrl: prescription.logoUrl,
@@ -847,7 +852,6 @@ export class CustomizePrescriptionComponent implements OnInit {
         .saveDesignPrescription(this.userData.id, designData)
         .subscribe({
           next: (response) => {
-            alert(response.Message);
             this.router.navigate(['/physician/design-prescription']);
           },
           error: (err) => console.error('Error saving design prescription:', err),
@@ -858,32 +862,8 @@ export class CustomizePrescriptionComponent implements OnInit {
   }
 
   private convertColorToHex(color: any): string {
-    if (!color || typeof color !== 'object') return '#000000'; // Default to black
+    if (typeof color !== 'object') return color; // Default to black
     const { r, g, b } = color;
     return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
-  }
-
-  parseColor(color: string): any {
-    if (color.startsWith('rgba')) {
-      const rgba = color
-        .replace(/rgba|\(|\)|\s/g, '')
-        .split(',')
-        .map(Number);
-      return {
-        r: rgba[0],
-        g: rgba[1],
-        b: rgba[2],
-        a: rgba[3],
-      };
-    } else if (color.startsWith('#')) {
-      const hex = color.replace('#', '');
-      return {
-        r: parseInt(hex.substring(0, 2), 16),
-        g: parseInt(hex.substring(2, 4), 16),
-        b: parseInt(hex.substring(4, 6), 16),
-        a: 1, // Assume full opacity for hex colors
-      };
-    }
-    return { r: 0, g: 0, b: 0, a: 1 }; // Default to black
   }
 }

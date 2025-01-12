@@ -1,195 +1,183 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
-import { Tooltip } from 'bootstrap';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import * as bootstrap from 'bootstrap';
 import { Router } from '@angular/router';
+import { PhysicianService } from '../../services/physician.service';
+import { AccountService } from '../../services/account.service';
 
 @Component({
   selector: 'app-patient-records',
   templateUrl: './manage-patient.component.html',
-  styleUrls: ['./manage-patient.component.scss']
+  styleUrls: ['./manage-patient.component.scss'],
 })
-export class ManagePatientComponent implements OnInit, AfterViewInit {
+export class ManagePatientComponent implements OnInit {
   patients: any[] = [];
-  nameError: string | null = null;
-  ageError: string | null = null;
-  mobileError: string | null = null;
-  filteredPatients = [...this.patients];
-  searchValue = '';
-  sortDirection = 'asc';
-  sortKey = '';
-  showAddPatientPopup = false;
-  newPatient = { id: 0, name: '', age: 0, mobile: '', lastVisited: '', gender: '', abhaId: '', secondaryId: '' };
+  filteredPatients: any[] = [];
+  patientForm!: FormGroup;
   showHistory = false;
-  patientHistory: any[] = [];
+  showModel = false;
+  searchValue = '';
+  sortKey = '';
+  sortDirection = 'asc';
   currentPatient: any;
-  showModel: boolean = false;
-  genderError: string | null = null;
-  abhaError: string | null = null;
-  secondaryIdError:string | null = null;
+  patientHistory: any[] = [];
+  userData: any;
 
-  constructor(private router: Router) { }
+  constructor(
+    private fb: FormBuilder,
+    private physicianService: PhysicianService,
+    private router: Router,
+    private accountService: AccountService
+  ) { }
 
   ngOnInit(): void {
-    this.destroyTooltips();
-    this.getUniquePatientsFromIndexedDB().then(() => {
-      this.populatePatientsWithHistoryStatus();
+    this.initForm();
+
+
+    this.accountService.getUserData().subscribe({
+      next: (data) => {
+        this.userData = data;
+        this.loadPatients();
+      },
+      error: (err) => console.error('Error fetching user data:', err)
     });
-    const sidebarCollapseButton = document.getElementById('sidebarCollapse');
-    const sidebar = document.getElementById('sidebar');
-    const content = document.getElementById('content');
-
-    if (sidebarCollapseButton && sidebar && content) {
-      sidebarCollapseButton.addEventListener('click', () => {
-        sidebar.classList.toggle('expanded');
-        content.classList.toggle('expanded');
-      });
-    }
   }
 
-  ngAfterViewInit(): void {
-    // Initialize Bootstrap tooltips
-    const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.forEach(tooltipTriggerEl => new Tooltip(tooltipTriggerEl));
 
-    const addPatientModal = document.getElementById('addPatientModal');
-    if (addPatientModal) {
-      addPatientModal.addEventListener('hide.bs.modal', () => {
-        this.resetForm();  // Reset the form when modal is closed
-      });
-    }
+  initForm(): void {
+    this.patientForm = this.fb.group({
+      id: [''],
+      userId: [''],
+      mobile: ['', [Validators.required, Validators.pattern(/^[789]\d{9}$/)]],
+      name: [{ value: '', disabled: true }, Validators.required],
+      gender: [{ value: '', disabled: true }, Validators.required],
+      dateOfBirth: [{ value: '', disabled: true }, Validators.required],
+      abhaId: ['', Validators.pattern(/^[a-zA-Z0-9]*$/)], // Optional with pattern validation
+      secondaryId: ['', Validators.pattern(/^[a-zA-Z0-9]*$/)], // Optional with pattern validation
+    });
   }
 
-  searchPatient(event: any): void {
-    this.destroyTooltips();
-    this.searchValue = event.target.value.toLowerCase();
-    this.filteredPatients = this.patients.filter(patient =>
-      patient.name.toLowerCase().includes(this.searchValue)
-    );
+  loadPatients(): void {
+    this.physicianService.getPatients(this.userData.id).subscribe({
+      next: (data: any) => {
+        this.patients = data?.data.map((patient: any) => ({
+          ...patient
+        }));
+        this.filteredPatients = [...this.patients];
+      },
+      error: (error) => {
+        console.error('Error loading clinics:', error);
+      }
+    });
+  }
+
+  searchPatient(): void {
+    const searchTerm = this.searchValue.toLowerCase();
+
+    this.filteredPatients = this.patients.filter((patient) => {
+      // Check if the search term matches the name or any part of the address
+      return (
+        patient.name.toLowerCase().includes(searchTerm)
+      );
+    });
   }
 
   sortTable(key: string): void {
     this.sortKey = key;
     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     this.filteredPatients.sort((a, b) => {
-      if (a[key] < b[key]) {
-        return this.sortDirection === 'asc' ? -1 : 1;
-      } else if (a[key] > b[key]) {
-        return this.sortDirection === 'asc' ? 1 : -1;
-      }
+      if (a[key] < b[key]) return this.sortDirection === 'asc' ? -1 : 1;
+      if (a[key] > b[key]) return this.sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
   }
 
+  onMobileInputChange(): void {
+    const mobile = this.patientForm.get('mobile')?.value;
+    if (mobile.length === 10) {
+      this.checkPatientExists(mobile);
+    }
+  }
+
+  checkPatientExists(mobile: string): void {
+    this.physicianService.getPatientByMobile('physicianId', mobile).subscribe((response: any) => {
+      if (response.success && response.data) {
+        const patient = response.data;
+        this.patientForm.patchValue({
+          userId: patient.userId,
+          name: patient.name,
+          gender: patient.gender,
+          dateOfBirth: patient.dateOfBirth,
+        });
+        this.patientForm.get('name')?.disable();
+        this.patientForm.get('gender')?.disable();
+        this.patientForm.get('dateOfBirth')?.disable();
+      } else {
+        this.patientForm.reset({ mobile });
+        this.patientForm.get('mobile')?.disable();
+        this.patientForm.get('name')?.enable();
+        this.patientForm.get('gender')?.enable();
+        this.patientForm.get('dateOfBirth')?.enable();
+      }
+    });
+  }
+
   openAddPatientPopup(): void {
-    this.destroyTooltips();
+    this.patientForm.reset();
+    this.patientForm.get('mobile')?.enable();
+    this.patientForm.get('name')?.disable();
+    this.patientForm.get('gender')?.disable();
+    this.patientForm.get('dateOfBirth')?.disable();
     this.showModel = true;
     const addPatientModal = new bootstrap.Modal(document.getElementById('addPatientModal')!);
     addPatientModal.show();
   }
 
-  addPatient(): void {
-    this.destroyTooltips();
-
-    // Validate inputs
-    const isValidName = this.validateName(this.newPatient.name);
-    const isValidAge = this.validateAge(this.newPatient.age);
-    const isValidPhone = this.validatePhone(this.newPatient.mobile);
-    const isValidGender = this.validateGender(this.newPatient.gender);
-    const isValidAbha = this.validateAlphanumeric('abhaId', this.newPatient.abhaId);
-    const isValidSecondary = this.validateAlphanumeric('secondaryId', this.newPatient.secondaryId);
-
-    if (!isValidName || !isValidAge || !isValidPhone || !isValidGender || !isValidAbha || !isValidSecondary) {
+  savePatient(): void {
+    if (this.patientForm.invalid) {
+      // Mark all controls as touched to trigger validation errors
+      this.patientForm.markAllAsTouched();
       return;
     }
+    const patient = this.patientForm.getRawValue();
 
-    if (this.newPatient.id) {
-      // Update existing patient
-      const index = this.patients.findIndex((p) => p.id === this.newPatient.id);
-      if (index !== -1) {
-        this.patients[index] = { ...this.newPatient };
-        this.filteredPatients = [...this.patients];
-        this.updatePatientInIndexedDB(this.newPatient); // Update in IndexedDB
-      }
-    } else {
-      // Add new patient
-      const newId = this.patients.length > 0 ? Math.max(...this.patients.map((p) => p.id)) + 1 : 1;
-      const newPatient = { ...this.newPatient, id: newId, lastVisited: new Date().toISOString().split('T')[0] };
-      this.addPatientToIndexedDB(newPatient); // Add to IndexedDB
-      this.patients.push(newPatient);
-      this.filteredPatients = [...this.patients];
+    // Convert dateOfBirth to ISO string format if it exists
+    if (patient.dateOfBirth) {
+      patient.dateOfBirth = new Date(patient.dateOfBirth).toISOString();
     }
+
+    this.physicianService.savePatient(this.userData.id, patient).subscribe(() => {
+      this.loadPatients();
+    });
 
     const addPatientModal = bootstrap.Modal.getInstance(document.getElementById('addPatientModal')!);
     addPatientModal?.hide();
-    this.resetForm();
   }
 
-
-  async addPatientToIndexedDB(patient: any) {
-    const db = await this.openIndexedDB();
-    const transaction = db.transaction(['patients'], 'readwrite');
-    const store = transaction.objectStore('patients');
-    store.add(patient);
-    transaction.oncomplete = () => console.log('Patient added to IndexedDB');
+  editPatient(patient: any): void {
+    this.patientForm.patchValue(patient);
+    this.patientForm.get('name')?.enable();
+    this.patientForm.get('gender')?.enable();
+    this.patientForm.get('dateOfBirth')?.enable();
+    this.showModel = true;
+    const addPatientModal = new bootstrap.Modal(document.getElementById('addPatientModal')!);
+    addPatientModal.show();
   }
 
-  async updatePatientInIndexedDB(patient: any) {
-    const db = await this.openIndexedDB();
-    const transaction = db.transaction(['patients'], 'readwrite');
-    const store = transaction.objectStore('patients');
-    store.put(patient);
-    transaction.oncomplete = () => console.log('Patient updated in IndexedDB');
-  }
-
-  resetForm() {
-    this.newPatient = { id:0, name: '', age: 0, mobile: '', lastVisited: '', gender: '', abhaId:'',secondaryId:'' };
-  }
-
-  openIndexedDB(): Promise<IDBDatabase> {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open('prescriptionsDB', 2);
-
-      request.onupgradeneeded = (event: any) => {
-        const db = event.target.result;
-        if (!db.objectStoreNames.contains('patients')) {
-          db.createObjectStore('patients', { keyPath: 'id', autoIncrement: true });
-        }
-        let pdfStore;
-        if (!db.objectStoreNames.contains('pdfs')) {
-          pdfStore = db.createObjectStore('pdfs', { keyPath: 'name' }); // Ensure keyPath is 'name'
-        } else {
-          pdfStore = event.currentTarget.transaction?.objectStore('pdfs');
-        }
-
-        if (!pdfStore.indexNames.contains('patientId')) {
-          pdfStore.createIndex('patientId', 'patientId', { unique: false });
-        }
-      };
-
-      request.onsuccess = (event: any) => resolve(event.target.result);
-      request.onerror = (event: any) => reject(event.target.error);
-    });
+  viewHistory(patient: any): void {
+    this.showHistory = true;
+    this.currentPatient = patient;
+    // Fetch history logic here
   }
 
   backToMain(): void {
-    this.destroyTooltips();
     this.showHistory = false;
     this.currentPatient = null;
   }
 
-  generatePatientHistory(patient: any): any[] {
-    this.destroyTooltips();
-    const history = [];
-    const randomCount = Math.floor(Math.random() * 5) + 1; // Vary number of records for each patient
-    for (let i = 0; i < randomCount; i++) {
-      history.push({
-        visitedDate: new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1),
-        illness: 'Illness ' + (i + 1),
-      });
-    }
-    return history;
-  }
+  viewPatient(patient: any): void {
 
+  }
 
   createPrescription(patient: any): void {
     this.router.navigate(['physician/generate-prescription'], { state: { patient } });
@@ -197,235 +185,5 @@ export class ManagePatientComponent implements OnInit, AfterViewInit {
 
   createCertificate(patient: any): void {
     this.router.navigate(['physician/generate-certificate'], { state: { patient } });
-  }
-
-
-  async getUniquePatientsFromIndexedDB() {
-    const db = await this.openIndexedDB();
-    const transaction = db.transaction(['patients'], 'readonly');
-    const store = transaction.objectStore('patients');
-    const getAllRequest = store.getAll();
-
-    getAllRequest.onsuccess = () => {
-      this.patients = getAllRequest.result;
-      this.filteredPatients = [...this.patients];
-    };
-  }
-
-  viewPatient(patient: any, pdfid: number = 0): void {
-    this.getLatestPdfByPatientId(patient.id, pdfid).then(async (pdfName) => {
-      if (pdfName) {
-        try {
-          const pdfBlob = await this.getPdfFromIndexedDB(pdfName);
-          if (pdfBlob) {
-            const pdfUrl = URL.createObjectURL(pdfBlob);
-            window.open(pdfUrl, '_blank');
-          } else {
-            console.error('PDF not found in IndexedDB');
-          }
-        } catch (error) {
-          console.error('Error retrieving PDF from IndexedDB', error);
-        }
-      } else {
-        alert('No PDF found for this patient.');
-      }
-    });
-  }
-  async getLatestPdfByPatientId(patientId: number, pdfId: number = 0): Promise<string | null> {
-    const db = await this.openIndexedDB();
-    const transaction = db.transaction(['pdfs'], 'readonly');
-    const store = transaction.objectStore('pdfs');
-    const index = store.index('patientId');
-    const getAllRequest = index.getAll(patientId);
-
-    return new Promise((resolve) => {
-      getAllRequest.onsuccess = () => {
-        const pdfs = getAllRequest.result;
-        if (pdfs && pdfs.length > 0) {
-
-          // Get the latest PDF
-          if (pdfId > 0) {
-            const latestPdf = pdfs.filter(pdf =>
-              pdf.prescriptionId == pdfId
-            );
-            resolve(latestPdf[0].name);
-          }
-          else {
-            const latestPdf = pdfs.reduce((latest, current) => {
-              return new Date(latest.date) > new Date(current.date) ? latest : current;
-            });
-            resolve(latestPdf.name);
-          }
-
-
-        } else {
-          resolve(null);
-        }
-      };
-    });
-  }
-
-  async getPdfFromIndexedDB(pdfName: string): Promise<Blob | null> {
-    const db = await this.openIndexedDB();
-    const transaction = db.transaction(['pdfs'], 'readonly');
-    const store = transaction.objectStore('pdfs');
-    const getRequest = store.get(pdfName);
-
-    return new Promise((resolve, reject) => {
-      getRequest.onsuccess = () => {
-        const result = getRequest.result;
-        if (result) {
-          resolve(result.pdfBlob); // Return the PDF Blob
-        } else {
-          resolve(null);
-        }
-      };
-
-      getRequest.onerror = () => {
-        reject('Error fetching PDF from IndexedDB');
-      };
-    });
-  }
-  async enableHistoryButton(patientId: number): Promise<boolean> {
-    const db = await this.openIndexedDB();
-    const transaction = db.transaction(['pdfs'], 'readonly');
-    const store = transaction.objectStore('pdfs');
-    const index = store.index('patientId');
-    const countRequest = index.count(patientId);
-
-    return new Promise((resolve) => {
-      countRequest.onsuccess = () => resolve(countRequest.result > 1);
-    });
-  }
-
-  async populatePatientsWithHistoryStatus() {
-    for (const patient of this.patients) {
-      const hasHistory = await this.enableHistoryButton(patient.id);
-      patient.history = hasHistory;
-    }
-  }
-
-  viewHistory(patient: any): void {
-    this.destroyTooltips();
-    this.getHistoryByPatientId(patient.id).then((history) => {
-      this.showHistory = true;
-      this.patientHistory = history;
-      this.currentPatient = patient;
-    });
-  }
-
-  // Fetch all PDFs except the latest one by patient ID
-  async getHistoryByPatientId(patientId: number): Promise<any[]> {
-    const db = await this.openIndexedDB();
-    const transaction = db.transaction(['pdfs'], 'readonly');
-    const store = transaction.objectStore('pdfs');
-    const index = store.index('patientId');
-    const getAllRequest = index.getAll(patientId);
-
-    return new Promise((resolve) => {
-      getAllRequest.onsuccess = () => {
-        const pdfs = getAllRequest.result;
-        if (pdfs && pdfs.length > 1) {
-          const latestPdf = pdfs.reduce((latest, current) => {
-            return new Date(latest.date) > new Date(current.date) ? latest : current;
-          });
-          const history = pdfs;
-          resolve(history);
-        } else {
-          resolve([]);
-        }
-      };
-    });
-  }
-
-  destroyTooltips() {
-    const tooltips = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltips.forEach(tooltipTriggerEl => {
-      const tooltipInstance = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
-      if (tooltipInstance) {
-        tooltipInstance.dispose();
-      }
-    });
-  }
-
-
-
-  validateAge(age: number): boolean {
-    if (age < 1 || age > 150) {
-      this.ageError = 'Age must be between 1 and 150.';
-      return false;
-    }
-
-    this.ageError = null;
-    return true;
-  }
-
-  validateAlphanumeric(field: string, value: string): boolean {
-    const alphanumericRegex = /^[a-zA-Z0-9]+$/;
-    if (!alphanumericRegex.test(value)) {
-      if (field === 'abhaId') {
-        this.abhaError = 'ABHA Id must be alphanumeric.';
-      } else if (field === 'secondaryId') {
-        this.secondaryIdError = 'Secondary Id must be alphanumeric.';
-      }
-      return false;
-    }
-
-    if (field === 'abhaId') {
-      this.abhaError = null;
-    } else if (field === 'secondaryId') {
-      this.secondaryIdError = null;
-    }
-
-    return true;
-  }
-  validateName(name: string): boolean {
-    const nameRegex = /^[a-zA-Z\s]+$/;
-    if (!nameRegex.test(name)) {
-      this.nameError = 'Name can only contain letters and spaces.';
-      return false;
-    }
-
-    // Skip unique validation if editing
-    if (!this.newPatient.id && this.patients.some(patient => patient.name.toLowerCase() === name.toLowerCase())) {
-      this.nameError = 'Patient with this name already exists.';
-      return false;
-    }
-
-    this.nameError = null;
-    return true;
-  }
-
-  validatePhone(phone: string): boolean {
-    const phoneRegex = /^[789]\d{9}$/;
-    if (!phoneRegex.test(phone)) {
-      this.mobileError = 'Enter a valid 10-digit Indian phone number.';
-      return false;
-    }
-
-    // Skip unique validation if editing
-    if (!this.newPatient.id && this.patients.some(patient => patient.mobile === phone)) {
-      this.mobileError = 'A patient with this phone number already exists.';
-      return false;
-    }
-
-    this.mobileError = null;
-    return true;
-  }
-
-  validateGender(gender: string): boolean {
-    if (!gender) {
-      this.genderError = 'Please select a gender.';
-      return false;
-    }
-
-    this.genderError = null;
-    return true;
-  }
-  editPatient(patient: any): void {
-    this.newPatient = { ...patient }; // Clone the patient object into the form model
-    this.showModel = true;
-    const addPatientModal = new bootstrap.Modal(document.getElementById('addPatientModal')!);
-    addPatientModal.show();
   }
 }
