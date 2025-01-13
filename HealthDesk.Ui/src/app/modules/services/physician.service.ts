@@ -47,7 +47,7 @@ export class PhysicianService {
   getPatientByMobile(physicianId: string, mobile: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${physicianId}/patients/by-mobile/${mobile}`);
   }
-  
+
   getPatients(id: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${id}/patients`);
   }
@@ -60,8 +60,16 @@ export class PhysicianService {
     return this.http.delete<any>(`${this.apiUrl}/${id}/patients/${patientId}`);
   }
 
-  getPrescriptions(id: string, patientId: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${id}/prescriptions/${patientId}`);
+  getDefaultPrescriptionHeaderFooter(id: string): Observable<any> {
+    return this.http.get<any[]>(`${this.apiUrl}/${id}/header-footer`);
+  }
+
+  getPrescriptions(physicianId: string, patientId: string, getAll : boolean): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${physicianId}/prescriptions/${patientId}`);
+  }
+
+  getLatestPrescription(physicianId: string, patientId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${physicianId}/latest-prescription/${patientId}`);
   }
 
   addPrescription(physicianId: string, prescription: any): Observable<any> {
@@ -82,5 +90,37 @@ export class PhysicianService {
 
   incrementLikes(id: string, caseId: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/${id}/medical-cases/${caseId}/increment-likes`, {});
+  }
+
+  getProfiles(physicianId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${physicianId}/profiles`);
+  }
+
+  saveProfiles(physicianId: string, profiles: any[]): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${physicianId}/profiles`, profiles);
+  }
+
+  uploadPrescription(data: { pdfBlob: Blob; patientId: string; illness: string; physicianId: string }): Observable<any> {
+    // Convert Blob to Base64
+    return new Observable((observer) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64Data = reader.result as string; // Base64 string
+        const payload = {
+          PhysicianId: data.physicianId,
+          PatientId: data.patientId,
+          Illness: data.illness,
+          PdfBase64: base64Data.split(',')[1], // Remove metadata prefix
+        };
+        // Send the payload as JSON
+        this.http.post<any>(`${this.apiUrl}/${data.physicianId}/prescriptions`, payload).subscribe(
+          (response) => observer.next(response),
+          (error) => observer.error(error),
+          () => observer.complete()
+        );
+      };
+      reader.onerror = (error) => observer.error(error);
+      reader.readAsDataURL(data.pdfBlob); // Convert Blob to Base64
+    });
   }
 }

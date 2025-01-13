@@ -18,7 +18,7 @@ public interface IPhysicianService
 
     Task<IEnumerable<PrescriptionDto>> GetPrescriptionsAsync(string physicianId, string patientId);
 
-    Task<string> AddPrescriptionAsync(string physicianId, PrescriptionDto dto);
+    Task<string> AddPrescriptionAsync(PrescriptionDto dto);
 
     Task<IEnumerable<MedicalCaseDto>> GetAllMedicalCasesAsync(string physicianId);
     Task SaveMedicalCaseAsync(string physicianId, MedicalCaseDto dto);
@@ -31,4 +31,9 @@ public interface IPhysicianService
     Task<DesignPrescriptionDto> LoadPrescriptionAsync(string physicianId, string prescriptionId);
     Task<int> GetDesignPrescriptionCountAsync(string physicianId);
     Task<dynamic> GetPatientByMobileAsync(string id, string mobile);
+    Task<dynamic> GetDefaultPrescriptionHeaderFooter(string physicianId);
+    Task<List<ProfileDTO>> GetProfilesAsync(string physicianId);
+    Task SaveProfilesAsync(string physicianId, List<ProfileDTO> profileDtos);
+    Task<int> GetPrescriptionCountAsync(string physicianId, string patientId);
+    Task<string> GetLatestPrescriptionAsync(string physicianId, string patientId);
 }

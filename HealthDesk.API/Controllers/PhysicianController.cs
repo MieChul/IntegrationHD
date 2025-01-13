@@ -74,21 +74,21 @@ namespace HealthDesk.API.Controllers
                 var headerFileName = $"header{designCount}.png";
                 if (!string.IsNullOrEmpty(dto.HeaderImage))
                 {
-                    dto.HeaderUrl = await CreateFile(directoryPath, headerFileName, dto.Id, dto.HeaderImage);
+                    dto.HeaderUrl = await CreateFile(directoryPath, headerFileName, id, dto.HeaderImage);
                 }
 
                 // Save Footer Image
                 var footerFileName = $"footer{designCount}.png";
                 if (!string.IsNullOrEmpty(dto.FooterImage))
                 {
-                    dto.FooterUrl = await CreateFile(directoryPath, footerFileName, dto.Id, dto.FooterImage);
+                    dto.FooterUrl = await CreateFile(directoryPath, footerFileName, id, dto.FooterImage);
                 }
 
                 // Save Logo Image
                 var logoFileName = $"logo_image{designCount}.png";
                 if (!string.IsNullOrEmpty(dto.LogoImage))
                 {
-                    dto.LogoUrl = await CreateFile(directoryPath, logoFileName, dto.Id, dto.LogoImage);
+                    dto.LogoUrl = await CreateFile(directoryPath, logoFileName, id, dto.LogoImage);
                 }
 
                 // Save design prescription data (excluding images)
@@ -173,21 +173,75 @@ namespace HealthDesk.API.Controllers
             return Ok(new { Success = true, Message = "Patient deleted successfully." });
         }
 
-        [HttpGet("{id}/prescriptions/{patientId}")]
-        public async Task<IActionResult> GetPrescriptions(string id, string patientId)
+        [HttpGet("{id}/header-footer")]
+        public async Task<IActionResult> GetDefaultPrescriptionHeaderFooter(string id)
         {
-            var prescriptions = await _physicianService.GetPrescriptionsAsync(id, patientId);
+            var details = await _physicianService.GetDefaultPrescriptionHeaderFooter(id);
+            return Ok(new { Success = true, Message = "Prescriptions retrieved successfully.", Data = details });
+        }
+
+
+
+        [HttpGet("{physicianId}/prescriptions/{patientId}")]
+        public async Task<IActionResult> GetPrescriptions(string physicianId, string patientId)
+        {
+            var prescriptions = await _physicianService.GetPrescriptionsAsync(physicianId, patientId);
             return Ok(new { Success = true, Message = "Prescriptions retrieved successfully.", Data = prescriptions });
         }
 
-        [HttpPost("{id}/prescriptions")]
-        public async Task<IActionResult> AddPrescription(string id, [FromBody] PrescriptionDto dto)
+        [HttpGet("{physicianId}/latest-prescription/{patientId}")]
+        public async Task<IActionResult> GetLatestPrescriptions(string physicianId, string patientId)
+        {
+            var prescription = await _physicianService.GetLatestPrescriptionAsync(physicianId, patientId);
+            return Ok(new { Success = true, Message = "Prescriptions retrieved successfully.", Data = prescription });
+        }
+
+
+        [HttpPost("{physicianId}/prescriptions")]
+        public async Task<IActionResult> AddPrescription([FromBody] PrescriptionDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(new { Success = false, Message = "Invalid data provided.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+                return BadRequest(new
+                {
+                    Success = false,
+                    Message = "Invalid data provided.",
+                    Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage))
+                });
 
-            var prescriptionId = await _physicianService.AddPrescriptionAsync(id, dto);
-            return Ok(new { Success = true, Message = "Prescription added successfully.", Id = prescriptionId });
+            try
+            {
+                // Get the count of prescriptions for the patient
+                var fileData = Convert.FromBase64String(dto.PdfBase64);
+                var prescriptionCount = await _physicianService.GetPrescriptionCountAsync(dto.PhysicianId, dto.PatientId);
+                prescriptionCount++;
+
+                // Define the directory path
+                var directoryPath = Path.Combine("..", "HealthDesk.UI", "src", "assets", "documents", dto.PatientId, "prescription");
+                Directory.CreateDirectory(directoryPath);
+
+                // Save the PDF file
+                var pdfFileName = $"p_{prescriptionCount}.pdf";
+                var pdfFilePath = Path.Combine(directoryPath, pdfFileName);
+                await System.IO.File.WriteAllBytesAsync(pdfFilePath, fileData);
+
+                // Set the URL for the PDF file
+                var pdfUrl = Path.Combine("assets", "documents", dto.PatientId, "prescription", pdfFileName);
+
+                // Call the service to save the prescription details
+                dto.PrescriptionUrl = pdfUrl;
+                var prescriptionId = await _physicianService.AddPrescriptionAsync(dto);
+
+                return Ok(new { Success = true, Message = "Prescription added successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Success = false,
+                    Message = "An error occurred while saving the prescription.",
+                    Error = ex.Message
+                });
+            }
         }
 
         [HttpPost("{id}/medical-cases")]
@@ -258,5 +312,23 @@ namespace HealthDesk.API.Controllers
             }
             return Ok(new { Success = true, Data = patient });
         }
+
+        [HttpGet("{physicianId}/profiles")]
+        public async Task<IActionResult> GetProfiles(string physicianId)
+        {
+            var profiles = await _physicianService.GetProfilesAsync(physicianId);
+            return Ok(new { Success = true, Message = "Profiles retrieved successfully.", Data = profiles });
+        }
+
+        [HttpPost("{physicianId}/profiles")]
+        public async Task<IActionResult> SaveProfiles(string physicianId, [FromBody] List<ProfileDTO> profileDtos)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { Success = false, Message = "Invalid data provided.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+
+            await _physicianService.SaveProfilesAsync(physicianId, profileDtos);
+            return Ok(new { Success = true, Message = "Profiles saved successfully." });
+        }
+
     }
 }

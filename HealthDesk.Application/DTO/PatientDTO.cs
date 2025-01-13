@@ -25,12 +25,17 @@ public class CurrentTreatmentDto
 
 public class AppointmentDto
 {
-    public string Id { get; set; }
-    public string PhysicianId { get; set; } // Reference to Physician
+    public string? Id { get; set; }
+    public string? PhysicianId { get; set; } = string.Empty;// Reference to Physician
+    public string? PatientId { get; set; } = string.Empty;// Reference to Physician
     public DateTime Date { get; set; }
-    public string Time { get; set; }
-    public string ClinicId { get; set; } // Reference to Clinic
-    public string Status { get; set; }
+    public string? Time { get; set; } = string.Empty;
+    public string? ClinicName { get; set; } = string.Empty; // Reference to Clinic
+    public string? Status { get; set; } = string.Empty;
+    public string? Mobile { get; set; } = string.Empty;
+    public string? Reason { get; set; } = string.Empty;
+    public string? PhysicianName { get; set; } = string.Empty;
+    public string? PatientName { get; set; } = string.Empty;
 }
 
 public class SelfRecordDto

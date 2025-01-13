@@ -38,16 +38,21 @@ export class PatientService {
   }
 
   // Appointments
-  getAppointments(patientId: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${patientId}/appointments`);
+  getAppointments(patientId: string, isPhysician: boolean = false): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${this.apiUrl}/${patientId}/appointments`,
+      {
+        params: { isPhysician: isPhysician.toString() }, // Send as query parameter
+      }
+    );
   }
 
   saveAppointment(patientId: string, appointment: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/${patientId}/appointments`, appointment);
   }
 
-  deleteAppointment(patientId: string, appointmentId: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${patientId}/appointments/${appointmentId}`);
+  updateAppointmentStatus(patientId: string, appointmentId: string, status: string, reason: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${patientId}/update-appointment-status/${appointmentId}`);
   }
 
   // Self Records
@@ -158,7 +163,7 @@ export class PatientService {
   getComplianceDetails(patientId: string, complianceId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${patientId}/compliance-details/${complianceId}`);
   }
-  
+
   saveComplianceDetail(patientId: string, complianceId: string, detail: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/${patientId}/compliance-details/${complianceId}`, detail);
   }
@@ -166,12 +171,16 @@ export class PatientService {
   getReminders(patientId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${patientId}/reminders`);
   }
-  
+
   saveReminder(patientId: string, reminder: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/${patientId}/reminders`, reminder);
   }
-  
+
   deleteReminder(patientId: string, reminderId: string): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/${patientId}/reminders/${reminderId}`);
+  }
+
+  getPhysicians(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/physicians`);
   }
 }

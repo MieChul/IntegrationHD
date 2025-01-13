@@ -1,8 +1,11 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Modal } from 'bootstrap';
-import { IndexedDbService } from '../../../shared/services/indexed.service';
 import { Appointment } from '../../../shared/models/appointment';
+import { PatientService } from '../../services/patient.service';
+import { AccountService } from '../../services/account.service';
+import { PhysicianService } from '../../services/physician.service';
+import { catchError, forkJoin, of, tap, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-appointments',
@@ -18,86 +21,167 @@ export class AppointmentsComponent implements OnInit {
   cancelledAppointments: Appointment[] = [];
   filteredAppointments: Appointment[] = [];
   appointmentForm!: FormGroup;
+  dateForm!: FormGroup;
+  userData: any;
+  submitted: boolean = false;
   selectedAppointment: Appointment = {
     id: '',
+    physicianId: '',
+    patientId: '',
     physicianName: '',
     clinicName: '',
-    appointmentDate: new Date(),
-    appointmentTime: '',
+    date: new Date(),
+    time: '',
     status: 'pending',
     patientName: '',
-    mobileNumber: '',
+    mobile: '',
     reason: '',
+    isPhysician: false
   };
   isEditing: boolean = false;
 
-  doctors: string[] = [];
-  clinics: string[] = ['Apollo', 'Sigma', 'Medi Health'];
+  physicians: any[] = [];
+  clinics: any[] = [];
 
-  constructor(private fb: FormBuilder, private indexedDbService: IndexedDbService) {}
+  constructor(
+    private fb: FormBuilder,
+    private patientService: PatientService,
+    private accountService: AccountService,
+    private physicianService: PhysicianService
+  ) { }
 
-  async ngOnInit(): Promise<void> {
+  ngOnInit(): void {
     this.initializeForm();
-    await this.seedData();
-    await this.loadAppointments();
+
+    this.accountService.getUserData().pipe(
+      tap((data) => (this.userData = data)),
+      switchMap(() => forkJoin([this.loadAppointments(), this.loadPhysicians()])),
+      catchError((error) => {
+        console.error('Error during initialization:', error);
+        return of([]);
+      })
+    ).subscribe();
   }
 
+  isEndDateInvalid(): boolean {
+    return this.dateForm.get('endDate')?.hasError('invalidEndDate')!;
+  }
+
+
   private initializeForm(): void {
+    this.dateForm = this.fb.group({
+      startDate: [''],
+      endDate: ['', [this.endDateValidator.bind(this)]],
+    });
+
     this.appointmentForm = this.fb.group({
+      id: [''],
+      physicianId: ['', Validators.required],
+      patientId: [],
       physicianName: [''],
-      appointmentDate: [''], // Date in 'yyyy-MM-dd' format
-      appointmentTime: [''],
-      clinicName: [''],
+      mobile: [''],
+      date: [
+        '',
+        [Validators.required, this.dateValidator()] // Date is required and cannot be in the past
+      ],
+      time: ['', Validators.required], // Time is required
+      clinicName: ['', Validators.required],
+      status: [''],
+      reason: [''],
+      isPhysician: [false],
+      patientName: ['']
+    });
+
+    this.dateForm.valueChanges.subscribe(() => this.filterAppointmentsByDate());
+  }
+
+  filterAppointmentsByDate(): void {
+    const { startDate, endDate } = this.dateForm.value;
+
+    this.filteredAppointments = this.pendingAppointments.filter((appointment) => {
+      const appointmentDate = new Date(appointment.date);
+      return (
+        (!startDate || appointmentDate >= new Date(startDate)) &&
+        (!endDate || appointmentDate <= new Date(endDate))
+      );
     });
   }
 
-  private async seedData(): Promise<void> {
-    const physicians = [
-      { name: 'Dr. Physician', clinics: ['Apollo', 'Sigma', 'Medi Health'] },
-    ];
-    const patient = { name: 'Patient', mobile: '9930506961' };
-
-    for (const doc of physicians) {
-      await this.indexedDbService.addPhysician(doc);
+  endDateValidator(control: AbstractControl): { [key: string]: any } | null {
+    const startDate = this.dateForm?.get('startDate')?.value;
+    if (startDate && control.value && new Date(control.value) < new Date(startDate)) {
+      return { invalidEndDate: true };
     }
-    await this.indexedDbService.addPatient(patient);
-
-    // Load doctors dynamically after seeding
-    this.doctors = (await this.indexedDbService.getPhysicians()).map((doc) => doc.name);
+    return null;
   }
 
-  async loadAppointments(): Promise<void> {
-    const appointments = await this.indexedDbService.getAppointments();
-  
-    const now = new Date();
-  
-    this.pendingAppointments = appointments
-      .filter(
-        (a) =>
-          a.status === 'pending' ||
-          a.status === 'proposed' || // Include proposed appointments in pending
-          (a.status === 'accepted' && new Date(a.appointmentDate) >= now)
-      )
-      .map(this.mapAppointmentDates);
-  
-    this.pastAppointments = appointments
-      .filter((a) => new Date(a.appointmentDate) < now) // Filter by date for past appointments
-      .map(this.mapAppointmentDates);
-  
-    this.cancelledAppointments = appointments
-      .filter((a) => a.status === 'cancelled' || a.status==='rejected') // Include only cancelled appointments
-      .map(this.mapAppointmentDates);
-  
-    this.filteredAppointments = [...this.pendingAppointments];
-  }
-  
-  private mapAppointmentDates(appointment: any): Appointment {
-    return {
-      ...appointment,
-      appointmentDate: new Date(appointment.appointmentDate), // Convert ISO string to Date
-      newDate: appointment.newDate ? new Date(appointment.newDate) : undefined,
-      reason: appointment.reason ?? '', // Ensure reason is initialized
+  private dateValidator(): Validators {
+    return (control: FormControl) => {
+      const inputDate = new Date(control.value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Normalize to start of the day
+      if (inputDate < today) {
+        return { pastDate: true }; // Date is in the past
+      }
+      return null; // Date is valid
     };
+  }
+
+  onPhysicianChange(physicianId: string): void {
+    this.physicianService.getClinics(physicianId)
+      .pipe(
+        tap((clinics: any) => {
+          this.clinics = clinics.data; // Update clinics list
+        }),
+        catchError((error) => {
+          console.error('Error loading clinics:', error);
+          this.clinics = []; // Clear clinics if there's an error
+          return of([]); // Return an empty observable
+        })
+      )
+      .subscribe();
+  }
+
+  loadAppointments() {
+    return this.patientService.getAppointments(this.userData.id).pipe(
+      tap((appointments: any) => {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        this.pendingAppointments = appointments.data.filter(
+          (a: any) =>
+            (new Date(a.date) >= today) && // Future or today
+            a.status !== 'cancelled' &&
+            a.status !== 'rejected'
+        );
+
+        // Filter past appointments: Dates in the past, excluding cancelled/rejected
+        this.pastAppointments = appointments.data.filter(
+          (a: any) =>
+            (new Date(a.date) < today) && // Past dates
+            a.status !== 'cancelled' &&
+            a.status !== 'rejected'
+        );
+        this.cancelledAppointments = appointments.data.filter(
+          (a: any) => a.status === 'cancelled' || a.status === 'rejected'
+        );
+        this.filteredAppointments = [...this.pendingAppointments];
+      }),
+      catchError((error) => {
+        console.error('Error loading appointments:', error);
+        return of([]);
+      })
+    );
+  }
+
+  loadPhysicians() {
+    return this.patientService.getPhysicians().pipe(
+      tap((physicians: any) => (this.physicians = physicians.data)),
+      catchError((error) => {
+        console.error('Error loading physicians:', error);
+        this.physicians = [];
+        return of([]);
+      })
+    );
   }
 
   filterAppointments(status: 'pending' | 'past' | 'cancelled'): void {
@@ -121,89 +205,140 @@ export class AppointmentsComponent implements OnInit {
     modal.show();
   }
 
-  async saveAppointment(): Promise<void> {
-    const formData = this.appointmentForm.value;
-  
-    if (this.isEditing && this.selectedAppointment.id) {
-      // Update existing appointment
-      const updatedAppointment: Partial<Appointment> = {
-        physicianName: formData.physicianName,
-        clinicName: formData.clinicName,
-        appointmentDate: new Date(formData.appointmentDate),
-        appointmentTime: formData.appointmentTime,
-      };
-  
-      const dbAppointment = this.convertToIndexedDBAppointment(updatedAppointment);
-      await this.indexedDbService.updateAppointment(this.selectedAppointment.id, dbAppointment);
-    } else {
-      // Create new appointment
-      const newAppointment: Appointment = {
-        id: crypto.randomUUID(),
-        physicianName: formData.physicianName,
-        clinicName: formData.clinicName,
-        appointmentDate: new Date(formData.appointmentDate),
-        appointmentTime: formData.appointmentTime,
-        status: 'pending',
-        patientName: 'Patient',
-        mobileNumber: '9930506961',
-      };
-  
-      const dbAppointment = this.convertToIndexedDBAppointment(newAppointment);
-      await this.indexedDbService.addAppointment(dbAppointment);
+  saveAppointment(): void {
+    this.submitted = true; // Mark the form as submitted to trigger validation errors
+
+    if (this.appointmentForm.invalid) {
+      // Mark all controls as touched to show validation errors
+      Object.keys(this.appointmentForm.controls).forEach((key) => {
+        const control = this.appointmentForm.get(key);
+        if (control) {
+          control.markAsTouched();
+        }
+      });
+      console.error('Form is invalid. Please fix the errors.');
+      return;
     }
-  
-    await this.loadAppointments();
-  
-    const modal = Modal.getInstance(this.appointmentModal.nativeElement);
-    modal?.hide();
+
+    const formData = this.appointmentForm.value;
+    // Dynamically update physicianId based on physicianName
+    const selectedPhysician = this.physicians.find(
+      (physician) => physician.id === formData.physicianId
+    );
+
+    if (!selectedPhysician) {
+      console.error('Physician not found.');
+      return;
+    }
+
+    formData.physicianName = selectedPhysician.name; // Set physicianId from selectedPhysician
+
+    // Dynamically update mobile from userData
+    formData.patientId = this.userData.id;
+
+    const appointmentObservable = this.isEditing
+      ? this.patientService.saveAppointment(this.userData.id, {
+        ...this.selectedAppointment,
+        ...formData,
+      })
+      : this.patientService.saveAppointment(this.userData.id, {
+        physicianId: formData.physicianId,
+        patientId: formData.patientId,
+        physicianName: formData.physicianName,
+        clinicName: formData.clinicName,
+        date: new Date(formData.date),
+        time: formData.time,
+        status: 'pending',
+        patientName: formData.patientName,
+        mobile: formData.mobile,
+        reason: '',
+        isPhysician: [false]// Use updated mobile
+      });
+
+    appointmentObservable
+      .pipe(
+        switchMap(() => this.loadAppointments()),
+        tap(() => {
+          const modal = Modal.getInstance(this.appointmentModal.nativeElement);
+          modal?.hide();
+        }),
+        catchError((error) => {
+          console.error('Error saving appointment:', error);
+          return of(null);
+        })
+      )
+      .subscribe();
   }
 
-  private convertToIndexedDBAppointment(appointment: Partial<Appointment>): any {
-    return {
+  acceptAppointment(appointment: Appointment): void {
+    const updatedAppointment = {
       ...appointment,
-      appointmentDate: appointment.appointmentDate
-        ? appointment.appointmentDate.toISOString()
-        : undefined, // Convert Date to ISO string
-      newDate: appointment.newDate ? appointment.newDate.toISOString() : undefined, // Convert Date to ISO string
+      status: 'accepted', // Update the status to accepted
     };
+
+    this.patientService.saveAppointment(this.userData.id, updatedAppointment)
+      .pipe(
+        switchMap(() => this.loadAppointments()),
+        tap(() => console.log('Appointment accepted successfully')),
+        catchError((error) => {
+          console.error('Error accepting appointment:', error);
+          return of(null);
+        })
+      )
+      .subscribe();
+  }
+
+  cancelAppointment(reason: string): void {
+    if (!reason.trim()) {
+      console.error('Reason for cancellation is required.');
+      return;
+    }
+
+    const updatedAppointment = {
+      ...this.selectedAppointment,
+      status: 'cancelled', // Update the status to cancelled
+      reason: reason,      // Add the cancellation reason
+    };
+
+    this.patientService.saveAppointment(this.userData.id, updatedAppointment)
+      .pipe(
+        switchMap(() => this.loadAppointments()),
+        tap(() => {
+          const modal = Modal.getInstance(this.cancelModal.nativeElement);
+          modal?.hide();
+        }),
+        catchError((error) => {
+          console.error('Error cancelling appointment:', error);
+          return of(null);
+        })
+      )
+      .subscribe();
   }
 
   editAppointment(appointment: Appointment): void {
     this.isEditing = true;
     this.selectedAppointment = appointment;
+    this.onPhysicianChange(appointment.physicianId);
     this.appointmentForm.patchValue({
-      physicianName: appointment.physicianName,
-      appointmentDate: appointment.appointmentDate.toISOString().substring(0, 10),
-      appointmentTime: appointment.appointmentTime,
+      id: appointment.id,
+      physicianId: appointment.physicianId,
+      patientId: this.userData.id,
+      date: new Date(appointment.date).toISOString().substring(0, 10),
+      time: appointment.time,
       clinicName: appointment.clinicName,
+      status: appointment.status,
+      mobile: appointment.mobile,
+      isPhysician: false,
+      patientName: appointment.patientName
     });
 
     const modal = new Modal(this.appointmentModal.nativeElement);
     modal.show();
   }
 
-  async cancelAppointment(reason: string): Promise<void> {
-    if (this.selectedAppointment) {
-      await this.indexedDbService.updateAppointment(this.selectedAppointment.id, {
-        status: 'cancelled', // Ensure 'cancelled' is used here
-        reason,
-      });
-      await this.loadAppointments();
-  
-      const modal = Modal.getInstance(this.cancelModal.nativeElement);
-      modal?.hide();
-    }
-  }
-
   openCancelModal(appointment: Appointment): void {
     this.selectedAppointment = { ...appointment }; // Clone the object to avoid mutating the original
     const modal = new Modal(this.cancelModal.nativeElement);
     modal.show();
-  }
-  async acceptAppointment(appointment: Appointment): Promise<void> {
-    await this.indexedDbService.updateAppointment(appointment.id, {
-      status: 'accepted',
-    });
-    await this.loadAppointments();
   }
 }

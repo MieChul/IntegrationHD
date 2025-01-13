@@ -101,6 +101,10 @@ public class Appointment : BaseEntity
     [BsonRepresentation(BsonType.ObjectId)]
     public string PhysicianId { get; set; }
 
+    [BsonElement("patient_id")]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string PatientId { get; set; }
+
     [BsonElement("date")]
     public DateTime Date { get; set; }
 
@@ -110,9 +114,20 @@ public class Appointment : BaseEntity
     [BsonElement("status")]
     public string Status { get; set; }
 
-    [BsonElement("clinic_id")]
-    [BsonRepresentation(BsonType.ObjectId)]
-    public string ClinicId { get; set; }
+    [BsonElement("clinic_name")]
+    public string ClinicName { get; set; }
+
+    [BsonElement("mobile")]
+    public string Mobile { get; set; }
+
+    [BsonElement("reason")]
+    public string? Reason { get; set; } = string.Empty;
+
+    [BsonElement("physician_name")]
+    public string? PhysicianName { get; set; } = string.Empty;
+
+    [BsonElement("patient_name")]
+    public string? PatientName { get; set; } = string.Empty;
 }
 
 public class Activity : BaseEntity

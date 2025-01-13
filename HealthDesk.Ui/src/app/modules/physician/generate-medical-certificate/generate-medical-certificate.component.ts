@@ -1,118 +1,258 @@
 import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import jsPDF from 'jspdf';
+import { PhysicianService } from '../../services/physician.service';
+import { AccountService } from '../../services/account.service';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+
 @Component({
   selector: 'app-generate-medical-certificate',
   templateUrl: './generate-medical-certificate.component.html',
   styleUrls: ['./generate-medical-certificate.component.scss']
 })
 export class GenerateMedicalCertificateComponent implements OnInit {
+  medicalForm: FormGroup = new FormGroup({});
   patientRecord: any;
-  diagnosis: string = '';
-  treatmentFrom: string = '';
-  treatmentTo: string = '';
-  daysRest: number | null = null;
-  restFromDate: string = '';
-  anotherDays: number | null = null;
-  fitToResumeFrom: string = '';
-  identificationMark: string = '';
-  date: string = '';
+  headerImg: string = '';
+  footerImg: string = '';
+  userData: any;
 
-  constructor(private router: Router) {
+  constructor(private fb: FormBuilder, private router: Router, private physicianService: PhysicianService, private accountService: AccountService, private http: HttpClient) {
     const navigation = this.router.getCurrentNavigation();
     this.patientRecord = navigation?.extras.state?.['patient'] ?? '';
   }
 
   ngOnInit(): void {
-    // Initialize patientRecord from service or any other source if needed
+    this.initializeForm();
+    this.accountService.getUserData().subscribe({
+      next: (data) => {
+        this.userData = data;
+        this.physicianService.getDefaultPrescriptionHeaderFooter(this.userData.id).subscribe({
+          next: async (response: any) => {
+            this.headerImg = await this.fetchImageAsBase64(response.data.header);
+            this.footerImg = await this.fetchImageAsBase64(response.data.footer);
+          },
+          error: (err) => console.error('Error fetching header/footer:', err),
+        });
+      },
+      error: (err) => console.error('Error fetching user data:', err)
+    });
+  }
+
+  initializeForm(): void {
+    this.medicalForm = this.fb.group({
+      name: [this.patientRecord?.name || '', [Validators.required, Validators.maxLength(25)]],
+      age: [this.calculateAge(this.patientRecord?.dateOfBirth) || '0', [Validators.required]],
+      diagnosis: ['', [Validators.required, Validators.maxLength(200)]],
+      treatmentFrom: ['', Validators.required],
+      treatmentTo: ['', Validators.required],
+      daysRest: [null, [Validators.min(0)]],
+      restFromDate: ['', Validators.required],
+      anotherDays: [null, Validators.required],
+      fitToResumeFrom: ['', Validators.required],
+      identificationMark: ['', [Validators.maxLength(100)]],
+      date: ['', Validators.required]
+    }, {
+      validators: [
+        this.dateRangeValidator('treatmentFrom', 'treatmentTo'),
+        this.dateRangeValidator('treatmentTo', 'restFromDate'),
+        this.dateRangeValidator('restFromDate', 'fitToResumeFrom')
+      ]
+    });
+  }
+
+  calculateAge(dateOfBirth: string): number {
+    const dob = new Date(dateOfBirth);
+    const diff = Date.now() - dob.getTime();
+    const ageDate = new Date(diff);
+    return Math.abs(ageDate.getUTCFullYear() - 1970);
+  }
+
+  dateRangeValidator(from: string, to: string) {
+    return (formGroup: FormGroup) => {
+      const fromControl = formGroup.controls[from];
+      const toControl = formGroup.controls[to];
+
+      if (toControl.errors && !toControl.errors['dateRange']) {
+        return;
+      }
+
+      if (fromControl.value && toControl.value && new Date(fromControl.value) > new Date(toControl.value)) {
+        toControl.setErrors({ dateRange: true });
+      } else {
+        toControl.setErrors(null);
+      }
+    };
   }
 
   resetForm() {
-    this.diagnosis = '';
-    this.treatmentFrom = '';
-    this.treatmentTo = '';
-    this.daysRest = null;
-    this.restFromDate = '';
-    this.anotherDays = null;
-    this.fitToResumeFrom = '';
-    this.identificationMark = '';
-    this.date = '';
+    this.medicalForm.reset();
   }
 
   generatePdf() {
+    if (this.medicalForm.invalid) {
+      return;
+    }
+  
     const doc = new jsPDF();
-    const margin = 10;
+    const margin = 10; // Left and right margin
     const pageWidth = doc.internal.pageSize.getWidth();
-    const underlineText = (text: string) => `___${text}___`;
-
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('MEDICAL CERTIFICATE', pageWidth / 2, 20, { align: 'center' });
-
-    // Place date at the top right below the header
-    doc.setFontSize(12);
-    doc.text(`Date: ${this.date}`, pageWidth - margin - 50, 20);
-
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`No.`, margin, 30);
-    doc.text(`Patient: `, margin, 40);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${underlineText(this.patientRecord.name)}`, margin + 20, 40);
-
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Age: `, margin, 50);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${underlineText(this.patientRecord.age.toString())} Yrs. Diagnosis: ${underlineText(this.diagnosis)}`, margin + 15, 50);
-
-    doc.setFont('helvetica', 'normal');
-    doc.text(`is under my treatment as an out-patient and/or in-patient, at this clinic.`, margin, 60);
-
-    doc.text(`Was treated as an O.P.D. Patient from: `, margin, 70);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${underlineText(this.treatmentFrom)} to ${underlineText(this.treatmentTo)}.`, margin + 70, 70);
-
-    doc.setFont('helvetica', 'normal');
-    doc.text(`He/She has been advised `, margin, 80);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${underlineText(this.daysRest?.toString()??'')} days rest from ${underlineText(this.treatmentFrom)} to ${underlineText(this.treatmentTo)}.`, margin + 55, 80);
-
-    doc.setFont('helvetica', 'normal');
-    doc.text(`However, He/She is further advised to continue rest from `, margin, 90);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${underlineText(this.restFromDate)} for another ${underlineText(this.anotherDays?.toString()??'')} days.`, margin + 100, 90);
-
-    doc.setFont('helvetica', 'normal');
-    doc.text(`He/She is fit to resume normal duties / light work from `, margin, 100);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${underlineText(this.fitToResumeFrom)}.`, margin + 100, 100);
-
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Indentification Mark: `, margin, 110);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${underlineText(this.identificationMark)}.`, margin + 50, 110);
-
-    // Signature and stamp boxes
-    doc.setLineWidth(0.5);
-    doc.rect(margin, 130, pageWidth / 2 - margin * 2, 30); // Patient's Signature
-    doc.rect(pageWidth / 2 + margin, 130, pageWidth / 2 - margin * 2, 30); // Doctor's Signature
-    doc.text(`Patient's Signature`, margin + 2, 140);
-    doc.text(`Doctor's Signature`, pageWidth / 2 + margin + 2, 140);
-
-    // Add header and footer images
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const contentWidth = pageWidth - margin; // Available width for text
+    let currentY = 30; // Initial Y position
+  
+    // Format date to dd/mm/yyyy
+    const formatDate = (date: string): string => {
+      if (!date) return '';
+      const d = new Date(date);
+      const day = d.getDate().toString().padStart(2, '0');
+      const month = (d.getMonth() + 1).toString().padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    };
+  
+    // Wrap text and move to the next line if necessary
+    const wrapText = (text: string, x: number, y: number): number => {
+      const lines = doc.splitTextToSize(text, 150); // Split text within contentWidth
+      doc.setFont('helvetica', 'bold'); // Set bold font
     
-    const headerImg = localStorage.getItem('prescription_header_default');
-    const footerImg =  localStorage.getItem('prescription_footer_default');
-
-    if (headerImg) {
-      doc.addImage(headerImg, 'JPEG', margin, 10, pageWidth - 2 * margin, 20);
+      lines.forEach((line:string) => {
+        // Render each line and underline it
+        doc.text(line, x, y);
+        const textWidth = doc.getTextWidth(line); // Calculate line width
+        const lineHeight = 2; // Line height for underline
+        doc.line(x, y + lineHeight, x + textWidth, y + lineHeight); // Underline
+        y += 6; // Increment Y position (line height = 6)
+      });
+    
+      doc.setFont('helvetica', 'normal'); // Reset to normal font after rendering
+      return y; // Return updated Y position
+    };
+  
+    // Underline and bold specific text
+    const underlineBoldText = (text: string, x: number, y: number): void => {
+      doc.setFont('helvetica', 'bold');
+      doc.text(text, x, y);
+      const textWidth = doc.getTextWidth(text);
+      const lineHeight = 2;
+      doc.line(x, y + lineHeight, x + textWidth, y + lineHeight);
+      doc.setFont('helvetica', 'normal'); // Reset to normal font
+    };
+  
+    doc.setFontSize(12);
+  
+    // Title
+    doc.setFont('helvetica', 'bold');
+    doc.text('MEDICAL CERTIFICATE', pageWidth / 2, currentY, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    currentY += 10;
+  
+    // Date
+    const formattedDate = formatDate(this.medicalForm.value.date);
+    doc.text(`Date:`, margin, currentY);
+    underlineBoldText(formattedDate, margin + 20, currentY);
+    currentY += 10;
+  
+    // Patient Details
+    doc.text(`Patient:`, margin, currentY);
+    underlineBoldText(this.medicalForm.value.name, margin + 20, currentY);
+    currentY += 10;
+  
+    // Age and Diagnosis
+    doc.text(`Age:`, margin, currentY);
+    underlineBoldText(`${this.medicalForm.value.age} Yrs.`, margin + 20, currentY);
+    currentY += 10;
+  
+    doc.text(`Diagnosis:`, margin, currentY);
+    currentY = wrapText(this.medicalForm.value.diagnosis, margin + 20, currentY);
+  
+    // Treatment Period
+    currentY += 10;
+    const treatmentFrom = formatDate(this.medicalForm.value.treatmentFrom);
+    const treatmentTo = formatDate(this.medicalForm.value.treatmentTo);
+    doc.text(`Was treated as an O.P.D. Patient from:`, margin, currentY);
+    underlineBoldText(`${treatmentFrom} To: ${treatmentTo}.`, margin + 75, currentY);
+    currentY += 10;
+  
+    // Rest Period
+    const restFromDate = formatDate(this.medicalForm.value.restFromDate);
+    doc.text(`He/She has been advised`, margin, currentY);
+    underlineBoldText(`${this.medicalForm.value.daysRest} days rest from ${restFromDate}.`, margin + 50, currentY);
+    currentY += 10;
+  
+    // Fit to Resume
+    const fitToResumeFrom = formatDate(this.medicalForm.value.fitToResumeFrom);
+    doc.text(`He/She is fit to resume normal duties / light work from:`, margin, currentY);
+    underlineBoldText(fitToResumeFrom, margin + 105, currentY);
+    currentY += 10;
+  
+    // Identification Mark
+    doc.text(`Identification Mark:`, margin, currentY);
+    currentY = wrapText(this.medicalForm.value.identificationMark, margin + 37, currentY);
+  
+    // Check if there's enough space for signature boxes
+    if (currentY + 40 > pageHeight) {
+      doc.addPage();
+      currentY = margin; // Reset Y position for new page
     }
-
-    if (footerImg) {
-      doc.addImage(footerImg, 'PNG', margin, doc.internal.pageSize.getHeight() - 40, pageWidth - 2 * margin, 20);
+  
+    // Signature and stamp boxes
+    const boxHeight = 30;
+    doc.setLineWidth(0.5);
+    doc.rect(margin, currentY + 10, contentWidth / 2 - margin / 2, boxHeight); // Patient's Signature Box
+    doc.rect(pageWidth / 2 + margin / 2, currentY + 10, contentWidth / 2 - margin / 2, boxHeight); // Doctor's Signature Box
+    doc.text(`Patient's Signature`, margin + 2, currentY + 20);
+    doc.text(`Doctor's Signature`, pageWidth / 2 + margin + 2, currentY + 20);
+  
+    // Add header image
+    try {
+      if (this.headerImg) {
+        doc.addImage(this.headerImg, 'PNG', margin, 10, contentWidth, 20);
+      }
+    } catch (error) {
+      console.error('Error adding header image:', error);
     }
-
+  
+    // Add footer image
+    try {
+      if (this.footerImg) {
+        doc.addImage(
+          this.footerImg,
+          'PNG',
+          margin,
+          pageHeight - 40,
+          contentWidth,
+          20
+        );
+      }
+    } catch (error) {
+      console.error('Error adding footer image:', error);
+    }
+  
+    // Open the PDF in a new window
     const pdfUrl = doc.output('bloburl');
     window.open(pdfUrl, '_blank');
   }
+  
+  
+
+  fetchImageAsBase64(imageUrl: string): Promise<string> {
+    return firstValueFrom(
+      this.http.get(imageUrl, { responseType: 'blob' }) // Fetch image as a Blob
+    ).then((blob) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob); // Convert Blob to Base64
+      });
+    });
+  }
+
+    goBack() {
+      // Navigate back to the design prescription page
+      this.router.navigate(['/physician/patient-record']);
+    }
 }

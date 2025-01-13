@@ -1,18 +1,18 @@
 <div class="container">
-    <h1 class="animated-heading">
-      <i class="bi bi-file-earmark-medical me-2"></i>Generate Prescription for {{patient.name}}
-    </h1>
-  
+  <h1 class="animated-heading">
+    <i class="bi bi-file-earmark-medical me-2"></i>Generate Prescription for {{patientRecord?.name}}
+  </h1>
+  <form [formGroup]="prescriptionForm">
     <div class="header mb-3" *ngIf="currentTabIndex === 3">
-      <button class="btn btn-primary generate pointer-cursor" (click)="generatePDF()" [disabled]="currentTabIndex !== 3">
+      <button class="btn btn-primary generate pointer-cursor" (click)="generatePDF()"
+        [disabled]="currentTabIndex !== 3">
         <i class="bi bi-file-earmark-text me-2"></i>Generate Prescription
       </button>
-      <div class="form-check form-switch m-2">
-        <input class="form-check-input" type="checkbox" id="useHeader" checked>
-        <h6 class="form-check-label" for="useHeader"><b>Use Saved Template Header and Footer?</b></h6>
-      </div>
+      <mat-slide-toggle formControlName="useHeader" class="m-2">
+        <b>Use Saved Template Header and Footer?</b>
+      </mat-slide-toggle>
     </div>
-  
+
     <ul class="nav nav-tabs">
       <li class="nav-item">
         <a class="nav-link" [ngClass]="{ 'active': currentTabIndex === 0 }" id="generalAndComplaints-tab">
@@ -35,264 +35,174 @@
         </a>
       </li>
     </ul>
-    
-  
+
+
     <!-- General & Complaints Tab -->
-    <div *ngIf="currentTabIndex === 0" id="generalAndComplaints">
-      <div class="sections">
-        <div class="left-section dynamic-scroll-container">
-          <h3>General Details</h3>
-          <div class="row">
-            <div class="col">
-              <div class="form-floating mb-3">
-                <input type="text" class="form-control" id="name" [(ngModel)]="patient.name"
-                  (ngModelChange)="setDefault($event, patient, 'name')" readonly>
-                <label for="name">Name</label>
+    <div class="card mt-2" *ngIf="currentTabIndex === 0" id="generalAndComplaints">
+      <div class="card-body">
+        <div class="sections">
+          <div class="left-section dynamic-scroll-container">
+            <h3>General Details</h3>
+            <div class="row">
+              <div class="col">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Name</mat-label>
+                  <input matInput formControlName="name" readonly>
+                </mat-form-field>
+              </div>
+              <div class="col">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Age</mat-label>
+                  <input matInput formControlName="age" readonly>
+                </mat-form-field>
               </div>
             </div>
-            <div class="col">
-              <div class="form-floating mb-3">
-                <input type="number" class="form-control" id="age" [(ngModel)]="patient.age"
-                  (ngModelChange)="setDefault($event, patient, 'age')" readonly>
-                <label for="age">Age</label>
+            <div class="row">
+              <div class="col">
+                <label for="gender">Gender</label>
+                <div class="d-flex align-items-center">
+                  <i *ngIf="prescriptionForm.get('gender')?.value === 'Male'" class="bi bi-gender-male"></i>
+                  <i *ngIf="prescriptionForm.get('gender')?.value === 'Female'" class="bi bi-gender-female"></i>
+                  <span class="ms-2">{{ prescriptionForm.get('gender')?.value }}</span>
+                </div>
+              </div>
+              <div class="col">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Past History</mat-label>
+                  <textarea matInput formControlName="pastHistory"></textarea>
+                </mat-form-field>
               </div>
             </div>
           </div>
-          <div class="row">
-            <div class="col">
-              <label for="gender">Gender</label>
-              <div class="d-flex align-items-center">
-                <i *ngIf="patient.gender === 'Male'" class="bi bi-gender-male"></i>
-                <i *ngIf="patient.gender === 'Female'" class="bi bi-gender-female"></i>
-                <span class="ms-2">{{patient.gender}}</span>
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-floating mb-3">
-                <textarea class="form-control" id="pastHistory" [(ngModel)]="prescription.pastHistory"
-                  (ngModelChange)="setDefault($event, prescription, 'pastHistory')"></textarea>
-                <label for="pastHistory">Past History</label>
-              </div>
-            </div>
+
+          <div class="divider"></div>
+
+          <div class="right-section dynamic-scroll-container">
+            <h3>Chief Complaints</h3>
+            <button class="btn btn-success add-button pointer-cursor" (click)="addComplaint()" data-bs-toggle="tooltip"
+              title="Add Complaint">
+              <i class="bi bi-plus-lg"></i>
+            </button>
+            <table class="table table-hover table-modern">
+              <thead class="table-light">
+                <tr>
+                  <th>Complaint</th>
+                  <th>Duration (days)</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody formArrayName="complaints">
+                <tr *ngFor="let complaint of complaints.controls; let i = index" [formGroupName]="i">
+                  <td>
+                    <input type="text" class="form-control" formControlName="text">
+                  </td>
+                  <td>
+                    <input type="number" class="form-control" formControlName="duration">
+                  </td>
+                  <td>
+                    <button class="btn btn-danger pointer-cursor" (click)="removeComplaint(i)" data-bs-toggle="tooltip"
+                      title="Delete Complaint">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
-  
-        <div class="divider"></div>
-  
-        <div class="right-section dynamic-scroll-container">
-          <h3>Chief Complaints</h3>
-          <button class="btn btn-success add-button pointer-cursor" (click)="addComplaint()" data-bs-toggle="tooltip"
-            title="Add Complaint">
-            <i class="bi bi-plus-lg"></i>
+        <div class="d-flex justify-content-between mt-4">
+          <div></div>
+          <button class="btn btn-primary" (click)="nextTab()">
+            Next <i class="bi bi-arrow-right"></i>
           </button>
-          <table class="table table-hover table-modern">
-            <thead class="table-light">
-              <tr>
-                <th>Complaint</th>
-                <th>Duration (days)</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let complaint of prescription.complaints; let i = index">
-                <td>
-                  <input type="text" class="form-control" [(ngModel)]="complaint.text"
-                    (ngModelChange)="setDefault($event, complaint, 'text')">
-                </td>
-                <td>
-                  <input type="number" class="form-control" [(ngModel)]="complaint.duration"
-                    (ngModelChange)="setDefault($event, complaint, 'duration')">
-                </td>
-                <td>
-                  <button class="btn btn-danger pointer-cursor" (click)="removeComplaint(i)" data-bs-toggle="tooltip"
-                    title="Delete Complaint">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
         </div>
-      </div>
-      <div class="d-flex justify-content-between mt-4">
-        <div></div>
-        <button class="btn btn-primary" (click)="nextTab()">
-          Next <i class="bi bi-arrow-right"></i>
-        </button>
       </div>
     </div>
-  
+
     <!-- Examination & Systemic Tab -->
-    <div *ngIf="currentTabIndex === 1" id="examinationAndSystemic">
-      <div class="sections">
-        <div class="left-section dynamic-scroll-container">
-          <h3>General Examination</h3>
-          <div class="row">
-            <div class="col">
-              <div class="form-floating mb-3">
-                <input type="text" class="form-control" id="temperature" [(ngModel)]="prescription.temperature"
-                  (ngModelChange)="setDefault($event, prescription, 'temperature')">
-                <label for="temperature">Temperature</label>
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-floating mb-3">
-                <input type="text" class="form-control" id="pulseRate" [(ngModel)]="prescription.pulseRate"
-                  (ngModelChange)="setDefault($event, prescription, 'pulseRate')">
-                <label for="pulseRate">Pulse Rate</label>
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col">
-              <div class="form-floating mb-3">
-                <input type="text" class="form-control" id="bloodPressure" [(ngModel)]="prescription.bloodPressure"
-                  (ngModelChange)="setDefault($event, prescription, 'bloodPressure')">
-                <label for="bloodPressure">Blood Pressure</label>
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-floating mb-3">
-                <input type="text" class="form-control" id="respiratoryRate" [(ngModel)]="prescription.respiratoryRate"
-                  (ngModelChange)="setDefault($event, prescription, 'respiratoryRate')">
-                <label for="respiratoryRate">Respiratory Rate</label>
-              </div>
-            </div>
-          </div>
-          <h3>Local Examination</h3>
-          <div class="row">
-            <div class="col">
+    <div class="card mt-2" *ngIf="currentTabIndex === 1" id="examinationAndSystemic">
+      <div class="card-body">
+        <div class="sections">
+          <div class="left-section dynamic-scroll-container">
+            <h3>General Examination</h3>
+            <div class="row">
               <div class="col">
-                <div class="form-floating mb-3">
-                  <textarea class="form-control" id="localExamination" [(ngModel)]="prescription.localExamination"></textarea>
-                  <label for="pastHistory">Loacl Examination</label>
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Temperature</mat-label>
+                  <input matInput formControlName="temperature">
+                </mat-form-field>
+              </div>
+              <div class="col">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Pulse Rate</mat-label>
+                  <input matInput formControlName="pulseRate">
+                </mat-form-field>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Blood Pressure</mat-label>
+                  <input matInput formControlName="bloodPressure">
+                </mat-form-field>
+              </div>
+              <div class="col">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Respiratory Rate</mat-label>
+                  <input matInput formControlName="respiratoryRate">
+                </mat-form-field>
+              </div>
+            </div>
+            <h3>Local Examination</h3>
+            <div class="row">
+              <div class="col">
+                <div class="col">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Local Examination</mat-label>
+                    <textarea matInput formControlName="localExamination"></textarea>
+                  </mat-form-field>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-  
-        <div class="divider"></div>
-  
-        <div class="right-section dynamic-scroll-container">
-          <h3>Systemic Examination</h3>
-          <button class="btn btn-success add-button pointer-cursor" (click)="addSystem()" data-bs-toggle="tooltip" title="Add System">
-            <i class="bi bi-plus-lg"></i>
-          </button>
-          <table class="table table-hover table-modern">
-            <thead class="table-light">
-              <tr>
-                <th>System</th>
-                <th>Findings</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let system of prescription.systems; let i = index">
-                <td>
-                  <input type="text" class="form-control" [(ngModel)]="system.name"
-                    (ngModelChange)="setDefault($event, system, 'name')">
-                </td>
-                <td>
-                  <input type="text" class="form-control" [(ngModel)]="system.findings"
-                    (ngModelChange)="setDefault($event, system, 'findings')">
-                </td>
-                <td>
-                  <button class="btn btn-danger pointer-cursor" (click)="removeSystem(i)" data-bs-toggle="tooltip" title="Delete System">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="d-flex justify-content-between mt-4">
-        <button class="btn btn-secondary" (click)="previousTab()">
-          <i class="bi bi-arrow-left"></i> Back
-        </button>
-        <button class="btn btn-primary" (click)="nextTab()">
-          Next <i class="bi bi-arrow-right"></i>
-        </button>
-      </div>
-    </div>
-  
-    <!-- Final Investigation-->
-    <div *ngIf="currentTabIndex === 2" id="investigation">
-      <div class="sections">
-    
-        <!-- Top Actions: Add Profile & Custom Profile -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h3>Final Investigation</h3>
-          <div>
-            <button href="physician/add-profile" class="btn btn-primary me-2" (click)="navigateToAddProfile()">
-              <i class="bi bi-plus-circle"></i> Add Profile
+
+          <div class="divider"></div>
+
+          <div class="right-section dynamic-scroll-container">
+            <h3>Systemic Examination</h3>
+            <button class="btn btn-success add-button pointer-cursor" (click)="addSystem()" data-bs-toggle="tooltip"
+              title="Add System">
+              <i class="bi bi-plus-lg"></i>
             </button>
-          
-          </div>
-        </div>
-    
-        <!-- Select Profiles: Multiselect Dropdown -->
-        <div class="row mb-4">
-          <div class="col">
-            <ng-multiselect-dropdown
-            [settings]="dropdownSettings"
-            [data]="profiles"
-            [(ngModel)]="selectedProfiles"
-            (onSelect)="updateInvestigations(selectedProfiles)"
-            (onDeSelect)="updateInvestigations(selectedProfiles)"
-            [placeholder]="'Select Profiles'"
-          ></ng-multiselect-dropdown>
-          </div>
-          <div class="col">
-            <button class="btn btn-secondary" (click)="addCustomInvestigation()">
-              <i class="bi bi-pencil-square"></i> Add Custom Investigation
-            </button>
-          </div>
-        </div>
-    
-        <!-- Investigations Table: Profile-based and Custom Investigations -->
-        <div class="table-responsive">
-          <table class="table table-hover table-modern">
-            <thead class="table-light">
-              <tr>
-                <th>Investigation Name</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Profile Investigations -->
-              <ng-container *ngFor="let profile of selectedProfiles">
-                <tr *ngFor="let investigation of profile.investigations; let i = index">
-                  <td>{{ investigation.name }}</td>
+            <table class="table table-hover table-modern">
+              <thead class="table-light">
+                <tr>
+                  <th>System</th>
+                  <th>Findings</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody formArrayName="systems">
+                <tr *ngFor="let system of systems.controls; let i = index" [formGroupName]="i">
                   <td>
-                    <input type="text" class="form-control" [(ngModel)]="investigation.value" placeholder="Value"
-                      (ngModelChange)="onInvestigationValueChange()" />
+                    <select class="form-select" formControlName="name" >
+                      <option *ngFor="let system of systemsDd" [value]="system">{{system}}</option>
+                    </select>
                   </td>
                   <td>
-                    <!-- Optionally, you can add any action button here -->
-                    <i class="bi bi-check-circle text-success"></i>
+                    <input type="text" class="form-control" formControlName="findings">
+                  </td>
+                  <td>
+                    <button class="btn btn-danger pointer-cursor" (click)="removeSystem(i)" data-bs-toggle="tooltip"
+                      title="Delete System">
+                      <i class="bi bi-trash"></i>
+                    </button>
                   </td>
                 </tr>
-              </ng-container>
-    
-              <!-- Custom Investigations -->
-              <tr *ngFor="let customInv of customInvestigations; let i = index">
-                <td>
-                  <input type="text" class="form-control" [(ngModel)]="customInv.name" placeholder="Investigation Name"
-                    (ngModelChange)="onInvestigationValueChange()" />
-                </td>
-                <td>
-                  <button class="btn btn-danger btn-sm" (click)="removeCustomInvestigation(i)">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
         </div>
-    
-        <!-- Navigation Buttons -->
         <div class="d-flex justify-content-between mt-4">
           <button class="btn btn-secondary" (click)="previousTab()">
             <i class="bi bi-arrow-left"></i> Back
@@ -301,96 +211,166 @@
             Next <i class="bi bi-arrow-right"></i>
           </button>
         </div>
-    
       </div>
     </div>
-    
-    <!-- Prescription (Rx) Tab -->
-    <div *ngIf="currentTabIndex === 3" id="rx">
-      <div class="sections">
-        <div class="left-section">
-          <h3>Instructions</h3>
-          <div class="row">
+
+    <div class="card mt-2" *ngIf="currentTabIndex === 2" id="investigation">
+      <div class="card-body">
+        <div class="sections">
+
+          <!-- Top Actions: Add Profile & Custom Profile -->
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>Final Investigation</h3>
+            <button class="btn btn-primary" (click)="navigateToAddProfile()">
+              <i class="bi bi-plus-circle"></i> Add Profile
+            </button>
+          </div>
+
+          <!-- Select Profiles: Material Multiselect Dropdown -->
+          <div class="row mb-4">
             <div class="col">
-              <div class="col">
-                <div class="form-floating mb-3">
-                  <textarea class="form-control" id="localExamination" [(ngModel)]="prescription.localExamination"></textarea>
-                  <label for="pastHistory">Other Instructions</label>
-                </div>
-              </div>
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Select Profiles</mat-label>
+                <mat-select [formControl]="selectedProfilesControl"
+                  (selectionChange)="onProfileSelectionChange($event.value)" multiple>
+                  <mat-option *ngFor="let profile of profiles" [value]="profile">
+                    {{ profile.name }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
             </div>
             <div class="col">
-              <h6><b>Next Follow Up:</b></h6>
-              <input type="date" id="followUpDate" class="form-control" formControlName="followUpDate">
+              <button class="btn btn-secondary" (click)="addCustomInvestigation()">
+                <i class="bi bi-pencil-square"></i> Add Custom Investigation
+              </button>
             </div>
           </div>
+
+          <!-- Investigations Table -->
+          <div class="table-responsive">
+            <table class="table table-hover table-modern">
+              <thead class="table-light">
+                <tr>
+                  <th>Investigation Name</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody formArrayName="finalInvestigations">
+                <tr *ngFor="let investigation of finalInvestigationsFormArray.controls; let i = index"
+                  [formGroupName]="i">
+                  <td>
+                    <input type="text" class="form-control" formControlName="name" placeholder="Investigation Name" />
+                  </td>
+                  <td>
+                    <button class="btn btn-danger btn-sm" (click)="removeInvestigation(i)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- Navigation Buttons -->
+          <div class="d-flex justify-content-between mt-4">
+            <button class="btn btn-secondary" (click)="previousTab()">
+              <i class="bi bi-arrow-left"></i> Back
+            </button>
+            <button class="btn btn-primary" (click)="nextTab()">
+              Next <i class="bi bi-arrow-right"></i>
+            </button>
+          </div>
         </div>
-        <div class="right-section dynamic-scroll-container">
-          <h3>Prescription (Rx)</h3>
-          <button class="btn btn-success add-button pointer-cursor" (click)="addRx()" data-bs-toggle="tooltip" title="Add Rx">
-            <i class="bi bi-plus-lg"></i>
-          </button>
-          <table class="table table-hover table-modern">
-            <thead class="table-light">
-              <tr>
-                <th>Dosage Form</th>
-                <th>Drug Name</th>
-                <th>Strength</th>
-                <th>Times</th>
-                <th>Duration</th>
-                <th>Instruction</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let rx of prescription.rx; let i = index">
-                <td>
-                  <select class="form-select" [(ngModel)]="rx.dosageForm"
-                    (ngModelChange)="setDefault($event, rx, 'dosageForm')">
-                    <option *ngFor="let form of dosageForms" [value]="form">{{form}}</option>
-                  </select>
-                </td>
-                <td>
-                  <select class="form-select" [(ngModel)]="rx.drugName"
-                    (ngModelChange)="setDefault($event, rx, 'drugName')">
-                    <option *ngFor="let drug of drugNames" [value]="drug">{{drug}}</option>
-                  </select>
-                </td>
-                <td>
-                  <select class="form-select" [(ngModel)]="rx.strength"
-                    (ngModelChange)="setDefault($event, rx, 'strength')">
-                    <option *ngFor="let strength of strengths" [value]="strength">{{strength}}</option>
-                  </select>
-                </td>
-                <td>
-                  <select class="form-select" [(ngModel)]="rx.times" (ngModelChange)="setDefault($event, rx, 'times')">
-                    <option *ngFor="let time of times" [value]="time">{{time}}</option>
-                  </select>
-                </td>
-                <td>
-                  <select class="form-select" [(ngModel)]="rx.duration"
-                    (ngModelChange)="setDefault($event, rx, 'duration')">
-                    <option *ngFor="let duration of durations" [value]="duration">{{duration}}</option>
-                  </select>
-                </td>
-                <td>
-                  <input type="text" class="form-control" [(ngModel)]="rx.instruction"
-                    (ngModelChange)="setDefault($event, rx, 'instruction')">
-                </td>
-                <td>
-                  <button class="btn btn-danger pointer-cursor" (click)="removeRx(i)" data-bs-toggle="tooltip" title="Delete Rx">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="d-flex justify-content-between mt-4">
-        <button class="btn btn-secondary" (click)="previousTab()">
-          <i class="bi bi-arrow-left"></i> Back
-        </button>
       </div>
     </div>
-  </div>
+
+    <!-- Rx-->
+    <div class="card mt-2" *ngIf="currentTabIndex === 3" id="rx">
+      <div class="card-body">
+        <div class="sections">
+          <div class="left-section">
+            <h3>Instructions</h3>
+            <div class="row">
+              <div class="col">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Other Instructions</mat-label>
+                  <textarea matInput formControlName="otherInstructions"></textarea>
+                </mat-form-field>
+              </div>
+              <div class="col">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Next Follow Up</mat-label>
+                  <input matInput [matDatepicker]="picker" formControlName="nextFollowUp">
+                  <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                  <mat-datepicker #picker></mat-datepicker>
+                </mat-form-field>
+              </div>
+            </div>
+          </div>
+
+          <div class="right-section dynamic-scroll-container">
+            <h3>Prescription (Rx)</h3>
+            <button class="btn btn-success add-button pointer-cursor" (click)="addRx()" title="Add Rx">
+              <i class="bi bi-plus-lg"></i>
+            </button>
+            <table class="table table-hover table-modern">
+              <thead class="table-light">
+                <tr>
+                  <th>Dosage Form</th>
+                  <th>Drug Name</th>
+                  <th>Strength</th>
+                  <th>Times</th>
+                  <th>Duration</th>
+                  <th>Instruction</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody formArrayName="rx">
+                <tr *ngFor="let rxControl of rx.controls; let i = index" [formGroupName]="i">
+                  <td>
+                    <select class="form-select" formControlName="dosageForm">
+                      <option *ngFor="let form of dosageForms" [value]="form">{{form}}</option>
+                    </select>
+                  </td>
+                  <td>
+                    <select class="form-select" formControlName="drugName" >
+                      <option *ngFor="let drug of drugNames" [value]="drug">{{drug}}</option>
+                    </select>
+                  </td>
+                  <td>
+                    <select class="form-select" formControlName="strength">
+                      <option *ngFor="let strength of strengths" [value]="strength">{{strength}}</option>
+                    </select>
+                  </td>
+                  <td>
+                    <select class="form-select" formControlName="times">
+                      <option *ngFor="let time of times" [value]="time">{{time}}</option>
+                    </select>
+                  </td>
+                  <td>
+                    <select class="form-select" formControlName="duration">
+                      <option *ngFor="let duration of durations" [value]="duration">{{duration}}</option>
+                    </select>
+                  </td>
+                  <td>
+                    <input type="text" class="form-control"  formControlName="instruction">
+                  </td>
+                  <td>
+                    <button class="btn btn-danger pointer-cursor" (click)="removeRx(i)" data-bs-toggle="tooltip"
+                      title="Delete Rx">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between mt-4">
+          <button class="btn btn-secondary" (click)="previousTab()">
+            <i class="bi bi-arrow-left"></i> Back
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

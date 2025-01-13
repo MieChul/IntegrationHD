@@ -65,8 +65,8 @@ namespace HealthDesk.API.Controllers
 
         // 3. Appointments
         [HttpGet("{patientId}/appointments")]
-        public async Task<IActionResult> GetAppointments(string patientId) =>
-            Ok(new { Success = true, Message = "Appointments retrieved successfully.", Data = await _patientService.GetAppointmentsAsync(patientId) });
+        public async Task<IActionResult> GetAppointments(string patientId, [FromQuery] bool isPhysician = false) =>
+            Ok(new { Success = true, Message = "Appointments retrieved successfully.", Data = await _patientService.GetAppointmentsAsync(patientId, isPhysician) });
 
         [HttpPost("{patientId}/appointments")]
         public async Task<IActionResult> SaveAppointment(string patientId, [FromBody] AppointmentDto dto)
@@ -78,11 +78,11 @@ namespace HealthDesk.API.Controllers
             return Ok(new { Success = true, Message = "Appointment saved successfully." });
         }
 
-        [HttpDelete("{patientId}/appointments/{appointmentId}")]
-        public async Task<IActionResult> DeleteAppointment(string patientId, string appointmentId)
+        [HttpPost("{patientId}/update-appointment-status/{appointmentId}")]
+        public async Task<IActionResult> UpdateAppointmentStatus(string patientId, string appointmentId, string status)
         {
-            await _patientService.DeleteAppointmentAsync(patientId, appointmentId);
-            return Ok(new { Success = true, Message = "Appointment deleted successfully." });
+            await _patientService.UpdateAppointmentStatus(patientId, appointmentId, status);
+            return Ok(new { Success = true, Message = "Appointment status updated successfully." });
         }
 
         // 4. Self Records
@@ -291,5 +291,9 @@ namespace HealthDesk.API.Controllers
             await _patientService.AddOrUpdateComplianceDetailAsync(patientId, complianceId, dto);
             return Ok(new { Success = true, Message = "Compliance detail saved successfully." });
         }
+
+        [HttpGet("physicians")]
+        public async Task<IActionResult> GetPhysicians() =>
+           Ok(new { Success = true, Message = "Physicians retrieved successfully.", Data = await _patientService.GetPhysicians() });
     }
 }

@@ -1,88 +1,158 @@
-<div class="container">
-    <h2 class="animated-heading">
-      <i class="bi bi-file-earmark-medical me-2"></i>Generate Medical Certificate
-    </h2>
-    <div class="card">
-      <div class="card-body">
-        <form (ngSubmit)="generatePdf()">
-          <div class="row mb-3">
-            <div class="col">
-              <div class="form-floating mb-3 floating-input">
-                <input type="text" class="form-control" id="patientName" [(ngModel)]="patientRecord.name" name="patientName" readonly>
-                <label for="patientName">Patient Name</label>
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-floating mb-3 floating-input">
-                <input type="number" class="form-control" id="age" [(ngModel)]="patientRecord.age" name="age" readonly>
-                <label for="age">Age</label>
-              </div>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col">
-              <div class="form-floating mb-3 floating-input">
-                <input type="text" class="form-control" id="diagnosis" [(ngModel)]="diagnosis" name="diagnosis" required>
-                <label for="diagnosis">Diagnosis</label>
-              </div>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col">
-              <div class="form-floating mb-3 floating-input">
-                <input type="date" class="form-control" id="treatmentFrom" [(ngModel)]="treatmentFrom" name="treatmentFrom" required>
-                <label for="treatmentFrom">Treatment From</label>
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-floating mb-3 floating-input">
-                <input type="date" class="form-control" id="treatmentTo" [(ngModel)]="treatmentTo" name="treatmentTo" required>
-                <label for="treatmentTo">Treatment To</label>
-              </div>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col">
-              <div class="form-floating mb-3 floating-input">
-                <input type="number" class="form-control" id="daysRest" [(ngModel)]="daysRest" name="daysRest" required>
-                <label for="daysRest">Days Rest</label>
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-floating mb-3 floating-input">
-                <input type="date" class="form-control" id="restFromDate" [(ngModel)]="restFromDate" name="restFromDate" required>
-                <label for="restFromDate">Rest From</label>
-              </div>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col">
-              <div class="form-floating mb-3 floating-input">
-                <input type="number" class="form-control" id="anotherDays" [(ngModel)]="anotherDays" name="anotherDays" required>
-                <label for="anotherDays">Another Days</label>
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-floating mb-3 floating-input">
-                <input type="date" class="form-control" id="fitToResumeFrom" [(ngModel)]="fitToResumeFrom" name="fitToResumeFrom" required>
-                <label for="fitToResumeFrom">Fit to Resume From</label>
-              </div>
-            </div>
-          </div>
-          <div class="form-floating mb-3 floating-input">
-            <input type="text" class="form-control" id="identificationMark" [(ngModel)]="identificationMark" name="identificationMark" required>
-            <label for="identificationMark">Identification Mark</label>
-          </div>
-          <div class="form-floating mb-3 floating-input">
-            <input type="date" class="form-control" id="date" [(ngModel)]="date" name="date" required>
-            <label for="date">Date</label>
-          </div>
-          <div class="d-flex justify-content-between">
-            <button type="submit" class="btn btn-primary">Generate PDF</button>
-            <button type="reset" class="btn btn-secondary" (click)="resetForm()">Reset</button>
-          </div>
-        </form>
-      </div>
+<div class="container" *ngIf="medicalForm && userData">
+  <h2 class="animated-heading">
+    <i class="bi bi-file-earmark-medical me-2"></i>Generate Medical Certificate
+  </h2>
+  <div class="row mb-4">
+    <div class="col text-start">
+      <button type="button" class="btn btn-secondary" (click)="goBack()" data-bs-toggle="tooltip" data-bs-placement="right"
+        title="Back">
+        <i class="bi bi-arrow-left"></i>
+      </button>
     </div>
   </div>
-  
+  <div class="card">
+    <div class="card-body">
+      <form [formGroup]="medicalForm" (ngSubmit)="generatePdf()">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Patient Name</mat-label>
+              <input matInput formControlName="name" readonly>
+              <mat-error *ngIf="medicalForm.get('name')?.hasError('required')">
+                Patient Name is required
+              </mat-error>
+            </mat-form-field>
+          </div>
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Age</mat-label>
+              <input matInput formControlName="age" readonly>
+              <mat-error *ngIf="medicalForm.get('age')?.hasError('required')">
+                Age is required
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-12">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Diagnosis</mat-label>
+              <textarea matInput formControlName="diagnosis" rows="3"></textarea>
+              <mat-error *ngIf="medicalForm.get('diagnosis')?.hasError('required')">
+                Diagnosis is required
+              </mat-error>
+              <mat-error *ngIf="medicalForm.get('diagnosis')?.hasError('maxlength')">
+                Diagnosis cannot exceed 200 characters
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Treatment From</mat-label>
+              <mat-datepicker-toggle matSuffix [for]="pickerFrom"></mat-datepicker-toggle>
+              <input matInput [matDatepicker]="pickerFrom" formControlName="treatmentFrom">
+              <mat-datepicker #pickerFrom></mat-datepicker>
+              <mat-error *ngIf="medicalForm.get('treatmentFrom')?.hasError('required')">
+                Treatment From is required
+              </mat-error>
+            </mat-form-field>
+          </div>
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Treatment To</mat-label>
+              <mat-datepicker-toggle matSuffix [for]="pickerTo"></mat-datepicker-toggle>
+              <input matInput [matDatepicker]="pickerTo" formControlName="treatmentTo">
+              <mat-datepicker #pickerTo></mat-datepicker>
+              <mat-error *ngIf="medicalForm.get('treatmentTo')?.hasError('required')">
+                Treatment To is required
+              </mat-error>
+              <mat-error *ngIf="medicalForm.get('treatmentTo')?.hasError('dateRange')">
+                Treatment To cannot be before Treatment From
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="small-field">
+              <mat-label>Days Rest</mat-label>
+              <input matInput type="number" formControlName="daysRest">
+              <mat-error *ngIf="medicalForm.get('daysRest')?.hasError('min')">
+                Days Rest cannot be negative
+              </mat-error>
+            </mat-form-field>
+          </div>
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Rest From</mat-label>
+              <mat-datepicker-toggle matSuffix [for]="pickerRest"></mat-datepicker-toggle>
+              <input matInput [matDatepicker]="pickerRest" formControlName="restFromDate">
+              <mat-datepicker #pickerRest></mat-datepicker>
+              <mat-error *ngIf="medicalForm.get('restFromDate')?.hasError('required')">
+                Rest From Date is required
+              </mat-error>
+              <mat-error *ngIf="medicalForm.get('restFromDate')?.hasError('dateRange')">
+                Rest From cannot be before Treatment To
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="small-field">
+              <mat-label>Another Days</mat-label>
+              <input matInput type="number" formControlName="anotherDays">
+              <mat-error *ngIf="medicalForm.get('anotherDays')?.hasError('required')">
+                Another Days is required
+              </mat-error>
+            </mat-form-field>
+          </div>
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Fit to Resume From</mat-label>
+              <mat-datepicker-toggle matSuffix [for]="pickerFit"></mat-datepicker-toggle>
+              <input matInput [matDatepicker]="pickerFit" formControlName="fitToResumeFrom">
+              <mat-datepicker #pickerFit></mat-datepicker>
+              <mat-error *ngIf="medicalForm.get('fitToResumeFrom')?.hasError('required')">
+                Fit to Resume From is required
+              </mat-error>
+              <mat-error *ngIf="medicalForm.get('fitToResumeFrom')?.hasError('dateRange')">
+                Fit to Resume From cannot be before Rest From
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-12">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Identification Mark</mat-label>
+              <textarea matInput formControlName="identificationMark" rows="3"></textarea>
+              <mat-error *ngIf="medicalForm.get('identificationMark')?.hasError('maxlength')">
+                Identification Mark cannot exceed 100 characters
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>Date</mat-label>
+              <mat-datepicker-toggle matSuffix [for]="pickerDate"></mat-datepicker-toggle>
+              <input matInput [matDatepicker]="pickerDate" formControlName="date">
+              <mat-datepicker #pickerDate></mat-datepicker>
+              <mat-error *ngIf="medicalForm.get('date')?.hasError('required')">
+                Date is required
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between">
+          <button mat-raised-button color="primary" type="submit" [disabled]="medicalForm.invalid">Generate PDF</button>
+          <button mat-raised-button color="warn" type="button" (click)="resetForm()">Reset</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

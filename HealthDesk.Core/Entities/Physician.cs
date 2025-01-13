@@ -20,6 +20,9 @@ public class Physician : BaseEntity
 
     [BsonElement("medical_cases")]
     public List<MedicalCase> MedicalCases { get; set; } = new();
+
+    [BsonElement("profiles")]
+    public List<Profile> Profiles { get; set; } = new();
 }
 
 public class Clinic : BaseEntity
@@ -169,7 +172,7 @@ public class DesignPrescription : BaseEntity
 
 public class PatientRecord : BaseEntity
 {
-     [BsonElement("user_id")]
+    [BsonElement("user_id")]
     public string UserId { get; set; }
     [BsonElement("name")]
     public string Name { get; set; }
@@ -212,8 +215,8 @@ public class Prescription : BaseEntity
     [BsonRepresentation(BsonType.ObjectId)]
     public string ClinicId { get; set; }
 
-    [BsonElement("remarks")]
-    public string Remarks { get; set; }
+    [BsonElement("illness")]
+    public string Illness { get; set; }
 }
 
 public class MedicalCase : BaseEntity
@@ -258,4 +261,24 @@ public class MedicalCase : BaseEntity
     public string CaseSummary { get; set; }
     public int LikesCount { get; set; } = 0;
 }
+
+public class Profile : BaseEntity
+{
+    [BsonElement("name")]
+    public string Name { get; set; }
+
+    [BsonElement("investigations")]
+    public List<ProfileInvestigation> Investigations { get; set; } = new();
+}
+
+public class ProfileInvestigation : BaseEntity
+{
+    [BsonElement("name")]
+    public string Name { get; set; }
+
+    [BsonElement("profile_id")]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string ProfileId { get; set; }
+}
+
 

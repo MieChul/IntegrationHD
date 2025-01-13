@@ -13,9 +13,9 @@ public interface IPatientService
     Task DeleteCurrentTreatmentAsync(string patientId, string treatmentId);
 
     // 3. Appointments
-    Task<IEnumerable<AppointmentDto>> GetAppointmentsAsync(string patientId);
+    Task<IEnumerable<AppointmentDto>> GetAppointmentsAsync(string patientId, bool isPhysician = false);
     Task SaveAppointmentAsync(string patientId, AppointmentDto dto);
-    Task DeleteAppointmentAsync(string patientId, string appointmentId);
+    Task UpdateAppointmentStatus(string patientId, string appointmentId, string status);
 
     // 4. Self Records
     Task<IEnumerable<SelfRecordDto>> GetSelfRecordsAsync(string patientId);
@@ -60,4 +60,5 @@ public interface IPatientService
     Task<IEnumerable<ReminderDto>> GetRemindersAsync(string patientId);
     Task AddOrUpdateReminderAsync(string patientId, ReminderDto dto);
     Task DeleteReminderAsync(string patientId, string reminderId);
+    Task<dynamic> GetPhysicians();
 }

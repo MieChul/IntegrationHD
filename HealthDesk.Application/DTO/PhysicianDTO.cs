@@ -1,6 +1,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using HealthDesk.Core;
+using Microsoft.AspNetCore.Http;
 
 namespace HealthDesk.Application;
 public class PhysicianClinicDto
@@ -124,13 +125,18 @@ public class PatientRecordDto
     public string Mobile { get; set; }
     public string ABHAID { get; set; }
     public string SecondaryId { get; set; }
+    public DateTime LastVisitedDate { get; set; }
 }
 
 public class PrescriptionDto
 {
-    public string PatientId { get; set; }
-    public DateTime VisitedDate { get; set; }
-    public string PrescriptionUrl { get; set; }
+    public string? PhysicianId { get; set; } = string.Empty;
+    public string? PatientId { get; set; } = string.Empty;
+    public string? PrescriptionUrl { get; set; }
+    public string? Illness { get; set; } = string.Empty;
+    public string? PdfBase64 { get; set; } = string.Empty;
+    public DateTime DateOfDiagnosis { get; set; }
+    public string ClinicId { get; set; }
 }
 
 public class MedicalCaseDto
@@ -167,3 +173,28 @@ public class ReminderDto
     public List<FrequencyDaysDto> Days { get; set; } = new();
     public string Instruction { get; set; }
 }
+
+public class ProfileDTO
+{
+    public string? Id { get; set; }
+
+    [Required(ErrorMessage = "Profile name is required.")]
+    [StringLength(25, ErrorMessage = "Profile name cannot exceed 25 characters.")]
+    public string Name { get; set; }
+
+    [Required(ErrorMessage = "At least one investigation is required.")]
+    [MinLength(1, ErrorMessage = "At least one investigation is required.")]
+    public List<ProfileInvestigationDTO> Investigations { get; set; }
+}
+
+public class ProfileInvestigationDTO
+{
+    public string? Id { get; set; }
+
+    [Required(ErrorMessage = "Investigation name is required.")]
+    [StringLength(100, ErrorMessage = "Investigation name cannot exceed 100 characters.")]
+    public string Name { get; set; }
+
+    public string? ProfileId { get; set; }
+}
+

@@ -4,16 +4,53 @@
   </h1>
 
   <button class="btn btn-primary mb-3" (click)="scheduleNewAppointment()">Schedule New Appointment</button>
+  <form [formGroup]="dateForm">
+    <div class="row mb-3 align-items-center">
+      <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
+        <div class="m-2">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Start Date</mat-label>
+            <input matInput [matDatepicker]="startDatePicker" formControlName="startDate"
+              placeholder="Choose Start Date" />
+            <mat-datepicker-toggle matSuffix [for]="startDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #startDatePicker></mat-datepicker>
+          </mat-form-field>
+        </div>
+        <div class="m-2">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>End Date</mat-label>
+            <input matInput [matDatepicker]="endDatePicker" formControlName="endDate" placeholder="Choose End Date" />
+            <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #endDatePicker></mat-datepicker>
+            <mat-error *ngIf="isEndDateInvalid()">
+              End Date cannot be earlier than Start Date.
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
+        <div class="legend me-3 mb-2">
+          <span class="legend-color upcoming-appointment"></span> Accepted
+        </div>
+        <div class="legend me-3 mb-2">
+          <span class="legend-color past-appointment"></span> Rejected
+        </div>
+        <div class="legend mb-2">
+          <span class="legend-color proposed-time"></span> Proposed
+        </div>
+      </div>
+    </div>
+  </form>
 
   <ul class="nav nav-tabs">
     <li class="nav-item">
-      <a class="nav-link active" (click)="filterAppointments('pending')">Pending</a>
+      <a class="nav-link active" (click)="filterAppointments('pending')">Upcoming</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" (click)="filterAppointments('past')">Past Appointments</a>
+      <a class="nav-link" (click)="filterAppointments('past')">Past</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" (click)="filterAppointments('cancelled')">Cancelled Appointments</a>
+      <a class="nav-link" (click)="filterAppointments('cancelled')">Cancelled</a>
     </li>
   </ul>
 
@@ -21,40 +58,44 @@
     <table class="table table-hover table-modern">
       <thead>
         <tr>
-          <th>Doctor Name</th>
+          <th>Physician</th>
           <th>Appointment Date</th>
           <th>Appointment Time</th>
-          <th>Clinic Name</th>
+          <th>Clinic</th>
           <th>Status</th>
-          <th *ngIf="filteredAppointments[0]?.status !== 'cancelled' || filteredAppointments[0]?.status !== 'rejected'">Action</th>
-          <th *ngIf="filteredAppointments[0]?.status === 'cancelled' || filteredAppointments[0]?.status === 'rejected'">Reason</th>
+          <th *ngIf="filteredAppointments[0]?.status === 'cancelled' || filteredAppointments[0]?.status === 'rejected'">
+            Reason</th>
+            <th>
+              Action</th>
         </tr>
       </thead>
       <tbody *ngIf="filteredAppointments && filteredAppointments.length > 0">
         <tr *ngFor="let appointment of filteredAppointments" [ngClass]="{
-              'light-green-row': appointment.status === 'accepted',
-              'light-yellow-row': appointment.status === 'proposed'
-            }">
+          'light-green-row': appointment.status === 'accepted',
+          'light-yellow-row': appointment.status === 'proposed',
+          'light-red-row': appointment.status === 'cancelled' || appointment.status === 'rejected'
+        }">
           <td>{{ appointment.physicianName }}</td>
-          <td>{{ appointment.appointmentDate | date: 'dd-MM-yyyy' }}</td>
-          <td>{{ appointment.appointmentTime }}</td>
+          <td>{{ appointment.date | date: 'dd-MM-yyyy' }}</td>
+          <td>{{ appointment.time }}</td>
           <td>{{ appointment.clinicName }}</td>
           <td>{{ appointment.status }}</td>
-          <td *ngIf="appointment.status === 'pending' || appointment.status ==='proposed'">
-            <button *ngIf="appointment.status === 'pending'" class="btn btn-primary btn-sm me-1" (click)="editAppointment(appointment)"
-              ngbTooltip="Edit Appointment">
+          <td *ngIf="appointment.status === 'cancelled' || appointment.status === 'rejected'">{{ appointment?.reason }}
+          </td>
+          <td>
+            <button *ngIf="appointment.status === 'pending'" class="btn btn-primary btn-sm me-1"
+              (click)="editAppointment(appointment)" ngbTooltip="Edit Appointment">
               <i class="bi bi-pencil"></i>
             </button>
-            <button *ngIf="appointment.status === 'proposed'" class="btn btn-primary btn-sm me-1" (click)="acceptAppointment(appointment)"
-              ngbTooltip="Accept Appointment">
+            <button *ngIf="appointment.status === 'proposed'" class="btn btn-primary btn-sm me-1"
+              (click)="acceptAppointment(appointment)" ngbTooltip="Accept Appointment">
               <i class="bi bi-calendar-check"></i>
             </button>
-            <button class="btn btn-danger btn-sm me-1" (click)="openCancelModal(appointment)"
+            <button *ngIf="appointment.status !== 'cancelled' && appointment.status !== 'rejected'" class="btn btn-danger btn-sm me-1" (click)="openCancelModal(appointment)"
               ngbTooltip="Cancel Appointment">
               <i class="bi bi-x-circle"></i>
             </button>
           </td>
-          <td *ngIf="appointment.status === 'cancelled' || appointment.status === 'rejected'">{{ appointment?.reason }}</td>
         </tr>
       </tbody>
     </table>
@@ -73,26 +114,50 @@
         </div>
         <div class="modal-body">
           <form [formGroup]="appointmentForm">
-            <div class="mb-3">
-              <label for="physicianName" class="form-label">Doctor Name</label>
-              <select id="physicianName" formControlName="physicianName" class="form-select">
-                <option *ngFor="let doctor of doctors" [value]="doctor">{{ doctor }}</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label for="appointmentDate" class="form-label">Appointment Date</label>
-              <input type="date" id="appointmentDate" formControlName="appointmentDate" class="form-control" />
-            </div>
-            <div class="mb-3">
-              <label for="appointmentTime" class="form-label">Appointment Time</label>
-              <input type="time" id="appointmentTime" formControlName="appointmentTime" class="form-control" />
-            </div>
-            <div class="mb-3">
-              <label for="clinicName" class="form-label">Clinic Name</label>
-              <select id="clinicName" formControlName="clinicName" class="form-select">
-                <option *ngFor="let clinic of clinics" [value]="clinic">{{ clinic }}</option>
-              </select>
-            </div>
+            <mat-form-field appearance="outline" class="w-100 mb-3">
+              <mat-label>Select Physician</mat-label>
+              <mat-select formControlName="physicianId" (selectionChange)="onPhysicianChange($event.value)">
+                <mat-option *ngFor="let physician of physicians" [value]="physician.id">{{ physician.name
+                  }}</mat-option>
+              </mat-select>
+              <mat-error *ngIf="appointmentForm.get('physicianId')?.hasError('required') && submitted">
+                Physician is required.
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-100 mb-3">
+              <mat-label>Select Clinic</mat-label>
+              <mat-select formControlName="clinicName">
+                <mat-option *ngFor="let clinic of clinics" [value]="clinic.name">{{ clinic.name }}</mat-option>
+              </mat-select>
+              <mat-error *ngIf="appointmentForm.get('clinicName')?.hasError('required') && submitted">
+                Clinic is required.
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-100 mb-3">
+              <mat-label>Appointment Date</mat-label>
+              <input matInput [matDatepicker]="datePicker" formControlName="date" />
+              <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
+              <mat-datepicker #datePicker></mat-datepicker>
+              <mat-error *ngIf="appointmentForm.get('date')?.hasError('required') && submitted">
+                Appointment date is required.
+              </mat-error>
+              <mat-error *ngIf="appointmentForm.get('date')?.hasError('pastDate') && submitted">
+                Appointment date cannot be in the past.
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-100 mb-3">
+              <mat-label>Appointment Time</mat-label>
+              <input matInput [ngxMatTimepicker]="timePicker" formControlName="time"
+                placeholder="Select Timing" />
+              <ngx-mat-timepicker-toggle [for]="timePicker" matSuffix></ngx-mat-timepicker-toggle>
+              <ngx-mat-timepicker #timePicker></ngx-mat-timepicker>
+              <mat-error *ngIf="appointmentForm.get('time')?.hasError('required') && submitted">
+                Appointment time is required.
+              </mat-error>
+            </mat-form-field>
           </form>
         </div>
         <div class="modal-footer">
@@ -116,8 +181,10 @@
         </div>
         <div class="modal-body">
           <p>Are you sure you want to cancel this appointment?</p>
-          <textarea [(ngModel)]="selectedAppointment.reason" class="form-control"
-            placeholder="Reason for cancellation"></textarea>
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Reason for cancellation</mat-label>
+            <textarea matInput [(ngModel)]="selectedAppointment.reason"></textarea>
+          </mat-form-field>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -128,4 +195,3 @@
       </div>
     </div>
   </div>
-</div>

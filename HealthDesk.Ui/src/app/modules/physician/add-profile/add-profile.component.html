@@ -1,10 +1,12 @@
 <div class="container">
-    <h1 class="animated-heading">
-      <i class="bi bi-plus-circle me-2"></i>Add Profile
-    </h1>
-  
+  <h1 class="animated-heading">
+    <i class="bi bi-plus-circle me-2"></i>Add Profile
+  </h1>
+
+  <form [formGroup]="profilesForm">
+    <!-- Header Actions -->
     <div class="header mb-3">
-      <button class="btn btn-secondary m-1" (click)="navigateBackToPrescription()">Back</button> 
+      <button class="btn btn-secondary m-1" (click)="back()">Back</button>
       <button class="btn btn-secondary me-1" (click)="addNewProfile()">
         <i class="bi bi-person-plus me-2"></i>Add New Profile
       </button>
@@ -12,33 +14,59 @@
         <i class="bi bi-save me-2"></i>Save Profiles
       </button>
     </div>
-  
-    <div class="profile-list">
-      <div class="card mb-3" *ngFor="let profile of profiles; let i = index">
+
+    <!-- Profile List -->
+    <div formArrayName="profiles">
+      <div
+        class="card mb-3"
+        *ngFor="let profile of profiles.controls; let i = index"
+        [formGroupName]="i"
+      >
         <div class="card-body">
-          <h5 class="card-title">
-            Profile {{ i + 1 }}: {{ profile.name }}
-          </h5>
-          <div class="form-floating mb-3">
-            <input type="text" class="form-control" [(ngModel)]="profile.name" placeholder="Profile Name" />
-            <label for="profileName">Profile Name</label>
-          </div>
-          <div *ngFor="let investigation of profile.investigations; let j = index">
-            <div class="input-group mb-3">
-              <input type="text" class="form-control" [(ngModel)]="investigation.name" placeholder="Investigation Name" />
-              <button class="btn btn-danger" (click)="removeInvestigation(i, j)">
+          <h5 class="card-title">Profile {{ i + 1 }}</h5>
+
+          <!-- Profile Name -->
+          <mat-form-field appearance="outline" class="w-100 mb-3">
+            <mat-label>Profile Name</mat-label>
+            <input matInput formControlName="name" placeholder="Enter Profile Name" />
+            <div *ngIf="profiles.at(i).get('name')?.invalid && profiles.at(i).get('name')?.touched">
+              <small class="text-danger">Profile name is required.</small>
+            </div>
+          </mat-form-field>
+          <button class="btn btn-success m-2" (click)="addInvestigation(i)">
+            <i class="bi bi-plus-lg"></i> Add Investigation
+          </button>
+
+          <!-- Investigations -->
+          <div formArrayName="investigations">
+            <div
+              class="d-flex align-items-center mb-3"
+              *ngFor="let investigation of getInvestigations(i).controls; let j = index"
+              [formGroupName]="j"
+            >
+              <mat-form-field appearance="outline" class="flex-grow-1 me-2">
+                <mat-label>Investigation Name</mat-label>
+                <input matInput formControlName="name" placeholder="Enter Investigation Name" />
+                <div *ngIf="investigation.get('name')?.invalid && investigation.get('name')?.touched">
+                  <small class="text-danger">Investigation name is required.</small>
+                </div>
+              </mat-form-field>
+
+              <button
+                class="btn btn-danger"
+                (click)="removeInvestigation(i, j)"
+                matTooltip="Remove Investigation"
+              >
                 <i class="bi bi-trash"></i>
               </button>
             </div>
           </div>
-          <button class="btn btn-success m-1" (click)="addInvestigation(i)">
-            <i class="bi bi-plus-lg"></i> Add Investigation
-          </button>
+          <!-- Remove Profile -->
           <button class="btn btn-danger m-1" (click)="removeProfile(i)">
             <i class="bi bi-x-lg"></i> Remove Profile
           </button>
         </div>
       </div>
     </div>
-  </div>
-  
+  </form>
+</div>

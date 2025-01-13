@@ -7,11 +7,16 @@ public class PatientService : IPatientService
 {
 
     private readonly IPatientRepository _patientRepository;
+    private readonly IPhysicianRepository _physicianRepository;
+
+    private readonly IUserRepository _userRepository;
     private readonly IMessageService _messageService;
-    public PatientService(IPatientRepository patientRepository, IMessageService messageService)
+    public PatientService(IPatientRepository patientRepository, IMessageService messageService, IPhysicianRepository physicianRepository, IUserRepository userRepository)
     {
         _patientRepository = patientRepository;
         _messageService = messageService;
+        _physicianRepository = physicianRepository;
+        _userRepository = userRepository;
     }
 
     // 1. Medical History
@@ -85,18 +90,40 @@ public class PatientService : IPatientService
     }
 
     // 3. Appointments
-    public async Task<IEnumerable<AppointmentDto>> GetAppointmentsAsync(string patientId)
+    public async Task<IEnumerable<AppointmentDto>> GetAppointmentsAsync(string patientId, bool isPhysician = false)
     {
-        var patient = await GetPatientByIdAsync(patientId);
-        return patient.Appointments.Select(a => GenericMapper.Map<Appointment, AppointmentDto>(a));
+        if (isPhysician)
+        {
+            var patients = await _patientRepository.GetAllAsync(); // Get all patients asynchronously
+            var appointments = patients
+                .SelectMany(p => p.Appointments) // Flatten appointments
+                .Where(ap => ap.PhysicianId == patientId) // Filter by PhysicianId
+                .Select(ap => GenericMapper.Map<Appointment, AppointmentDto>(ap)) // Map to DTO
+                .ToList();
+
+            return appointments;
+        }
+        else
+        {
+            var patient = await GetPatientByIdAsync(patientId);
+            return patient.Appointments.Select(a => GenericMapper.Map<Appointment, AppointmentDto>(a));
+        }
     }
 
     public async Task SaveAppointmentAsync(string patientId, AppointmentDto dto)
     {
         var patient = await GetPatientByIdAsync(patientId);
+        if (patient == null) throw new ArgumentException("Patient not found.");
 
+        var user = await _userRepository.GetByIdAsync(patientId);
+        if (user == null || string.IsNullOrEmpty(user.Mobile))
+        {
+            throw new ArgumentException("Unable to retrieve patient mobile number.");
+        }
         var appointment = new Appointment();
         GenericMapper.Map(dto, appointment);
+        appointment.Mobile = user.Mobile;
+        appointment.PatientName = user.FirstName + " " + user.LastName;
 
         if (string.IsNullOrEmpty(dto.Id))
         {
@@ -112,7 +139,7 @@ public class PatientService : IPatientService
         await _patientRepository.UpdateAsync(patient);
     }
 
-    public async Task DeleteAppointmentAsync(string patientId, string appointmentId)
+    public async Task UpdateAppointmentStatus(string patientId, string appointmentId, string status)
     {
         var patient = await GetPatientByIdAsync(patientId);
         patient.Appointments.RemoveAll(a => a.Id == appointmentId);
@@ -311,7 +338,7 @@ public class PatientService : IPatientService
     // Helper Method
     private async Task<Patient> GetPatientByIdAsync(string patientId)
     {
-        var patient = await _patientRepository.GetByIdAsync(patientId);
+        var patient = await _patientRepository.GetByDynamicPropertyAsync("UserId", patientId);
         if (patient == null)
             throw new ArgumentException("Patient not found.");
         return patient;
@@ -370,7 +397,7 @@ public class PatientService : IPatientService
     public async Task AddOrUpdateActivityAsync(string patientId, ActivityDto dto)
     {
         var patient = await _patientRepository.GetByIdAsync(patientId);
-        var activity = patient.Activities.FirstOrDefault(a => a.Id == dto.Id) ?? new Activity {  };
+        var activity = patient.Activities.FirstOrDefault(a => a.Id == dto.Id) ?? new Activity { };
 
         GenericMapper.Map(dto, activity);
 
@@ -405,7 +432,7 @@ public class PatientService : IPatientService
         if (compliance == null)
             throw new ArgumentException("Compliance not found.");
 
-        var detail = compliance.ComplianceDetails.FirstOrDefault(cd => cd.Id == dto.Id) ?? new ComplianceDetail {};
+        var detail = compliance.ComplianceDetails.FirstOrDefault(cd => cd.Id == dto.Id) ?? new ComplianceDetail { };
         GenericMapper.Map(dto, detail);
 
         if (!compliance.ComplianceDetails.Any(cd => cd.Id == detail.Id))
@@ -441,6 +468,28 @@ public class PatientService : IPatientService
             compliance.Reminders.RemoveAll(r => r.Id == reminderId);
 
         await _patientRepository.UpdateAsync(patient);
+    }
+
+    public async Task<dynamic> GetPhysicians()
+    {
+        var physicians = await _physicianRepository.GetAllAsync();
+
+        // Fetch user details for each physician and format the name
+        var physicianDetails = new List<dynamic>();
+        foreach (var physician in physicians)
+        {
+            var user = await _userRepository.GetByIdAsync(physician.UserId);
+            if (user != null)
+            {
+                physicianDetails.Add(new
+                {
+                    Id = physician.UserId,
+                    Name = $"Dr. {user.FirstName} {user.LastName}"
+                });
+            }
+        }
+
+        return physicianDetails;
     }
 
 }

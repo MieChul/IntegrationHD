@@ -2,6 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Router } from '@angular/router';
+import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { AccountService } from '../../services/account.service';
+import { PhysicianService } from '../../services/physician.service';
+import { catchError, firstValueFrom, from, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { DatabaseService } from '../../../shared/services/database.service';
 
 @Component({
   selector: 'app-generate-prescription',
@@ -14,205 +20,180 @@ export class GeneratePrescriptionComponent implements OnInit {
     idField: 'id',
     textField: 'name',
     enableCheckAll: false,
-    disabled:false,
+    disabled: false,
   };
-  selectedProfiles: any[] = []; // Array to store selected profiles and their investigations
-  customInvestigations: { name: string, value: string }[] = []; // To store custom/free-text investigations
-  finalInvestigations: { name: string, value: string }[] = [];
-  prescription = {
-    gender: 'Male',
-    pastHistory: '',
-    complaints: [{ text: '', duration: '' }],
-    temperature: '',
-    pulseRate: '',
-    bloodPressure: '',
-    respiratoryRate: '',
-    systems: [{ name: '', findings: '' }],
-    localExamination: '',
-    investigations: '',
-    rx: [{ dosageForm: '', drugName: '', strength: '', times: '', duration: '', instruction: '' }],
-    date: new Date().toISOString().split('T')[0],
-    opd:'',
-    otherInstructions:'',
-    nextFollowUp:''
-  };
-  patient: any;
-  dosageForms = [
-    "TABLET",
-    "CAPSULE",
-    "POWDER",
-    "DUSTING POWDER",
-    "CREAM",
-    "PASTE",
-    "GEL",
-    "SUPPOSITORY",
-    "SYRUP",
-    "SOLUTION",
-    "EMULSION",
-    "SUSPENSION",
-    "INHALER",
-    "AEROSOL"
-  ];
-  drugNames = ['Paracetamol', 'Ibuprofen', 'Amoxicillin'];
-  strengths = ['500mg', '250mg', '100mg'];
-  times = ['Once a day', 'Twice a day', 'Thrice a day'];
-  durations = ['5 days', '7 days', '10 days'];
-  headerImage: string | ArrayBuffer | null = null;
-  footerImage: string | ArrayBuffer | null = null;
+  selectedProfiles: any;
+  customInvestigations: { name: string }[] = [];
+  finalInvestigations!: FormArray;
+  selectedProfilesControl = new FormControl([]);
+  dosageForms : string[] = [];
+  drugNames: string[] = [];
+  strengths: string[] = [];
+  times : string[] = [];
+  durations : string[] = [];
+  systemsDd : string[] = [];
   signature: string | ArrayBuffer | null = null;
   stamp: string | ArrayBuffer | null = null;
   selectedProfile: string = '';
-  profiles :any = [];
+  profiles: any = [];
   investigations: string[] = [];
-  currentTabIndex = 0; 
+  currentTabIndex = 0;
+  prescriptionForm: FormGroup = new FormGroup({});
+  patientRecord: any;
+  headerImg: string = '';
+  footerImg: string = '';
+  userData: any;
 
-  constructor(private router: Router) {
+  constructor(private router: Router, private accountService: AccountService, private physicianService: PhysicianService, private http: HttpClient, private fb: FormBuilder, private databaseService: DatabaseService) {
     const navigation = this.router.getCurrentNavigation();
-    this.patient = navigation?.extras.state?.['patient'] ?? { name: 'John Doe', age: 30, gender: 'Male' };
-    this.prescription = navigation?.extras.state?.['prescription'] ?? this.prescription;
+    this.patientRecord = navigation?.extras.state?.['patient'] ?? '';
   }
 
   ngOnInit(): void {
-    this.loadProfilesFromDB();
+    this.initializeForm();
+    this.accountService.getUserData().subscribe({
+      next: (data) => {
+        this.userData = data;
+        this.dosageForms = this.databaseService.getForms();
+        this.drugNames = this.databaseService.getDrugs();
+        this.strengths = this.databaseService.getStrengths();
+        this.times = this.databaseService.getFrequency();
+        this.durations = this.databaseService.getDurations();
+        this.systemsDd = this.databaseService.getSystems();
+        this.physicianService.getDefaultPrescriptionHeaderFooter(this.userData.id).subscribe({
+          next: async (response: any) => {
+            this.headerImg = await this.fetchImageAsBase64(response.data.header);
+            this.footerImg = await this.fetchImageAsBase64(response.data.footer);
+            this.loadProfiles();
+          },
+          error: (err) => console.error('Error fetching header/footer:', err),
+        });
+      },
+      error: (err) => console.error('Error fetching user data:', err)
+    });
   }
 
-  async loadProfilesFromDB(): Promise<void> {
-    const db = await this.openIndexedDB();
-    const transaction = db.transaction(['profiles', 'investigations'], 'readonly');
-    const profileStore = transaction.objectStore('profiles');
-    const investigationStore = transaction.objectStore('investigations');
-    const requestProfiles = profileStore.getAll(); // Fetch all profiles
-  
-    requestProfiles.onsuccess = async () => {
-      const result = requestProfiles.result;
-      this.profiles = result ? result : []; // Set the profiles array from IndexedDB result
-  
-      // Now load investigations for each profile
-      for (const profile of this.profiles) {
-        const index = investigationStore.index('profileId');
-        const requestInvestigations = index.getAll(profile.id); // Fetch investigations linked to the profileId
-  
-        requestInvestigations.onsuccess = () => {
-          const investigations = requestInvestigations.result;
-          profile.investigations = investigations.map((inv: any) => inv.name); // Store investigation names in the profile
-        };
-  
-        requestInvestigations.onerror = () => {
-          console.error(`Error loading investigations for profile ${profile.name}`);
-        };
-      }
-    };
-  
-    requestProfiles.onerror = () => {
-      console.error('Error loading profiles from IndexedDB');
-    };
+  initializeForm(): void {
+    this.prescriptionForm = this.fb.group({
+      name: [this.patientRecord?.name || ''],
+      age: [this.calculateAge(this.patientRecord?.dateOfBirth) || '0'],
+      gender: [this.patientRecord?.gender || ''],
+      pastHistory: [''],
+      complaints: this.fb.array([this.createComplaint()]),
+      temperature: [''], // Valid range for body temperature
+      pulseRate: [''], // Valid range for pulse rate
+      bloodPressure: [''], // Valid BP format: e.g., 120/80
+      respiratoryRate: [''], // Normal respiratory rate range
+      systems: this.fb.array([this.createSystem()]),
+      localExamination: [''],
+      investigations: [''],
+      rx: this.fb.array([this.createRx()]),
+      date: [''],
+      opd: [''],
+      otherInstructions: [''],
+      nextFollowUp: [''],
+      useHeader: [true],
+      finalInvestigations: this.fb.array([])
+    });
   }
 
-  setDefault<T>(event: any, obj: T, key: keyof T) {
-    if (event === null || event === undefined || event === '') {
-      obj[key] = '' as any;
-    }
+  createComplaint(): FormGroup {
+    return this.fb.group({
+      text: [''],
+      duration: ['']
+    });
   }
 
+  createSystem(): FormGroup {
+    return this.fb.group({
+      name: [''],
+      findings: ['']
+    });
+  }
+
+  createRx(): FormGroup {
+    return this.fb.group({
+      dosageForm: [''],
+      drugName: [''],
+      strength: [''],
+      times: [''],
+      duration: [''],
+      instruction: ['']
+    });
+  }
+
+  loadProfiles(): void {
+    this.physicianService.getProfiles(this.userData.id)
+      .pipe(
+        catchError((error) => {
+          console.error('Error fetching profiles:', error);
+          return of([]); // Return an empty array in case of error
+        })
+      )
+      .subscribe((profiles: any) => {
+        this.profiles = profiles.data || [];
+      });
+  }
+
+  get finalInvestigationsFormArray(): FormArray {
+    return this.prescriptionForm.get('finalInvestigations') as FormArray;
+  }
+
+  get complaints(): FormArray {
+    return this.prescriptionForm.get('complaints') as FormArray;
+  }
+
+  get systems(): FormArray {
+    return this.prescriptionForm.get('systems') as FormArray;
+  }
+
+  get rx(): FormArray {
+    return this.prescriptionForm.get('rx') as FormArray;
+  }
+
+  calculateAge(dateOfBirth: string): number {
+    const dob = new Date(dateOfBirth);
+    const diff = Date.now() - dob.getTime();
+    const ageDate = new Date(diff);
+    return Math.abs(ageDate.getUTCFullYear() - 1970);
+  }
+
+
+  fetchImageAsBase64(imageUrl: string): Promise<string> {
+    return firstValueFrom(
+      this.http.get(imageUrl, { responseType: 'blob' }) // Fetch image as a Blob
+    ).then((blob) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob); // Convert Blob to Base64
+      });
+    });
+  }
 
   addComplaint() {
-    this.prescription.complaints.push({ text: '', duration: '' });
+    this.complaints.push(this.createComplaint());
   }
 
   removeComplaint(index: number) {
-    this.prescription.complaints.splice(index, 1);
+    this.complaints.removeAt(index);
   }
 
   addSystem() {
-    this.prescription.systems.push({ name: '', findings: '' });
+    this.systems.push(this.createSystem());
   }
 
   removeSystem(index: number) {
-    this.prescription.systems.splice(index, 1);
+    this.systems.removeAt(index);
   }
 
   addRx() {
-    this.prescription.rx.push({ dosageForm: '', drugName: '', strength: '', times: '', duration: '', instruction: '' });
+    this.rx.push(this.createRx());
   }
 
   removeRx(index: number) {
-    this.prescription.rx.splice(index, 1);
-  }
-
-  async updateInvestigations(selectedProfiles: string[]) {
-    this.selectedProfiles = []; // Clear selected profiles array
-  
-    const db = await this.openIndexedDB();
-  
-    // We need to use separate transactions here, one for each profile's investigation fetching
-    for (const profileName of selectedProfiles) {
-      const profileTransaction = db.transaction(['profiles', 'investigations'], 'readonly');
-      const profileStore = profileTransaction.objectStore('profiles');
-      const investigationStore = profileTransaction.objectStore('investigations');
-      
-      const profileRequest = profileStore.index('name').get(profileName);
-  
-      // Fetch profile and its associated investigations in the same transaction scope
-      profileRequest.onsuccess = async () => {
-        const profile = profileRequest.result;
-        if (profile) {
-          const index = investigationStore.index('profileId');
-          const investigationRequest = index.getAll(profile.id); // Fetch investigations linked to profileId
-  
-          investigationRequest.onsuccess = () => {
-            const investigations = investigationRequest.result.map((inv: any) => ({ name: inv.name, value: '' }));
-            this.selectedProfiles.push({
-              name: profile.name,
-              investigations: investigations
-            });
-  
-            this.updateFinalInvestigations(); // Update final investigations after fetching
-          };
-  
-          investigationRequest.onerror = () => {
-            console.error(`Error loading investigations for profile ${profile.name}`);
-          };
-        }
-      };
-  
-      profileRequest.onerror = () => {
-        console.error(`Error loading profile ${profileName}`);
-      };
-    }
-  }
-  
-  addCustomInvestigation() {
-    this.customInvestigations.push({ name: '', value: '' });
-    this.updateFinalInvestigations();
-  }
-
-  removeCustomInvestigation(index: number) {
-    this.customInvestigations.splice(index, 1);
-    this.updateFinalInvestigations();
-  }
-
-  updateFinalInvestigations() {
-    this.finalInvestigations = [];
-
-    // Merge investigations from selected profiles
-    for (const profile of this.selectedProfiles) {
-      for (const inv of profile.investigations) {
-        this.finalInvestigations.push({ name: inv.name, value: inv.value });
-      }
-    }
-
-    // Add custom investigations
-    for (const customInv of this.customInvestigations) {
-      this.finalInvestigations.push({ name: customInv.name, value: customInv.value });
-    }
-
-    console.log('Final Investigations:', this.finalInvestigations);
-  }
-
-
-  // Update the final investigations when values are changed
-  onInvestigationValueChange() {
-    this.updateFinalInvestigations();
+    this.rx.removeAt(index);
   }
 
   nextTab() {
@@ -227,22 +208,6 @@ export class GeneratePrescriptionComponent implements OnInit {
     }
   }
 
-  formatDate(date: string): string {
-    if (!date) {
-      return new Date().toISOString().split('T')[0];  // Return today's date if no date is provided
-    }
-  
-    const d = new Date(date);
-    if (isNaN(d.getTime())) {
-      return new Date().toISOString().split('T')[0];  // Return today's date if the provided date is invalid
-    }
-  
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are 0-based
-    const year = d.getFullYear();
-    return `${day}-${month}-${year}`;
-  }
-
   async generatePDF() {
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageHeight = doc.internal.pageSize.height;
@@ -251,10 +216,8 @@ export class GeneratePrescriptionComponent implements OnInit {
     const footerHeight = 30;
     const marginBottom = 20;
     let startY = 60;
-    const headerImg = new Image();
-    const footerImg = new Image();
     const storedHeader = localStorage.getItem('prescription_header_default');
-    const storedFooter = localStorage.getItem('prescription_footer_default');
+
 
     const loadImage = (src: string): Promise<HTMLImageElement> => {
       return new Promise((resolve, reject) => {
@@ -265,22 +228,36 @@ export class GeneratePrescriptionComponent implements OnInit {
       });
     };
 
-    const headerImagePromise = storedHeader ? loadImage(storedHeader) : null;
-    const footerImagePromise = storedFooter ? loadImage(storedFooter) : null;
-
-    const [headerImage, footerImage] = await Promise.all([headerImagePromise, footerImagePromise]);
-
     const addHeaderAndFooter = () => {
       // Add header image (fixed position)
-      if (headerImage) {
-        doc.addImage(headerImage, 'PNG', 10, 10, 190, 30); // Adjust the positioning based on your requirement
-      }
+      const useHeader = this.prescriptionForm.get('useHeader')?.value;
+      if (useHeader) {
+        try {
+          if (this.headerImg) {
+            doc.addImage(this.headerImg, 'PNG', 10, 10, 190, 30);
+          }
+        } catch (error) {
+          console.error('Error adding header image:', error);
+        }
 
-      if (footerImage) {
-        doc.addImage(footerImage, 'PNG', 10, 260, 190, 30); // Adjust position for footer
+        // Add footer image
+        try {
+          if (this.footerImg) {
+            doc.addImage(
+              this.footerImg,
+              'PNG',
+              10,
+              pageHeight - 40,
+              190,
+              30
+            );
+          }
+        } catch (error) {
+          console.error('Error adding footer image:', error);
+        }
       }
       doc.setFontSize(6);
-      doc.setFont('calibri');
+      doc.setFont('Times');
       doc.setDrawColor(0, 0, 0);  // Set black color
       doc.line(5, headerHeight, 200, headerHeight);  // Separator after header
       startY = 60;
@@ -294,22 +271,32 @@ export class GeneratePrescriptionComponent implements OnInit {
       }
     };
 
-    addHeaderAndFooter(); // Add header and footer to the first page
-    const formattedDate = this.formatDate(this.prescription.date);
+    addHeaderAndFooter();
+
+    const formatDate = (date: string): string => {
+      if (!date) return '';
+      const d = date ? new Date(date) : new Date();
+      const day = d.getDate().toString().padStart(2, '0');
+      const month = (d.getMonth() + 1).toString().padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    };
+    // Add header and footer to the first page
+    const formattedDate = formatDate(new Date().toISOString());
     // Add Date on top-right
     doc.text(`Date: ${formattedDate || '_________________'}`, pageWidth - 40, headerHeight + 10);
 
     // General Details Table (Patient Information, Age, OPD)
     const generalDetails = [
-      ['Patient\'s name', this.patient.name || '', 'OPD registration', this.prescription.opd || 'X12ER'],
-      ['Age', this.patient.age || '', 'Gender', this.prescription.gender || '']
+      ['Patient\'s name', this.prescriptionForm.get('name')?.value || '', 'OPD registration', this.prescriptionForm.get('opd')?.value || ''],
+      ['Age', this.prescriptionForm.get('age')?.value || '', 'Gender', this.prescriptionForm.get('gender')?.value || '']
     ];
 
     let result = autoTable(doc, {
       startY: startY,
       theme: 'plain',
       styles: {
-        font: 'calibri',
+        font: 'Times',
         fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1, cellPadding: { top: 2, right: 5, bottom: 2, left: 5 }
       },
       columnStyles: {
@@ -323,11 +310,16 @@ export class GeneratePrescriptionComponent implements OnInit {
 
     startY = (doc as any).autoTable.previous.finalY + 5;
 
-    const chiefComplaints = this.prescription.complaints?.map((complaint: any, index: number) => [
-      index + 1,
-      complaint.text,
-      complaint.duration
-    ]) || [['', '', '']];
+    const complaintsArray = this.prescriptionForm.get('complaints') as FormArray;
+
+    const chiefComplaints = complaintsArray.controls.map((control, index) => {
+      const complaint = control.value; // Access the value of each FormGroup in the FormArray
+      return [
+        index + 1,             // Serial number
+        complaint.text || '',  // Complaint text
+        complaint.duration || '' // Complaint duration
+      ];
+    }) || [['', '', '']];
 
     // Approximate table height
     var approxHeight = (chiefComplaints.length * 10) + 6;
@@ -346,7 +338,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       },
       startY: startY,
       styles: {
-        font: 'calibri',
+        font: 'Times',
         fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
       }
     });
@@ -354,8 +346,8 @@ export class GeneratePrescriptionComponent implements OnInit {
 
 
     const vitalsInfo = [
-      [`Pulse (per minute): ${this.prescription.pulseRate || ''}`, `Respiratory rate (per minute): ${this.prescription.respiratoryRate || ''}`],
-      [`Blood pressure (mm Hg): ${this.prescription.bloodPressure || ''}`, `Temperature: ${this.prescription.temperature || ''}`]
+      [`Pulse (per minute): ${this.prescriptionForm.get('pulseRate')?.value || ''}`, `Respiratory rate (per minute): ${this.prescriptionForm.get('respiratoryRate')?.value || ''}`],
+      [`Blood pressure (mm Hg): ${this.prescriptionForm.get('bloodPressure')?.value.bloodPressure || ''}`, `Temperature: ${this.prescriptionForm.get('temperature')?.value || ''}`]
     ];
 
     // Approximate height for vitals info
@@ -367,7 +359,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       startY: startY,
       theme: 'plain',
       styles: {
-        font: 'calibri',
+        font: 'Times',
         fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       body: vitalsInfo
@@ -376,7 +368,8 @@ export class GeneratePrescriptionComponent implements OnInit {
 
     // Local Examination Table
     const localExamination = [
-      [`Local examination`, `${this.prescription.localExamination || ''}`]
+      [`Local examination`, `${this.prescriptionForm.get('localExamination')?.value || ''}`],
+      [`Investigations`, this.prescriptionForm.get('finalInvestigations')?.value?.map((inv: any) => inv.name).join(', ') || ''],
     ];
     checkAndAddNewPage(15);
     doc.text('Local Examination:', 14, startY);
@@ -386,7 +379,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       startY: startY,
       theme: 'plain',
       styles: {
-        font: 'calibri',
+        font: 'Times',
         fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       columnStyles: {
@@ -399,11 +392,17 @@ export class GeneratePrescriptionComponent implements OnInit {
     startY = (doc as any).autoTable.previous.finalY + 5;
 
     // Systemic Table
-    const systemicData = this.prescription.systems?.map((system: any, index: number) => [
-      index + 1,
-      system.name,
-      system.findings
-    ]) || [['', '', '']];
+    const systemsArray = this.prescriptionForm.get('systems') as FormArray;
+
+    const systemicData = systemsArray.controls.map((control, index) => {
+      const system = control.value; // Access the value of each FormGroup in the FormArray
+      return [
+        index + 1,            // Serial number
+        system.name || '',    // System name
+        system.findings || '' // System findings
+      ];
+    }) || [['', '', '']];
+
     var approxHt = (systemicData.length * 10) + 6;
     checkAndAddNewPage(approxHt);
     doc.text('Physical Examination:', 14, startY);
@@ -418,67 +417,43 @@ export class GeneratePrescriptionComponent implements OnInit {
         fontStyle: 'normal'         // Plain font style
       },
       styles: {
-        font: 'calibri',
+        font: 'Times',
         fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       startY: startY
     });
 
     startY = (doc as any).autoTable.previous.finalY + 5;
-
-    // Systemic Table
-    const investigations = this.finalInvestigations?.map((fi: any, index: number) => [
-      index + 1,
-      fi.name,
-      fi.value
-    ]) || [['', '', '']];
-    var approxHt = (investigations.length * 10) + 6;
-    checkAndAddNewPage(approxHt);
-    doc.text('Investigations:', 14, startY);
-    startY += 2;
-    // Approximate height
-    autoTable(doc, {
-      head: [['Sr.', 'Investigation Name', 'Findings']],
-      body: systemicData,
-      headStyles: {
-        fillColor: [255, 255, 255], // Transparent white header (plain)
-        textColor: [0, 0, 0],       // Black text color for header
-        fontStyle: 'normal'         // Plain font style
-      },
-      styles: {
-        font: 'calibri',
-        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
-      },
-      startY: startY
-    });
-
-    startY = (doc as any).autoTable.previous.finalY + 5;
-
     // Diagnosis Table
     const diagnosisData = [
-      ['Provisional Diagnosis', `${this.prescription.pastHistory || ''}`]
+      ['Provisional Diagnosis', `${this.prescriptionForm.get('pastHistory')?.value || ''}`]
     ];
     checkAndAddNewPage(15);
     // Approximate height
     autoTable(doc, {
       body: diagnosisData,
       styles: {
-        font: 'calibri',
+        font: 'Times',
         fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       startY: startY
     });
     startY = (doc as any).autoTable.previous.finalY + 5;
     // Rx Details Table
-    const rxData = this.prescription.rx?.map((medication: any, index: number) => [
-      index + 1,
-      medication.dosageForm,
-      medication.drugName,
-      medication.strength,
-      medication.times,
-      medication.duration,
-      medication.instruction
-    ]) || [['', '', '', '', '', '', '', '']];
+    const rxArray = this.prescriptionForm.get('rx') as FormArray;
+
+    const rxData = rxArray.controls.map((control, index) => {
+      const medication = control.value; // Access the value of each FormGroup in the FormArray
+      return [
+        index + 1,                   // Serial number
+        medication.dosageForm || '', // Dosage Form
+        medication.drugName || '',   // Drug Name
+        medication.strength || '',   // Strength
+        medication.times || '',      // Frequency
+        medication.duration || '',   // Duration
+        medication.instruction || '' // Instruction
+      ];
+    }) || [['', '', '', '', '', '', '', '']];
 
     var approx = (rxData.length * 10) + 6;
     checkAndAddNewPage(approx);
@@ -494,7 +469,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       },
       body: rxData,
       styles: {
-        font: 'calibri',
+        font: 'Times',
         fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       startY: startY
@@ -503,8 +478,8 @@ export class GeneratePrescriptionComponent implements OnInit {
 
     // Other Instructions Table
     const instructionsData = [
-      ['Other Instructions', this.prescription.otherInstructions || ''],
-      ['Next Follow-up', this.prescription.nextFollowUp || '']
+      ['Other Instructions', this.prescriptionForm.get('otherInstructions')?.value || ''],
+      ['Next Follow-up',  formatDate(this.prescriptionForm.get('nextFollowUp')?.value) || '']
     ];
     checkAndAddNewPage(25);
     // Approximate height
@@ -517,7 +492,7 @@ export class GeneratePrescriptionComponent implements OnInit {
         1: { cellWidth: 152 } // Value from UI
       },
       styles: {
-        font: 'calibri',
+        font: 'Times',
         fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
       }
     });
@@ -530,7 +505,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       body: signatureData,
       theme: 'plain',
       styles: {
-        font: 'calibri',
+        font: 'Times',
         fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       columnStyles: {
@@ -545,115 +520,120 @@ export class GeneratePrescriptionComponent implements OnInit {
       startY: startY
     });
 
-    const patientId = this.patient.id;
 
-    const prescriptionId = await this.getNextPrescriptionId();
-  const pdfName = `${this.patient.name}_${prescriptionId}.pdf`;
 
-  // Concatenate illness from complaints
-  const illness = this.prescription.complaints
-    .map(complaint => complaint.text)
+    
+
+    const pdfBlob  = doc.output('blob');
+    const physicianId = this.userData.id;
+    const patientId = this.patientRecord.userId;
+    const illness = complaintsArray.controls
+    .map(control => control.value.text) // Extract the `text` value from each FormGroup
     .join(', ');
 
-    const pdfOutput = doc.output('blob');
-    await this.savePdfToIndexedDB(pdfName, pdfOutput, patientId, prescriptionId, illness);
-    await this.updateLastVisitedDate(patientId);
-    const pdfUrl = URL.createObjectURL(pdfOutput);
-    window.open(pdfUrl, '_blank');
-    this.router.navigate(['/physician/patient-record']);
+    from(this.physicianService.uploadPrescription({ pdfBlob, physicianId, patientId, illness }))
+    .subscribe({
+      next: (response: any) => {
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+         // API returns the generated PDF URL
+        window.open(pdfUrl, '_blank'); // Open the PDF in a new tab
+        console.log('Prescription generated and opened.');
+      },
+      error: (error) => {
+        console.error('Error uploading prescription:', error);
+      },
+    });;
   };
 
-  async savePdfToIndexedDB(pdfName: string, pdfBlob: Blob, patientId: number, prescriptionId: number, illness:string) {
-    const db = await this.openIndexedDB();
-    const transaction = db.transaction(['pdfs'], 'readwrite');
-    const store = transaction.objectStore('pdfs');
-    store.put({
-      name: pdfName,
-      pdfBlob: pdfBlob,
-      patientId: patientId,
-      prescriptionId: prescriptionId,
-      illness: illness,
-      date: new Date()
-    });
-  
-    transaction.oncomplete = () => console.log(`PDF stored as ${pdfName}`);
-  }
-  
-  // Retrieve the next prescription ID
-  async getNextPrescriptionId(): Promise<number> {
-    const db = await this.openIndexedDB();
-    const transaction = db.transaction(['pdfs'], 'readonly');
-    const store = transaction.objectStore('pdfs');
-    const countRequest = store.count();
-    
-    return new Promise((resolve) => {
-      countRequest.onsuccess = () => resolve(countRequest.result + 1);
-    });
+
+  // Trigger on investigation value change
+  onInvestigationValueChange(): void {
+    this.updateCustomInvestigations(); // Keep custom investigations in sync
   }
 
-  async updateLastVisitedDate(patientId: number) {
-    const db = await this.openIndexedDB();
-    const transaction = db.transaction(['patients'], 'readwrite');
-    const store = transaction.objectStore('patients');
-    const getRequest = store.get(patientId);
-  
-    getRequest.onsuccess = () => {
-      const patient = getRequest.result;
-      patient.lastVisited = new Date().toISOString().split('T')[0];
-      store.put(patient);
-    };
-  }
-  
-  openIndexedDB(): Promise<IDBDatabase> {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open('prescriptionsDB', 2); // Ensure you use version 2 or higher for upgrade
-  
-      request.onupgradeneeded = (event: any) => {
-        const db = event.target.result;
-        
-        // Ensure profiles store exists
-        let profileStore;
-        if (!db.objectStoreNames.contains('profiles')) {
-          profileStore = db.createObjectStore('profiles', { keyPath: 'id', autoIncrement: true });
-          profileStore.createIndex('name', 'name', { unique: true }); // Add 'name' index
-        }
-          profileStore = request?.transaction?.objectStore('profiles');
-          if (!profileStore?.indexNames.contains('name')) {
-            profileStore?.createIndex('name', 'name', { unique: true }); // Ensure 'name' index exists
 
-          if (!db.objectStoreNames.contains('prescriptions')) {
-            db.createObjectStore('prescriptions', { keyPath: 'id', autoIncrement: true });
-          }
-          if (!db.objectStoreNames.contains('pdfs')) {
-            db.createObjectStore('pdfs', { keyPath: 'name' });
-          }
-        }
-        
-        // Ensure investigations store exists
-        let investigationStore;
-        if (!db.objectStoreNames.contains('investigations')) {
-          investigationStore = db.createObjectStore('investigations', { keyPath: 'id', autoIncrement: true });
-          investigationStore.createIndex('profileId', 'profileId', { unique: false }); // Add 'profileId' index
-        } else {
-          investigationStore = request.transaction?.objectStore('investigations');
-          if (!investigationStore?.indexNames?.contains('profileId')) {
-            investigationStore?.createIndex('profileId', 'profileId', { unique: false }); // Ensure 'profileId' index exists
-          }
-        }
-      };
-  
-      request.onsuccess = (event: any) => {
-        resolve(event.target.result);
-      };
-  
-      request.onerror = (event: any) => {
-        reject(event.target.error);
-      };
-    });
-  }
-  
   navigateToAddProfile() {
     // Store the current prescription in state
-    this.router.navigate(['/physician/add-profile'], { state: { prescription: this.prescription, patient:this.patient } });
+    this.router.navigate(['/physician/add-profile'], { state: { prescription: this.prescriptionForm.value, patient: this.patientRecord } });
   }
+
+  addInvestigation(name: string = ''): void {
+    this.finalInvestigationsFormArray.push(
+      this.fb.group({
+        name: [name, Validators.required], // Add validation if needed
+      })
+    );
+  }
+
+  removeInvestigation(index: number): void {
+    this.finalInvestigationsFormArray.removeAt(index);
+  }
+
+  updateFinalInvestigations(selectedProfiles: any[]): void {
+    // Clear current investigations
+    this.finalInvestigationsFormArray.clear();
+
+    // Add investigations from selected profiles
+    for (const profile of selectedProfiles) {
+      for (const investigation of profile.investigations) {
+        this.addInvestigation(investigation.name);
+      }
+    }
+
+    // Add custom investigations
+    for (const customInv of this.customInvestigations) {
+      this.addInvestigation(customInv.name);
+    }
+  }
+
+  onProfileSelectionChange(selectedProfiles: any[]): void {
+    this.selectedProfiles = selectedProfiles;
+  
+    // Clear current investigations in the FormArray
+    this.finalInvestigationsFormArray.clear();
+  
+    // Add investigations from selected profiles
+    for (const profile of this.selectedProfiles) {
+      for (const investigation of profile.investigations) {
+        this.finalInvestigationsFormArray.push(
+          this.fb.group({
+            name: [investigation.name, Validators.required], // Add validation as needed
+          })
+        );
+      }
+    }
+  
+    // Add custom investigations to the FormArray
+    for (const customInv of this.customInvestigations) {
+      this.finalInvestigationsFormArray.push(
+        this.fb.group({
+          name: [customInv.name, Validators.required], // Add validation as needed
+        })
+      );
+    }
+  }
+
+  addCustomInvestigation(): void {
+    // Add a new custom investigation directly to the FormArray
+    this.finalInvestigationsFormArray.push(
+      this.fb.group({
+        name: ['', Validators.required], // Start with an empty name
+      })
+    );
+  }
+
+  updateCustomInvestigations(): void {
+    // Ensure custom investigations remain distinct from profile-based investigations
+    const profileInvestigationNames = new Set(
+      this.selectedProfiles.flatMap((profile: any) =>
+        profile.investigations.map((inv: any) => inv.name)
+      )
+    );
+  
+    this.customInvestigations = this.finalInvestigationsFormArray.controls
+      .map((control) => control.value.name)
+      .filter((name) => !profileInvestigationNames.has(name))
+      .map((name) => ({ name }));
+  }
+
 }

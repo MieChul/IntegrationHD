@@ -1,40 +1,51 @@
 <div class="container">
 
-  <h1 class="animated-heading">
+  <h1 class="animated-heading" *ngIf="!showHistory">
     <i class="bi bi-file-earmark-medical me-2"></i>Manage Patient Records
   </h1>
+  <h1 class="animated-heading" *ngIf="showHistory">
+    <i class="bi bi-file-earmark-medical me-2"></i> History of {{ currentPatient?.name }}
+  </h1>
+
   <div class="row mb-3 align-items-center">
     <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
       <div class="mb-2 me-3 filter-container">
-        <mat-form-field class="w-100">
-          <mat-label>Search Patients</mat-label>
-          <input matInput placeholder="Search by Name" [(ngModel)]="searchValue" (input)="searchPatient()" />
-        </mat-form-field>
+        <div class="mb-2 me-3 filter-container">
+          <mat-form-field class="w-100" *ngIf="!showHistory">
+            <mat-label>Search Patients</mat-label>
+            <input matInput placeholder="Search by Name" [(ngModel)]="searchValue" (input)="searchPatient()" />
+          </mat-form-field>
+
+          <mat-form-field class="w-100" *ngIf="showHistory" appearance="outline">
+            <mat-label>Search by Date</mat-label>
+            <input matInput [matDatepicker]="picker" [(ngModel)]="searchValueDate" (dateChange)="searchPatientHistory()"
+              placeholder="Search by Date" />
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+        </div>
+
       </div>
     </div>
     <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap pointer-cursor">
-      <button class="btn btn-primary " (click)="openAddPatientPopup()">Add New Patient</button>
+      <button class="btn btn-primary " *ngIf="!showHistory" (click)="openAddPatientPopup()">Add New Patient</button>
+      <button class="btn btn-primary " *ngIf="showHistory" (click)="openOtpPopUp()">Get Past History</button>
     </div>
   </div>
 
-  <div *ngIf="patients.length === 0" class="alert alert-info">
+  <div *ngIf="patients.length === 0 && !showHistory" class="alert alert-info">
     No patients record created yet. Click "Add New Patient" to get started.
   </div>
 
+  <div *ngIf="patientHistory.length === 0 && showHistory" class="alert alert-info">
+    No precsription for patients created yet. Click "Generate Prescription" to get started.
+  </div>
 
-  <div *ngIf="showHistory">
+  <div *ngIf="patientHistory.length > 0 && showHistory">
     <button class="btn btn-secondary mb-3 pointer-cursor" (click)="backToMain()" data-bs-toggle="tooltip"
       data-bs-placement="top" title="Back">
       <i class="bi bi-arrow-left"></i> Back
     </button>
-    <div class="table-responsive">
-      <table class="table table-hover table-modern">
-        <tr>
-          <td><strong>Patient Name:</strong> {{ currentPatient?.name }}</td>
-          <td><strong>Age:</strong> {{ currentPatient?.age }}</td>
-        </tr>
-      </table>
-    </div>
     <div class="table-container" infiniteScroll infiniteScrollDistance="2">
       <table class="table table-hover table-modern">
         <thead>
@@ -46,9 +57,9 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let record of patientHistory; let i = index">
+          <tr *ngFor="let record of filteredPatientsHistory; let i = index">
             <td>{{ i + 1 }}</td>
-            <td>{{ record.date | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ record.dateOfDiagnosis | date: 'dd/MM/yyyy' }}</td>
             <td>{{ record.illness }}</td>
             <td>
               <div class="action-buttons">
@@ -63,7 +74,7 @@
       </table>
     </div>
   </div>
-  <div *ngIf="filteredPatients.length > 0">
+  <div *ngIf="!showHistory">
     <div class="table-container" infiniteScroll infiniteScrollDistance="2">
       <table class="table table-hover table-modern">
         <thead>
@@ -73,7 +84,7 @@
             <th (click)="sortTable('mobile')">Mobile Number</th>
             <th (click)="sortTable('abhaid')">ABHA Id</th>
             <th (click)="sortTable('secondaryId')">Secondary Id</th>
-            <th (click)="sortTable('lastVisited')">Last Visited Date</th>
+            <th (click)="sortTable('lastVisitedDate')">Last Visited Date</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -84,14 +95,14 @@
             <td>{{ patient.mobile }}</td>
             <td>{{ patient.abhaid }}</td>
             <td>{{ patient.secondaryId }}</td>
-            <td>{{ patient.lastVisited | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ patient.lastVisitedDate | date: 'dd/MM/yyyy' }}</td>
             <td>
               <div class="action-buttons">
                 <button class="btn btn-primary btn-sm m-1 pointer-cursor" (click)="editPatient(patient)"
                   data-bs-toggle="tooltip" data-bs-placement="top" title="Edit Patient">
                   <i class="bi bi-pencil"></i>
                 </button>
-                <button class="btn btn-info btn-sm m-1 pointer-cursor" (click)="viewPatient(patient)"
+                <button class="btn btn-info btn-sm m-1 pointer-cursor" (click)="viewPrescription(patient)"
                   data-bs-toggle="tooltip" data-bs-placement="top" title="View Prescription">
                   <i class="bi bi-eye"></i>
                 </button>
@@ -188,8 +199,8 @@
             <div class="col-md-6 mb-3">
               <mat-form-field appearance="outline" class="w-100">
                 <mat-label>ABHA ID</mat-label>
-                <input matInput type="text" formControlName="abhaId" placeholder="Enter ABHA ID" />
-                <mat-error *ngIf="patientForm.get('abhaId')?.hasError('pattern')">
+                <input matInput type="text" formControlName="abhaid" placeholder="Enter ABHA ID" />
+                <mat-error *ngIf="patientForm.get('abhaid')?.hasError('pattern')">
                   ABHA ID must be alphanumeric.
                 </mat-error>
               </mat-form-field>
@@ -217,6 +228,42 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="otpModal" tabindex="-1" aria-labelledby="otpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Verify OTP</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Enter Mobile Number</mat-label>
+          <input matInput [(ngModel)]="contactNumber" placeholder="Mobile Number" />
+        </mat-form-field>
+        <!-- OTP Inputs -->
+        <div class="otp-section" *ngIf="isOtpSent">
+          <h5>Enter OTP</h5>
+          <div class="otp-inputs" formArrayName="otp">
+            <input maxlength="1" *ngFor="let control of otpControls.controls; let i = index" [formControlName]="i"
+              class="otp-input" (keyup)="moveToNext($event, i)" (keydown.enter)="onEnterKey()" />
+          </div>
+        </div>
+
+        <!-- Resend OTP or Send OTP Button -->
+        <button mat-raised-button color="primary" class="full-width m-3" (click)="isOtpSent ? resendOtp() : sendOtp()">
+          {{ isOtpSent ? 'Resend OTP' : 'Send OTP' }}
+        </button>
+
+        <!-- Verify OTP Button -->
+        <button mat-raised-button color="accent" class="full-width m-3" [disabled]="!areAllOtpFilled()"
+          (click)="verifyOtp()">
+          Verify OTP
+        </button>
       </div>
     </div>
   </div>

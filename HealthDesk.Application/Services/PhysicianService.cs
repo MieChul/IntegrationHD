@@ -128,22 +128,30 @@ public class PhysicianService : IPhysicianService
 
     public async Task<IEnumerable<PrescriptionDto>> GetPrescriptionsAsync(string physicianId, string patientId)
     {
-        var physician = await _physicianRepository.GetByIdAsync(physicianId);
-        var patient = physician.Patients.FirstOrDefault(p => p.Id == patientId);
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
+        var patient = physician.Patients.FirstOrDefault(p => p.UserId == patientId);
         return patient?.Prescriptions.Select(p => GenericMapper.Map<Prescription, PrescriptionDto>(p));
     }
 
-    public async Task<string> AddPrescriptionAsync(string physicianId, PrescriptionDto dto)
+     public async Task<string> GetLatestPrescriptionAsync(string physicianId, string patientId)
     {
-        var physician = await _physicianRepository.GetByIdAsync(physicianId);
+          var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
+        var patient = physician.Patients.FirstOrDefault(p => p.UserId == patientId);
+        return patient?.Prescriptions?.Select(p => GenericMapper.Map<Prescription, PrescriptionDto>(p))?.OrderByDescending(p => p.DateOfDiagnosis)?.FirstOrDefault()?.PrescriptionUrl ?? string.Empty;
+    }
+
+    public async Task<string> AddPrescriptionAsync(PrescriptionDto dto)
+    {
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", dto.PhysicianId);
         if (physician == null)
             throw new ArgumentException("Physician not found.");
 
-        var patient = physician.Patients.FirstOrDefault(p => p.Id == dto.PatientId);
+        var patient = physician.Patients.FirstOrDefault(p => p.UserId == dto.PatientId);
         if (patient == null)
             throw new ArgumentException("Patient not found.");
 
         var prescription = GenericMapper.Map<PrescriptionDto, Prescription>(dto);
+        patient.LastVisitedDate = prescription.DateOfDiagnosis = DateTime.Now.Date;
         patient.Prescriptions.Add(prescription);
 
         await _physicianRepository.UpdateAsync(physician);
@@ -285,5 +293,78 @@ public class PhysicianService : IPhysicianService
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         return new string(Enumerable.Repeat(chars, length)
                                     .Select(s => s[_random.Next(s.Length)]).ToArray());
+    }
+
+    public async Task<dynamic> GetDefaultPrescriptionHeaderFooter(string physicianId)
+    {
+
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
+        if (physician == null)
+            throw new ArgumentException("Physician not found.");
+
+        var defaultPrescription = physician.DesignPrescriptions.Where(p => p.IsDefault).FirstOrDefault();
+        return new
+        {
+            header = defaultPrescription.HeaderUrl,
+            footer = defaultPrescription.FooterUrl
+        };
+    }
+
+    public async Task<List<ProfileDTO>> GetProfilesAsync(string physicianId)
+    {
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
+        if (physician == null)
+            throw new ArgumentException("Physician not found.");
+
+        return physician.Profiles.Select(profile => new ProfileDTO
+        {
+            Id = profile.Id,
+            Name = profile.Name,
+            Investigations = profile.Investigations.Select(inv => new ProfileInvestigationDTO
+            {
+                Id = inv.Id,
+                Name = inv.Name,
+                ProfileId = inv.ProfileId
+            }).ToList()
+        }).ToList();
+    }
+
+    public async Task SaveProfilesAsync(string physicianId, List<ProfileDTO> profileDtos)
+    {
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
+        if (physician == null)
+            throw new ArgumentException("Physician not found.");
+
+        // Clear all existing profiles
+        physician.Profiles.Clear();
+
+        // Add all profiles from DTO as new
+        foreach (var dto in profileDtos)
+        {
+            var newProfile = new Profile
+            {
+                Id = ObjectId.GenerateNewId().ToString(),
+                Name = dto.Name,
+                Investigations = dto.Investigations.Select(inv => new ProfileInvestigation
+                {
+                    Id = ObjectId.GenerateNewId().ToString(),
+                    Name = inv.Name,
+                    ProfileId = null
+                }).ToList()
+            };
+            physician.Profiles.Add(newProfile);
+        }
+
+        // Save the physician entity with updated profiles
+        await _physicianRepository.UpdateAsync(physician);
+    }
+
+    public async Task<int> GetPrescriptionCountAsync(string physicianId, string patientId)
+    {
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
+        if (physician == null)
+            throw new ArgumentException("Physician not found.");
+
+        return physician.Patients.Where(p => p.UserId == patientId)?.FirstOrDefault()?.Prescriptions.Count ?? 0;
     }
 }

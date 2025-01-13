@@ -1,234 +1,169 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { AccountService } from '../../services/account.service';
+import { PhysicianService } from '../../services/physician.service';
+import { lastValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-add-profile',
   templateUrl: './add-profile.component.html',
   styleUrls: ['./add-profile.component.scss']
 })
-export class AddProfileComponent {
-  profiles: { id: string, name: string; investigations: { id: string, profileId: string, name: string }[] }[] = [];
+export class AddProfileComponent implements OnInit {
+  profilesForm!: FormGroup;
   prescription: any;
   patient: any;
-  constructor(private route: ActivatedRoute, private router: Router) {
+  userData: any;
 
- 
-  }
+  constructor(
+    private route: ActivatedRoute,
+    private fb: FormBuilder,
+    private router: Router,
+    private accountService: AccountService,
+    private physicianService: PhysicianService
+  ) { }
 
-  async ngOnInit() {
+  ngOnInit(): void {
     const navigation = this.router.getCurrentNavigation();
-    this.prescription = navigation?.extras.state?.['prescription'] ?? null; // R
-    this.patient = navigation?.extras.state?.['patient'] ?? null; // R
-    // Load profiles from IndexedDB on component load
-    await this.loadProfiles();
-  }
+    this.prescription = navigation?.extras.state?.['prescription'] ?? null;
+    this.patient = navigation?.extras.state?.['patient'] ?? null;
 
-  addNewProfile() {
-    this.profiles.push({ id: '', name: '', investigations: [{ id: '', profileId: '', name: '' }] });
-  }
+    this.initializeForm();
 
-  addInvestigation(profileIndex: number) {
-    this.profiles[profileIndex].investigations.push({ id: '', profileId: '', name: '' });
-  }
-
-  async removeInvestigation(profileIndex: number, investigationIndex: number) {
-    const investigation = this.profiles[profileIndex].investigations[investigationIndex];
-
-    if (investigation.id) { // Check if investigation has an ID
-      // Remove from IndexedDB
-      const db = await this.openIndexedDB();
-      const transaction = db.transaction(['investigations'], 'readwrite');
-      const store = transaction.objectStore('investigations');
-      const deleteRequest = store.delete(investigation.id); // Delete by ID
-
-      deleteRequest.onsuccess = () => {
-        console.log(`Investigation with ID ${investigation.id} removed from IndexedDB.`);
-      };
-
-      deleteRequest.onerror = () => {
-        console.error(`Error removing investigation with ID ${investigation.id} from IndexedDB.`);
-      };
-    }
-
-    // Remove from the array
-    this.profiles[profileIndex].investigations.splice(investigationIndex, 1);
-  }
-
-
-  async removeProfile(profileIndex: number) {
-    const profile = this.profiles[profileIndex];
-
-    if (profile.id) { // Check if profile has an ID
-      // Remove from IndexedDB
-      const db = await this.openIndexedDB();
-      const transaction = db.transaction(['profiles', 'investigations'], 'readwrite');
-
-      const profileStore = transaction.objectStore('profiles');
-      const investigationStore = transaction.objectStore('investigations');
-
-      // First, delete the profile
-      const deleteProfileRequest = profileStore.delete(profile.id);
-
-      deleteProfileRequest.onsuccess = () => {
-        console.log(`Profile with ID ${profile.id} removed from IndexedDB.`);
-      };
-
-      deleteProfileRequest.onerror = () => {
-        console.error(`Error removing profile with ID ${profile.id} from IndexedDB.`);
-      };
-
-      // Then, delete all associated investigations
-      const index = investigationStore.index('profileId');
-      const deleteInvestigationsRequest = index.openCursor(IDBKeyRange.only(profile.id));
-
-      deleteInvestigationsRequest.onsuccess = (event) => {
-        const cursor = (event.target as IDBRequest).result;
-        if (cursor) {
-          investigationStore.delete(cursor.primaryKey);
-          cursor.continue();
-        }
-      };
-
-      deleteInvestigationsRequest.onerror = () => {
-        console.error(`Error removing investigations for profile ID ${profile.id} from IndexedDB.`);
-      };
-    }
-
-    // Remove from the array
-    this.profiles.splice(profileIndex, 1);
-  }
-
-  async saveProfiles() {
-    await this.saveProfilesToDB();
-    this.router.navigate(['/physician/generate-prescription']);
-  }
-
-  async saveProfilesToDB() {
-    const db = await this.openIndexedDB();
-    const transaction = db.transaction(['profiles', 'investigations'], 'readwrite');
-    const profileStore = transaction.objectStore('profiles');
-    const investigationStore = transaction.objectStore('investigations');
-  
-    for (const profile of this.profiles) {
-      // Check if the profile exists (has an ID)
-      let profileId = profile.id ? profile.id : await this.getNextProfileId(profileStore);
-  
-      // Check if the profile exists in the store
-      const existingProfile = await this.getExistingRecord(profileStore, profileId);
-  
-      // If it exists, we update, else we insert a new record
-      if (existingProfile) {
-        profileStore.put({ id: profileId, name: profile.name });
-      } else {
-        profileId = await this.getNextProfileId(profileStore); // Get new ID only for inserts
-        profileStore.put({ id: profileId, name: profile.name });
-      }
-  
-      // Loop through the investigations
-      for (const investigation of profile.investigations) {
-        // Check if the investigation exists (has an ID)
-        let investigationId = investigation.id ? investigation.id : await this.getNextInvestigationId(investigationStore);
-  
-        // Check if the investigation exists in the store
-        const existingInvestigation = await this.getExistingRecord(investigationStore, investigationId);
-  
-        // If it exists, we update, else we insert a new record
-        if (existingInvestigation) {
-          investigationStore.put({ id: investigationId, name: investigation.name, profileId: profileId });
-        } else {
-          investigationId = await this.getNextInvestigationId(investigationStore); // Get new ID only for inserts
-          investigationStore.put({ id: investigationId, name: investigation.name, profileId: profileId });
-        }
-      }
-    }
-  
-    transaction.oncomplete = () => console.log('Profiles and investigations saved/updated in IndexedDB');
-  }
-
-  async getExistingRecord(store: IDBObjectStore, id: string | number): Promise<any> {
-    return new Promise((resolve, reject) => {
-      const request = store.get(id);
-  
-      request.onsuccess = (event: any) => {
-        resolve(event.target.result);
-      };
-  
-      request.onerror = () => {
-        reject(null);
-      };
+    this.accountService.getUserData().subscribe({
+      next: (data) => {
+        this.userData = data;
+        this.loadProfiles();
+      },
+      error: (err) => console.error('Error fetching user data:', err)
     });
   }
-  
-  
 
+  // Initialize the profiles form
+  initializeForm(): void {
+    this.profilesForm = this.fb.group({
+      profiles: this.fb.array([], Validators.required) // At least one profile is required
+    });
+  }
+
+  // Add a new profile
+  addNewProfile(): void {
+    const newProfile = this.fb.group({
+      id: [''], // New profile starts with an empty id
+      name: ['', Validators.required], // Name is required
+      investigations: this.fb.array([
+        this.createInvestigation() // At least one investigation by default
+      ])
+    });
+
+    this.profiles.push(newProfile); // Add the new profile to the profiles FormArray
+  }
+
+  // Create a new investigation FormGroup
+  createInvestigation(): FormGroup {
+    return this.fb.group({
+      id: [''], // New investigation starts with an empty id
+      profileId: [''], // Optional, as it will be populated when saved in the backend
+      name: ['', Validators.required] // Name is required
+    });
+  }
+
+  // Add a new investigation to a specific profile
+  addInvestigation(profileIndex: number): void {
+    const investigations = this.getInvestigations(profileIndex);
+    investigations.push(this.createInvestigation());
+  }
+
+  // Get investigations FormArray for a specific profile
+  getInvestigations(profileIndex: number): FormArray {
+    return this.getProfileGroup(profileIndex).get('investigations') as FormArray;
+  }
+  // Remove an investigation from a specific profile
+  removeInvestigation(profileIndex: number, investigationIndex: number): void {
+    const investigations = this.getInvestigations(profileIndex);
+    investigations.removeAt(investigationIndex);
+  }
+
+  // Remove a profile from the FormArray
+  removeProfile(profileIndex: number): void {
+    this.profiles.removeAt(profileIndex);
+  }
+
+  // Load profiles from the API
   async loadProfiles(): Promise<void> {
-    const db = await this.openIndexedDB();
-    const transaction = db.transaction(['profiles', 'investigations'], 'readonly');
-    const profileStore = transaction.objectStore('profiles');
-    const investigationStore = transaction.objectStore('investigations');
-    const requestProfiles = profileStore.getAll(); // Fetch all profiles
-
-    requestProfiles.onsuccess = async () => {
-      const result = requestProfiles.result;
-      this.profiles = result ? result : []; // Set the profiles array from IndexedDB result
-
-      // Now load investigations for each profile
-      for (const profile of this.profiles) {
-        const index = investigationStore.index('profileId');
-        const requestInvestigations = index.getAll(profile?.id ?? 0); // Fetch investigations linked to the profileId
-
-        requestInvestigations.onsuccess = () => {
-          const investigations = requestInvestigations.result;
-          profile.investigations = investigations; // Store investigation names in the profile
-        };
-
-        requestInvestigations.onerror = () => {
-          console.error(`Error loading investigations for profile ${profile.name}`);
-        };
+    try {
+      const profiles: any = (await lastValueFrom(this.physicianService.getProfiles(this.userData.id))) || [];
+      if (!Array.isArray(profiles.data)) {
+        return;
       }
-    };
 
-    requestProfiles.onerror = () => {
-      console.error('Error loading profiles from IndexedDB');
-    };
+      profiles.data.forEach((profile: any) => {
+        const profileGroup = this.fb.group({
+          id: [profile.id],
+          name: [profile.name, Validators.required],
+          investigations: this.fb.array(
+            profile.investigations.map((inv: any) =>
+              this.fb.group({
+                id: [inv.id],
+                profileId: [inv.profileId],
+                name: [inv.name, Validators.required],
+              })
+            ),
+            Validators.required
+          ),
+        });
+        this.profiles.push(profileGroup);
+      });
+    } catch (error) {
+      console.error('Error loading profiles:', error);
+    }
   }
 
-  openIndexedDB(): Promise<IDBDatabase> {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open('prescriptionsDB', 2);
+  // Save all profiles to the API
+  async saveProfiles(): Promise<void> {
+    if (this.profilesForm.invalid) {
+      // Mark all controls as touched to display validation errors
+      this.markAllAsTouched(this.profilesForm);
+      console.error('Form is invalid. Please fix errors before saving.');
+      return;
+    }
 
-      request.onupgradeneeded = (event: any) => {
-        const db = event.target.result;
-        if (!db.objectStoreNames.contains('profiles')) {
-          db.createObjectStore('profiles', { keyPath: 'id', autoIncrement: true });
-        }
-        if (!db.objectStoreNames.contains('investigations')) {
-          const store = db.createObjectStore('investigations', { keyPath: 'id', autoIncrement: true });
-          store.createIndex('profileId', 'profileId');
-        }
-      };
+    const profilesData = this.profilesForm.value.profiles;
 
-      request.onsuccess = (event: any) => resolve(event.target.result);
-      request.onerror = (event: any) => reject(event.target.error);
+    try {
+      // Send the entire profiles array to the API
+      await this.physicianService.saveProfiles(this.userData.id, profilesData).toPromise();
+      console.log('Profiles saved successfully.');
+    } catch (error) {
+      console.error('Error saving profiles:', error);
+    }
+  }
+
+  // Navigate back to the prescription screen
+  back(): void {
+    this.router.navigate(['/physician/generate-prescription'], {
+      state: { prescription: this.prescription, patient: this.patient }
     });
   }
 
-  async getNextProfileId(store: IDBObjectStore): Promise<number> {
-    const countRequest = store.count();
-    return new Promise((resolve) => {
-      countRequest.onsuccess = () => resolve(countRequest.result + 1);
-    });
+  get profiles(): FormArray {
+    return this.profilesForm.get('profiles') as FormArray;
   }
 
-  async getNextInvestigationId(store: IDBObjectStore): Promise<number> {
-    const countRequest = store.count();
-    return new Promise((resolve) => {
-      countRequest.onsuccess = () => resolve(countRequest.result + 1);
-    });
+  // Utility to cast profile to FormGroup
+  getProfileGroup(index: number): FormGroup {
+    return this.profiles.at(index) as FormGroup;
   }
 
-  navigateBackToPrescription() {
-    // Ensure we pass back the prescription to retain entered data
-    this.router.navigate(['/physician/generate-prescription'], { state: { prescription: this.prescription, patient: this.patient } });
+  private markAllAsTouched(formGroup: FormGroup | FormArray): void {
+    Object.keys(formGroup.controls).forEach((key) => {
+      const control = formGroup.get(key);
+      if (control instanceof FormGroup || control instanceof FormArray) {
+        this.markAllAsTouched(control); // Recursively mark nested controls
+      } else {
+        control?.markAsTouched();
+      }
+    });
   }
 }
