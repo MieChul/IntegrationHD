@@ -26,7 +26,7 @@ export class ManageClinicComponent implements OnInit {
   sortDirection: 'asc' | 'desc' = 'asc';
   stateFilterCtrl = new FormControl();
   cityFilterCtrl = new FormControl();
-  days = ['M', 'T', 'W', 'Th', 'F', 'S'];
+  days = ['Su', 'M', 'T', 'W', 'Th', 'F', 'S'];
   submitted = false;
   userData: any;
 
@@ -66,8 +66,9 @@ export class ManageClinicComponent implements OnInit {
       pinCode: ['', [Validators.required, Validators.pattern(/^[1-9][0-9]{5}$/)]],
       state: ['', Validators.required],
       city: ['', Validators.required],
-      timing: ['', Validators.required],
-      isActive: [false],
+      fromTiming: ['', Validators.required],
+      toTiming: ['', Validators.required],
+      isActive: [],
       days: this.fb.group(daysGroup, { validators: this.validateDaysRequired })
     });
   }
@@ -139,15 +140,15 @@ export class ManageClinicComponent implements OnInit {
     this.isEditMode = false;
     this.currentClinicId = null;
     this.submitted = false;
-  
+
     // Reset the form
     this.clinicForm.reset();
-  
+
     // Reset the days FormGroup explicitly
     const daysGroup = this.clinicForm.get('days') as FormGroup;
     this.days.forEach((day) => daysGroup.get(day)?.setValue(false));
-  
-  
+
+
     // Open the modal
     const modal = new bootstrap.Modal(document.getElementById('clinicModal')!);
     modal.show();
@@ -156,7 +157,7 @@ export class ManageClinicComponent implements OnInit {
   openEditClinicPopup(clinic: any): void {
     this.isEditMode = true;
     this.currentClinicId = clinic.id;
-  
+
     // Patch form values
     this.clinicForm.patchValue({
       id: clinic.id,
@@ -166,11 +167,12 @@ export class ManageClinicComponent implements OnInit {
       area: clinic.area || '',
       state: clinic.state || '',
       city: clinic.city || '',
-      timing: clinic.timing || '',
+      fromTiming: clinic.fromTiming || '',
+      toTiming: clinic.toTiming || '',
       isActive: clinic.isActive || false,
       pinCode: clinic.pinCode || ''
     });
-  
+
     // Load cities if the state is present
     if (clinic.state) {
       this.cities = City.getCitiesOfState('IN', clinic.state);
@@ -179,12 +181,12 @@ export class ManageClinicComponent implements OnInit {
       this.cities = [];
       this.filteredCities.next([]);
     }
-  
+
     // Map days to the form
     const daysGroup = this.clinicForm.get('days') as FormGroup;
     const clinicDays = Array.isArray(clinic.days) ? clinic.days : []; // Ensure clinic.days is an array
     this.days.forEach(day => daysGroup.get(day)?.setValue(clinicDays.includes(day)));
-  
+
     // Show the modal
     const modal = new bootstrap.Modal(document.getElementById('clinicModal')!);
     modal.show();
@@ -194,19 +196,19 @@ export class ManageClinicComponent implements OnInit {
     this.submitted = true;
     this.clinicForm.markAllAsTouched();
     if (this.clinicForm.invalid) return;
-  
+
     // Prepare the clinic data, including the days
-    const clinicData = { ...this.clinicForm.value};
-  
+    const clinicData = { ...this.clinicForm.value };
+
     // Add the selected days
     clinicData.days = this.days.filter((day) => this.clinicForm.get('days')?.get(day)?.value);
-  
+
     if (this.isEditMode && this.currentClinicId) {
       this.physicianService.addUpdateClinic(this.userData.id, { ...clinicData, id: this.currentClinicId }).subscribe(() => this.loadClinics());
     } else {
       this.physicianService.addUpdateClinic(this.userData.id, clinicData).subscribe(() => this.loadClinics());
     }
-  
+
     // Close the modal
     bootstrap.Modal.getInstance(document.getElementById('clinicModal')!)?.hide();
   }
@@ -225,7 +227,7 @@ export class ManageClinicComponent implements OnInit {
 
   searchClinic(): void {
     const searchTerm = this.searchValue.toLowerCase();
-  
+
     this.filteredClinics = this.clinics.filter((clinic) => {
       // Combine all address fields into a single string
       const address = [
@@ -239,7 +241,7 @@ export class ManageClinicComponent implements OnInit {
         .filter(Boolean) // Exclude undefined or null values
         .join(' ')
         .toLowerCase();
-  
+
       // Check if the search term matches the name or any part of the address
       return (
         clinic.name.toLowerCase().includes(searchTerm) ||
@@ -247,7 +249,7 @@ export class ManageClinicComponent implements OnInit {
       );
     });
   }
-  
+
   sortTable(key: string): void {
     if (this.sortKey === key) {
       // Toggle the sort direction if the same column is clicked
@@ -257,21 +259,21 @@ export class ManageClinicComponent implements OnInit {
       this.sortKey = key;
       this.sortDirection = 'asc';
     }
-  
+
     this.filteredClinics.sort((a, b) => {
       let valueA = a[key];
       let valueB = b[key];
-  
+
       // Handle null or undefined values
       valueA = valueA === undefined || valueA === null ? '' : valueA;
       valueB = valueB === undefined || valueB === null ? '' : valueB;
-  
+
       if (typeof valueA === 'string' && typeof valueB === 'string') {
         // String comparison (case-insensitive)
         valueA = valueA.toLowerCase();
         valueB = valueB.toLowerCase();
       }
-  
+
       if (valueA < valueB) {
         return this.sortDirection === 'asc' ? -1 : 1;
       }

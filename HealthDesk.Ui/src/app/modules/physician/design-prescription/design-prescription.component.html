@@ -5,7 +5,7 @@
   <div class="row mb-3 align-items-center">
     <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
       <div class="mb-2 me-3">
-        <mat-form-field class="w-100">
+        <mat-form-field appearance="outline" class="w-100">
           <mat-label>Search Prescription</mat-label>
           <input matInput placeholder="Search by Name" [(ngModel)]="searchValue" (input)="filterPrescriptions()" />
         </mat-form-field>

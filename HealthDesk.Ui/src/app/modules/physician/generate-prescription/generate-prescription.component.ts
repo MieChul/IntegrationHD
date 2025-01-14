@@ -26,12 +26,13 @@ export class GeneratePrescriptionComponent implements OnInit {
   customInvestigations: { name: string }[] = [];
   finalInvestigations!: FormArray;
   selectedProfilesControl = new FormControl([]);
-  dosageForms : string[] = [];
+  dosageForms: string[] = [];
   drugNames: string[] = [];
   strengths: string[] = [];
-  times : string[] = [];
-  durations : string[] = [];
-  systemsDd : string[] = [];
+  times: string[] = [];
+  durations: string[] = [];
+  systemsDd: string[] = [];
+  investigationdd: string[] = [];
   signature: string | ArrayBuffer | null = null;
   stamp: string | ArrayBuffer | null = null;
   selectedProfile: string = '';
@@ -54,17 +55,18 @@ export class GeneratePrescriptionComponent implements OnInit {
     this.accountService.getUserData().subscribe({
       next: (data) => {
         this.userData = data;
-        this.dosageForms = this.databaseService.getForms();
-        this.drugNames = this.databaseService.getDrugs();
-        this.strengths = this.databaseService.getStrengths();
-        this.times = this.databaseService.getFrequency();
-        this.durations = this.databaseService.getDurations();
-        this.systemsDd = this.databaseService.getSystems();
         this.physicianService.getDefaultPrescriptionHeaderFooter(this.userData.id).subscribe({
           next: async (response: any) => {
             this.headerImg = await this.fetchImageAsBase64(response.data.header);
             this.footerImg = await this.fetchImageAsBase64(response.data.footer);
-            this.loadProfiles();
+            this.dosageForms = await this.databaseService.getForms();
+            this.drugNames = await this.databaseService.getDrugs();
+            this.strengths = await this.databaseService.getStrengths();
+            this.times = await this.databaseService.getFrequencies();
+            this.durations = await this.databaseService.getDurations();
+            this.systemsDd = await this.databaseService.getSystems();
+            this.investigationdd = await this.databaseService.getInvestigations();
+            await this.loadProfiles();
           },
           error: (err) => console.error('Error fetching header/footer:', err),
         });
@@ -479,7 +481,7 @@ export class GeneratePrescriptionComponent implements OnInit {
     // Other Instructions Table
     const instructionsData = [
       ['Other Instructions', this.prescriptionForm.get('otherInstructions')?.value || ''],
-      ['Next Follow-up',  formatDate(this.prescriptionForm.get('nextFollowUp')?.value) || '']
+      ['Next Follow-up', formatDate(this.prescriptionForm.get('nextFollowUp')?.value) || '']
     ];
     checkAndAddNewPage(25);
     // Approximate height
@@ -522,27 +524,27 @@ export class GeneratePrescriptionComponent implements OnInit {
 
 
 
-    
 
-    const pdfBlob  = doc.output('blob');
+
+    const pdfBlob = doc.output('blob');
     const physicianId = this.userData.id;
     const patientId = this.patientRecord.userId;
     const illness = complaintsArray.controls
-    .map(control => control.value.text) // Extract the `text` value from each FormGroup
-    .join(', ');
+      .map(control => control.value.text) // Extract the `text` value from each FormGroup
+      .join(', ');
 
     from(this.physicianService.uploadPrescription({ pdfBlob, physicianId, patientId, illness }))
-    .subscribe({
-      next: (response: any) => {
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-         // API returns the generated PDF URL
-        window.open(pdfUrl, '_blank'); // Open the PDF in a new tab
-        console.log('Prescription generated and opened.');
-      },
-      error: (error) => {
-        console.error('Error uploading prescription:', error);
-      },
-    });;
+      .subscribe({
+        next: (response: any) => {
+          const pdfUrl = URL.createObjectURL(pdfBlob);
+          // API returns the generated PDF URL
+          window.open(pdfUrl, '_blank'); // Open the PDF in a new tab
+          console.log('Prescription generated and opened.');
+        },
+        error: (error) => {
+          console.error('Error uploading prescription:', error);
+        },
+      });;
   };
 
 
@@ -588,10 +590,10 @@ export class GeneratePrescriptionComponent implements OnInit {
 
   onProfileSelectionChange(selectedProfiles: any[]): void {
     this.selectedProfiles = selectedProfiles;
-  
+
     // Clear current investigations in the FormArray
     this.finalInvestigationsFormArray.clear();
-  
+
     // Add investigations from selected profiles
     for (const profile of this.selectedProfiles) {
       for (const investigation of profile.investigations) {
@@ -602,7 +604,7 @@ export class GeneratePrescriptionComponent implements OnInit {
         );
       }
     }
-  
+
     // Add custom investigations to the FormArray
     for (const customInv of this.customInvestigations) {
       this.finalInvestigationsFormArray.push(
@@ -629,7 +631,7 @@ export class GeneratePrescriptionComponent implements OnInit {
         profile.investigations.map((inv: any) => inv.name)
       )
     );
-  
+
     this.customInvestigations = this.finalInvestigationsFormArray.controls
       .map((control) => control.value.name)
       .filter((name) => !profileInvestigationNames.has(name))

@@ -6,9 +6,9 @@
   <div class="row mb-3 align-items-center">
     <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
       <div class="mb-2 me-3">
-        <mat-form-field class="w-100">
+        <mat-form-field appearance="outline" class="w-100"class="w-100">
           <mat-label>Search Clinics</mat-label>
-          <input matInput placeholder="Search by Name or Address" [(ngModel)]="searchValue" (input)="searchClinic()" />
+          <input matInput placeholder="Search by Name" [(ngModel)]="searchValue" (input)="searchClinic()" />
         </mat-form-field>
       </div>
     </div>
@@ -27,7 +27,8 @@
         <tr>
           <th (click)="sortTable('name')">Name</th>
           <th>Address</th>
-          <th (click)="sortTable('timing')">Timing</th>
+          <th (click)="sortTable('fromTiming')">From</th>
+          <th (click)="sortTable('toTiming')">To</th>
           <th (click)="sortTable('days')">Days</th>
           <th (click)="sortTable('isActive')">Is Active</th>
           <th>Action</th>
@@ -44,7 +45,8 @@
             (clinic.state ? clinic.state + ', ' : '') +
             (clinic.pinCode ? clinic.pinCode : '')
             }}</td>
-          <td>{{ clinic.timing }}</td>
+          <td>{{ clinic.fromTiming }}</td>
+          <td>{{ clinic.toTiming }}</td>
           <td>{{ clinic.days }}</td>
           <td>
             <span *ngIf="clinic.isActive" class="badge bg-success">Yes</span>
@@ -146,7 +148,7 @@
                   </mat-select>
                 </mat-form-field>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <mat-form-field appearance="fill" class="w-100">
                   <mat-label>Select City</mat-label>
                   <mat-select formControlName="city" disableOptionCentering>
@@ -164,14 +166,23 @@
                 </mat-form-field>
               </div>
               <!-- Timing -->
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>Timing</mat-label>
-                  <input matInput [ngxMatTimepicker]="timePicker" formControlName="timing"
-                    placeholder="Select Timing" />
+                  <mat-label>From</mat-label>
+                  <input matInput [ngxMatTimepicker]="timePicker" formControlName="fromTiming" placeholder="From" />
                   <ngx-mat-timepicker-toggle [for]="timePicker" matSuffix></ngx-mat-timepicker-toggle>
                   <ngx-mat-timepicker #timePicker></ngx-mat-timepicker>
-                  <mat-error *ngIf="submitted && clinicForm.get('timing')?.hasError('required')">Timing is
+                  <mat-error *ngIf="submitted && clinicForm.get('fromTiming')?.hasError('required')">Timing is
+                    required</mat-error>
+                </mat-form-field>
+              </div>
+              <div class="col-md-4">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>To</mat-label>
+                  <input matInput [ngxMatTimepicker]="timePickerTo" formControlName="toTiming" placeholder="To" />
+                  <ngx-mat-timepicker-toggle [for]="timePickerTo" matSuffix></ngx-mat-timepicker-toggle>
+                  <ngx-mat-timepicker #timePickerTo></ngx-mat-timepicker>
+                  <mat-error *ngIf="submitted && clinicForm.get('toTiming')?.hasError('required')">Timing is
                     required</mat-error>
                 </mat-form-field>
               </div>

@@ -9,10 +9,12 @@ namespace HealthDesk.API.Controllers;
 public class AccountController : ControllerBase
 {
     private IAccountService _accountService;
+    private readonly IWebHostEnvironment _env;
 
-    public AccountController(IAccountService accountService)
+    public AccountController(IAccountService accountService, IWebHostEnvironment env)
     {
         _accountService = accountService;
+        _env = env;
     }
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(string id)
@@ -50,11 +52,26 @@ public class AccountController : ControllerBase
             return BadRequest("Invalid file type.");
 
         var filename = $"{propName}{extension}";
-        var folderPath = Path.Combine("..", "HealthDesk.UI", "src", "assets", "documents", id);
+
+        // Use environment to determine the correct folder path
+        string folderPath;
+        if (_env.IsDevelopment())
+        {
+            // For local development
+            folderPath = Path.Combine(
+                @"C:\Users\admin\Desktop\desk\IntegrationHD\HealthDesk.Ui\src\assets",
+                "documents",
+                id
+            );
+        }
+        else
+        {
+            // For production deployment
+            folderPath = Path.Combine(_env.WebRootPath, "assets", "documents", id);
+        }
 
         try
         {
-            // Ensure the folder exists
             Directory.CreateDirectory(folderPath);
 
             var filePath = Path.Combine(folderPath, filename);
@@ -71,28 +88,8 @@ public class AccountController : ControllerBase
                 await file.CopyToAsync(fileStream);
             }
 
-            var res = $@"assets/documents/{id}/{filename}";
-            var model = new UpdateRequestDto();
-
-            var propertyMap = new Dictionary<string, Action<string>>
-        {
-            { "profileImage", value => model.ProfImage = value },
-            { "clinicImage", value => model.ClinicImage = value },
-            { "graduation", value => model.GDoc = value },
-            { "postGraduation", value => model.PDoc = value },
-            { "superSpecialization", value => model.SDoc = value },
-            { "additionalQualification", value => model.ADoc = value },
-            { "medicalRegistration", value => model.MDoc = value }
-        };
-
-            if (propertyMap.TryGetValue(propName, out var setter))
-            {
-                setter(res);
-            }
-            else
-            {
-                return BadRequest("Invalid property name.");
-            }
+            // Construct the relative path for Angular
+            var res = $@"/assets/documents/{id}/{filename}";
 
             return Ok(new { fileName = res });
         }

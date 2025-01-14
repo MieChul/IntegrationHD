@@ -33,9 +33,13 @@ public class PhysicianClinicDto
     public string City { get; set; }
 
     [Required(ErrorMessage = "Timing is required.")]
-    public string Timing { get; set; }
+    public string FromTiming { get; set; }
 
-    public bool IsActive { get; set; } = false;
+    [Required(ErrorMessage = "Timing is required.")]
+    public string ToTiming { get; set; }
+
+
+    public bool? IsActive { get; set; } = false;
 
     [Required(ErrorMessage = "At least one day must be selected.")]
     [MinLength(1, ErrorMessage = "At least one day must be selected.")]
@@ -123,8 +127,8 @@ public class PatientRecordDto
     public string Gender { get; set; }
     public DateTime DateOfBirth { get; set; }
     public string Mobile { get; set; }
-    public string ABHAID { get; set; }
-    public string SecondaryId { get; set; }
+    public string? ABHAID { get; set; } = string.Empty;
+    public string? SecondaryId { get; set; } = string.Empty;
     public DateTime LastVisitedDate { get; set; }
 }
 
@@ -135,8 +139,7 @@ public class PrescriptionDto
     public string? PrescriptionUrl { get; set; }
     public string? Illness { get; set; } = string.Empty;
     public string? PdfBase64 { get; set; } = string.Empty;
-    public DateTime DateOfDiagnosis { get; set; }
-    public string ClinicId { get; set; }
+    public DateTime? DateOfDiagnosis { get; set; } = DateTime.Now;
 }
 
 public class MedicalCaseDto

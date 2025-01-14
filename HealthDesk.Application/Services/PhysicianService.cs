@@ -109,7 +109,11 @@ public class PhysicianService : IPhysicianService
         var patient = GenericMapper.Map<PatientRecordDto, PatientRecord>(dto);
 
         if (string.IsNullOrEmpty(dto.Id))
+        {
+            patient.LastVisitedDate = DateTime.Now;
             physician.Patients.Add(patient);
+        }
+            
         else
         {
             var existing = physician.Patients.FirstOrDefault(p => p.Id == dto.Id);
@@ -151,7 +155,8 @@ public class PhysicianService : IPhysicianService
             throw new ArgumentException("Patient not found.");
 
         var prescription = GenericMapper.Map<PrescriptionDto, Prescription>(dto);
-        patient.LastVisitedDate = prescription.DateOfDiagnosis = DateTime.Now.Date;
+        patient.LastVisitedDate  = DateTime.Now.Date;
+        prescription.DateOfDiagnosis = DateTime.Now.Date;
         patient.Prescriptions.Add(prescription);
 
         await _physicianRepository.UpdateAsync(physician);

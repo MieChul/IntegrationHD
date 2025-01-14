@@ -11,7 +11,7 @@
     <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
       <div class="mb-2 me-3 filter-container">
         <div class="mb-2 me-3 filter-container">
-          <mat-form-field class="w-100" *ngIf="!showHistory">
+          <mat-form-field appearance="outline" class="w-100" *ngIf="!showHistory">
             <mat-label>Search Patients</mat-label>
             <input matInput placeholder="Search by Name" [(ngModel)]="searchValue" (input)="searchPatient()" />
           </mat-form-field>

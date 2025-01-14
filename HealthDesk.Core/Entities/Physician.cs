@@ -48,14 +48,17 @@ public class Clinic : BaseEntity
     [BsonElement("city")]
     public string City { get; set; }
 
-    [BsonElement("timing")]
-    public string Timing { get; set; }
+    [BsonElement("from")]
+    public string FromTiming { get; set; }
+
+    [BsonElement("to")]
+    public string ToTiming { get; set; }
 
     [BsonElement("days")]
     public List<string> Days { get; set; }
 
     [BsonElement("is_active")]
-    public bool IsActive { get; set; }
+    public bool? IsActive { get; set; } = false;
 
     [BsonElement("is_default")]
     public bool IsDefault { get; set; }
@@ -187,10 +190,10 @@ public class PatientRecord : BaseEntity
     public string Mobile { get; set; }
 
     [BsonElement("abha_id")]
-    public string ABHAID { get; set; }
+    public string? ABHAID { get; set; } = string.Empty;
 
     [BsonElement("secondary_id")]
-    public string SecondaryId { get; set; }
+    public string? SecondaryId { get; set; } = string.Empty;
 
     [BsonElement("prescriptions")]
     public List<Prescription> Prescriptions { get; set; } = new();
@@ -202,7 +205,7 @@ public class PatientRecord : BaseEntity
 public class Prescription : BaseEntity
 {
     [BsonElement("date_of_diagnosis")]
-    public DateTime DateOfDiagnosis { get; set; }
+    public DateTime? DateOfDiagnosis { get; set; } = DateTime.Now;
 
     [BsonElement("prescription_url")]
     public string PrescriptionUrl { get; set; }

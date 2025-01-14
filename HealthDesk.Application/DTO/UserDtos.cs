@@ -111,6 +111,7 @@ public class UpdateUserInfoRequestDto
 
     public bool NoDocConsentProvided { get; set; } = false;
     public string ClinicImage { get; set; }
+    public string Username { get; set; }
 }
 
 public class DOB

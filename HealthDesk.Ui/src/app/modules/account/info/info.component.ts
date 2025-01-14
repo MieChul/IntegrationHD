@@ -178,6 +178,7 @@ export class InfoComponent {
   private initForm(): void {
     this.form = this.formBuilder.group({
       role: [this.user.role],
+      username: [this.user.username],
       displayName: [this.user.displayName],
       firstName: [this.user.firstName || ''],
       middleName: [
@@ -289,7 +290,8 @@ export class InfoComponent {
     const nameValidator = Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,25}$/);
     // Define control and validation map
     const validationMap: { [key: string]: any } = {
-      displayName: isPatientOrPhysician ? [Validators.required] : [],
+      username: isPatientOrPhysician ? [Validators.required, nameValidator] : [],
+      displayName: isPatientOrPhysician ? [Validators.required, nameValidator] : [],
       firstName: isPatientOrPhysician ? [Validators.required, nameValidator] : [],
       lastName: isPatientOrPhysician ? [Validators.required, nameValidator] : [],
       gender: isPatientOrPhysician ? [Validators.required] : [],
@@ -483,18 +485,18 @@ export class InfoComponent {
   upload(event: any, propName: string) {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
-  
+
     if (!file) {
       console.error("No file selected.");
       return;
     }
-  
+
     // Validation for file type and size
     const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
     const validOtherTypes = [...validImageTypes, 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-  
+
     let isValid = false;
-  
+
     if (propName === 'profileImage' || propName === 'clinicImage') {
       // Only image files allowed and size < 1 MB
       isValid = validImageTypes.includes(file.type) && file.size <= 1 * 1024 * 1024; // 1 MB
@@ -502,10 +504,10 @@ export class InfoComponent {
       // Images, PDFs, and DOC files allowed and size < 2 MB
       isValid = validOtherTypes.includes(file.type) && file.size <= 2 * 1024 * 1024; // 2 MB
     }
-  
+
     if (!isValid) {
       this.updateErrors = true;
-  
+
       if (propName === 'profileImage') {
         this.notificationService.showError('Invalid file for "Profile Image". Only image files (JPG, PNG, GIF) are allowed, and the size must be less than 1 MB.');
         this.setDefaultImage();
@@ -517,7 +519,7 @@ export class InfoComponent {
       }
       return;
     }
-  
+
     // If profileImage or clinicImage, preview the image using FileReader
     if (propName === 'profileImage' || propName === 'clinicImage') {
       const reader = new FileReader();
@@ -530,12 +532,12 @@ export class InfoComponent {
       };
       reader.readAsDataURL(file);
     }
-  
+
     const formData = new FormData();
     formData.append('file', file, file.name);
     formData.append('propName', propName);
     formData.append('id', this.user.id);
-  
+
     this.accountService.uploadFile(formData)
       .pipe(first())
       .subscribe({
@@ -572,7 +574,7 @@ export class InfoComponent {
         }
       });
   }
-  
+
   view(path: string) {
     window.open(path, "_blank");
   }

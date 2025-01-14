@@ -6,8 +6,8 @@
 
     <div class="row mb-4">
       <div class="col text-start">
-        <button type="button" class="btn btn-secondary" (click)="goBack()" data-bs-toggle="tooltip" data-bs-placement="right"
-          title="Back">
+        <button type="button" class="btn btn-secondary" (click)="goBack()" data-bs-toggle="tooltip"
+          data-bs-placement="right" title="Back">
           <i class="bi bi-arrow-left"></i>
         </button>
       </div>
@@ -71,7 +71,8 @@
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Color</mat-label>
           <input matInput formControlName="clinicPhoneFontColor" [ngxMatColorPicker]="colorPicker1" />
-          <ngx-mat-color-toggle matSuffix [for]="colorPicker1"></ngx-mat-color-toggle>
+          <ngx-mat-color-toggle matSuffix [for]="colorPicker1"
+            (colorChange)="onColorSelected($event,'clinicPhoneFontColor',colorPicker1)"></ngx-mat-color-toggle>
           <ngx-mat-color-picker #colorPicker1></ngx-mat-color-picker>
         </mat-form-field>
       </div>
@@ -113,7 +114,8 @@
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Color</mat-label>
           <input matInput formControlName="physicianNameFontColor" [ngxMatColorPicker]="colorPicker2" />
-          <ngx-mat-color-toggle matSuffix [for]="colorPicker2"></ngx-mat-color-toggle>
+          <ngx-mat-color-toggle matSuffix [for]="colorPicker2"
+            (colorChange)="onColorSelected($event,'physicianNameFontColor',colorPicker2)"></ngx-mat-color-toggle>
           <ngx-mat-color-picker #colorPicker2></ngx-mat-color-picker>
         </mat-form-field>
       </div>
@@ -156,7 +158,8 @@
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Color</mat-label>
           <input matInput formControlName="qualificationFontColor" [ngxMatColorPicker]="colorPicker3" />
-          <ngx-mat-color-toggle matSuffix [for]="colorPicker3"></ngx-mat-color-toggle>
+          <ngx-mat-color-toggle matSuffix [for]="colorPicker3"
+            (colorChange)="onColorSelected($event,'qualificationFontColor',colorPicker3)"></ngx-mat-color-toggle>
           <ngx-mat-color-picker #colorPicker3></ngx-mat-color-picker>
         </mat-form-field>
       </div>
@@ -195,7 +198,8 @@
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Color</mat-label>
           <input matInput formControlName="mrcNumberFontColor" [ngxMatColorPicker]="colorPicker4" />
-          <ngx-mat-color-toggle matSuffix [for]="colorPicker4"></ngx-mat-color-toggle>
+          <ngx-mat-color-toggle matSuffix [for]="colorPicker4"
+            (colorChange)="onColorSelected($event,'mrcNumberFontColor',colorPicker4)"></ngx-mat-color-toggle>
           <ngx-mat-color-picker #colorPicker4></ngx-mat-color-picker>
         </mat-form-field>
       </div>
@@ -207,9 +211,7 @@
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Clinic/Hospital Name</mat-label>
           <mat-select formControlName="clinicName">
-            <mat-option 
-              *ngFor="let clinic of clinics" 
-              [value]="clinic.name" 
+            <mat-option *ngFor="let clinic of clinics" [value]="clinic.name"
               (onSelectionChange)="onClinicChange(clinic)">
               {{ clinic.name }}
             </mat-option>
@@ -238,7 +240,8 @@
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Color</mat-label>
           <input matInput formControlName="clinicNameFontColor" [ngxMatColorPicker]="colorPicker5" />
-          <ngx-mat-color-toggle matSuffix [for]="colorPicker5"></ngx-mat-color-toggle>
+          <ngx-mat-color-toggle matSuffix [for]="colorPicker5"
+            (colorChange)="onColorSelected($event,'clinicNameFontColor',colorPicker5)"></ngx-mat-color-toggle>
           <ngx-mat-color-picker #colorPicker5></ngx-mat-color-picker>
         </mat-form-field>
       </div>
@@ -278,7 +281,8 @@
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Color</mat-label>
           <input matInput formControlName="clinicAddressFontColor" [ngxMatColorPicker]="colorPicker6" />
-          <ngx-mat-color-toggle matSuffix [for]="colorPicker6"></ngx-mat-color-toggle>
+          <ngx-mat-color-toggle matSuffix [for]="colorPicker6"
+            (colorChange)="onColorSelected($event,'clinicAddressFontColor',colorPicker6)"></ngx-mat-color-toggle>
           <ngx-mat-color-picker #colorPicker6></ngx-mat-color-picker>
         </mat-form-field>
       </div>
@@ -317,7 +321,8 @@
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Color</mat-label>
           <input matInput formControlName="clinicTimingsFontColor" [ngxMatColorPicker]="colorPicker7" />
-          <ngx-mat-color-toggle matSuffix [for]="colorPicker7"></ngx-mat-color-toggle>
+          <ngx-mat-color-toggle matSuffix [for]="colorPicker7"
+            (colorChange)="onColorSelected($event,'clinicTimingsFontColor',colorPicker7)"></ngx-mat-color-toggle>
           <ngx-mat-color-picker #colorPicker7></ngx-mat-color-picker>
         </mat-form-field>
       </div>
@@ -356,7 +361,8 @@
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Color</mat-label>
           <input matInput formControlName="footerTextFontColor" [ngxMatColorPicker]="colorPicker8" />
-          <ngx-mat-color-toggle matSuffix [for]="colorPicker8"></ngx-mat-color-toggle>
+          <ngx-mat-color-toggle matSuffix [for]="colorPicker8"
+            (colorChange)="onColorSelected($event,'footerTextFontColor',colorPicker1)"></ngx-mat-color-toggle>
           <ngx-mat-color-picker #colorPicker8></ngx-mat-color-picker>
         </mat-form-field>
       </div>

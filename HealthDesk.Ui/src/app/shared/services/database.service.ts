@@ -8,26 +8,26 @@ export class DatabaseService {
   private database: {
     Drugs: string[];
     Strengths: string[];
-    Frequency: string[];
+    Frequencies: string[];
     Systems: string[];
     Routes: string[];
     Forms: string[];
     Symptoms: string[];
     Vaccines: string[];
     Durations: string[];
-    Tests: string[];
+    Investigations: string[];
     Councils: string[];
   } = {
     Drugs: [],
     Strengths: [],
-    Frequency: [],
+    Frequencies: [],
     Systems: [],
     Routes: [],
     Forms: [],
     Symptoms: [],
     Vaccines: [],
     Durations: [],
-    Tests: [],
+    Investigations: [],
     Councils: [],
   };
 
@@ -87,8 +87,8 @@ export class DatabaseService {
     return this.database.Strengths;
   }
 
-  getFrequency(): string[] {
-    return this.database.Frequency;
+  getFrequencies(): string[] {
+    return this.database.Frequencies;
   }
 
   getSystems(): string[] {
@@ -115,8 +115,8 @@ export class DatabaseService {
     return this.database.Durations;
   }
 
-  getTests(): string[] {
-    return this.database.Tests;
+  getInvestigations(): string[] {
+    return this.database.Investigations;
   }
 
   getCouncils(): string[] {

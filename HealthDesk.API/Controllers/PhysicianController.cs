@@ -11,12 +11,15 @@ namespace HealthDesk.API.Controllers
         private readonly IAccountService _accountService;
         private readonly IPhysicianService _physicianService;
         private readonly IPatientService _patientService;
+        private readonly IWebHostEnvironment _env;
 
-        public PhysicianController(IAccountService accountService, IPhysicianService physicianService, IPatientService patientService)
+
+        public PhysicianController(IAccountService accountService, IPhysicianService physicianService, IPatientService patientService, IWebHostEnvironment env)
         {
             _accountService = accountService;
             _physicianService = physicianService;
             _patientService = patientService;
+            _env = env;
         }
 
         [HttpGet("{physicianId}/clinics")]
@@ -66,7 +69,22 @@ namespace HealthDesk.API.Controllers
                 var designCount = await _physicianService.GetDesignPrescriptionCountAsync(id);
                 if (string.IsNullOrEmpty(dto.Id) || designCount == 0)
                     designCount++;
-                var directoryPath = Path.Combine("..", "HealthDesk.UI", "src", "assets", "documents", id, "prescription");
+                var directoryPath = string.Empty;
+                if (_env.IsDevelopment())
+                {
+                    // For local development
+                    directoryPath = Path.Combine(
+                        @"C:\Users\admin\Desktop\desk\IntegrationHD\HealthDesk.Ui\src\assets",
+                        "documents",
+                        id,
+                        "prescription"
+                    );
+                }
+                else
+                {
+                    // For production deployment
+                    directoryPath = Path.Combine(_env.WebRootPath, "assets", "documents", id, "prescription");
+                }
 
                 Directory.CreateDirectory(directoryPath);
 
@@ -139,7 +157,7 @@ namespace HealthDesk.API.Controllers
             }
 
             // Return the relative URL for the saved file
-            return $@"assets/documents/{id}/prescription/{filename}";
+            return $@"/assets/documents/{id}/prescription/{filename}";
         }
 
         [HttpDelete("{id}/design-prescriptions/{prescriptionId}")]
@@ -216,7 +234,22 @@ namespace HealthDesk.API.Controllers
                 prescriptionCount++;
 
                 // Define the directory path
-                var directoryPath = Path.Combine("..", "HealthDesk.UI", "src", "assets", "documents", dto.PatientId, "prescription");
+                var directoryPath = string.Empty;
+                if (_env.IsDevelopment())
+                {
+                    // For local development
+                    directoryPath = Path.Combine(
+                        @"C:\Users\admin\Desktop\desk\IntegrationHD\HealthDesk.Ui\src\assets",
+                        "documents",
+                        dto.PatientId,
+                        "prescription"
+                    );
+                }
+                else
+                {
+                    // For production deployment
+                    directoryPath = Path.Combine(_env.WebRootPath, "assets", "documents", dto.PatientId, "prescription");
+                }
                 Directory.CreateDirectory(directoryPath);
 
                 // Save the PDF file
@@ -225,7 +258,7 @@ namespace HealthDesk.API.Controllers
                 await System.IO.File.WriteAllBytesAsync(pdfFilePath, fileData);
 
                 // Set the URL for the PDF file
-                var pdfUrl = Path.Combine("assets", "documents", dto.PatientId, "prescription", pdfFileName);
+                var pdfUrl =  $@"/assets/documents/{dto.PatientId}/prescription/{pdfFileName}";
 
                 // Call the service to save the prescription details
                 dto.PrescriptionUrl = pdfUrl;

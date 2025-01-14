@@ -31,6 +31,7 @@ public class AccountService : IAccountService
         var user = await _userRepository.GetByIdAsync(id);
         if (user != null)
         {
+            user.Username = model.Username;
             user.DisplayName = model.DisplayName;
             user.FirstName = model.FirstName;
             user.MiddleName = model.MiddleName;

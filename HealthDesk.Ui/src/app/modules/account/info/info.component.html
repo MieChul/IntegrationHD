@@ -7,11 +7,24 @@
                         <div class="row mb-3">
                             <span>Upload Profile Image</span>
                             <div class="cursor-pointer mb-2" (click)="triggerFileUpload()">
-                                <img [src]="form.get('profImage')?.value || '/assets/defaultProfile.jpg'"
+                                <img [src]="form.get('profImage')?.value"
                                     class="rounded-circle img-fluid" alt="Profile Image" (error)="setDefaultImage()"
                                     id="profImg" />
                                 <input type="file" accept="image/*" (change)="upload($event, 'profileImage')"
                                     style="display: none" #fileInput />
+                            </div>
+                            <div class="form-floating mb-2" 
+                                *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
+                                <input type="text" formControlName="username" class="form-control" id="floatingInput"
+                                    placeholder="User Name" autocomplete="off"
+                                    [ngClass]="{ 'is-invalid': submitted && f['username'].errors }">
+                                <div *ngIf="submitted && f['username'].errors" class="invalid-feedback">
+                                    <div *ngIf="f['username'].errors['required']">User Name is required</div>
+                                    <div *ngIf="f['username'].errors['pattern']">Please enter a valid user
+                                        name.</div>
+                                </div>
+                                <label for="floatingInput" class="form-label-floating">User Name<i
+                                        class="danger">*</i></label>
                             </div>
                             <div class="form-floating"
                                 *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
@@ -20,6 +33,8 @@
                                     [ngClass]="{ 'is-invalid': submitted && f['displayName'].errors }">
                                 <div *ngIf="submitted && f['displayName'].errors" class="invalid-feedback">
                                     <div *ngIf="f['displayName'].errors['required']">Display Name is required</div>
+                                    <div *ngIf="f['displayName'].errors['pattern']">Please enter a valid display
+                                        name.</div>
                                 </div>
                                 <label for="floatingInput" class="form-label-floating">Display Name<i
                                         class="danger">*</i></label>
@@ -605,15 +620,6 @@
                                         value="{{user.role | titlecase}}" [readOnly]="true">
                                     <label for="mobile" class="form-label-floating">Organization Type<i
                                             class="danger">*</i></label>
-                                </div>
-                                <div *ngIf="user.role=='physician'" class="cursor-pointer col-sm-6"
-                                    (click)="triggerFileUploadClinic()">
-                                    <label>Hospital/Clinic Image</label>
-                                    <img class="rounded-circle-hosp img-fluid profileImage" id="hospImg"
-                                        [src]="form.get('clinicImage')?.value || '/assets/defaultProfile.jpg'"
-                                        (error)="setDefaultImage()">
-                                    <input type="file" accept="image/*" (change)="upload($event, 'clinicImage')"
-                                        style="display: none" #fileInputClinic />
                                 </div>
                             </div>
                             <hr>

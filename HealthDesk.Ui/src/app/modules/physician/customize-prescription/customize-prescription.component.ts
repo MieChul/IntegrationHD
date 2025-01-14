@@ -142,18 +142,16 @@ export class CustomizePrescriptionComponent implements OnInit {
       footerTextFontSize: ['medium'],
       footerTextFontColor: ['#000000'],
       isDefault: [false],
-      logoImage: [null],
-      headerImage: [null],
-      footerImage: [null]
+      logoImage: [''],
+      headerImage: [''],
+      footerImage: ['']
     });
   }
 
   populateForm(prescription: any): void {
     if (!prescription) return;
 
-    if (prescription.logoUrl)
-      this.logoPreviewUrl = prescription.logoUrl;
-
+    this.logoPreviewUrl= prescription.logoUrl;
     this.prescriptionForm.patchValue({
       id: prescription.id,
       templateId: prescription.templateId,
@@ -191,16 +189,15 @@ export class CustomizePrescriptionComponent implements OnInit {
       footerTextFontSize: prescription.footerTextFontSize,
       footerTextFontColor: prescription.footerTextFontColor,
       isDefault: prescription.isDefault,
-      logoImage: [null],
       logoUrl: prescription.logoUrl,
-      headerImage: [null],
-      footerImage: [null],
       footerImageUrl: prescription.footerImageUrl,
       headerImageUrl: prescription.headerImageUrl
     });
   }
 
   populateUserDetails(userDetails: any): void {
+    if (this.logoPreviewUrl)
+      this.loadImageFromUrl(this.logoPreviewUrl ?? '', 'logo');
     if (!userDetails) return;
 
     this.prescriptionForm.patchValue({
@@ -215,7 +212,7 @@ export class CustomizePrescriptionComponent implements OnInit {
 
     this.prescriptionForm.patchValue({
       clinicAddress: `${clinic.flatNumber}, ${clinic.building}, ${clinic.area}, ${clinic.city}, ${clinic.state}, ${clinic.pinCode}`,
-      clinicTimings: `${clinic.timing} (${clinic.days.join(', ')})`,
+      clinicTimings: `${clinic.fromTiming} - ${clinic.toTiming} (${clinic.days.join(', ')})`,
     });
   }
 
@@ -238,7 +235,7 @@ export class CustomizePrescriptionComponent implements OnInit {
     }
 
     if (errors.length > 0) {
-      this.prescriptionForm.get('logoImage')?.setErrors({ customErrors: errors });
+ 
       return;
     }
 
@@ -379,6 +376,7 @@ export class CustomizePrescriptionComponent implements OnInit {
   }
 
   private async drawLogo(ctx: CanvasRenderingContext2D, startX: number, isType4: boolean = false): Promise<void> {
+
     const storedLogo = this.prescriptionForm.get('logoImage')?.value;
     if (!storedLogo) return;
 
@@ -552,7 +550,7 @@ export class CustomizePrescriptionComponent implements OnInit {
       }
 
       doc.setFontSize(7);
-      doc.setFont('calibri');
+      doc.setFont('Times');
       doc.setDrawColor(0, 0, 0);  // Set black color
       doc.line(5, headerHeight, 200, headerHeight);  // Separator after header
       startY = 60;
@@ -581,7 +579,7 @@ export class CustomizePrescriptionComponent implements OnInit {
       startY: startY,
       theme: 'plain',
       styles: {
-        font: 'calibri',
+        font: 'Times',
         fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1, cellPadding: { top: 2, right: 5, bottom: 2, left: 5 }
       },
       columnStyles: {
@@ -618,7 +616,7 @@ export class CustomizePrescriptionComponent implements OnInit {
       },
       startY: startY,
       styles: {
-        font: 'calibri',
+        font: 'Times',
         fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
       }
     });
@@ -637,7 +635,7 @@ export class CustomizePrescriptionComponent implements OnInit {
       startY: startY,
       theme: 'plain',
       styles: {
-        font: 'calibri',
+        font: 'Times',
         fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       body: vitalsInfo
@@ -656,7 +654,7 @@ export class CustomizePrescriptionComponent implements OnInit {
       startY: startY,
       theme: 'plain',
       styles: {
-        font: 'calibri',
+        font: 'Times',
         fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       columnStyles: {
@@ -686,7 +684,7 @@ export class CustomizePrescriptionComponent implements OnInit {
         fontStyle: 'normal'         // Plain font style
       },
       styles: {
-        font: 'calibri',
+        font: 'Times',
         fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       startY: startY
@@ -712,7 +710,7 @@ export class CustomizePrescriptionComponent implements OnInit {
       },
       body: diagnosisData,
       styles: {
-        font: 'calibri',
+        font: 'Times',
         fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       startY: startY
@@ -743,7 +741,7 @@ export class CustomizePrescriptionComponent implements OnInit {
       },
       body: rxData,
       styles: {
-        font: 'calibri',
+        font: 'Times',
         fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       startY: startY
@@ -766,7 +764,7 @@ export class CustomizePrescriptionComponent implements OnInit {
         1: { cellWidth: 152 } // Value from UI
       },
       styles: {
-        font: 'calibri',
+        font: 'Times',
         fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
       }
     });
@@ -779,7 +777,7 @@ export class CustomizePrescriptionComponent implements OnInit {
       body: signatureData,
       theme: 'plain',
       styles: {
-        font: 'calibri',
+        font: 'Times',
         fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       columnStyles: {
@@ -813,6 +811,13 @@ export class CustomizePrescriptionComponent implements OnInit {
     });
   }
 
+  onColorSelected(color: any, controlName: string, colorPicker: any): void {
+    const hexColor = this.convertColorToHex(color); // Convert color to valid hex
+    this.prescriptionForm.patchValue({ [controlName]: hexColor }); // Update form value
+    if (colorPicker && colorPicker.close) {
+      colorPicker.close(); // Close the color picker
+    }
+  }
 
   goBack() {
     // Hide the tooltip by disposing of it
@@ -847,7 +852,6 @@ export class CustomizePrescriptionComponent implements OnInit {
         physicianNameFontColor: this.convertColorToHex(this.prescriptionForm.get('physicianNameFontColor')?.value),
         qualificationFontColor: this.convertColorToHex(this.prescriptionForm.get('qualificationFontColor')?.value),
       };
-
       this.physicianService
         .saveDesignPrescription(this.userData.id, designData)
         .subscribe({
@@ -862,8 +866,34 @@ export class CustomizePrescriptionComponent implements OnInit {
   }
 
   private convertColorToHex(color: any): string {
-    if (typeof color !== 'object') return color; // Default to black
-    const { r, g, b } = color;
-    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
+    if (typeof color === 'string') {
+      // Return as-is if valid hex
+      return color.startsWith('#') ? color : `#${color}`;
+    }
+    if (typeof color === 'object' && color !== null) {
+      const { r, g, b } = color;
+      return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
+    }
+    return '#000000'; // Default to black
+  }
+
+  private loadImageFromUrl(imageUrl: string, type: string): void {
+    fetch(imageUrl)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch image.');
+        }
+        return response.blob();
+      })
+      .then((blob) => this.blobToBase64(blob)) // Convert the Blob to Base64
+      .then((base64) => {
+        if (type === 'logo') {
+          this.logoPreviewUrl = imageUrl; // Update the preview URL
+          this.prescriptionForm.patchValue({ logoImage: base64 }); // Patch Base64 to the form
+        }
+      })
+      .catch((error) => {
+        console.error('Error loading image:', error);
+      });
   }
 }
