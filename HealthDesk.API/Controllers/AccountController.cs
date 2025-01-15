@@ -55,20 +55,9 @@ public class AccountController : ControllerBase
 
         // Use environment to determine the correct folder path
         string folderPath;
-        if (_env.IsDevelopment())
-        {
-            // For local development
-            folderPath = Path.Combine(
-                @"C:\Users\admin\Desktop\desk\IntegrationHD\HealthDesk.Ui\src\assets",
-                "documents",
-                id
-            );
-        }
-        else
-        {
-            // For production deployment
-            folderPath = Path.Combine(_env.WebRootPath, "assets", "documents", id);
-        }
+
+        // For production deployment
+        folderPath = Path.Combine(_env.WebRootPath, "assets", "documents", id);
 
         try
         {

@@ -70,21 +70,10 @@ namespace HealthDesk.API.Controllers
                 if (string.IsNullOrEmpty(dto.Id) || designCount == 0)
                     designCount++;
                 var directoryPath = string.Empty;
-                if (_env.IsDevelopment())
-                {
-                    // For local development
-                    directoryPath = Path.Combine(
-                        @"C:\Users\admin\Desktop\desk\IntegrationHD\HealthDesk.Ui\src\assets",
-                        "documents",
-                        id,
-                        "prescription"
-                    );
-                }
-                else
-                {
-                    // For production deployment
-                    directoryPath = Path.Combine(_env.WebRootPath, "assets", "documents", id, "prescription");
-                }
+
+                // For production deployment
+                directoryPath = Path.Combine(_env.WebRootPath, "assets", "documents", id, "prescription");
+
 
                 Directory.CreateDirectory(directoryPath);
 
@@ -235,21 +224,10 @@ namespace HealthDesk.API.Controllers
 
                 // Define the directory path
                 var directoryPath = string.Empty;
-                if (_env.IsDevelopment())
-                {
-                    // For local development
-                    directoryPath = Path.Combine(
-                        @"C:\Users\admin\Desktop\desk\IntegrationHD\HealthDesk.Ui\src\assets",
-                        "documents",
-                        dto.PatientId,
-                        "prescription"
-                    );
-                }
-                else
-                {
-                    // For production deployment
-                    directoryPath = Path.Combine(_env.WebRootPath, "assets", "documents", dto.PatientId, "prescription");
-                }
+
+                // For production deployment
+                directoryPath = Path.Combine(_env.WebRootPath, "assets", "documents", dto.PatientId, "prescription");
+
                 Directory.CreateDirectory(directoryPath);
 
                 // Save the PDF file
@@ -258,7 +236,7 @@ namespace HealthDesk.API.Controllers
                 await System.IO.File.WriteAllBytesAsync(pdfFilePath, fileData);
 
                 // Set the URL for the PDF file
-                var pdfUrl =  $@"/assets/documents/{dto.PatientId}/prescription/{pdfFileName}";
+                var pdfUrl = $@"/assets/documents/{dto.PatientId}/prescription/{pdfFileName}";
 
                 // Call the service to save the prescription details
                 dto.PrescriptionUrl = pdfUrl;
