@@ -3078,19 +3078,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\admin\\.nuget\\packages\\": {}
+    "C:\\Users\\Mithul Rao\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Application\\HealthDesk.Application.csproj",
+      "projectUniqueName": "d:\\Desk\\IntegrationHD\\HealthDesk.Application\\HealthDesk.Application.csproj",
       "projectName": "HealthDesk.Application",
-      "projectPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Application\\HealthDesk.Application.csproj",
-      "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
-      "outputPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Application\\obj\\",
+      "projectPath": "d:\\Desk\\IntegrationHD\\HealthDesk.Application\\HealthDesk.Application.csproj",
+      "packagesPath": "C:\\Users\\Mithul Rao\\.nuget\\packages\\",
+      "outputPath": "d:\\Desk\\IntegrationHD\\HealthDesk.Application\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\Mithul Rao\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -3102,11 +3102,11 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj": {
-              "projectPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj"
+            "d:\\Desk\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj": {
+              "projectPath": "d:\\Desk\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj"
             },
-            "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj": {
-              "projectPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj"
+            "d:\\Desk\\IntegrationHD\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj": {
+              "projectPath": "d:\\Desk\\IntegrationHD\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj"
             }
           }
         }
@@ -3167,7 +3167,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.203/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.405/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

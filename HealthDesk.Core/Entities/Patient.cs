@@ -64,7 +64,11 @@ public class MedicalHistory : BaseEntity
     public string DosageForm { get; set; }
 
     [BsonElement("strength")]
-    public string Strength { get; set; }
+    public double Strength { get; set; }
+
+    
+    [BsonElement("strength_unit")]
+    public string StrengthUnit { get; set; }
 
     [BsonElement("frequency")]
     public string Frequency { get; set; }
@@ -80,7 +84,10 @@ public class Treatment : BaseEntity
     public string DosageForm { get; set; }
 
     [BsonElement("strength")]
-    public string Strength { get; set; }
+    public double Strength { get; set; }
+
+    [BsonElement("strength_unit")]
+    public string StrengthUnit { get; set; }
 
     [BsonElement("frequency")]
     public string Frequency { get; set; }
@@ -92,7 +99,7 @@ public class Treatment : BaseEntity
     public DateTime EndDate { get; set; }
 
     [BsonElement("comment")]
-    public string Comment { get; set; }
+    public string? Comment { get; set; }
 }
 
 public class Appointment : BaseEntity

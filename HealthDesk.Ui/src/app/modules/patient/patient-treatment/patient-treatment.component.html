@@ -3,45 +3,87 @@
         <i class="bi bi-prescription me-2"></i>Patient Treatment
     </h1>
 
+    <!-- Tabs for Ongoing and Past Treatments -->
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+            <a class="nav-link pointer-cursor" 
+               [ngClass]="{'active': activeTab === 'ongoing'}" 
+               (click)="filterTreatments('ongoing')">
+               Ongoing Treatments
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link pointer-cursor" 
+               [ngClass]="{'active': activeTab === 'past'}" 
+               (click)="filterTreatments('past')">
+               Past Treatments
+            </a>
+        </li>
+    </ul>
+
+    <!-- Date Filter -->
     <div class="row mb-3 align-items-center">
         <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
-            <div class="mb-2 me-3">
-                <label for="filterDate" class="form-label label-modern shadow">Filter by Start Date</label>
-                <input type="text" id="filterDate" class="form-control" ngbDatepicker #filterDatePicker="ngbDatepicker" (click)="filterDatePicker.toggle()" formControlName="filterDate">
-            </div>
+            <form [formGroup]="filterForm" class="w-100">
+                <div class="row">
+                    <!-- Start Date -->
+                    <div class="col-md-6">
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-label>Filter by Start Date</mat-label>
+                            <input matInput [matDatepicker]="f_startDatePicker" formControlName="f_startDate" />
+                            <mat-datepicker-toggle matSuffix [for]="f_startDatePicker"></mat-datepicker-toggle>
+                            <mat-datepicker #f_startDatePicker></mat-datepicker>
+                        </mat-form-field>
+                    </div>
+                    <!-- End Date -->
+                    <div class="col-md-6">
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-label>Filter by End Date</mat-label>
+                            <input matInput [matDatepicker]="f_endDatePicker" formControlName="f_endDate" />
+                            <mat-datepicker-toggle matSuffix [for]="f_endDatePicker"></mat-datepicker-toggle>
+                            <mat-datepicker #f_endDatePicker></mat-datepicker>
+                            <mat-error *ngIf="filterForm.get('f_endDate')?.hasError('invalidDateRange')">
+                                Cannot be earlier than start date.
+                            </mat-error>
+                        </mat-form-field>
+                    </div>
+                </div>
+            </form>
         </div>
-        <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
-            <button class="btn btn-primary" (click)="addTreatment()">Add Treatment</button>
+        <div class="col-md-4 col-sm-6 d-flex justify-content-end">
+            <button class="btn btn-primary" (click)="openTreatmentModal(false)">Add Treatment</button>
         </div>
     </div>
 
-    <div class="table-responsive">
+    <!-- No Records Found -->
+    <div *ngIf="filteredTreatments?.length === 0" class="alert alert-info">
+        No treatments found. Click "Add Treatment" to get started.
+    </div>
+
+    <!-- Treatment Table -->
+    <div class="table-responsive" *ngIf="filteredTreatments?.length > 0">
         <table class="table table-hover table-modern">
             <thead>
                 <tr>
-                    <th (click)="sortTable('drugName')">Drug Name</th>
+                    <th (click)="sortTable('treatmentDrug')">Treatment Drug</th>
                     <th (click)="sortTable('dosageForm')">Dosage Form</th>
                     <th (click)="sortTable('strength')">Strength</th>
                     <th (click)="sortTable('frequency')">Frequency</th>
                     <th (click)="sortTable('startDate')">Start Date</th>
                     <th (click)="sortTable('endDate')">End Date</th>
-                    <th (click)="sortTable('ongoing')">Ongoing</th>
-                    <th>Comment</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let treatment of patientTreatments">
-                    <td>{{ treatment.drugName }}</td>
+                <tr *ngFor="let treatment of filteredTreatments">
+                    <td>{{ treatment.treatmentDrug }}</td>
                     <td>{{ treatment.dosageForm }}</td>
-                    <td>{{ treatment.strength }}</td>
+                    <td>{{ treatment.strength }} {{ treatment.strengthUnit }}</td>
                     <td>{{ treatment.frequency }}</td>
                     <td>{{ treatment.startDate | date: 'dd-MM-yyyy' }}</td>
-                    <td>{{ treatment.endDate ? (treatment.endDate | date: 'dd-MM-yyyy') : 'N/A' }}</td>
-                    <td>{{ treatment.ongoing ? 'Yes' : 'No' }}</td>
-                    <td>{{ treatment.comment }}</td>
-                    <td>
-                        <button class="btn btn-warning btn-sm me-1" (click)="editTreatment(treatment)">
+                    <td>{{ treatment.endDate ? (treatment.endDate | date: 'dd-MM-yyyy') : 'Ongoing' }}</td>
+                    <td class="text-center">
+                        <button class="btn btn-warning btn-sm me-1" (click)="openTreatmentModal(true, treatment)">
                             <i class="bi bi-pencil"></i>
                         </button>
                         <button class="btn btn-danger btn-sm" (click)="deleteTreatment(treatment)">
@@ -52,10 +94,10 @@
             </tbody>
         </table>
     </div>
-</div>
 
-<!-- Add/Edit Treatment Modal -->
-<div class="modal fade" id="treatmentModal" tabindex="-1" aria-labelledby="treatmentModalLabel" aria-hidden="true" #treatmentModal>
+    <!-- Add/Edit Treatment Modal -->
+    <div class="modal fade" id="treatmentModal" tabindex="-1" aria-labelledby="treatmentModalLabel" aria-hidden="true"
+    #treatmentModal>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -64,43 +106,150 @@
             </div>
             <div class="modal-body">
                 <form [formGroup]="treatmentForm">
-                    <div class="mb-3">
-                        <label for="drugName" class="form-label label-modern shadow">Drug Name</label>
-                        <input type="text" id="drugName" formControlName="drugName" class="form-control">
+                    <div class="row">
+                        <!-- Treatment Drug -->
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Treatment Drug</mat-label>
+                                <mat-select formControlName="treatmentDrug" required>
+                                    <mat-option>
+                                        <ngx-mat-select-search [formControl]="drugFilterCtrl"
+                                            placeholderLabel="Search treatment drug"></ngx-mat-select-search>
+                                    </mat-option>
+                                    <mat-option *ngFor="let drug of filteredDrugs | async" [value]="drug">
+                                        {{ drug }}
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="treatmentForm.get('treatmentDrug')?.hasError('required')">
+                                    Treatment drug is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Dosage Form -->
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Dosage Form</mat-label>
+                                <mat-select formControlName="dosageForm" required>
+                                    <mat-option>
+                                        <ngx-mat-select-search [formControl]="dosageFormFilterCtrl"
+                                            placeholderLabel="Search dosage form"></ngx-mat-select-search>
+                                    </mat-option>
+                                    <mat-option *ngFor="let form of filteredDosageForms | async" [value]="form">
+                                        {{ form }}
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="treatmentForm.get('dosageForm')?.hasError('required')">
+                                    Dosage form is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="dosageForm" class="form-label label-modern shadow">Dosage Form</label>
-                        <input type="text" id="dosageForm" formControlName="dosageForm" class="form-control">
+
+                    <div class="row">
+                        <!-- Strength -->
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Strength</mat-label>
+                                <input matInput type="number" formControlName="strength" />
+                                <mat-error *ngIf="treatmentForm.get('strength')?.hasError('required')">
+                                    Strength is required.
+                                </mat-error>
+                                <mat-error *ngIf="treatmentForm.get('strength')?.hasError('min')">
+                                    Strength must be a positive number.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Strength Unit -->
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Strength Unit</mat-label>
+                                <mat-select formControlName="strengthUnit" required>
+                                    <mat-option>
+                                        <ngx-mat-select-search [formControl]="strengthUnitFilterCtrl"
+                                            placeholderLabel="Search strength unit"></ngx-mat-select-search>
+                                    </mat-option>
+                                    <mat-option *ngFor="let unit of filteredStrengthUnits | async" [value]="unit">
+                                        {{ unit }}
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="treatmentForm.get('strengthUnit')?.hasError('required')">
+                                    Strength unit is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="strength" class="form-label label-modern shadow">Strength</label>
-                        <input type="text" id="strength" formControlName="strength" class="form-control">
+
+                    <div class="row">
+                        <!-- Frequency -->
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Frequency</mat-label>
+                                <mat-select formControlName="frequency" required>
+                                    <mat-option>
+                                        <ngx-mat-select-search [formControl]="frequencyFilterCtrl"
+                                            placeholderLabel="Search frequency"></ngx-mat-select-search>
+                                    </mat-option>
+                                    <mat-option *ngFor="let frequency of filteredFrequencies | async" [value]="frequency">
+                                        {{ frequency }}
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="treatmentForm.get('frequency')?.hasError('required')">
+                                    Frequency is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Start Date -->
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Start Date</mat-label>
+                                <input matInput [matDatepicker]="startDatePicker" formControlName="startDate" />
+                                <mat-datepicker-toggle matSuffix [for]="startDatePicker"></mat-datepicker-toggle>
+                                <mat-datepicker #startDatePicker></mat-datepicker>
+                                <mat-error *ngIf="treatmentForm.get('startDate')?.hasError('required')">
+                                    Start date is required.
+                                </mat-error>
+                                <mat-error *ngIf="treatmentForm.get('startDate')?.hasError('futureDate')">
+                                    Start date cannot be in the future.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="frequency" class="form-label label-modern shadow">Frequency</label>
-                        <input type="text" id="frequency" formControlName="frequency" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label for="startDate" class="form-label label-modern shadow">Start Date</label>
-                        <input type="date" id="startDate" formControlName="startDate" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label for="endDate" class="form-label label-modern shadow">End Date</label>
-                        <input type="date" id="endDate" formControlName="endDate" class="form-control" [disabled]="treatmentForm.get('ongoing')?.value">
-                    </div>
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" id="ongoing" formControlName="ongoing" class="form-check-input" (change)="toggleEndDate()">
-                        <label for="ongoing" class="form-check-label label-modern shadow">Ongoing</label>
-                    </div>
-                    <div class="mb-3">
-                        <label for="comment" class="form-label label-modern shadow">Comment</label>
-                        <textarea id="comment" formControlName="comment" class="form-control"></textarea>
+
+                    <div class="row">
+                        <!-- End Date -->
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>End Date</mat-label>
+                                <input matInput [matDatepicker]="endDatePicker" formControlName="endDate" />
+                                <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
+                                <mat-datepicker #endDatePicker></mat-datepicker>
+                                <mat-error *ngIf="treatmentForm.get('endDate')?.hasError('futureDate')">
+                                    End date cannot be in the future.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Comment -->
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Comment</mat-label>
+                                <textarea matInput formControlName="comment"></textarea>
+                                <mat-error *ngIf="treatmentForm.get('comment')?.hasError('maxLength')">
+                                    Comment cannot exceed 100 characters.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" (click)="saveTreatment()">{{ isEditMode ? 'Save Changes' : 'Add Treatment' }}</button>
+                <button type="button" class="btn btn-primary" (click)="saveTreatment()">
+                    {{ isEditMode ? 'Save Changes' : 'Add Treatment' }}
+                </button>
             </div>
         </div>
     </div>

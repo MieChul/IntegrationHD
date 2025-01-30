@@ -3655,19 +3655,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\admin\\.nuget\\packages\\": {}
+    "C:\\Users\\Mithul Rao\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.API\\HealthDesk.API.csproj",
+      "projectUniqueName": "d:\\Desk\\IntegrationHD\\HealthDesk.API\\HealthDesk.API.csproj",
       "projectName": "HealthDesk.API",
-      "projectPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.API\\HealthDesk.API.csproj",
-      "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
-      "outputPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.API\\obj\\",
+      "projectPath": "d:\\Desk\\IntegrationHD\\HealthDesk.API\\HealthDesk.API.csproj",
+      "packagesPath": "C:\\Users\\Mithul Rao\\.nuget\\packages\\",
+      "outputPath": "d:\\Desk\\IntegrationHD\\HealthDesk.API\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\Mithul Rao\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -3679,8 +3679,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Application\\HealthDesk.Application.csproj": {
-              "projectPath": "c:\\Users\\admin\\Desktop\\desk\\IntegrationHD\\HealthDesk.Application\\HealthDesk.Application.csproj"
+            "d:\\Desk\\IntegrationHD\\HealthDesk.Application\\HealthDesk.Application.csproj": {
+              "projectPath": "d:\\Desk\\IntegrationHD\\HealthDesk.Application\\HealthDesk.Application.csproj"
             }
           }
         }
@@ -3732,7 +3732,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.203/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.405/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

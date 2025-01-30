@@ -1,16 +1,12 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { Modal } from 'bootstrap';
-
-interface PatientHistory {
-  diagnosisDate: Date;
-  disease: string;
-  drug: string;
-  dosageForm: string;
-  strength: string;
-  frequency: string;
-  outcome: string;
-}
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import * as bootstrap from 'bootstrap';
+import { map, Observable, startWith } from 'rxjs';
+import { AccountService } from '../../services/account.service';
+import { DatabaseService } from '../../../shared/services/database.service';
+import { PatientService } from '../../services/patient.service';
+import { FilteringService } from '../../../shared/services/filter.service';
+import { SortingService } from '../../../shared/services/sorting.service';
 
 @Component({
   selector: 'app-patient-history',
@@ -18,74 +14,273 @@ interface PatientHistory {
   styleUrls: ['./patient-history.component.scss']
 })
 export class PatientHistoryComponent implements OnInit {
-  patientHistories: PatientHistory[] = [];
-  historyForm!: FormGroup;
+  patientHistories: any[] = [];
+  historyForm!: FormGroup<{
+    id: FormControl<string | null>;
+    dateOfDiagnosis: FormControl<string | null>;
+    disease: FormControl<string | null>;
+    treatmentDrug: FormControl<string | null>;
+    dosageForm: FormControl<string | null>;
+    strength: FormControl<string | null>;
+    strengthUnit: FormControl<string | null>;
+    outcome: FormControl<string | null>;
+    frequency: FormControl<string | null>;
+  }>;
+
+  sortDirection: { [key: string]: 'asc' | 'desc' } = {};
+  filterForm!: FormGroup<{
+    startDate: FormControl<string | null>;
+    endDate: FormControl<string | null>;
+  }>;
   isEditMode = false;
-  selectedHistory!: PatientHistory;
-  
+  selectedHistory!: any;
+  diseases: any = [];
+  drugs: any = [];
+  dosageForms: any = [];
+  strengthUnits: any = [];
+  frequencies: any = [];
+  outcomes = ['Improved', 'Stable', 'Worsened'];
+  userData: any = [];
+
+  diseaseFilterCtrl = new FormControl();
+  drugFilterCtrl = new FormControl();
+  dosageFormFilterCtrl = new FormControl();
+  strengthUnitFilterCtrl = new FormControl();
+  outcomeFilterCtrl = new FormControl();
+  frequencyFilterCtrl = new FormControl();
+
+  // Filtered Observables
+  filteredDiseases!: Observable<string[]>;
+  filteredDrugs!: Observable<string[]>;
+  filteredDosageForms!: Observable<string[]>;
+  filteredStrengthUnits!: Observable<string[]>;
+  filteredOutcomes!: Observable<string[]>;
+  filteredFrequencies!: Observable<string[]>;
+
+  filteredHistories: any;
+
+
   @ViewChild('historyModal') historyModal!: ElementRef;
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private accountService: AccountService, private databaseService: DatabaseService, private patientService: PatientService, private sortingService: SortingService, private filteringService: FilteringService) { }
 
   ngOnInit(): void {
+    this.initializeForm();
+    this.accountService.getUserData().subscribe({
+      next: async (data) => {
+        this.userData = data;
+        this.dosageForms = await this.databaseService.getForms();
+        this.drugs = await this.databaseService.getDrugs();
+        this.strengthUnits = await this.databaseService.getStrengths();
+        this.frequencies = await this.databaseService.getFrequencies();
+        this.diseases = await this.databaseService.getSymptoms();
+        await this.loadHistory();
+        await this.initializeSearch();
+      },
+      error: (err) => console.error('Error fetching user data:', err)
+    });
+  }
+
+  initializeForm(): void {
     this.historyForm = this.fb.group({
-      diagnosisDate: [''],
-      disease: [''],
-      drug: [''],
-      dosageForm: [''],
-      strength: [''],
-      frequency: [''],
-      outcome: ['']
+      id: this.fb.control(''),
+      dateOfDiagnosis: this.fb.control('', [Validators.required, this.futureDateValidator]),
+      disease: this.fb.control('', Validators.required),
+      treatmentDrug: this.fb.control('', Validators.required),
+      dosageForm: this.fb.control('', Validators.required),
+      strength: this.fb.control('', [Validators.required, Validators.min(0)]),
+      strengthUnit: this.fb.control('', Validators.required),
+      outcome: this.fb.control('', Validators.required),
+      frequency: this.fb.control('', Validators.required)
     });
 
-    this.loadDummyData();
+    this.filterForm = this.fb.group(
+      {
+        startDate: this.fb.control('', Validators.required),
+        endDate: this.fb.control('', Validators.required),
+      },
+      { updateOn: 'change', validators: this.dateRangeValidator }
+    );
+
+    this.filterForm.valueChanges.subscribe(() => {
+      this.applyDateFilter();
+    });
   }
 
-  loadDummyData(): void {
-    this.patientHistories = [
-      { diagnosisDate: new Date('2023-08-01'), disease: 'Diabetes', drug: 'Metformin', dosageForm: 'Tablet', strength: '500mg', frequency: 'Twice a day', outcome: 'Stable' },
-      { diagnosisDate: new Date('2022-07-15'), disease: 'Hypertension', drug: 'Amlodipine', dosageForm: 'Tablet', strength: '10mg', frequency: 'Once a day', outcome: 'Improved' }
-    ];
+  initializeSearch(): void {
+    this.filteredDiseases = this.diseaseFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.diseases))
+    );
+
+    this.filteredDrugs = this.drugFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.drugs))
+    );
+
+    this.filteredDosageForms = this.dosageFormFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.dosageForms))
+    );
+
+    this.filteredStrengthUnits = this.strengthUnitFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.strengthUnits))
+    );
+
+    this.filteredOutcomes = this.outcomeFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.outcomes))
+    );
+
+    this.filteredFrequencies = this.frequencyFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.frequencies))
+    );
+
   }
 
-  addHistory(): void {
-    this.isEditMode = false;
-    this.historyForm.reset();
-    const modal = new Modal(this.historyModal.nativeElement);
+  dateRangeValidator(group: FormGroup): void {
+    const startDateControl = group.get('startDate');
+    const endDateControl = group.get('endDate');
+
+    if (startDateControl && endDateControl) {
+      const startDate = startDateControl.value;
+      const endDate = endDateControl.value;
+
+      if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+        endDateControl.setErrors({ invalidDateRange: true });
+      } else {
+        endDateControl.setErrors(null); // Clear the error if valid
+      }
+    }
+  }
+
+  filterOptions(search: string, options: string[]): string[] {
+    const filterValue = search.toLowerCase();
+    return options.filter(option => option.toLowerCase().includes(filterValue));
+  }
+
+  futureDateValidator(control: any): { [key: string]: boolean } | null {
+    const currentDate = new Date();
+    if (new Date(control.value) > currentDate) {
+      return { futureDate: true };
+    }
+    return null;
+  }
+
+  loadHistory(): void {
+    if (!this.userData?.id) {
+      console.error('User ID is missing');
+      return;
+    }
+
+    this.patientService.getMedicalHistory(this.userData.id).subscribe({
+      next: (data: any) => {
+        this.patientHistories = data?.data.map((history: any) => ({
+          ...history
+        })).sort((a: any, b: any) => new Date(b.dateOfDiagnosis).getTime() - new Date(a.dateOfDiagnosis).getTime());;
+        this.filteredHistories = [...this.patientHistories];
+      },
+      error: (error) => {
+        console.error('Error loading history:', error);
+      }
+    });
+  }
+
+  openHistoryModal(isEditMode: boolean, history: any = null): void {
+    this.isEditMode = isEditMode;
+
+    if (isEditMode && history) {
+      this.selectedHistory = history;
+      this.historyForm.patchValue(history); // Populate the form with existing data
+    } else {
+      this.selectedHistory = null;
+      this.historyForm.reset(); // Clear the form for a new entry
+    }
+
+    const modal = new bootstrap.Modal(document.getElementById('historyModal')!);
     modal.show();
   }
 
-  editHistory(history: PatientHistory): void {
-    this.isEditMode = true;
-    this.selectedHistory = history;
-    this.historyForm.patchValue(history);
-    const modal = new Modal(this.historyModal.nativeElement);
-    modal.show();
-  }
 
-  deleteHistory(history: PatientHistory): void {
-    this.patientHistories = this.patientHistories.filter(h => h !== history);
+  deleteHistory(history: any): void {
+    this.patientService.deleteMedicalHistory(this.userData.id, history.id).subscribe({
+      next: (response) => {
+        console.log(response.message); // Success message from API
+        this.loadHistory(); // Reload the list after successful deletion
+      },
+      error: (error) => {
+        console.error('Error deleting clinic:', error); // Handle errors
+      }
+    });
   }
 
   saveHistory(): void {
+    this.historyForm.markAllAsTouched();
+    if (this.historyForm.invalid) return;
+
+    const historyData = this.historyForm.value;
+
     if (this.isEditMode) {
-      Object.assign(this.selectedHistory, this.historyForm.value);
+      // Update existing medical history
+      historyData.id = this.selectedHistory?.id; // Attach the existing history ID for update
+      this.patientService
+        .saveMedicalHistory(this.userData.id, historyData)
+        .subscribe({
+          next: (response) => {
+            const index = this.patientHistories.findIndex(
+              (h) => h.id === this.selectedHistory?.id
+            );
+            if (index !== -1) {
+              this.patientHistories[index] = { ...historyData };
+            }
+            this.filteredHistories = [...this.patientHistories];
+          },
+          error: (error) => {
+            console.error('Error updating medical history:', error);
+          },
+        });
     } else {
-      this.patientHistories.push(this.historyForm.value);
+      // Add new medical history
+      this.patientService
+        .saveMedicalHistory(this.userData.id, historyData)
+        .subscribe({
+          next: (response) => {
+            this.loadHistory();
+          },
+          error: (error) => {
+            console.error('Error adding medical history:', error);
+          },
+        });
     }
-    const modal = new Modal(this.historyModal.nativeElement);
-    modal.hide();
+
+    // Close the modal
+
+    bootstrap.Modal.getInstance(document.getElementById('historyModal')!)?.hide();
   }
 
-  sortTable(column: keyof PatientHistory): void {
-    this.patientHistories.sort((a, b) => {
-      if (a[column] < b[column]) {
-        return -1;
-      } else if (a[column] > b[column]) {
-        return 1;
-      } else {
-        return 0;
-      }
-    });
+  sortTable(column: string): void {
+    // Toggle the sort direction
+    this.sortDirection[column] = this.sortDirection[column] === 'asc' ? 'desc' : 'asc';
+    const direction = this.sortDirection[column];
+
+    // Use the sorting service to sort the data
+    this.filteredHistories = this.sortingService.sort(this.filteredHistories, column, direction);
+  }
+
+  applyDateFilter(): void {
+    const { startDate, endDate } = this.filterForm.value;
+  
+    this.filteredHistories = this.filteringService.filter(
+      this.patientHistories,
+      {}, // Pass an empty object for generic filters as no other filters are applied
+      [
+        {
+          field: 'dateOfDiagnosis',
+          range: [startDate || null, endDate || null], // Pass null for missing dates
+        },
+      ]
+    );
   }
 }

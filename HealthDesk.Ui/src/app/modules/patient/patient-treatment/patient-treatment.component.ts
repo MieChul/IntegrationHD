@@ -1,16 +1,11 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { Modal } from 'bootstrap';
-interface PatientTreatment {
-  drugName: string;
-  dosageForm: string;
-  strength: string;
-  frequency: string;
-  startDate: Date;
-  endDate?: Date;
-  ongoing: boolean;
-  comment: string;
-}
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import * as bootstrap from 'bootstrap';
+import { FilteringService } from '../../../shared/services/filter.service';
+import { PatientService } from '../../services/patient.service';
+import { AccountService } from '../../services/account.service';
+import { DatabaseService } from '../../../shared/services/database.service';
+import { SortingService } from '../../../shared/services/sorting.service';
 
 @Component({
   selector: 'app-patient-treatment',
@@ -18,148 +13,191 @@ interface PatientTreatment {
   styleUrls: ['./patient-treatment.component.scss']
 })
 export class PatientTreatmentComponent implements OnInit {
-  patientTreatments: PatientTreatment[] = [];
+  patientTreatments: any[] = [];
+  filteredTreatments: any[] = [];
   treatmentForm!: FormGroup;
+  filterForm!: FormGroup;
   isEditMode = false;
-  selectedTreatment!: PatientTreatment;
-  
+  selectedTreatment: any = null;
+  activeTab = 'ongoing'; // Default tab
+  userData: any = [];
+
+  // Dropdowns
+  drugs: string[] = [];
+  dosageForms: string[] = [];
+  strengthUnits: string[] = [];
+  frequencies: string[] = [];
+
+  sortDirection: { [key: string]: 'asc' | 'desc' } = {};
+
   @ViewChild('treatmentModal') treatmentModal!: ElementRef;
 
-  constructor(private fb: FormBuilder) {}
+  constructor(
+    private fb: FormBuilder,
+    private sortingService: SortingService,
+    private filteringService: FilteringService,
+    private patientService: PatientService,
+    private accountService: AccountService,
+    private databaseService: DatabaseService
+  ) { }
 
   ngOnInit(): void {
-    this.treatmentForm = this.fb.group({
-      drugName: [''],
-      dosageForm: [''],
-      strength: [''],
-      frequency: [''],
-      startDate: [''],
-      endDate: [''],
-      ongoing: [false],
-      comment: ['']
-    });
+    this.initializeForms();
 
-    this.loadDummyData();
+    this.accountService.getUserData().subscribe({
+      next: async (data) => {
+        this.userData = data;
 
-    // Disable endDate if ongoing is checked
-    this.treatmentForm.get('ongoing')?.valueChanges.subscribe(ongoing => {
-      if (ongoing) {
-        this.treatmentForm.get('endDate')?.disable();
-        this.treatmentForm.get('endDate')?.setValue(null);
-      } else {
-        this.treatmentForm.get('endDate')?.enable();
-      }
-    });
-  }
+        // Load treatments
+        await this.loadTreatments();
 
-  loadDummyData(): void {
-    this.patientTreatments = [
-      {
-        drugName: 'Amoxicillin',
-        dosageForm: 'Capsule',
-        strength: '500mg',
-        frequency: 'Three times a day',
-        startDate: new Date('2023-08-01'),
-        endDate: new Date('2023-08-10'),
-        ongoing: false,
-        comment: 'For bacterial infection'
+        // Load dropdown data
+        this.drugs = await this.databaseService.getDrugs();
+        this.dosageForms = await this.databaseService.getForms();
+        this.strengthUnits = await this.databaseService.getStrengths();
+        this.frequencies = await this.databaseService.getFrequencies();
       },
-      {
-        drugName: 'Metformin',
-        dosageForm: 'Tablet',
-        strength: '850mg',
-        frequency: 'Twice a day',
-        startDate: new Date('2022-07-15'),
-        ongoing: true,
-        comment: 'For diabetes management'
-      }
-    ];
-  }
-
-  addTreatment(): void {
-    this.isEditMode = false;
-    this.treatmentForm.reset();
-    const modal = new Modal(this.treatmentModal.nativeElement);
-    modal.show();
-  }
-
-  editTreatment(treatment: PatientTreatment): void {
-    this.isEditMode = true;
-    this.selectedTreatment = treatment;
-    this.treatmentForm.patchValue({
-      ...treatment,
-      startDate: this.formatDateForInput(treatment.startDate),
-      endDate: treatment.endDate ? this.formatDateForInput(treatment.endDate) : null
+      error: (err) => console.error('Error fetching user data:', err)
     });
-    const modal = new Modal(this.treatmentModal.nativeElement);
+  }
+
+  initializeForms(): void {
+    this.treatmentForm = this.fb.group({
+      id: this.fb.control(''),
+      treatmentDrug: this.fb.control('', Validators.required),
+      dosageForm: this.fb.control('', Validators.required),
+      strength: this.fb.control<number | null>(null, [Validators.required, Validators.min(0)]),
+      strengthUnit: this.fb.control('', Validators.required),
+      frequency: this.fb.control('', Validators.required),
+      startDate: this.fb.control('', [Validators.required, this.futureDateValidator]),
+      endDate: this.fb.control('', this.futureDateValidator),
+      comment: this.fb.control('', Validators.maxLength(100)), // Added maxLength validation for comments
+    });
+
+    this.filterForm = this.fb.group(
+      {
+        f_startDate: this.fb.control(null),
+        f_endDate: this.fb.control(null)
+      },
+      { validators: this.dateRangeValidator, updateOn: 'change' }
+    );
+
+    this.filterForm.valueChanges.subscribe(() => this.applyDateFilter());
+  }
+
+  async loadTreatments(): Promise<void> {
+    if (!this.userData.id) return;
+
+    try {
+      const treatments = await this.patientService.getCurrentTreatments(this.userData.id).toPromise();
+      this.patientTreatments = treatments?.sort(
+        (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+      ) ?? [];
+      this.filterTreatments(this.activeTab);
+    } catch (error) {
+      console.error('Error loading treatments:', error);
+    }
+  }
+
+  openTreatmentModal(isEditMode: boolean, treatment: any = null): void {
+    this.isEditMode = isEditMode;
+
+    if (isEditMode && treatment) {
+      this.selectedTreatment = treatment;
+      this.treatmentForm.patchValue(treatment);
+    } else {
+      this.selectedTreatment = null;
+      this.treatmentForm.reset();
+    }
+
+    const modal = new bootstrap.Modal(this.treatmentModal.nativeElement);
     modal.show();
   }
 
-  deleteTreatment(treatment: PatientTreatment): void {
-    this.patientTreatments = this.patientTreatments.filter(t => t !== treatment);
-  }
+  async saveTreatment(): Promise<void> {
+    if (this.treatmentForm.invalid || !this.userData.id) return;
 
-  saveTreatment(): void {
-    const formValues = this.treatmentForm.value;
-    const treatmentData: PatientTreatment = {
-      drugName: formValues.drugName,
-      dosageForm: formValues.dosageForm,
-      strength: formValues.strength,
-      frequency: formValues.frequency,
-      startDate: new Date(formValues.startDate),
-      endDate: formValues.ongoing ? undefined : new Date(formValues.endDate),
-      ongoing: formValues.ongoing,
-      comment: formValues.comment
-    };
+    const treatmentData = this.treatmentForm.value;
 
-    if (this.isEditMode) {
-      Object.assign(this.selectedTreatment, treatmentData);
-    } else {
-      this.patientTreatments.push(treatmentData);
-    }
-    const modal =  new Modal(this.treatmentModal.nativeElement);
-    modal.hide();
-  }
-
-  sortTable(column: keyof PatientTreatment): void {
-    // this.patientTreatments.sort((a, b) => {
-    //   let valA = a[column];
-    //   let valB = b[column];
-
-    //   // Handle undefined values
-    //   if (valA === undefined || valA === null) return 1;
-    //   if (valB === undefined || valB === null) return -1;
-
-    //   // Convert Date objects to timestamps for comparison
-    //   if (valA instanceof Date) valA = valA.getTime();
-    //   if (valB instanceof Date) valB = valB.getTime();
-
-    //   if (valA[column] < valB[column]) {
-    //     return -1;
-    //   } else if (valA[column] > valB[column]) {
-    //     return 1;
-    //   } else {
-    //     return 0;
-    //   }
-    // });
-  }
-
- 
-
-  toggleEndDate(): void {
-    const ongoing = this.treatmentForm.get('ongoing')?.value;
-    if (ongoing) {
-      this.treatmentForm.get('endDate')?.disable();
-      this.treatmentForm.get('endDate')?.setValue(null);
-    } else {
-      this.treatmentForm.get('endDate')?.enable();
+    try {
+      await this.patientService.saveCurrentTreatment(this.userData.id, treatmentData).toPromise();
+      await this.loadTreatments();
+      bootstrap.Modal.getInstance(this.treatmentModal.nativeElement)?.hide();
+    } catch (error) {
+      console.error('Error saving treatment:', error);
     }
   }
 
-  formatDateForInput(date: Date): string {
-    const d = new Date(date);
-    const month = ('0' + (d.getMonth() + 1)).slice(-2);
-    const day = ('0' + d.getDate()).slice(-2);
-    return `${d.getFullYear()}-${month}-${day}`;
+  deleteTreatment(treatment: any): void {
+    if (!this.userData.id || !treatment.id) return;
+
+    this.patientService.deleteCurrentTreatment(this.userData.id, treatment.id).subscribe({
+      next: (response) => {
+        console.log(response.message); // Success message from API
+        this.loadTreatments(); // Reload the list after successful deletion
+      },
+      error: (error) => {
+        console.error('Error deleting treatments:', error); // Handle errors
+      }
+    });
+  }
+
+  filterTreatments(tab: string): void {
+    this.activeTab = tab;
+
+    if (tab === 'ongoing') {
+      this.filteredTreatments = this.patientTreatments.filter((t) => !t.endDate);
+    } else if (tab === 'past') {
+      this.filteredTreatments = this.patientTreatments.filter((t) => t.endDate);
+    }
+  }
+
+  applyDateFilter(): void {
+    const { f_startDate, f_endDate } = this.filterForm.value;
+
+    // Apply the date filter using the filtering service
+    let filteredResults = this.filteringService.filter(
+      this.patientTreatments,
+      {},
+      [
+        {
+          field: 'startDate',
+          range: [f_startDate || null, f_endDate || null]
+        }
+      ]
+    );
+
+    // Further filter the results based on the active tab
+    if (this.activeTab === 'ongoing') {
+      this.filteredTreatments = filteredResults.filter((t) => !t.endDate);
+    } else if (this.activeTab === 'past') {
+      this.filteredTreatments = filteredResults.filter((t) => t.endDate);
+    } else {
+      this.filteredTreatments = filteredResults; // Default case if no tab is active
+    }
+  }
+
+  sortTable(column: string): void {
+    this.sortDirection[column] = this.sortDirection[column] === 'asc' ? 'desc' : 'asc';
+    this.filteredTreatments = this.sortingService.sort(this.filteredTreatments, column, this.sortDirection[column]);
+  }
+
+  futureDateValidator(control: any): { [key: string]: boolean } | null {
+    const currentDate = new Date();
+    if (new Date(control.value) > currentDate) {
+      return { futureDate: true };
+    }
+    return null;
+  }
+
+  dateRangeValidator(group: FormGroup): void {
+    const startDate = group.get('startDate')?.value;
+    const endDate = group.get('endDate')?.value;
+
+    if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+      group.get('endDate')?.setErrors({ invalidDateRange: true });
+    } else {
+      group.get('endDate')?.setErrors(null);
+    }
   }
 }

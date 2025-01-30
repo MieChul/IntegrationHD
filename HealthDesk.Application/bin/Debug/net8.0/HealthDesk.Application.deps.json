@@ -523,7 +523,10 @@
           "MongoDB.Driver": "3.0.0"
         },
         "runtime": {
-          "HealthDesk.Core.dll": {}
+          "HealthDesk.Core.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       },
       "HealthDesk.Infrastructure/1.0.0": {
@@ -533,7 +536,10 @@
           "MongoDB.Driver": "3.0.0"
         },
         "runtime": {
-          "HealthDesk.Infrastructure.dll": {}
+          "HealthDesk.Infrastructure.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       }
     }

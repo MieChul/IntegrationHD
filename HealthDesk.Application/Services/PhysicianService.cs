@@ -63,7 +63,7 @@ public class PhysicianService : IPhysicianService
         if (physician == null)
             throw new ArgumentException("Physician not found.");
 
-        return physician.Clinics;
+        return physician.Clinics.Where(c => (c.IsActive ?? false)).ToList();
     }
     public async Task<dynamic> GetAllDesignPrescriptionsAsync(string physicianId)
     {
@@ -113,7 +113,7 @@ public class PhysicianService : IPhysicianService
             patient.LastVisitedDate = DateTime.Now;
             physician.Patients.Add(patient);
         }
-            
+
         else
         {
             var existing = physician.Patients.FirstOrDefault(p => p.Id == dto.Id);
@@ -137,9 +137,9 @@ public class PhysicianService : IPhysicianService
         return patient?.Prescriptions.Select(p => GenericMapper.Map<Prescription, PrescriptionDto>(p));
     }
 
-     public async Task<string> GetLatestPrescriptionAsync(string physicianId, string patientId)
+    public async Task<string> GetLatestPrescriptionAsync(string physicianId, string patientId)
     {
-          var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
         var patient = physician.Patients.FirstOrDefault(p => p.UserId == patientId);
         return patient?.Prescriptions?.Select(p => GenericMapper.Map<Prescription, PrescriptionDto>(p))?.OrderByDescending(p => p.DateOfDiagnosis)?.FirstOrDefault()?.PrescriptionUrl ?? string.Empty;
     }
@@ -155,7 +155,7 @@ public class PhysicianService : IPhysicianService
             throw new ArgumentException("Patient not found.");
 
         var prescription = GenericMapper.Map<PrescriptionDto, Prescription>(dto);
-        patient.LastVisitedDate  = DateTime.Now.Date;
+        patient.LastVisitedDate = DateTime.Now.Date;
         prescription.DateOfDiagnosis = DateTime.Now.Date;
         patient.Prescriptions.Add(prescription);
 

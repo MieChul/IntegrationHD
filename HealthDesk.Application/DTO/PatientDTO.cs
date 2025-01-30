@@ -1,26 +1,78 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace HealthDesk.Application;
 public class MedicalHistoryDto
 {
     public string Id { get; set; }
+
+    [Required(ErrorMessage = "Date of diagnosis is required.")]
+    [DataType(DataType.Date)] 
     public DateTime DateOfDiagnosis { get; set; }
+
+    [Required(ErrorMessage = "Disease is required.")]
+    [StringLength(100, ErrorMessage = "Disease must not exceed 100 characters.")]
     public string Disease { get; set; }
+
+
+    [Required(ErrorMessage = "Treatment drug is required.")]
+    [StringLength(100, ErrorMessage = "Treatment drug must not exceed 100 characters.")]
     public string TreatmentDrug { get; set; }
+
+    [Required(ErrorMessage = "Dosage form is required.")]
+    [StringLength(50, ErrorMessage = "Dosage form must not exceed 50 characters.")]
     public string DosageForm { get; set; }
-    public string Strength { get; set; }
+
+    [Required(ErrorMessage = "Strength is required.")]
+    [Range(0, double.MaxValue, ErrorMessage = "Strength must be a positive number.")]
+    public double Strength { get; set; }
+
+    [Required(ErrorMessage = "Strength unit is required.")]
+    [StringLength(50, ErrorMessage = "Strength unit must not exceed 50 characters.")]
+    public string StrengthUnit { get; set; }
+
+    [Required(ErrorMessage = "Frequency is required.")]
+    [StringLength(50, ErrorMessage = "Frequency must not exceed 50 characters.")]
     public string Frequency { get; set; }
+
+    [Required(ErrorMessage = "Outcome is required.")]
+    [StringLength(50, ErrorMessage = "Outcome must not exceed 50 characters.")]
     public string Outcome { get; set; }
 }
 
 public class CurrentTreatmentDto
 {
     public string Id { get; set; }
+
+    [Required(ErrorMessage = "Treatment drug is required.")]
+    [StringLength(100, ErrorMessage = "Treatment drug must not exceed 100 characters.")]
     public string Drug { get; set; }
+    [Required(ErrorMessage = "Dosage form is required.")]
+    [StringLength(50, ErrorMessage = "Dosage form must not exceed 50 characters.")]
     public string DosageForm { get; set; }
+
+    
+    [Required(ErrorMessage = "Strength is required.")]
+    [Range(0, double.MaxValue, ErrorMessage = "Strength must be a positive number.")]
     public string Strength { get; set; }
+
+    [Required(ErrorMessage = "Strength unit is required.")]
+    [StringLength(50, ErrorMessage = "Strength unit must not exceed 50 characters.")]
+    public string StrengthUnit { get; set; }
+
+    [Required(ErrorMessage = "Frequency is required.")]
+    [StringLength(50, ErrorMessage = "Frequency must not exceed 50 characters.")]
     public string Frequency { get; set; }
+
+    [Required(ErrorMessage = "Start Date is required.")]
+    [DataType(DataType.Date)] 
     public DateTime StartDate { get; set; }
+
+    [Required(ErrorMessage = "End Date is required.")]
+    [DataType(DataType.Date)] 
     public DateTime EndDate { get; set; }
-    public string Comment { get; set; }
+
+    [StringLength(100, ErrorMessage = "Comment must not exceed 100 characters.")]
+    public string? Comment { get; set; }
 }
 
 public class AppointmentDto
