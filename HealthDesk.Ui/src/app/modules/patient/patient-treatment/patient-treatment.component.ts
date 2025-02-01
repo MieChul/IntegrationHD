@@ -29,11 +29,11 @@ export class PatientTreatmentComponent implements OnInit {
   strengthUnitFilterCtrl = new FormControl();
   frequencyFilterCtrl = new FormControl();
 
-    filteredDiseases!: Observable<string[]>;
-    filteredDrugs!: Observable<string[]>;
-    filteredDosageForms!: Observable<string[]>;
-    filteredStrengthUnits!: Observable<string[]>;
-    filteredFrequencies!: Observable<string[]>;
+  filteredDiseases!: Observable<string[]>;
+  filteredDrugs!: Observable<string[]>;
+  filteredDosageForms!: Observable<string[]>;
+  filteredStrengthUnits!: Observable<string[]>;
+  filteredFrequencies!: Observable<string[]>;
 
   // Dropdowns
   drugs: string[] = [];
@@ -77,19 +77,26 @@ export class PatientTreatmentComponent implements OnInit {
   }
 
   initializeForms(): void {
-    this.treatmentForm = this.fb.group({
-      id: this.fb.control(''),
-      treatmentDrug: this.fb.control('', Validators.required),
-      dosageForm: this.fb.control('', Validators.required),
-      strength: this.fb.control<number | null>(null, [Validators.required, Validators.min(0)]),
-      strengthUnit: this.fb.control('', Validators.required),
-      frequency: this.fb.control('', Validators.required),
-      startDate: this.fb.control('', [Validators.required, this.futureDateValidator]),
-      endDate: this.fb.control('', this.futureDateValidator),
-      comment: this.fb.control('', Validators.maxLength(100)), // Added maxLength validation for comments
-    });
-
-    
+    this.treatmentForm = this.fb.group(
+      {
+        id: this.fb.control(''),
+        treatmentDrug: this.fb.control('', Validators.required),
+        dosageForm: this.fb.control('', Validators.required),
+        strength: this.fb.control<number | null>(null, [
+          Validators.required,
+          Validators.min(0)
+        ]),
+        strengthUnit: this.fb.control('', Validators.required),
+        frequency: this.fb.control('', Validators.required),
+        startDate: this.fb.control('', [
+          Validators.required,
+          this.futureDateValidator
+        ]),
+        endDate: this.fb.control('', this.futureDateValidator),
+        comment: this.fb.control('', Validators.maxLength(100)) // Added maxLength validation for comments
+      },
+      { validators: this.dateRangeValidator, updateOn: 'change' }
+    );
 
     this.filterForm = this.fb.group(
       {
@@ -102,57 +109,58 @@ export class PatientTreatmentComponent implements OnInit {
     this.filterForm.valueChanges.subscribe(() => this.applyDateFilter());
   }
 
-    initializeSearch(): void {
-      this.filteredDiseases = this.diseaseFilterCtrl.valueChanges.pipe(
-        startWith(''),
-        map((search) => this.filterOptions(search, this.diseases))
-      );
-  
-      this.filteredDrugs = this.drugFilterCtrl.valueChanges.pipe(
-        startWith(''),
-        map((search) => this.filterOptions(search, this.drugs))
-      );
-  
-      this.filteredDosageForms = this.dosageFormFilterCtrl.valueChanges.pipe(
-        startWith(''),
-        map((search) => this.filterOptions(search, this.dosageForms))
-      );
-  
-      this.filteredStrengthUnits = this.strengthUnitFilterCtrl.valueChanges.pipe(
-        startWith(''),
-        map((search) => this.filterOptions(search, this.strengthUnits))
-      );
-  
-      this.filteredFrequencies = this.frequencyFilterCtrl.valueChanges.pipe(
-        startWith(''),
-        map((search) => this.filterOptions(search, this.frequencies))
-      );
-  
+  initializeSearch(): void {
+    this.filteredDiseases = this.diseaseFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.diseases))
+    );
+
+    this.filteredDrugs = this.drugFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.drugs))
+    );
+
+    this.filteredDosageForms = this.dosageFormFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.dosageForms))
+    );
+
+    this.filteredStrengthUnits = this.strengthUnitFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.strengthUnits))
+    );
+
+    this.filteredFrequencies = this.frequencyFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.frequencies))
+    );
+
+  }
+
+  filterOptions(search: string, options: string[]): string[] {
+    const filterValue = search.toLowerCase();
+    return options.filter(option => option.toLowerCase().includes(filterValue));
+  }
+
+  loadTreatments(): void {
+    if (!this.userData?.id) {
+      console.error('User ID is missing');
+      return;
     }
 
-    filterOptions(search: string, options: string[]): string[] {
-      const filterValue = search.toLowerCase();
-      return options.filter(option => option.toLowerCase().includes(filterValue));
-    }
-
-    loadTreatments(): void {
-      if (!this.userData?.id) {
-        console.error('User ID is missing');
-        return;
+    this.patientService.getCurrentTreatments(this.userData.id).subscribe({
+      next: (data: any) => {
+        this.patientTreatments = data?.data.map((treatments: any) => ({
+          ...treatments
+        })).sort((a: any, b: any) => new Date(b.dateOfDiagnosis).getTime() - new Date(a.dateOfDiagnosis).getTime());;
+        this.filteredTreatments = [...this.patientTreatments];
+        this.filterTreatments('ongoing');
+      },
+      error: (error) => {
+        console.error('Error loading history:', error);
       }
-  
-      this.patientService.getCurrentTreatments(this.userData.id).subscribe({
-        next: (data: any) => {
-          this.patientTreatments = data?.data.map((treatments: any) => ({
-            ...treatments
-          })).sort((a: any, b: any) => new Date(b.dateOfDiagnosis).getTime() - new Date(a.dateOfDiagnosis).getTime());;
-          this.filteredTreatments = [...this.patientTreatments];
-        },
-        error: (error) => {
-          console.error('Error loading history:', error);
-        }
-      });
-    }
+    });
+  }
 
 
   openTreatmentModal(isEditMode: boolean, treatment: any = null): void {
@@ -170,7 +178,7 @@ export class PatientTreatmentComponent implements OnInit {
     modal.show();
   }
 
-   saveTreatment(): void {
+  saveTreatment(): void {
     this.treatmentForm.markAllAsTouched();
     if (this.treatmentForm.invalid || !this.userData.id) return;
 
@@ -179,36 +187,30 @@ export class PatientTreatmentComponent implements OnInit {
       // Update existing medical history
       treatmentData.id = this.selectedTreatment?.id;
 
-       this.patientService.saveCurrentTreatment(this.userData.id, treatmentData).subscribe({
+      this.patientService.saveCurrentTreatment(this.userData.id, treatmentData).subscribe({
         next: (response) => {
-          const index = this.patientTreatments.findIndex(
-            (h) => h.id === this.selectedTreatment?.id
-          );
-          if (index !== -1) {
-            this.patientTreatments[index] = { ...treatmentData };
-          }
-          this.filteredTreatments = [...this.patientTreatments];
+          this.loadTreatments();
         },
         error: (error) => {
           console.error('Error updating medical treatments:', error);
         },
       });
-  } else {
-    // Add new medical history
-    this.patientService
-      .saveCurrentTreatment(this.userData.id, treatmentData)
-      .subscribe({
-        next: (response) => {
-          this.loadTreatments();
-        },
-        error: (error) => {
-          console.error('Error adding medical treatments:', error);
-        },
-      });
-  }
+    } else {
+      // Add new medical history
+      this.patientService
+        .saveCurrentTreatment(this.userData.id, treatmentData)
+        .subscribe({
+          next: (response) => {
+            this.loadTreatments();
+          },
+          error: (error) => {
+            console.error('Error adding medical treatments:', error);
+          },
+        });
+    }
 
-      bootstrap.Modal.getInstance(this.treatmentModal.nativeElement)?.hide();
-    
+    bootstrap.Modal.getInstance(this.treatmentModal.nativeElement)?.hide();
+
   }
 
   deleteTreatment(treatment: any): void {
@@ -273,14 +275,28 @@ export class PatientTreatmentComponent implements OnInit {
     return null;
   }
 
-  dateRangeValidator(group: FormGroup): void {
-    const startDate = group.get('startDate')?.value;
-    const endDate = group.get('endDate')?.value;
+  dateRangeValidator(group: FormGroup): { [key: string]: any } | null {
+    const startDateControl = group.get('startDate');
+    const endDateControl = group.get('endDate');
+    if (!endDateControl?.value) return null;
 
-    if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
-      group.get('endDate')?.setErrors({ invalidDateRange: true });
-    } else {
-      group.get('endDate')?.setErrors(null);
+    if (startDateControl && endDateControl) {
+      const startDate = new Date(startDateControl.value);
+      const endDate = new Date(endDateControl.value);
+
+      if (startDate && endDate && startDate > endDate) {
+        endDateControl.setErrors({ invalidDateRange: true });
+        startDateControl.setErrors({ invalidDateRange: true });
+        return { invalidDateRange: true };
+      } else {
+        if (endDateControl.hasError('invalidDateRange')) {
+          endDateControl.setErrors(null);
+        }
+        if (startDateControl.hasError('invalidDateRange')) {
+          startDateControl.setErrors(null);
+        }
+      }
     }
+    return null;
   }
 }

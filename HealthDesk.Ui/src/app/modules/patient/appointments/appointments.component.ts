@@ -24,6 +24,10 @@ export class AppointmentsComponent implements OnInit {
   dateForm!: FormGroup;
   userData: any;
   submitted: boolean = false;
+  availableDates: Date[] = [];
+  availableTimeSlots: any[] = [];
+  selectedDate: Date | null = null;
+  selectedTime: string | null = null;
   selectedAppointment: Appointment = {
     id: '',
     physicianId: '',
@@ -77,20 +81,10 @@ export class AppointmentsComponent implements OnInit {
     this.appointmentForm = this.fb.group({
       id: [''],
       physicianId: ['', Validators.required],
-      patientId: [],
-      physicianName: [''],
-      mobile: [''],
-      date: [
-        '',
-        [Validators.required, this.dateValidator()] // Date is required and cannot be in the past
-      ],
-      time: ['', Validators.required], // Time is required
       clinicName: ['', Validators.required],
-      status: [''],
-      reason: [''],
-      isPhysician: [false],
-      patientName: ['']
     });
+
+    this.generateAvailableDates();
 
     this.dateForm.valueChanges.subscribe(() => this.filterAppointmentsByDate());
   }
@@ -340,5 +334,87 @@ export class AppointmentsComponent implements OnInit {
     this.selectedAppointment = { ...appointment }; // Clone the object to avoid mutating the original
     const modal = new Modal(this.cancelModal.nativeElement);
     modal.show();
+  }
+
+  generateAvailableDates(): void {
+    const today = new Date();
+    for (let i = 0; i < 7; i++) {
+      const date = new Date();
+      date.setDate(today.getDate() + i);
+      this.availableDates.push(date);
+    }
+  }
+
+  selectDate(date: Date): void {
+    this.selectedDate = date;
+    this.generateTimeSlots();
+  }
+
+  generateTimeSlots(): void {
+    this.availableTimeSlots = [];
+    const selectedClinic = this.clinics.find(c => c.name === this.appointmentForm.get('clinicName')?.value);
+
+    if (!selectedClinic) return;
+
+    selectedClinic.clinicSlots.forEach((slot: any) => {
+      const startTime = this.convertTimeToMinutes(slot.timingFrom);
+      const endTime = this.convertTimeToMinutes(slot.timingTo);
+      const patientsPerHour = selectedClinic.maxNumberOfPatients;
+
+      for (let time = startTime; time < endTime; time += 60) {
+        const timeLabel = this.convertMinutesToTime(time);
+        const randomPatients = Math.floor(Math.random() * patientsPerHour);
+
+        let status = 'free';
+        let tooltip = 'Available';
+
+        if (randomPatients === patientsPerHour) {
+          status = 'full';
+          tooltip = 'Appointment Full';
+        } else if (randomPatients > patientsPerHour / 2) {
+          status = 'moreThan50';
+          tooltip = 'More than 50% booked';
+        } else if (randomPatients > 0) {
+          status = 'lessThan50';
+          tooltip = 'Less than 50% booked';
+        }
+
+        this.availableTimeSlots.push({ time: timeLabel, status, tooltip });
+      }
+    });
+  }
+
+  convertTimeToMinutes(time: string): number {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+  }
+
+  convertMinutesToTime(minutes: number): string {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+  }
+
+  selectTimeSlot(slot: any): void {
+    this.selectedTime = slot.time;
+  }
+  bookAppointment(): void {
+    this.submitted = true;
+
+    if (this.appointmentForm.invalid || !this.selectedDate || !this.selectedTime) {
+      console.error('Form is invalid. Please complete all required fields.');
+      return;
+    }
+
+    const appointmentData = {
+      ...this.appointmentForm.value,
+      date: this.selectedDate,
+      time: this.selectedTime
+    };
+
+    console.log('Booking appointment:', appointmentData);
+
+    const modal = Modal.getInstance(this.appointmentModal.nativeElement);
+    modal?.hide();
   }
 }

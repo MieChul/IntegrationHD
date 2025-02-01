@@ -53,7 +53,7 @@ public class CurrentTreatmentDto
     
     [Required(ErrorMessage = "Strength is required.")]
     [Range(0, double.MaxValue, ErrorMessage = "Strength must be a positive number.")]
-    public string Strength { get; set; }
+    public double Strength { get; set; }
 
     [Required(ErrorMessage = "Strength unit is required.")]
     [StringLength(50, ErrorMessage = "Strength unit must not exceed 50 characters.")]
@@ -67,7 +67,6 @@ public class CurrentTreatmentDto
     [DataType(DataType.Date)] 
     public DateTime StartDate { get; set; }
 
-    [Required(ErrorMessage = "End Date is required.")]
     [DataType(DataType.Date)] 
     public DateTime? EndDate { get; set; }
 

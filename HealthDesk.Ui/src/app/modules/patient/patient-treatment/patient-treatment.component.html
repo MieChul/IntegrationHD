@@ -229,6 +229,9 @@
                                 <mat-error *ngIf="treatmentForm.get('endDate')?.hasError('futureDate')">
                                     End date cannot be in the future.
                                 </mat-error>
+                                <mat-error *ngIf="treatmentForm.get('endDate')?.hasError('invalidDateRange')">
+                                   Date cannot be before start date.
+                                </mat-error>
                             </mat-form-field>
                         </div>
 
