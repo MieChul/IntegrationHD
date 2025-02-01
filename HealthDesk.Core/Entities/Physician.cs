@@ -48,11 +48,8 @@ public class Clinic : BaseEntity
     [BsonElement("city")]
     public string City { get; set; }
 
-    [BsonElement("from")]
-    public string FromTiming { get; set; }
-
-    [BsonElement("to")]
-    public string ToTiming { get; set; }
+    [BsonElement("slots")]
+    public List<ClinicSlots> ClinicSlots { get; set; }
 
     [BsonElement("days")]
     public List<string> Days { get; set; }
@@ -62,6 +59,21 @@ public class Clinic : BaseEntity
 
     [BsonElement("is_default")]
     public bool IsDefault { get; set; }
+
+    [BsonElement("max")]
+    public int MaxNumberOfPatients { get; set; }
+}
+
+public class ClinicSlots : BaseEntity
+{
+     [BsonElement("name")]
+    public string Name { get; set; }
+
+    [BsonElement("from")]
+    public string TimingFrom { get; set; }
+
+     [BsonElement("to")]
+    public string TimingTo { get; set; }
 }
 
 public class DesignPrescription : BaseEntity

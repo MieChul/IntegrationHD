@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, AbstractControlOptions, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { BehaviorSubject, debounceTime, map, startWith } from 'rxjs';
 import { PhysicianService } from '../../services/physician.service';
 import { State, City } from 'country-state-city';
 import * as bootstrap from 'bootstrap';
 import { AccountService } from '../../services/account.service';
+import { SortingService } from '../../../shared/services/sorting.service';
+import { FilteringService } from '../../../shared/services/filter.service';
 
 @Component({
   selector: 'app-manage-clinic',
@@ -23,7 +25,7 @@ export class ManageClinicComponent implements OnInit {
   isEditMode: boolean = false;
   currentClinicId: number | null = null;
   sortKey: string = '';
-  sortDirection: 'asc' | 'desc' = 'asc';
+  sortDirection: { [key: string]: 'asc' | 'desc' } = {};
   stateFilterCtrl = new FormControl();
   cityFilterCtrl = new FormControl();
   days = ['Su', 'M', 'T', 'W', 'Th', 'F', 'S'];
@@ -33,13 +35,13 @@ export class ManageClinicComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private physicianService: PhysicianService,
-    private accountService: AccountService
+    private accountService: AccountService,
+    private sortingService: SortingService,
+    private filteringService: FilteringService
   ) { }
 
   ngOnInit(): void {
-    // Initialize form first
     this.initForm();
-
     this.accountService.getUserData().subscribe({
       next: (data) => {
         this.userData = data;
@@ -66,10 +68,10 @@ export class ManageClinicComponent implements OnInit {
       pinCode: ['', [Validators.required, Validators.pattern(/^[1-9][0-9]{5}$/)]],
       state: ['', Validators.required],
       city: ['', Validators.required],
-      fromTiming: ['', Validators.required],
-      toTiming: ['', Validators.required],
       isActive: [],
-      days: this.fb.group(daysGroup, { validators: this.validateDaysRequired })
+      days: this.fb.group(daysGroup, { validators: this.validateDaysRequired } as AbstractControlOptions),
+      maxNumberOfPatients: ['', [Validators.required, Validators.min(0)]],
+      clinicSlots: this.fb.array([], this.validateSlotOverlap.bind(this))
     });
   }
 
@@ -80,6 +82,117 @@ export class ManageClinicComponent implements OnInit {
 
   getDayControl(day: string): FormControl {
     return this.clinicForm.get('days')?.get(day) as FormControl;
+  }
+
+  get clinicSlots(): FormArray<FormGroup> {
+    return this.clinicForm.get('clinicSlots') as FormArray<FormGroup>;
+  }
+
+
+
+  addSlot(slotData?: any): void {
+    const slotGroup = this.fb.group({
+      id: [slotData ? slotData.id : ''],
+
+      name: [
+        slotData ? slotData.name : '',
+        [Validators.required, Validators.maxLength(10), Validators.pattern('^[a-zA-Z0-9]+$')]
+      ],
+
+      timingFrom: [
+        slotData ? slotData.timingFrom : '',
+        [Validators.required]
+      ],
+      timingTo: [
+        slotData ? slotData.timingTo : '',
+        [Validators.required]
+      ]
+    }, { validators: this.validateTimeRange.bind(this) });
+
+    // Subscribe to changes so that the custom validator updates immediately.
+    slotGroup.get('timingFrom')?.valueChanges.subscribe(() => {
+      slotGroup.updateValueAndValidity();
+      this.clinicSlots.updateValueAndValidity();
+    });
+    slotGroup.get('timingTo')?.valueChanges.subscribe(() => {
+      slotGroup.updateValueAndValidity();
+      this.clinicSlots.updateValueAndValidity();
+    });
+    this.clinicSlots.push(slotGroup);
+  }
+
+
+  // Add this helper function inside your component:
+  parseTime12(timeStr: string): number | null {
+    const parts = timeStr.trim().split(' ');
+    if (parts.length < 2) return null; // Expecting "hh:mm AM/PM"
+    const timePart = parts[0]; // e.g. "1:15" or "01:15"
+    const period = parts[1].toUpperCase(); // AM or PM
+    const [hoursStr, minutesStr = '0'] = timePart.split(':');
+    const hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+    if (isNaN(hours) || isNaN(minutes)) return null;
+    let adjustedHours = hours;
+    if (period === 'PM' && hours < 12) {
+      adjustedHours += 12;
+    } else if (period === 'AM' && hours === 12) {
+      adjustedHours = 0;
+    }
+    return adjustedHours * 60 + minutes;
+  }
+
+  // Update validateTimeRange:
+  validateTimeRange(group: FormGroup): ValidationErrors | null {
+    const from = group.get('timingFrom')?.value;
+    const to = group.get('timingTo')?.value;
+    if (!from || !to) {
+      return null;
+    }
+    const fromTotal = this.parseTime12(from);
+    const toTotal = this.parseTime12(to);
+    if (fromTotal === null || toTotal === null) {
+      return { timeFormat: 'Invalid time format' };
+    }
+    if (toTotal < fromTotal) {
+      return { timeRange: 'Time difference cannot exceed 9 hours' };
+    }
+    if (toTotal - fromTotal > 540) { // 9 hours = 540 minutes
+      return { timeRange: 'Time difference cannot exceed 9 hours' };
+    }
+    return null;
+  }
+
+  // Update validateSlotOverlap:
+  validateSlotOverlap(control: AbstractControl): ValidationErrors | null {
+    const formArray = control as FormArray;
+    const slots = formArray.controls;
+    for (let i = 0; i < slots.length; i++) {
+      const slot1 = slots[i];
+      const from1 = slot1.get('timingFrom')?.value;
+      const to1 = slot1.get('timingTo')?.value;
+      if (!from1 || !to1) continue;
+      const start1 = this.parseTime12(from1);
+      const end1 = this.parseTime12(to1);
+      if (start1 === null || end1 === null) continue;
+      for (let j = i + 1; j < slots.length; j++) {
+        const slot2 = slots[j];
+        const from2 = slot2.get('timingFrom')?.value;
+        const to2 = slot2.get('timingTo')?.value;
+        if (!from2 || !to2) continue;
+        const start2 = this.parseTime12(from2);
+        const end2 = this.parseTime12(to2);
+        if (start2 === null || end2 === null) continue;
+        // Check overlap: if slot1 starts before slot2 ends and slot2 starts before slot1 ends
+        if (start1 < end2 && start2 < end1) {
+          return { overlap: 'Slot timings cannot overlap' };
+        }
+      }
+    }
+    return null;
+  }
+
+  removeSlot(index: number): void {
+    this.clinicSlots.removeAt(index);
   }
 
   setupSearchFilters(): void {
@@ -119,9 +232,7 @@ export class ManageClinicComponent implements OnInit {
 
     this.physicianService.getClinics(this.userData.id).subscribe({
       next: (data: any) => {
-        this.clinics = data?.data.map((clinic: any) => ({
-          ...clinic
-        }));
+        this.clinics = data?.data.map((clinic: any) => ({ ...clinic }));
         this.filteredClinics = [...this.clinics];
       },
       error: (error) => {
@@ -147,8 +258,7 @@ export class ManageClinicComponent implements OnInit {
     // Reset the days FormGroup explicitly
     const daysGroup = this.clinicForm.get('days') as FormGroup;
     this.days.forEach((day) => daysGroup.get(day)?.setValue(false));
-
-
+    this.addSlot();
     // Open the modal
     const modal = new bootstrap.Modal(document.getElementById('clinicModal')!);
     modal.show();
@@ -158,7 +268,7 @@ export class ManageClinicComponent implements OnInit {
     this.isEditMode = true;
     this.currentClinicId = clinic.id;
 
-    // Patch form values
+    // Patch form values for other fields
     this.clinicForm.patchValue({
       id: clinic.id,
       name: clinic.name,
@@ -167,10 +277,9 @@ export class ManageClinicComponent implements OnInit {
       area: clinic.area || '',
       state: clinic.state || '',
       city: clinic.city || '',
-      fromTiming: clinic.fromTiming || '',
-      toTiming: clinic.toTiming || '',
       isActive: clinic.isActive || false,
-      pinCode: clinic.pinCode || ''
+      pinCode: clinic.pinCode || '',
+      maxNumberOfPatients: clinic.maxNumberOfPatients || ''
     });
 
     // Load cities if the state is present
@@ -184,8 +293,18 @@ export class ManageClinicComponent implements OnInit {
 
     // Map days to the form
     const daysGroup = this.clinicForm.get('days') as FormGroup;
-    const clinicDays = Array.isArray(clinic.days) ? clinic.days : []; // Ensure clinic.days is an array
+    const clinicDays = Array.isArray(clinic.days) ? clinic.days : [];
     this.days.forEach(day => daysGroup.get(day)?.setValue(clinicDays.includes(day)));
+
+    // **Clear any existing slots and load the saved slot details**
+    this.clinicSlots.clear();
+    if (clinic.clinicSlots && clinic.clinicSlots.length) {
+      clinic.clinicSlots.forEach((slot: any) => {
+        this.addSlot(slot);
+      });
+    }
+    else
+      this.addSlot();
 
     // Show the modal
     const modal = new bootstrap.Modal(document.getElementById('clinicModal')!);
@@ -195,6 +314,8 @@ export class ManageClinicComponent implements OnInit {
   saveClinic(): void {
     this.submitted = true;
     this.clinicForm.markAllAsTouched();
+    this.clinicForm.updateValueAndValidity();
+
     if (this.clinicForm.invalid) return;
 
     // Prepare the clinic data, including the days
@@ -225,62 +346,22 @@ export class ManageClinicComponent implements OnInit {
     });
   }
 
-  searchClinic(): void {
-    const searchTerm = this.searchValue.toLowerCase();
+  sortTable(column: string): void {
+    // Toggle the sort direction
+    this.sortDirection[column] = this.sortDirection[column] === 'asc' ? 'desc' : 'asc';
+    const direction = this.sortDirection[column];
 
-    this.filteredClinics = this.clinics.filter((clinic) => {
-      // Combine all address fields into a single string
-      const address = [
-        clinic.flatNumber,
-        clinic.building,
-        clinic.area,
-        clinic.city,
-        clinic.state,
-        clinic.pinCode,
-      ]
-        .filter(Boolean) // Exclude undefined or null values
-        .join(' ')
-        .toLowerCase();
-
-      // Check if the search term matches the name or any part of the address
-      return (
-        clinic.name.toLowerCase().includes(searchTerm) ||
-        address.includes(searchTerm)
-      );
-    });
+    // Use the sorting service to sort the data
+    this.filteredClinics = this.sortingService.sort(this.filteredClinics, column, direction);
   }
 
-  sortTable(key: string): void {
-    if (this.sortKey === key) {
-      // Toggle the sort direction if the same column is clicked
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      // Set the new sort key and default sort direction
-      this.sortKey = key;
-      this.sortDirection = 'asc';
-    }
-
-    this.filteredClinics.sort((a, b) => {
-      let valueA = a[key];
-      let valueB = b[key];
-
-      // Handle null or undefined values
-      valueA = valueA === undefined || valueA === null ? '' : valueA;
-      valueB = valueB === undefined || valueB === null ? '' : valueB;
-
-      if (typeof valueA === 'string' && typeof valueB === 'string') {
-        // String comparison (case-insensitive)
-        valueA = valueA.toLowerCase();
-        valueB = valueB.toLowerCase();
-      }
-
-      if (valueA < valueB) {
-        return this.sortDirection === 'asc' ? -1 : 1;
-      }
-      if (valueA > valueB) {
-        return this.sortDirection === 'asc' ? 1 : -1;
-      }
-      return 0; // Equal values
-    });
+  applyFilters(): void {
+    this.filteredClinics = this.filteringService.filter(
+      this.clinics,
+      {
+        name: this.searchValue
+      },
+      []
+    );
   }
 }

@@ -6,6 +6,7 @@ import { PatientService } from '../../services/patient.service';
 import { AccountService } from '../../services/account.service';
 import { DatabaseService } from '../../../shared/services/database.service';
 import { SortingService } from '../../../shared/services/sorting.service';
+import { map, Observable, startWith } from 'rxjs';
 
 @Component({
   selector: 'app-patient-treatment',
@@ -22,11 +23,24 @@ export class PatientTreatmentComponent implements OnInit {
   activeTab = 'ongoing'; // Default tab
   userData: any = [];
 
+  diseaseFilterCtrl = new FormControl();
+  drugFilterCtrl = new FormControl();
+  dosageFormFilterCtrl = new FormControl();
+  strengthUnitFilterCtrl = new FormControl();
+  frequencyFilterCtrl = new FormControl();
+
+    filteredDiseases!: Observable<string[]>;
+    filteredDrugs!: Observable<string[]>;
+    filteredDosageForms!: Observable<string[]>;
+    filteredStrengthUnits!: Observable<string[]>;
+    filteredFrequencies!: Observable<string[]>;
+
   // Dropdowns
   drugs: string[] = [];
   dosageForms: string[] = [];
   strengthUnits: string[] = [];
   frequencies: string[] = [];
+  diseases: string[] = [];
 
   sortDirection: { [key: string]: 'asc' | 'desc' } = {};
 
@@ -47,15 +61,16 @@ export class PatientTreatmentComponent implements OnInit {
     this.accountService.getUserData().subscribe({
       next: async (data) => {
         this.userData = data;
-
-        // Load treatments
-        await this.loadTreatments();
-
-        // Load dropdown data
         this.drugs = await this.databaseService.getDrugs();
         this.dosageForms = await this.databaseService.getForms();
         this.strengthUnits = await this.databaseService.getStrengths();
         this.frequencies = await this.databaseService.getFrequencies();
+        this.diseases = await this.databaseService.getSymptoms();
+
+        // Load treatments
+        await this.loadTreatments();
+        await this.initializeSearch();
+
       },
       error: (err) => console.error('Error fetching user data:', err)
     });
@@ -74,6 +89,8 @@ export class PatientTreatmentComponent implements OnInit {
       comment: this.fb.control('', Validators.maxLength(100)), // Added maxLength validation for comments
     });
 
+    
+
     this.filterForm = this.fb.group(
       {
         f_startDate: this.fb.control(null),
@@ -85,19 +102,58 @@ export class PatientTreatmentComponent implements OnInit {
     this.filterForm.valueChanges.subscribe(() => this.applyDateFilter());
   }
 
-  async loadTreatments(): Promise<void> {
-    if (!this.userData.id) return;
-
-    try {
-      const treatments = await this.patientService.getCurrentTreatments(this.userData.id).toPromise();
-      this.patientTreatments = treatments?.sort(
-        (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
-      ) ?? [];
-      this.filterTreatments(this.activeTab);
-    } catch (error) {
-      console.error('Error loading treatments:', error);
+    initializeSearch(): void {
+      this.filteredDiseases = this.diseaseFilterCtrl.valueChanges.pipe(
+        startWith(''),
+        map((search) => this.filterOptions(search, this.diseases))
+      );
+  
+      this.filteredDrugs = this.drugFilterCtrl.valueChanges.pipe(
+        startWith(''),
+        map((search) => this.filterOptions(search, this.drugs))
+      );
+  
+      this.filteredDosageForms = this.dosageFormFilterCtrl.valueChanges.pipe(
+        startWith(''),
+        map((search) => this.filterOptions(search, this.dosageForms))
+      );
+  
+      this.filteredStrengthUnits = this.strengthUnitFilterCtrl.valueChanges.pipe(
+        startWith(''),
+        map((search) => this.filterOptions(search, this.strengthUnits))
+      );
+  
+      this.filteredFrequencies = this.frequencyFilterCtrl.valueChanges.pipe(
+        startWith(''),
+        map((search) => this.filterOptions(search, this.frequencies))
+      );
+  
     }
-  }
+
+    filterOptions(search: string, options: string[]): string[] {
+      const filterValue = search.toLowerCase();
+      return options.filter(option => option.toLowerCase().includes(filterValue));
+    }
+
+    loadTreatments(): void {
+      if (!this.userData?.id) {
+        console.error('User ID is missing');
+        return;
+      }
+  
+      this.patientService.getCurrentTreatments(this.userData.id).subscribe({
+        next: (data: any) => {
+          this.patientTreatments = data?.data.map((treatments: any) => ({
+            ...treatments
+          })).sort((a: any, b: any) => new Date(b.dateOfDiagnosis).getTime() - new Date(a.dateOfDiagnosis).getTime());;
+          this.filteredTreatments = [...this.patientTreatments];
+        },
+        error: (error) => {
+          console.error('Error loading history:', error);
+        }
+      });
+    }
+
 
   openTreatmentModal(isEditMode: boolean, treatment: any = null): void {
     this.isEditMode = isEditMode;
@@ -114,18 +170,45 @@ export class PatientTreatmentComponent implements OnInit {
     modal.show();
   }
 
-  async saveTreatment(): Promise<void> {
+   saveTreatment(): void {
+    this.treatmentForm.markAllAsTouched();
     if (this.treatmentForm.invalid || !this.userData.id) return;
 
     const treatmentData = this.treatmentForm.value;
+    if (this.isEditMode) {
+      // Update existing medical history
+      treatmentData.id = this.selectedTreatment?.id;
 
-    try {
-      await this.patientService.saveCurrentTreatment(this.userData.id, treatmentData).toPromise();
-      await this.loadTreatments();
+       this.patientService.saveCurrentTreatment(this.userData.id, treatmentData).subscribe({
+        next: (response) => {
+          const index = this.patientTreatments.findIndex(
+            (h) => h.id === this.selectedTreatment?.id
+          );
+          if (index !== -1) {
+            this.patientTreatments[index] = { ...treatmentData };
+          }
+          this.filteredTreatments = [...this.patientTreatments];
+        },
+        error: (error) => {
+          console.error('Error updating medical treatments:', error);
+        },
+      });
+  } else {
+    // Add new medical history
+    this.patientService
+      .saveCurrentTreatment(this.userData.id, treatmentData)
+      .subscribe({
+        next: (response) => {
+          this.loadTreatments();
+        },
+        error: (error) => {
+          console.error('Error adding medical treatments:', error);
+        },
+      });
+  }
+
       bootstrap.Modal.getInstance(this.treatmentModal.nativeElement)?.hide();
-    } catch (error) {
-      console.error('Error saving treatment:', error);
-    }
+    
   }
 
   deleteTreatment(treatment: any): void {

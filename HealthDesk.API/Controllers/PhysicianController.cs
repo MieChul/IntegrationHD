@@ -72,7 +72,21 @@ namespace HealthDesk.API.Controllers
                 var directoryPath = string.Empty;
 
                 // For production deployment
-                directoryPath = Path.Combine(_env.WebRootPath, "assets", "documents", id, "prescription");
+               if (_env.IsDevelopment())
+                {
+                    // For local development
+                    directoryPath = Path.Combine(
+                        @"D:\Desk\IntegrationHD\HealthDesk.Ui\src\assets",
+                        "documents",
+                        id,
+                        "prescription"
+                    );
+                }
+                else
+                {
+                    // For production deployment
+                    directoryPath = Path.Combine(_env.WebRootPath, "assets", "documents", id, "prescription");
+                }
 
 
                 Directory.CreateDirectory(directoryPath);
@@ -226,7 +240,21 @@ namespace HealthDesk.API.Controllers
                 var directoryPath = string.Empty;
 
                 // For production deployment
-                directoryPath = Path.Combine(_env.WebRootPath, "assets", "documents", dto.PatientId, "prescription");
+               if (_env.IsDevelopment())
+                {
+                    // For local development
+                    directoryPath = Path.Combine(
+                        @"D:\Desk\IntegrationHD\HealthDesk.Ui\src\assets",
+                        "documents",
+                        dto.PatientId,
+                        "prescription"
+                    );
+                }
+                else
+                {
+                    // For production deployment
+                    directoryPath = Path.Combine(_env.WebRootPath, "assets", "documents", dto.PatientId, "prescription");
+                }
 
                 Directory.CreateDirectory(directoryPath);
 

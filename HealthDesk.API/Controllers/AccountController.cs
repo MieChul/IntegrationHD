@@ -57,7 +57,20 @@ public class AccountController : ControllerBase
         string folderPath;
 
         // For production deployment
-        folderPath = Path.Combine(_env.WebRootPath, "assets", "documents", id);
+      if (_env.IsDevelopment())
+        {
+            // For local development
+            folderPath = Path.Combine(
+                @"D:\Desk\IntegrationHD\HealthDesk.Ui\src\assets",
+                "documents",
+                id
+            );
+        }
+        else
+        {
+            // For production deployment
+            folderPath = Path.Combine(_env.WebRootPath, "assets", "documents", id);
+        }
 
         try
         {

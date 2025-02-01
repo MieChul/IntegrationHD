@@ -35,6 +35,12 @@ public class PhysicianService : IPhysicianService
         {
             clinic = new Clinic { };
             GenericMapper.Map(clinicDto, clinic);
+            clinic.ClinicSlots = clinicDto.ClinicSlots?.Select(sdto => new ClinicSlots
+            {
+                Name = sdto.Name,
+                TimingFrom = sdto.TimingFrom,
+                TimingTo = sdto.TimingTo
+            }).ToList();
             physician.Clinics.Add(clinic);
         }
         else
@@ -42,6 +48,55 @@ public class PhysicianService : IPhysicianService
             // Update existing clinic
             GenericMapper.Map(clinicDto, clinic);
             clinic.Days = clinicDto.Days;
+            if (clinic.ClinicSlots == null)
+                clinic.ClinicSlots = new List<ClinicSlots>();
+
+            var dtoSlots = clinicDto.ClinicSlots ?? new List<ClinicSlotsDto>();
+            var dtoSlotIds = dtoSlots.Where(s => !string.IsNullOrEmpty(s.Id)).Select(s => s.Id).ToList();
+            var slotsToRemove = clinic.ClinicSlots.Where(s => !string.IsNullOrEmpty(s.Id) && !dtoSlotIds.Contains(s.Id)).ToList();
+            foreach (var slot in slotsToRemove)
+            {
+                clinic.ClinicSlots.Remove(slot);
+            }
+            // Process each slot from DTO.
+            foreach (var slotDto in dtoSlots)
+            {
+                if (!string.IsNullOrEmpty(slotDto.Id))
+                {
+                    // Find matching slot in entity by Id.
+                    var existingSlot = clinic.ClinicSlots.FirstOrDefault(s => s.Id == slotDto.Id);
+                    if (existingSlot != null)
+                    {
+                        // Update the existing slot.
+                        existingSlot.Name = slotDto.Name;
+                        existingSlot.TimingFrom = slotDto.TimingFrom;
+                        existingSlot.TimingTo = slotDto.TimingTo;
+                    }
+                    else
+                    {
+                        // If an Id is provided but not found, consider this as a new slot.
+                        var newSlot = new ClinicSlots
+                        {
+                            Name = slotDto.Name,
+                            TimingFrom = slotDto.TimingFrom,
+                            TimingTo = slotDto.TimingTo
+                        };
+                        clinic.ClinicSlots.Add(newSlot);
+                    }
+                }
+                else
+                {
+                    // New slot (no Id provided).
+                    var newSlot = new ClinicSlots
+                    {
+                        Name = slotDto.Name,
+                        TimingFrom = slotDto.TimingFrom,
+                        TimingTo = slotDto.TimingTo
+                    };
+                    clinic.ClinicSlots.Add(newSlot);
+                }
+            }
+
         }
 
         await _physicianRepository.UpdateAsync(physician);
@@ -63,7 +118,7 @@ public class PhysicianService : IPhysicianService
         if (physician == null)
             throw new ArgumentException("Physician not found.");
 
-        return physician.Clinics.Where(c => (c.IsActive ?? false)).ToList();
+        return physician.Clinics;
     }
     public async Task<dynamic> GetAllDesignPrescriptionsAsync(string physicianId)
     {

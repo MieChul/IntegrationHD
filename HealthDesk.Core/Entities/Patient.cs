@@ -55,7 +55,7 @@ public class MedicalHistory : BaseEntity
     public DateTime DateOfDiagnosis { get; set; }
 
     [BsonElement("treatment")]
-    public string Treatment { get; set; }
+    public string TreatmentDrug { get; set; }
 
     [BsonElement("outcome")]
     public string? Outcome { get; set; }
@@ -78,7 +78,7 @@ public class Treatment : BaseEntity
 {
 
     [BsonElement("drug")]
-    public string Drug { get; set; }
+    public string TreatmentDrug { get; set; }
 
     [BsonElement("dosage_form")]
     public string DosageForm { get; set; }
@@ -96,7 +96,7 @@ public class Treatment : BaseEntity
     public DateTime StartDate { get; set; }
 
     [BsonElement("end_date")]
-    public DateTime EndDate { get; set; }
+    public DateTime? EndDate { get; set; } = null;
 
     [BsonElement("comment")]
     public string? Comment { get; set; }

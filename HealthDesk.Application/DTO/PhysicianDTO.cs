@@ -32,18 +32,34 @@ public class PhysicianClinicDto
     [Required(ErrorMessage = "City is required.")]
     public string City { get; set; }
 
-    [Required(ErrorMessage = "Timing is required.")]
-    public string FromTiming { get; set; }
-
-    [Required(ErrorMessage = "Timing is required.")]
-    public string ToTiming { get; set; }
-
+    [Required(ErrorMessage = "At least one day must be selected.")]
+    [MinLength(1, ErrorMessage = "At least one day must be selected.")]
+    public List<ClinicSlotsDto> ClinicSlots { get; set; }
 
     public bool? IsActive { get; set; } = false;
 
     [Required(ErrorMessage = "At least one day must be selected.")]
     [MinLength(1, ErrorMessage = "At least one day must be selected.")]
     public List<string> Days { get; set; }
+
+    
+    [Required(ErrorMessage = "Number of Patients is required.")]
+    public int MaxNumberOfPatients { get; set; }
+}
+
+public class ClinicSlotsDto
+{
+    public string? Id { get; set; }
+
+    [Required(ErrorMessage = "Name is required.")]
+    [StringLength(25, ErrorMessage = "Name cannot exceed 25 characters.")]
+    public string Name { get; set; }
+
+    [Required(ErrorMessage = "From time is required.")]
+    public string TimingFrom { get; set; }
+
+    [Required(ErrorMessage = "To time is required.")]
+    public string TimingTo { get; set; }
 }
 
 

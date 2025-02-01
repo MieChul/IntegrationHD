@@ -61,7 +61,7 @@
     </div>
 
     <!-- Treatment Table -->
-    <div class="table-responsive" *ngIf="filteredTreatments?.length > 0">
+    <div class="table-responsive" *ngIf="filteredTreatments.length > 0">
         <table class="table table-hover table-modern">
             <thead>
                 <tr>
@@ -96,7 +96,7 @@
     </div>
 
     <!-- Add/Edit Treatment Modal -->
-    <div class="modal fade" id="treatmentModal" tabindex="-1" aria-labelledby="treatmentModalLabel" aria-hidden="true"
+    <div class="modal fade" data-bs-focus="false" id="treatmentModal" tabindex="-1" aria-labelledby="treatmentModalLabel" aria-hidden="true"
     #treatmentModal>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">

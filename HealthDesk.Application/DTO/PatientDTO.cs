@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace HealthDesk.Application;
 public class MedicalHistoryDto
 {
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [Required(ErrorMessage = "Date of diagnosis is required.")]
     [DataType(DataType.Date)] 
@@ -41,11 +41,11 @@ public class MedicalHistoryDto
 
 public class CurrentTreatmentDto
 {
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [Required(ErrorMessage = "Treatment drug is required.")]
     [StringLength(100, ErrorMessage = "Treatment drug must not exceed 100 characters.")]
-    public string Drug { get; set; }
+    public string TreatmentDrug { get; set; }
     [Required(ErrorMessage = "Dosage form is required.")]
     [StringLength(50, ErrorMessage = "Dosage form must not exceed 50 characters.")]
     public string DosageForm { get; set; }
@@ -69,7 +69,7 @@ public class CurrentTreatmentDto
 
     [Required(ErrorMessage = "End Date is required.")]
     [DataType(DataType.Date)] 
-    public DateTime EndDate { get; set; }
+    public DateTime? EndDate { get; set; }
 
     [StringLength(100, ErrorMessage = "Comment must not exceed 100 characters.")]
     public string? Comment { get; set; }
