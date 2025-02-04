@@ -42,7 +42,7 @@ public class PhysicianClinicDto
     [MinLength(1, ErrorMessage = "At least one day must be selected.")]
     public List<string> Days { get; set; }
 
-    
+
     [Required(ErrorMessage = "Number of Patients is required.")]
     public int MaxNumberOfPatients { get; set; }
 }
@@ -60,6 +60,17 @@ public class ClinicSlotsDto
 
     [Required(ErrorMessage = "To time is required.")]
     public string TimingTo { get; set; }
+
+    public List<SubSlotDto> SubSlots { get; set; } = new();
+}
+
+public class SubSlotDto
+{
+    public string StartTime { get; set; }
+    public string EndTime { get; set; }
+    public int BookedCount { get; set; }
+    public int AvailableCount { get; set; }
+    public string ColorClass { get; set; }
 }
 
 

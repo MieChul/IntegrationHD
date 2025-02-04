@@ -64,7 +64,7 @@ export class PhysicianService {
     return this.http.get<any[]>(`${this.apiUrl}/${id}/header-footer`);
   }
 
-  getPrescriptions(physicianId: string, patientId: string, getAll : boolean): Observable<any[]> {
+  getPrescriptions(physicianId: string, patientId: string, getAll: boolean): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${physicianId}/prescriptions/${patientId}`);
   }
 
@@ -121,6 +121,12 @@ export class PhysicianService {
       };
       reader.onerror = (error) => observer.error(error);
       reader.readAsDataURL(data.pdfBlob); // Convert Blob to Base64
+    });
+  }
+
+  getClinicSlots(physicianId: string, clinicId: string, date: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${physicianId}/clinic-slots`, {
+      params: { clinicId, date }
     });
   }
 }

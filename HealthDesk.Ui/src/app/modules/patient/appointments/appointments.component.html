@@ -3,70 +3,86 @@
     <i class="bi bi-calendar-check me-2"></i>Manage Appointments
   </h1>
 
-  <button class="btn btn-primary mb-3" (click)="scheduleNewAppointment()">Schedule New Appointment</button>
-  <form [formGroup]="dateForm">
-    <div class="row mb-3 align-items-center">
-      <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
-        <div class="m-2">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Start Date</mat-label>
-            <input matInput [matDatepicker]="startDatePicker" formControlName="startDate"
-              placeholder="Choose Start Date" />
-            <mat-datepicker-toggle matSuffix [for]="startDatePicker"></mat-datepicker-toggle>
-            <mat-datepicker #startDatePicker></mat-datepicker>
-          </mat-form-field>
+  <button class="btn btn-primary mb-3" (click)="scheduleNewAppointment()">Schedule Appointment</button>
+  <div class="row mb-3 align-items-center">
+    <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
+        <div class="mb-2 me-3">
+            <form [formGroup]="dateForm" class="mb-4">
+                <div class="row">
+                    <!-- Start Date -->
+                    <div class="col-md-6">
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-label>Start Date</mat-label>
+                            <input matInput [matDatepicker]="startDatePicker" formControlName="startDate" />
+                            <mat-datepicker-toggle matSuffix [for]="startDatePicker"></mat-datepicker-toggle>
+                            <mat-datepicker #startDatePicker></mat-datepicker>
+                        </mat-form-field>
+                    </div>
+    
+                    <!-- End Date -->
+                    <div class="col-md-6">
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-label>End Date</mat-label>
+                            <input matInput [matDatepicker]="endDatePicker" formControlName="endDate" />
+                            <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
+                            <mat-datepicker #endDatePicker></mat-datepicker>
+                            <mat-error *ngIf="dateForm.get('endDate')?.hasError('invalidDateRange')" class="text-danger mt-2">
+                             Cannot be greater than start date.
+                            </mat-error>
+                          </mat-form-field>
+                    </div>
+                </div>
+            </form>
         </div>
-        <div class="m-2">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>End Date</mat-label>
-            <input matInput [matDatepicker]="endDatePicker" formControlName="endDate" placeholder="Choose End Date" />
-            <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
-            <mat-datepicker #endDatePicker></mat-datepicker>
-            <mat-error *ngIf="isEndDateInvalid()">
-              End Date cannot be earlier than Start Date.
-            </mat-error>
-          </mat-form-field>
-        </div>
+    </div>
+    <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
+      <div class="legend me-3 mb-2">
+        <span class="legend-color upcoming-appointment"></span> Accepted
       </div>
-      <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
-        <div class="legend me-3 mb-2">
-          <span class="legend-color upcoming-appointment"></span> Accepted
-        </div>
-        <div class="legend me-3 mb-2">
-          <span class="legend-color past-appointment"></span> Rejected
-        </div>
-        <div class="legend mb-2">
-          <span class="legend-color proposed-time"></span> Proposed
-        </div>
+      <div class="legend me-3 mb-2">
+        <span class="legend-color past-appointment"></span> Rejected
+      </div>
+      <div class="legend mb-2">
+        <span class="legend-color proposed-time"></span> Proposed
       </div>
     </div>
-  </form>
-
-  <ul class="nav nav-tabs">
+</div>
+  <ul class="nav nav-tabs mb-3">
     <li class="nav-item">
-      <a class="nav-link active" (click)="filterAppointments('pending')">Upcoming</a>
+        <a class="nav-link pointer-cursor" 
+           [ngClass]="{'active': activeTab === 'pending'}" 
+           (click)="filterAppointments('pending')">
+           Upcoming
+        </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" (click)="filterAppointments('past')">Past</a>
+        <a class="nav-link pointer-cursor" 
+           [ngClass]="{'active': activeTab === 'past'}" 
+           (click)="filterAppointments('past')">
+           Past
+        </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" (click)="filterAppointments('cancelled')">Cancelled</a>
-    </li>
-  </ul>
+      <a class="nav-link pointer-cursor" 
+         [ngClass]="{'active': activeTab === 'cancelled'}" 
+         (click)="filterAppointments('cancelled')">Cancelled
+      </a>
+  </li>
+</ul>
 
   <div class="table-responsive mt-3">
     <table class="table table-hover table-modern">
       <thead>
         <tr>
-          <th>Physician</th>
-          <th>Appointment Date</th>
-          <th>Appointment Time</th>
-          <th>Clinic</th>
-          <th>Status</th>
+          <th  (click)="sortTable('physicianName')">Physician</th>
+          <th  (click)="sortTable('date')">Appointment Date</th>
+          <th  (click)="sortTable('time')">Appointment Time</th>
+          <th  (click)="sortTable('clinicName')">Clinic</th>
+          <th >Status</th>
           <th *ngIf="filteredAppointments[0]?.status === 'cancelled' || filteredAppointments[0]?.status === 'rejected'">
             Reason</th>
-            <th>
-              Action</th>
+          <th>
+            Action</th>
         </tr>
       </thead>
       <tbody *ngIf="filteredAppointments && filteredAppointments.length > 0">
@@ -84,15 +100,15 @@
           </td>
           <td>
             <button *ngIf="appointment.status === 'pending'" class="btn btn-primary btn-sm me-1"
-              (click)="editAppointment(appointment)" ngbTooltip="Edit Appointment">
-              <i class="bi bi-pencil"></i>
-            </button>
-            <button *ngIf="appointment.status === 'proposed'" class="btn btn-primary btn-sm me-1"
-              (click)="acceptAppointment(appointment)" ngbTooltip="Accept Appointment">
+              (click)="editAppointment(appointment)" ngbTooltip="Reschedule Appointment">
               <i class="bi bi-calendar-check"></i>
             </button>
-            <button *ngIf="appointment.status !== 'cancelled' && appointment.status !== 'rejected'" class="btn btn-danger btn-sm me-1" (click)="openCancelModal(appointment)"
-              ngbTooltip="Cancel Appointment">
+            <button *ngIf="appointment.status === 'proposed'" class="btn btn-primary btn-sm me-1"
+              (click)="openAcceptModal(appointment)" ngbTooltip="Accept Appointment">
+              <i class="bi bi-calendar-check"></i>
+            </button>
+            <button *ngIf="appointment.status !== 'cancelled' && appointment.status !== 'rejected'"
+              class="btn btn-danger btn-sm me-1" (click)="openCancelModal(appointment)" ngbTooltip="Cancel Appointment">
               <i class="bi bi-x-circle"></i>
             </button>
           </td>
@@ -102,80 +118,146 @@
   </div>
 
   <!-- Appointment Modal -->
-  <div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Book Appointment</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <div class="modal fade animate__animated animate__fadeIn" data-bs-focus="false" id="appointmentModal" tabindex="-1"
+    aria-labelledby="appointmentModalLabel" aria-hidden="true" #appointmentModal>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content shadow-sm rounded">
+        <div class="modal-header text-white">
+          <h5 class="modal-title" id="appointmentModalLabel">
+            <i class="bi bi-calendar-check me-2"></i>
+            {{ isEditing ? 'Reschedule Appointment' : 'Book New Appointment' }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white pointer-cursor" data-bs-dismiss="modal"
+            aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <form [formGroup]="appointmentForm">
-            <div class="row mb-4">
+            <!-- Row 1: Physician and Clinic dropdowns -->
+            <div class="row mb-3">
               <div class="col-md-6">
-                <label for="doctorSelect" class="form-label">Select Doctor</label>
-                <select id="doctorSelect" class="form-select" formControlName="physicianId">
-                  <option value="" disabled>Select a Doctor</option>
-                  <option *ngFor="let physician of physicians" [value]="physician.id">
-                    {{ physician.name }}
-                  </option>
-                </select>
-                <div *ngIf="appointmentForm.get('physicianId')?.invalid && submitted" class="text-danger">
-                  Doctor is required.
-                </div>
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label><i class="bi bi-person"></i> Select Physician</mat-label>
+                  <mat-select formControlName="physicianId" (selectionChange)="onPhysicianChange($event.value)" required>
+                      <mat-option>
+                          <ngx-mat-select-search [formControl]="physicianFilterCtrl"
+                              placeholderLabel="Search Physician"></ngx-mat-select-search>
+                      </mat-option>
+                      <mat-option *ngFor="let physician of filteredPhysicians | async" [value]="physician.id">
+                          {{ physician.name }}
+                      </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="appointmentForm.get('physicianId')?.hasError('required') && submitted"> Physician is required.</mat-error>
+              </mat-form-field>
               </div>
               <div class="col-md-6">
-                <label for="clinicSelect" class="form-label">Select Clinic</label>
-                <select id="clinicSelect" class="form-select" formControlName="clinicName">
-                  <option value="" disabled selected>Select a Clinic</option>
-                  <option *ngFor="let clinic of clinics" [value]="clinic.name">{{ clinic.name }}</option>
-                </select>
-                <div *ngIf="appointmentForm.get('clinicName')?.invalid && submitted" class="text-danger">
-                  Clinic is required.
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label><i class="bi bi-building"></i> Select Clinic</mat-label>
+                  <mat-select formControlName="clinicName" (selectionChange)="onClinicChange($event.value)">
+                    <mat-option *ngFor="let clinic of clinics" [value]="clinic.name">
+                      {{ clinic.name }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="appointmentForm.get('clinicName')?.hasError('required') && submitted">
+                    Clinic is required.
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+            <!-- Inline display of selected Physician and Clinic details -->
+            <div class="d-flex justify-content-center mb-3" *ngIf="selectedPhysician && selectedClinic">
+              <i class="bi bi-person-circle me-1"></i>
+              <span class="me-3">{{ selectedPhysician.name }}</span>
+              <i class="bi bi-building me-1"></i>
+              <span class="me-3">{{ selectedClinic.name }}</span>
+              <i class="bi bi-geo-alt me-1"></i>
+              <span>{{ selectedClinic.area }}, {{ selectedClinic.city }}</span>
+            </div>
+            <div class="selected-info mt-3 justify-content-center" *ngIf="selectedDate && selectedAppointmentTime">
+              <p class="fs-6 justify-content-center">
+                <i class="bi bi-calendar-check"></i>
+                Selected Date: {{ selectedDate | date:'fullDate' }} |
+                <i class="bi bi-clock-history"></i>
+                Time: {{ selectedAppointmentTime | date:'shortTime' }}
+              </p>
+            </div>
+            <!-- Date Carousel: displayed only after clinic selection -->
+            <div class="date-carousel mb-3" *ngIf="selectedClinic">
+              <div class="d-flex align-items-center justify-content-center">
+
+                <div class="carousel-3d-wrapper d-flex align-items-center justify-content-center">
+                  <button class="btn btn-outline-secondary pointer-cursor me-2" (click)="previousDateCarousel()"
+                    [disabled]="currentCarouselIndex === 0">
+                    <i class="bi bi-chevron-left"></i>
+                  </button>
+                  <div class="carousel-3d d-flex pointer-cursor">
+                    <div *ngFor="let date of visibleDates; let i = index" (click)="selectDate(date)"
+                      [ngClass]="{'active-date': selectedDate?.toDateString() === date.toDateString(), 'inactive-date': selectedDate?.toDateString() !== date.toDateString(), 'pointer-cursor': true}"
+                      class="date-item text-center p-2 m-1 rounded pointer-cursor">
+                      <div><i class="bi bi-calendar-event"></i></div>
+                      <div>{{ date | date:'EEE' }}</div>
+                      <div>{{ date | date:'dd' }}</div>
+                    </div>
+                  </div>
+                  <button class="btn btn-outline-secondary pointer-cursor ms-2" (click)="nextDateCarousel()"
+                    [disabled]="currentCarouselIndex >= availableDates.length - 3">
+                    <i class="bi bi-chevron-right"></i>
+                  </button>
                 </div>
               </div>
             </div>
-            <div class="row mb-4">
-              <div class="col-md-12">
-                <label class="form-label">Select Date</label>
-                <div class="d-flex justify-content-between">
-                  <button *ngFor="let day of availableDates" type="button" class="btn btn-outline-primary" [class.active]="selectedDate === day" (click)="selectDate(day)">
-                    {{ day | date: 'EEE, MMM d' }}
-                  </button>
-                </div>
-                <div *ngIf="!selectedDate && submitted" class="text-danger mt-2">
-                  Date is required.
-                </div>
+            <!-- Slots Section: Display each sub-slot as a circular module -->
+            <div class="slots-section" *ngIf="selectedClinic && selectedDate">
+              <div *ngFor="let slot of clinicSubSlots" class="slot-group mb-4">
+
+                <h6 class="mb-3 text-center">
+                  <i class="bi bi-alarm"></i> {{ slot.name }}
+                  <small>({{ slot.timingFrom }} - {{ slot.timingTo }})</small>
+                </h6>
+                <div *ngIf="!slot.subSlots || slot.subSlots.length === 0" class="text-center text-danger mb-3">
+                  <i class="bi bi-exclamation-circle"></i> No appointment available for this slot.
               </div>
-            </div>
-            <div class="row">
-              <div class="col-md-12">
-                <label class="form-label">Select Time Slot</label>
-                <div *ngIf="availableTimeSlots.length === 0" class="text-muted">No available slots for the selected date.</div>
-                <div class="d-flex flex-wrap">
-                  <button *ngFor="let slot of availableTimeSlots" type="button" class="btn me-2 mb-2"
-                    [ngClass]="{
-                      'btn-danger': slot.status === 'full',
-                      'btn-warning': slot.status === 'moreThan50',
-                      'btn-info': slot.status === 'lessThan50',
-                      'btn-success': slot.status === 'free'
-                    }"
-                    [disabled]="slot.status === 'full'"
-                    (click)="selectTimeSlot(slot)"
-                    [attr.title]="slot.tooltip">
-                    {{ slot.time }}
-                  </button>
+                <div class="subslot-container">
+                  <div *ngFor="let subSlot of slot.subSlots"
+                    class="tile-slot pointer-cursor position-relative text-center m-2 p-3" [ngClass]="[
+                      subSlot.colorClass,
+                      selectedSubSlot?.startTime === subSlot.startTime ? 'border border-3 border-dark' : '',
+                      subSlot.availableCount === 0 ? 'disabled-slot' : ''
+                    ]" (click)="selectSubSlot(slot, subSlot)">
+
+                    <div class="d-flex justify-content-center">
+                      <i class="bi bi-clock me-1"></i>
+                      <div class="slot-time">
+                        {{ subSlot.startTime }} - {{ subSlot.endTime }}
+                      </div>
+                    </div>
+
+                    <div class="slot-badge" [ngClass]="{'blink': subSlot.availableCount > 0}">
+                      {{ subSlot.availableCount === 0 ? 'Full' : subSlot.availableCount + ' slots available' }}
+                    </div>
+
+                  </div>
                 </div>
-                <div *ngIf="!selectedTime && submitted" class="text-danger mt-2">
-                  Time slot is required.
-                </div>
+
+                <mat-divider class="my-4"></mat-divider>
+              </div>
+              <div class="selected-info mt-3 justify-content-center" *ngIf="selectedDate && selectedAppointmentTime">
+                <p class="fs-6 justify-content-center">
+                  <i class="bi bi-calendar-check"></i>
+                  Selected Date: {{ selectedDate | date:'fullDate' }} |
+                  <i class="bi bi-clock-history"></i>
+                  Time: {{ selectedAppointmentTime | date:'shortTime' }}
+                </p>
               </div>
             </div>
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" (click)="bookAppointment()">Book Appointment</button>
+          <button type="button" class="btn btn-secondary pointer-cursor" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle"></i> Close
+          </button>
+          <button type="button" class="btn btn-primary pointer-cursor" (click)="saveAppointment()">
+            <i class="bi bi-check-circle"></i> {{ isEditing ? 'Save Changes' : 'Book Appointment' }}
+          </button>
         </div>
       </div>
     </div>
@@ -206,3 +288,24 @@
       </div>
     </div>
   </div>
+
+  <div class="modal fade" id="acceptModal" tabindex="-1" aria-labelledby="acceptModalLabel" aria-hidden="true"
+  #acceptModal>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="acceptModalLabel">Accept Appointment</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to accept the new proposed time?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success" (click)="acceptAppointment()">
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

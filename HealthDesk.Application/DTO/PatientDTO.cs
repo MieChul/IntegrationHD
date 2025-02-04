@@ -6,7 +6,7 @@ public class MedicalHistoryDto
     public string? Id { get; set; }
 
     [Required(ErrorMessage = "Date of diagnosis is required.")]
-    [DataType(DataType.Date)] 
+    [DataType(DataType.Date)]
     public DateTime DateOfDiagnosis { get; set; }
 
     [Required(ErrorMessage = "Disease is required.")]
@@ -50,7 +50,7 @@ public class CurrentTreatmentDto
     [StringLength(50, ErrorMessage = "Dosage form must not exceed 50 characters.")]
     public string DosageForm { get; set; }
 
-    
+
     [Required(ErrorMessage = "Strength is required.")]
     [Range(0, double.MaxValue, ErrorMessage = "Strength must be a positive number.")]
     public double Strength { get; set; }
@@ -64,10 +64,10 @@ public class CurrentTreatmentDto
     public string Frequency { get; set; }
 
     [Required(ErrorMessage = "Start Date is required.")]
-    [DataType(DataType.Date)] 
+    [DataType(DataType.Date)]
     public DateTime StartDate { get; set; }
 
-    [DataType(DataType.Date)] 
+    [DataType(DataType.Date)]
     public DateTime? EndDate { get; set; }
 
     [StringLength(100, ErrorMessage = "Comment must not exceed 100 characters.")]
@@ -77,17 +77,43 @@ public class CurrentTreatmentDto
 public class AppointmentDto
 {
     public string? Id { get; set; }
-    public string? PhysicianId { get; set; } = string.Empty;// Reference to Physician
-    public string? PatientId { get; set; } = string.Empty;// Reference to Physician
+
+    [Required(ErrorMessage = "Physician ID is required.")]
+    public string PhysicianId { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Patient ID is required.")]
+    public string PatientId { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Date is required.")]
+    [FutureDate(ErrorMessage = "Appointment date cannot be in the past.")]
     public DateTime Date { get; set; }
-    public string? Time { get; set; } = string.Empty;
-    public string? ClinicName { get; set; } = string.Empty; // Reference to Clinic
-    public string? Status { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Time is required.")]
+    [TimeNotInPast(nameof(Date), ErrorMessage = "Appointment date and time cannot be in the past.")]
+    public string Time { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Clinic name is required.")]
+    public string ClinicName { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Clinic name is required.")]
+    public string Status { get; set; } = string.Empty;
+
     public string? Mobile { get; set; } = string.Empty;
+
     public string? Reason { get; set; } = string.Empty;
-    public string? PhysicianName { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Physician name is required.")]
+    public string PhysicianName { get; set; }
+
     public string? PatientName { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Slot ID is required.")]
+    public string SlotId { get; set; }
+
+    [Required(ErrorMessage = "Slot name is required.")]
+    public string SlotName { get; set; }
 }
+
 
 public class SelfRecordDto
 {

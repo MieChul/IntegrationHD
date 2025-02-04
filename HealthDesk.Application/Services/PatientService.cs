@@ -112,8 +112,22 @@ public class PatientService : IPatientService
 
     public async Task SaveAppointmentAsync(string patientId, AppointmentDto dto)
     {
+        if (dto.Status == "pending")
+        {
+            var existingAppointment = (await GetAppointmentsAsync(dto.PhysicianId, true))
+                                     .Where(a => a.SlotId == dto.SlotId && a.Time == dto.Time && a.Date.Date == dto.Date.Date && (a.Status != "cancelled" || a.Status != "rejected")).ToList();
+
+            if (existingAppointment != null && existingAppointment.Any())
+            {
+                throw new InvalidOperationException("Someone already booked the slot for " + dto.Time + ". Please refresh.");
+            }
+        }
+
         var patient = await GetPatientByIdAsync(patientId);
         if (patient == null) throw new ArgumentException("Patient not found.");
+
+        if (patient.Appointments.Any(a => a.Date.Date == dto.Date.Date && dto.Id == null)) throw new InvalidOperationException("You already have an appoint request for the selected slot. Please choose another slot.");
+
 
         var user = await _userRepository.GetByIdAsync(patientId);
         if (user == null || string.IsNullOrEmpty(user.Mobile))
@@ -124,6 +138,7 @@ public class PatientService : IPatientService
         GenericMapper.Map(dto, appointment);
         appointment.Mobile = user.Mobile;
         appointment.PatientName = user.FirstName + " " + user.LastName;
+
 
         if (string.IsNullOrEmpty(dto.Id))
         {
@@ -138,6 +153,7 @@ public class PatientService : IPatientService
 
         await _patientRepository.UpdateAsync(patient);
     }
+
 
     public async Task UpdateAppointmentStatus(string patientId, string appointmentId, string status)
     {
@@ -484,7 +500,8 @@ public class PatientService : IPatientService
                 physicianDetails.Add(new
                 {
                     Id = physician.UserId,
-                    Name = $"Dr. {user.FirstName} {user.LastName}"
+                    Name = $"Dr. {user.FirstName} {user.LastName}",
+                    physician.Clinics
                 });
             }
         }

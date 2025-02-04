@@ -599,19 +599,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Mithul Rao\\.nuget\\packages\\": {}
+    "C:\\Users\\Admin\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Desk\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj",
+      "projectUniqueName": "D:\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj",
       "projectName": "HealthDesk.Core",
-      "projectPath": "D:\\Desk\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj",
-      "packagesPath": "C:\\Users\\Mithul Rao\\.nuget\\packages\\",
-      "outputPath": "D:\\Desk\\IntegrationHD\\HealthDesk.Core\\obj\\",
+      "projectPath": "D:\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj",
+      "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
+      "outputPath": "D:\\IntegrationHD\\HealthDesk.Core\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Mithul Rao\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"

@@ -135,6 +135,10 @@ public class Appointment : BaseEntity
 
     [BsonElement("patient_name")]
     public string? PatientName { get; set; } = string.Empty;
+    [BsonElement("slot_id")]
+    public string SlotId { get; set; }
+    [BsonElement("slot_name")]
+    public string SlotName { get; set; }
 }
 
 public class Activity : BaseEntity

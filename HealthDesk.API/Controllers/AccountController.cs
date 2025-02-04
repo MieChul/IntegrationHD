@@ -61,7 +61,7 @@ public class AccountController : ControllerBase
         {
             // For local development
             folderPath = Path.Combine(
-                @"D:\Desk\IntegrationHD\HealthDesk.Ui\src\assets",
+                @"D:\IntegrationHD\HealthDesk.Ui\src\assets",
                 "documents",
                 id
             );

@@ -36,12 +36,14 @@ public class ErrorHandlingMiddleware
         // Set response status and headers
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-
+        var errorMessage = exception is InvalidOperationException
+               ? exception.Message
+               : "An unexpected error occurred.";
         // Create the error response
         var errorResponse = new
         {
             Success = false,
-            Message = "An unexpected error occurred."
+            Message = errorMessage
         };
 
         // Serialize and write the error response

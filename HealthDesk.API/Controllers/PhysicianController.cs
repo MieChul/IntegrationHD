@@ -72,11 +72,11 @@ namespace HealthDesk.API.Controllers
                 var directoryPath = string.Empty;
 
                 // For production deployment
-               if (_env.IsDevelopment())
+                if (_env.IsDevelopment())
                 {
                     // For local development
                     directoryPath = Path.Combine(
-                        @"D:\Desk\IntegrationHD\HealthDesk.Ui\src\assets",
+                        @"D:\IntegrationHD\HealthDesk.Ui\src\assets",
                         "documents",
                         id,
                         "prescription"
@@ -240,11 +240,11 @@ namespace HealthDesk.API.Controllers
                 var directoryPath = string.Empty;
 
                 // For production deployment
-               if (_env.IsDevelopment())
+                if (_env.IsDevelopment())
                 {
                     // For local development
                     directoryPath = Path.Combine(
-                        @"D:\Desk\IntegrationHD\HealthDesk.Ui\src\assets",
+                        @"D:\IntegrationHD\HealthDesk.Ui\src\assets",
                         "documents",
                         dto.PatientId,
                         "prescription"
@@ -367,6 +367,16 @@ namespace HealthDesk.API.Controllers
 
             await _physicianService.SaveProfilesAsync(physicianId, profileDtos);
             return Ok(new { Success = true, Message = "Profiles saved successfully." });
+        }
+
+        [HttpGet("{physicianId}/clinic-slots")]
+        public async Task<IActionResult> GetClinicSlots(string physicianId, [FromQuery] string clinicId, [FromQuery] string date)
+        {
+            if (string.IsNullOrEmpty(clinicId))
+                return BadRequest(new { Success = false, Message = "ClinicId is required." });
+
+            var slots = await _physicianService.GetClinicSlotsAsync(physicianId, clinicId, Convert.ToDateTime(date));
+            return Ok(new { Success = true, Data = slots });
         }
 
     }

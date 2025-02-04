@@ -183,4 +183,6 @@ export class PatientService {
   getPhysicians(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/physicians`);
   }
+
+  
 }

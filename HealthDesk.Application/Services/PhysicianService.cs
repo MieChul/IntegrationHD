@@ -1,4 +1,6 @@
 
+using System.Globalization;
+using System.Threading.Tasks;
 using HealthDesk.Application.DTO;
 using HealthDesk.Core;
 using HealthDesk.Core.Enum;
@@ -13,14 +15,16 @@ public class PhysicianService : IPhysicianService
     private readonly IMessageService _messageService;
 
     private readonly IUserService _userService;
+    private readonly IPatientService _patientService;
 
     private readonly Random _random = new Random();
-    public PhysicianService(IPhysicianRepository physicianRepository, IMessageService messageService, IUserRepository userRepository, IUserService userService)
+    public PhysicianService(IPhysicianRepository physicianRepository, IMessageService messageService, IUserRepository userRepository, IUserService userService, IPatientService patientService)
     {
         _physicianRepository = physicianRepository;
         _messageService = messageService;
         _userRepository = userRepository;
         _userService = userService;
+        _patientService = patientService;
     }
 
     public async Task AddOrUpdateClinicAsync(string physicianId, PhysicianClinicDto clinicDto)
@@ -426,5 +430,86 @@ public class PhysicianService : IPhysicianService
             throw new ArgumentException("Physician not found.");
 
         return physician.Patients.Where(p => p.UserId == patientId)?.FirstOrDefault()?.Prescriptions.Count ?? 0;
+    }
+
+    public async Task<dynamic> GetClinicSlotsAsync(string physicianId, string clinicId, DateTime date)
+    {
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
+        if (physician == null)
+            throw new ArgumentException("Physician not found.");
+
+        var clinic = physician.Clinics.FirstOrDefault(c => c.Id == clinicId);
+        if (clinic == null)
+            throw new ArgumentException("Clinic not found.");
+
+        var slots = new List<ClinicSlotsDto>();
+
+        foreach (var slot in clinic.ClinicSlots)
+        {
+            var subSlots = await GetSubSlots(physicianId, slot, clinic, date); // ✅ Await here
+
+            slots.Add(new ClinicSlotsDto
+            {
+                Id = slot.Id,
+                Name = slot.Name,
+                TimingFrom = slot.TimingFrom,
+                TimingTo = slot.TimingTo,
+                SubSlots = subSlots
+            });
+        }
+
+        return slots;
+    }
+
+    private async Task<List<SubSlotDto>> GetSubSlots(string physicianId, ClinicSlots slot, Clinic clinic, DateTime date)
+    {
+        var appointments = (await _patientService.GetAppointmentsAsync(physicianId, true))
+                          .Where(a => a.SlotId == slot.Id && a.Date.Date == date.Date)
+                          .ToList();
+
+        var subSlots = new List<SubSlotDto>();
+        DateTime currentTime = DateTime.Now;
+        DateTime startTime = DateTime.Parse(slot.TimingFrom);
+        DateTime endTime = DateTime.Parse(slot.TimingTo);
+        int maxPatients = clinic.MaxNumberOfPatients;
+
+        if (date.Date == currentTime.Date)
+        {
+            int nextHour = currentTime.Hour + 1; // Move to the next hour
+            if (nextHour >= endTime.Hour) // ❌ If all slots have passed, return empty list
+            {
+                return subSlots;
+            }
+            startTime = new DateTime(currentTime.Year, currentTime.Month, currentTime.Day, nextHour, 0, 0);
+        }
+
+        while (startTime.AddMinutes(60) <= endTime)
+        {
+            var subSlotAppointments = appointments.Where(a =>
+                DateTime.TryParseExact(a.Time, "hh:mm tt", System.Globalization.CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime appointmentTime)
+                && appointmentTime >= startTime
+                && appointmentTime < startTime.AddMinutes(60)).Count();
+            subSlots.Add(new SubSlotDto
+            {
+                StartTime = startTime.ToString("hh:mm tt"),
+                EndTime = startTime.AddMinutes(60).ToString("hh:mm tt"),
+                BookedCount = subSlotAppointments,
+                AvailableCount = maxPatients - subSlotAppointments,
+                ColorClass = GetSlotColor(subSlotAppointments, maxPatients)
+            });
+            startTime = startTime.AddMinutes(60);
+        }
+
+        return subSlots;
+    }
+
+    private string GetSlotColor(int booked, int max)
+    {
+        double percentBooked = (double)booked / max;
+
+        if (percentBooked == 1) return "bg-danger";
+        if (percentBooked > 0.5) return "bg-orange";
+        if (percentBooked > 0) return "bg-warning";
+        return "bg-success";
     }
 }
