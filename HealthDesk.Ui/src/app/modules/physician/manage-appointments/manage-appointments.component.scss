@@ -1,3 +1,89 @@
-::ng-deep .cdk-overlay-container {
-    z-index: 9999;
-}
+
+.carousel-3d-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    width: auto; /* Adjust width as needed */
+    margin: 0 auto;
+  }
+  
+  .carousel-3d {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+  }
+  
+  .date-item {
+    width: 100px;
+    flex-shrink: 0;
+    margin: 0 5px;
+    opacity: 0.5;
+    transform: scale(0.8);
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  
+  .active-date {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+  }
+  
+  .inactive-date {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
+
+  .multiple-actions-container {
+    text-align: right;
+    margin-bottom: 15px;
+  }
+  
+  .multiple-actions-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+  }
+  
+  .multiple-actions {
+    button {
+      font-size: 1.3rem;
+      padding: 8px 12px;
+      transition: all 0.2s ease-in-out;
+      
+      &:hover {
+        transform: scale(1.1);
+      }
+  
+      &:disabled {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+    }
+  }
+
+  .custom-checkbox {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    border: 2px solid #007bff;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+  
+    &:checked {
+      background-color: #007bff;
+      border-color: #007bff;
+    }
+  
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+  
+  /* Better spacing for checkbox alignment */
+  .form-check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+  }

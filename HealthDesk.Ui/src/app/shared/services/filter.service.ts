@@ -10,25 +10,27 @@ export class FilteringService {
    * @param data - The array of objects to filter.
    * @param filters - The filtering criteria.
    * @param dateFields - Array of date field configurations (optional).
+   * @param emptyMeansAll - If true, empty filters do not exclude results (default: false).
    * @returns - The filtered array.
    */
   filter<T extends Record<string, any>>(
     data: T[],
     filters: { [key: string]: any },
-    dateFields: { field: keyof T; range: [string | null, string | null] }[] = []
+    dateFields: { field: keyof T; range: [string | null, string | null] }[] = [],
+    emptyMeansAll: boolean = false
   ): T[] {
     return data.filter(item => {
       // Apply generic filters
       for (const key in filters) {
         const filterValue = filters[key];
 
-        // Skip empty filters
-        if (filterValue == null || filterValue === '') {
+        // Skip empty filters only if emptyMeansAll is true
+        if (emptyMeansAll && (filterValue == null || filterValue === '')) {
           continue;
         }
 
         if (typeof filterValue === 'string') {
-          // Handle string matching (case-insensitive)
+          // Handle case-insensitive string matching
           const itemValue = item[key]?.toString().toLowerCase() || '';
           if (!itemValue.includes(filterValue.toLowerCase())) {
             return false;
@@ -51,12 +53,24 @@ export class FilteringService {
         const startDate = startDateStr ? this.parseDateTime(startDateStr) : null;
         const endDate = endDateStr ? this.parseDateTime(endDateStr) : null;
 
-        if (
-          isNaN(itemDate.getTime()) || // Invalid date
-          (startDate && itemDate < startDate) || // Exclude items before startDate if provided
-          (endDate && itemDate > endDate)       // Exclude items after endDate if provided
-        ) {
-          return false;
+        if (isNaN(itemDate.getTime())) {
+          return false; // Exclude invalid dates
+        }
+
+        // Handle single date filtering when only one boundary is present
+        if (startDate && !endDate) {
+          if (itemDate.toDateString() !== startDate.toDateString()) {
+            return false;
+          }
+        } else if (!startDate && endDate) {
+          if (itemDate.toDateString() !== endDate.toDateString()) {
+            return false;
+          }
+        } else if (startDate && endDate) {
+          // Inclusive range filtering
+          if (itemDate < startDate || itemDate > endDate) {
+            return false;
+          }
         }
       }
 

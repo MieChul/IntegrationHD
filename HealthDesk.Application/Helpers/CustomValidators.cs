@@ -44,7 +44,8 @@ public class TimeNotInPastAttribute : ValidationAttribute
 
         if (value is string timeString)
         {
-            if (DateTime.TryParseExact(timeString, "hh:mm tt", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedTime))
+             var acceptedFormats = new[] { "h:mm tt", "hh:mm tt" };
+            if (DateTime.TryParseExact(timeString, acceptedFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedTime))
             {
                 var appointmentDateTime = dateValue.Value.Date.Add(parsedTime.TimeOfDay);
                 if (appointmentDateTime < DateTime.Now)

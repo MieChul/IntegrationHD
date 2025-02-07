@@ -315,7 +315,7 @@ export class ManagePatientComponent implements OnInit {
 
   viewPatient(patient: any): void {
     if (patient.prescriptionUrl) {
-      window.open(patient.prescriptionUrl, '_blank');
+      window.open('/assets/documents/67a0c8044e1d8c7c78aaeec8/prescription/p_1.pdf', '_blank');
     } else {
       console.warn('No prescription available for this patient.');
     }
@@ -330,7 +330,7 @@ export class ManagePatientComponent implements OnInit {
         const latestPrescription = prescriptions.data;
 
         if (latestPrescription) {
-          window.open(latestPrescription, '_blank');
+          window.open('/assets/documents/67a0c8044e1d8c7c78aaeec8/prescription/p_1.pdf', '_blank');
         } else {
           console.warn('No prescription available for this patient.');
         }

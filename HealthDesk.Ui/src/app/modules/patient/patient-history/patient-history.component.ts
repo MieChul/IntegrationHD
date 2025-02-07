@@ -39,7 +39,7 @@ export class PatientHistoryComponent implements OnInit {
   dosageForms: any = [];
   strengthUnits: any = [];
   frequencies: any = [];
-  outcomes = ['Improved', 'Stable', 'Worsened'];
+  outcomes = ['Resolved', 'Ongoing'];
   userData: any = [];
 
   diseaseFilterCtrl = new FormControl();
@@ -179,7 +179,7 @@ export class PatientHistoryComponent implements OnInit {
       next: (data: any) => {
         this.patientHistories = data?.data.map((history: any) => ({
           ...history
-        })).sort((a: any, b: any) => new Date(b.dateOfDiagnosis).getTime() - new Date(a.dateOfDiagnosis).getTime());;
+        })).sort((a: any, b: any) => new Date(b.dateOfDiagnosis).getTime() - new Date(a.dateOfDiagnosis).getTime());
         this.filteredHistories = [...this.patientHistories];
       },
       error: (error) => {

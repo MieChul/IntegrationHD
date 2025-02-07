@@ -281,21 +281,21 @@ h3,
 .h3 {
   font-size: 1.75rem;
   font-weight: 500;
-  color: darken($secondary-color);
+  color: darken($secondary-color, 5%);
 }
 
 h4,
 .h4 {
   font-size: 1.5rem;
   font-weight: 500;
-  color: lighten($primary-color);
+  color: lighten($primary-color,0%);
 }
 
 h5,
 .h5 {
   font-size: 1.25rem;
   font-weight: 400;
-  color: lighten($primary-color);
+  color: lighten($primary-color,0%);
 }
 
 h6,

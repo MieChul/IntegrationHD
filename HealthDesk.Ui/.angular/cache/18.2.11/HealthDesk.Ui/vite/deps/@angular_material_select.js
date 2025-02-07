@@ -9,7 +9,7 @@ import {
   MatSelectModule,
   MatSelectTrigger,
   matSelectAnimations
-} from "./chunk-PETZLDCR.js";
+} from "./chunk-ZJOBYH3L.js";
 import "./chunk-GLKTJXDH.js";
 import {
   MatError,
@@ -21,11 +21,11 @@ import {
 } from "./chunk-KMV2CMOS.js";
 import "./chunk-ZLWDEUY6.js";
 import "./chunk-DIOVROW2.js";
-import "./chunk-EYC6H3ZZ.js";
 import {
   MatOptgroup,
   MatOption
 } from "./chunk-25W7ATLI.js";
+import "./chunk-EYC6H3ZZ.js";
 import "./chunk-AJRZKXTD.js";
 import "./chunk-MQCZQP5K.js";
 import "./chunk-5AZMPBFP.js";

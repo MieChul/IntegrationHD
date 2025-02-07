@@ -1,11 +1,38 @@
 <div class="container">
     <h1 class="animated-heading">
-        <i class="bi bi-clipboard-data me-2"></i>Lab Data
+        <i class="bi bi-clipboard-data me-2"></i>Lab Investigation
     </h1>
 
     <div class="row mb-3 align-items-center">
-        <div class="col-md-4 col-sm-6 d-flex justify-content-start flex-wrap">
-            <button class="btn btn-primary" (click)="addLabData()">Add Lab Data</button>
+        <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
+            <form [formGroup]="filterForm" class="w-100">
+                <div class="row">
+                    <!-- Start Date -->
+                    <div class="col-md-6">
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-label>Filter by Start Date</mat-label>
+                            <input matInput [matDatepicker]="f_startDatePicker" formControlName="f_startDate" />
+                            <mat-datepicker-toggle matSuffix [for]="f_startDatePicker"></mat-datepicker-toggle>
+                            <mat-datepicker #f_startDatePicker></mat-datepicker>
+                        </mat-form-field>
+                    </div>
+                    <!-- End Date -->
+                    <div class="col-md-6">
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-label>Filter by End Date</mat-label>
+                            <input matInput [matDatepicker]="f_endDatePicker" formControlName="f_endDate" />
+                            <mat-datepicker-toggle matSuffix [for]="f_endDatePicker"></mat-datepicker-toggle>
+                            <mat-datepicker #f_endDatePicker></mat-datepicker>
+                            <mat-error *ngIf="filterForm.get('f_endDate')?.hasError('invalidDateRange')">
+                                Cannot be earlier than start date.
+                            </mat-error>
+                        </mat-form-field>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-4 col-sm-6 d-flex justify-content-end">
+            <button class="btn btn-primary" (click)="openLabModal(false)">Add Lab Data</button>
         </div>
     </div>
 
@@ -23,15 +50,15 @@
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let labData of labDataRecords">
+                <tr *ngFor="let labData of filteredLabDataRecords">
                     <td>{{ labData.laboratoryName }}</td>
                     <td>{{ labData.date | date: 'dd-MM-yyyy' }}</td>
                     <td>{{ labData.time }}</td>
                     <td>{{ labData.labTest }}</td>
                     <td>{{ labData.value }}</td>
                     <td>{{ labData.unit }}</td>
-                    <td>
-                        <button class="btn btn-warning btn-sm me-1" (click)="editLabData(labData)">
+                    <td class="text-center align-middle text-nowrap">
+                        <button class="btn btn-warning btn-sm me-1" (click)="openLabModal(true,labData)">
                             <i class="bi bi-pencil"></i>
                         </button>
                         <button class="btn btn-danger btn-sm" (click)="deleteLabData(labData)">
@@ -41,11 +68,15 @@
                 </tr>
             </tbody>
         </table>
+        <div *ngIf="filteredLabDataRecords?.length === 0" class="alert alert-info">
+            No symptoms found. Click "Add Lab Data" to get started.
+        </div>
     </div>
 </div>
 
 <!-- Add/Edit Lab Data Modal -->
-<div class="modal fade" id="labDataModal" tabindex="-1" aria-labelledby="labDataModalLabel" aria-hidden="true" #labDataModal>
+<div class="modal fade" data-bs-focus="false" id="labDataModal" tabindex="-1" aria-labelledby="labDataModalLabel"
+    aria-hidden="true" #labDataModal>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -54,35 +85,109 @@
             </div>
             <div class="modal-body">
                 <form [formGroup]="labDataForm">
-                    <div class="mb-3">
-                        <label for="laboratoryName" class="form-label label-modern shadow">Laboratory Name</label>
-                        <input type="text" id="laboratoryName" formControlName="laboratoryName" class="form-control">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Laboratory Name</mat-label>
+                                <input matInput formControlName="laboratoryName" maxlength="25" required />
+                                <mat-error
+                                    *ngIf="submitted && labDataForm.get('laboratoryName')?.hasError('required')">Name is
+                                    required</mat-error>
+                                <mat-error *ngIf="labDataForm.get('laboratoryName')?.hasError('maxlength')">Max 25
+                                    characters
+                                    allowed</mat-error>
+                                <mat-error *ngIf="labDataForm.get('laboratoryName')?.hasError('pattern')">Only
+                                    alphanumeric
+                                    characters
+                                    allowed</mat-error>
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Date</mat-label>
+                                <input matInput [matDatepicker]="dateOfOnsetPicker" formControlName="date" />
+                                <mat-datepicker-toggle matSuffix [for]="dateOfOnsetPicker"></mat-datepicker-toggle>
+                                <mat-datepicker #dateOfOnsetPicker></mat-datepicker>
+                                <mat-error *ngIf="labDataForm.get('date')?.hasError('required')">
+                                    Date is required.
+                                </mat-error>
+                                <mat-error *ngIf="labDataForm.get('date')?.hasError('futureDate')">
+                                    Date cannot be in the future.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="date" class="form-label label-modern shadow">Date</label>
-                        <input type="date" id="date" formControlName="date" class="form-control">
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Time</mat-label>
+                                <input matInput [ngxMatTimepicker]="timePickertimeOfOnset" formControlName="time"
+                                    placeholder="Time (HH:mm)" />
+                                <ngx-mat-timepicker-toggle [for]="timePickertimeOfOnset"
+                                    matSuffix></ngx-mat-timepicker-toggle>
+                                <ngx-mat-timepicker #timePickertimeOfOnset></ngx-mat-timepicker>
+                                <mat-error *ngIf="submitted && labDataForm.get('time')?.hasError('required')">Time
+                                    required</mat-error>
+                                <mat-error *ngIf="submitted && labDataForm.get('time')?.hasError('pattern')">Invalid
+                                    Time
+                                    format. Use HH:mm.</mat-error>
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Lab Test</mat-label>
+                                <mat-select formControlName="labTest" required>
+                                    <mat-option>
+                                        <ngx-mat-select-search [formControl]="diseaseFilterCtrl"
+                                            placeholderLabel="Search Lab Test"></ngx-mat-select-search>
+                                    </mat-option>
+                                    <mat-option *ngFor="let disease of filteredDiseases | async" [value]="disease">
+                                        {{ disease }}
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="labDataForm.get('labTest')?.hasError('required')">Lab Test is
+                                    required</mat-error>
+                            </mat-form-field>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="time" class="form-label label-modern shadow">Time</label>
-                        <input type="time" id="time" formControlName="time" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label for="labTest" class="form-label label-modern shadow">Lab Test</label>
-                        <input type="text" id="labTest" formControlName="labTest" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label for="value" class="form-label label-modern shadow">Value</label>
-                        <input type="text" id="value" formControlName="value" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label for="unit" class="form-label label-modern shadow">Unit</label>
-                        <input type="text" id="unit" formControlName="unit" class="form-control">
+                    <div class="row">
+                        <!-- Value -->
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Value</mat-label>
+                                <input matInput formControlName="value" maxlength="25" required />
+                                <mat-error *ngIf="labDataForm.get('value')?.hasError('required')">
+                                    value is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Strength Unit -->
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Unit</mat-label>
+                                <mat-select formControlName="unit" required>
+                                    <mat-option>
+                                        <ngx-mat-select-search [formControl]="strengthUnitFilterCtrl"
+                                            placeholderLabel="Search strength unit"></ngx-mat-select-search>
+                                    </mat-option>
+                                    <mat-option *ngFor="let unit of filteredStrengthUnits | async" [value]="unit">
+                                        {{ unit }}
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="labDataForm.get('unit')?.hasError('required')">
+                                    Strength unit is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" (click)="saveLabData()">{{ isEditMode ? 'Save Changes' : 'Add Lab Data' }}</button>
+                <button type="button" class="btn btn-primary" (click)="saveLabData()">{{ isEditMode ? 'Save Changes' :
+                    'Add Lab Data' }}</button>
             </div>
         </div>
     </div>

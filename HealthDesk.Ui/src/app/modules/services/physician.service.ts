@@ -129,4 +129,36 @@ export class PhysicianService {
       params: { clinicId, date }
     });
   }
+
+  saveMultipleAppointments(
+    status: string,
+    date: Date | null,
+    time: string | null,
+    reason: string | null,
+    appointments: any[]
+  ): Observable<any> {
+    const payload = {
+      status: status,
+      date: date ? date.toISOString() : null, // Convert date to ISO format if provided
+      time: time || null,
+      reason: reason || null,
+      dtos: appointments.map(a => ({
+        id: a.id,
+        patientId: a.patientId,
+        physicianId: a.physicianId,
+        date: a.date,
+        time: a.time,
+        status: status,
+        reason: reason || a.reason,
+        clinicName: a.clinicName,
+        physicianName: a.physicianName,
+        patientName: a.patientName,
+        mobile: a.mobile,
+        slotId: a.slotId,
+        slotName: a.slotName
+      }))
+    };
+
+    return this.http.post<any>(`${this.apiUrl}/multi-appointments`, payload);
+  }
 }

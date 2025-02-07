@@ -1,15 +1,12 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { Modal } from 'bootstrap';
-
-interface PatientSymptom {
-  dateOfOnset: Date;
-  timeOfOnset: string;
-  symptomType: string;
-  description: string;
-  severity: string;
-  comment: string;
-}
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import * as bootstrap from 'bootstrap';
+import { FilteringService } from '../../../shared/services/filter.service';
+import { PatientService } from '../../services/patient.service';
+import { AccountService } from '../../services/account.service';
+import { DatabaseService } from '../../../shared/services/database.service';
+import { SortingService } from '../../../shared/services/sorting.service';
+import { map, Observable, startWith } from 'rxjs';
 
 @Component({
   selector: 'app-patient-symptoms',
@@ -17,129 +14,221 @@ interface PatientSymptom {
   styleUrls: ['./patient-symptoms.component.scss']
 })
 export class PatientSymptomsComponent implements OnInit {
-  symptomsRecords: PatientSymptom[] = [];
+  symptomsRecords: any[] = [];
   symptomForm!: FormGroup;
   isEditMode: boolean = false;
-  selectedSymptom!: PatientSymptom;
-  editIndex: number | null = null;
-
-  symptomTypes: string[] = ['Fever', 'Cough', 'Fatigue', 'Shortness of Breath', 'Headache'];
+  selectedSymptom!: any;
+  symptoms: string[] = [];
+  sortDirection: { [key: string]: 'asc' | 'desc' } = {};
   severityLevels: string[] = ['Mild', 'Moderate', 'Severe'];
+  userData: any;
+  filterForm!: FormGroup;
+  submitted: boolean = true;
+
+  symptomFilterCtrl = new FormControl();
+  filteredSymptoms!: Observable<string[]>;
+  filteredSymptomsData: any = [];
+
 
   @ViewChild('symptomModal') symptomModal!: ElementRef;
 
-  constructor(private fb: FormBuilder) {}
+  constructor(
+    private fb: FormBuilder,
+    private sortingService: SortingService,
+    private filteringService: FilteringService,
+    private patientService: PatientService,
+    private accountService: AccountService,
+    private databaseService: DatabaseService
+  ) { }
 
   ngOnInit(): void {
-    this.symptomForm = this.fb.group({
-      dateOfOnset: [''],
-      timeOfOnset: [''],
-      symptomType: [''],
-      description: [''],
-      severity: [''],
-      comment: ['']
+    this.initializeForms();
+
+    this.accountService.getUserData().subscribe({
+      next: async (data) => {
+        this.userData = data;
+        this.symptoms = await this.databaseService.getSymptoms();
+
+        // Load symptoms
+        await this.loadSymptoms();
+        await this.initializeSearch();
+
+      },
+      error: (err) => console.error('Error fetching user data:', err)
     });
-
-    this.loadDummyData();
   }
 
-  loadDummyData(): void {
-    this.symptomsRecords = [
+  initializeForms(): void {
+    this.symptomForm = this.fb.group({
+      id: this.fb.control(''),
+      dateOfOnset: this.fb.control('', [
+        Validators.required,
+        this.futureDateValidator
+      ]),
+      endDate: this.fb.control('', this.futureDateValidator),
+      timeOfOnset: this.fb.control('', Validators.required),
+      symptomType: this.fb.control('', Validators.required),
+      description: this.fb.control('', Validators.maxLength(100)),
+      severity: this.fb.control('', Validators.required),
+      comment: this.fb.control('', Validators.maxLength(100))
+    },
+      { validators: this.dateRangeValidator, updateOn: 'change' });
+
+    this.filterForm = this.fb.group(
       {
-        dateOfOnset: new Date('2024-08-01'),
-        timeOfOnset: '08:00 AM',
-        symptomType: 'Fever',
-        description: 'High temperature, chills',
-        severity: 'Moderate',
-        comment: 'Started suddenly after travel'
-      },
-      {
-        dateOfOnset: new Date('2024-07-20'),
-        timeOfOnset: '10:30 AM',
-        symptomType: 'Cough',
-        description: 'Persistent dry cough',
-        severity: 'Mild',
-        comment: 'No other associated symptoms'
-      },
-      {
-        dateOfOnset: new Date('2024-07-15'),
-        timeOfOnset: '02:00 PM',
-        symptomType: 'Fatigue',
-        description: 'Feeling of exhaustion',
-        severity: 'Severe',
-        comment: 'Worsening over the last few days'
-      },
-      {
-        dateOfOnset: new Date('2024-07-10'),
-        timeOfOnset: '09:00 AM',
-        symptomType: 'Shortness of Breath',
-        description: 'Difficulty breathing, especially at night',
-        severity: 'Severe',
-        comment: 'Associated with chest pain'
-      },
-      {
-        dateOfOnset: new Date('2024-07-05'),
-        timeOfOnset: '11:00 AM',
-        symptomType: 'Headache',
-        description: 'Throbbing pain in the temples',
-        severity: 'Moderate',
-        comment: 'Occurs in the afternoon and evening'
+        f_startDate: this.fb.control(null),
+        f_endDate: this.fb.control(null)
       }
-    ];
+    );
+
+    this.filterForm.valueChanges.subscribe(() => this.applyDateFilter());
   }
 
-  addSymptom(): void {
-    this.symptomForm.reset();
-    this.isEditMode = false;
-    this.editIndex = null;
-    const modal = new Modal(this.symptomModal.nativeElement);
+  initializeSearch(): void {
+    this.filteredSymptoms = this.symptomFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.symptoms))
+    );
+
+  }
+
+  filterOptions(search: string, options: string[]): string[] {
+    const filterValue = search.toLowerCase();
+    return options.filter(option => option.toLowerCase().includes(filterValue));
+  }
+
+  loadSymptoms(): void {
+    if (!this.userData?.id) {
+      console.error('User ID is missing');
+      return;
+    }
+
+    this.patientService.getSymptoms(this.userData.id).subscribe({
+      next: (data: any) => {
+        this.symptomsRecords = data?.data.map((symptomsData: any) => ({
+          ...symptomsData
+        })).sort((a: any, b: any) => new Date(b.dateOfOnset).getTime() - new Date(a.dateOfOnset).getTime());;
+        this.filteredSymptomsData = [...this.symptomsRecords];
+      },
+      error: (error) => {
+        console.error('Error loading symptom:', error);
+      }
+    });
+  }
+
+
+  openSymptomModal(isEditMode: boolean, symptomRecord: any = null): void {
+    this.isEditMode = isEditMode;
+
+    if (isEditMode && symptomRecord) {
+      this.selectedSymptom = symptomRecord;
+      this.symptomForm.patchValue(symptomRecord);
+    } else {
+      this.selectedSymptom = null;
+      this.symptomForm.reset();
+    }
+
+    const modal = new bootstrap.Modal(this.symptomModal.nativeElement);
     modal.show();
   }
 
   saveSymptom(): void {
-    const formData = this.symptomForm.value;
+    this.symptomForm.markAllAsTouched();
+    if (this.symptomForm.invalid || !this.userData.id) return;
 
-    if (this.isEditMode && this.editIndex !== null) {
-      // Update existing symptom
-      this.symptomsRecords[this.editIndex] = formData;
+    if (this.isEditMode) {
+      this.patientService.saveSymptom(this.userData.id, this.symptomForm.value).subscribe({
+        next: (response: any) => {
+          this.loadSymptoms();
+        },
+        error: (error: any) => {
+          console.error('Error updating symptoms:', error);
+        },
+      });
     } else {
-      // Add new symptom
-      this.symptomsRecords.push(formData);
+      // Add new medical symptom
+      this.patientService
+        .saveSymptom(this.userData.id, this.symptomForm.value)
+        .subscribe({
+          next: (response) => {
+            this.loadSymptoms();
+          },
+          error: (error) => {
+            console.error('Error adding symptoms:', error);
+          },
+        });
     }
 
-    const modal = Modal.getInstance(this.symptomModal.nativeElement);
-    if (modal) {
-      modal.hide();
-    }
+    bootstrap.Modal.getInstance(this.symptomModal.nativeElement)?.hide();
+
   }
 
-  editSymptom(symptom: PatientSymptom): void {
-    this.isEditMode = true;
-    this.editIndex = this.symptomsRecords.indexOf(symptom);
-    this.symptomForm.patchValue(symptom);
-    const modal = new Modal(this.symptomModal.nativeElement);
-    modal.show();
-  }
 
-  deleteSymptom(symptom: PatientSymptom): void {
-    const index = this.symptomsRecords.indexOf(symptom);
-    if (index > -1) {
-      this.symptomsRecords.splice(index, 1);
-    }
-  }
+  deleteSymptom(symptom: any): void {
+    if (!this.userData.id || !symptom.id) return;
 
-  sortTable(column: keyof PatientSymptom): void {
-    this.symptomsRecords.sort((a, b) => {
-      const aValue = a[column] ?? ''; // Use nullish coalescing to default to an empty string if undefined
-      const bValue = b[column] ?? ''; // Same for b
-
-      if (aValue < bValue) {
-        return -1;
-      } else if (aValue > bValue) {
-        return 1;
-      } else {
-        return 0;
+    this.patientService.deleteSymptom(this.userData.id, symptom.id).subscribe({
+      next: (response) => {
+        console.log(response.message); // Success message from API
+        this.loadSymptoms(); // Reload the list after successful deletion
+      },
+      error: (error) => {
+        console.error('Error deleting symptom:', error); // Handle errors
       }
     });
+  }
+
+  applyDateFilter(): void {
+    const { f_startDate, f_endDate } = this.filterForm.value;
+
+    // Apply the date filter using the filtering service
+    this.filteredSymptomsData = this.filteringService.filter(
+      this.symptomsRecords,
+      {},
+      [
+        {
+          field: 'dateOfOnset',
+          range: [f_startDate || null, f_endDate || null]
+        }
+      ]
+    );
+  }
+
+  sortTable(column: string): void {
+    this.sortDirection[column] = this.sortDirection[column] === 'asc' ? 'desc' : 'asc';
+    this.filteredSymptomsData = this.sortingService.sort(this.filteredSymptomsData, column, this.sortDirection[column]);
+  }
+
+  futureDateValidator(control: any): { [key: string]: boolean } | null {
+    const currentDate = new Date();
+    if (new Date(control.value) > currentDate) {
+      return { futureDate: true };
+    }
+    return null;
+  }
+
+  dateRangeValidator(group: FormGroup): { [key: string]: any } | null {
+    const startDateControl = group.get('dateOfOnset');
+    const endDateControl = group.get('endDate');
+    if (!endDateControl?.value) return null;
+
+    if (startDateControl && endDateControl) {
+      const startDate = new Date(startDateControl.value);
+      const endDate = new Date(endDateControl.value);
+
+      if (startDate && endDate && startDate > endDate) {
+        endDateControl.setErrors({ invalidDateRange: true });
+        startDateControl.setErrors({ invalidDateRange: true });
+        return { invalidDateRange: true };
+      } else {
+        if (endDateControl.hasError('invalidDateRange')) {
+          endDateControl.setErrors(null);
+        }
+        if (startDateControl.hasError('invalidDateRange')) {
+          startDateControl.setErrors(null);
+        }
+      }
+    }
+    return null;
   }
 }

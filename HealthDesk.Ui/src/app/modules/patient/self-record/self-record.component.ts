@@ -1,12 +1,12 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { Modal } from 'bootstrap';
-
-interface SelfRecord {
-  date: Date;
-  type: string;
-  description: string;
-}
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import * as bootstrap from 'bootstrap';
+import { AccountService } from '../../services/account.service';
+import { DatabaseService } from '../../../shared/services/database.service';
+import { PatientService } from '../../services/patient.service';
+import { SortingService } from '../../../shared/services/sorting.service';
+import { FilteringService } from '../../../shared/services/filter.service';
+import { map, Observable, startWith } from 'rxjs';
 
 @Component({
   selector: 'app-self-record',
@@ -14,69 +14,192 @@ interface SelfRecord {
   styleUrls: ['./self-record.component.scss']
 })
 export class SelfRecordComponent implements OnInit {
-  selfRecords: SelfRecord[] = [];
+  selfRecords: any = [];
   selfRecordForm!: FormGroup;
   isEditMode: boolean = false;
-  selectedRecord!: SelfRecord;
-  editIndex: number | null = null;
+  selectedRecord!: any;
+  userData: any;
+  sortDirection: { [key: string]: 'asc' | 'desc' } = {};
+  filteredSelfRecords: any;
+  units: any = [];
+  filteredUnits!: Observable<string[]>;
+  unitFilterCtrl = new FormControl();
+  submitted: boolean = false;
+  filterForm!: FormGroup<{
+    startDate: FormControl<string | null>;
+    endDate: FormControl<string | null>;
+  }>;
 
   @ViewChild('selfRecordModal') selfRecordModal!: ElementRef;
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private accountService: AccountService, private databaseService: DatabaseService, private patientService: PatientService, private sortingService: SortingService, private filteringService: FilteringService) { }
+
 
   ngOnInit(): void {
-    this.selfRecordForm = this.fb.group({
-      date: [''],
-      type: [''],
-      description: ['']
+    this.initializeForm();
+    this.accountService.getUserData().subscribe({
+      next: async (data) => {
+        this.userData = data;
+
+        this.units = await this.databaseService.getStrengths();
+
+        await this.loadSelfRecords();
+        await this.initializeSearch();
+      },
+      error: (err) => console.error('Error fetching user data:', err)
     });
-    this.loadDummyData();
   }
 
-  loadDummyData(): void {
-    this.selfRecords = [
-      { date: new Date('2024-08-01'), type: 'Blood Pressure', description: '120/80 mmHg' },
-      { date: new Date('2024-07-15'), type: 'Weight', description: '70 kg' }
-    ];
+  initializeForm() {
+    this.selfRecordForm = this.fb.group({
+      id: this.fb.control(''),
+      date: this.fb.control('', [Validators.required, this.futureDateValidator]),
+      type: this.fb.control('', [Validators.required, Validators.max(50)]),
+      value: this.fb.control('', [Validators.required, Validators.min(0)]),
+      unit: this.fb.control('', Validators.required)
+    });
+
+    this.filterForm = this.fb.group(
+      {
+        startDate: this.fb.control('', Validators.required),
+        endDate: this.fb.control('', Validators.required),
+      },
+      { updateOn: 'change', validators: this.dateRangeValidator }
+    );
+
+    this.filterForm.valueChanges.subscribe(() => {
+      this.applyDateFilter();
+    });
   }
+
+  futureDateValidator(control: any): { [key: string]: boolean } | null {
+    const currentDate = new Date();
+    if (new Date(control.value) > currentDate) {
+      return { futureDate: true };
+    }
+    return null;
+  }
+
+  dateRangeValidator(group: FormGroup): void {
+    const startDateControl = group.get('startDate');
+    const endDateControl = group.get('endDate');
+
+    if (startDateControl && endDateControl) {
+      const startDate = startDateControl.value;
+      const endDate = endDateControl.value;
+
+      if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+        endDateControl.setErrors({ invalidDateRange: true });
+      } else {
+        endDateControl.setErrors(null); // Clear the error if valid
+      }
+    }
+  }
+
+  loadSelfRecords(): void {
+    this.patientService.getSelfRecords(this.userData.id).subscribe({
+      next: (selfRecord: any) => {
+        this.selfRecords = selfRecord?.data.map((records: any) => ({
+          ...records
+        })).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        this.filteredSelfRecords = [...this.selfRecords];
+      }
+    });
+  }
+
+  initializeSearch() {
+    this.filteredUnits = this.unitFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search: any) => this.filterOptions(search, this.units))
+    );
+  }
+
+  filterOptions(search: string, options: string[]): string[] {
+    const filterValue = search.toLowerCase();
+    return options.filter(option => option.toLowerCase().includes(filterValue));
+  }
+
 
   addSelfRecord(): void {
     this.selfRecordForm.reset();
     this.isEditMode = false;
-    this.editIndex = null;
-    const modal = new Modal(this.selfRecordModal.nativeElement);
+    const modal = new bootstrap.Modal(document.getElementById('selfRecordModal')!);
     modal.show();
   }
 
   saveSelfRecord(): void {
-    const formData = this.selfRecordForm.value;
+    this.selfRecordForm.markAllAsTouched();
+    if (this.selfRecordForm.invalid) return;
 
-    if (this.isEditMode && this.editIndex !== null) {
-      // Update existing record
-      this.selfRecords[this.editIndex] = formData;
+    const selfRecordata = this.selfRecordForm.value;
+
+    if (this.isEditMode) {
+      this.patientService
+        .saveSelfRecord(this.userData.id, selfRecordata)
+        .subscribe({
+          next: (response) => {
+            this.loadSelfRecords();
+          },
+          error: (error) => {
+            console.error('Error updating  record:', error);
+          },
+        });
     } else {
-      // Add new record
-      this.selfRecords.push(formData);
+
+      this.patientService
+        .saveSelfRecord(this.userData.id, selfRecordata)
+        .subscribe({
+          next: (response) => {
+            this.loadSelfRecords();
+          },
+          error: (error) => {
+            console.error('Error adding reord:', error);
+          },
+        });
     }
 
-    const modal = Modal.getInstance(this.selfRecordModal.nativeElement);
-    if (modal) {
-      modal.hide();
-    }
+    bootstrap.Modal.getInstance(document.getElementById('selfRecordModal')!)?.hide();
   }
 
-  editSelfRecord(record: SelfRecord): void {
+  editSelfRecord(record: any): void {
     this.isEditMode = true;
-    this.editIndex = this.selfRecords.indexOf(record);
     this.selfRecordForm.patchValue(record);
-    const modal = new Modal(this.selfRecordModal.nativeElement);
+    const modal = new bootstrap.Modal(document.getElementById('selfRecordModal')!);
     modal.show();
   }
 
-  deleteSelfRecord(record: SelfRecord): void {
-    const index = this.selfRecords.indexOf(record);
-    if (index > -1) {
-      this.selfRecords.splice(index, 1);
-    }
+  deleteSelfRecord(record: any): void {
+    this.patientService.deleteSelfRecord(this.userData.id, record.id).subscribe({
+      next: (response) => {
+        this.loadSelfRecords(); // Reload the list after successful deletion
+      },
+      error: (error) => {
+        console.error('Error deleting clinic:', error); // Handle errors
+      }
+    });
+  }
+
+  sortTable(column: string): void {
+    // Toggle the sort direction
+    this.sortDirection[column] = this.sortDirection[column] === 'asc' ? 'desc' : 'asc';
+    const direction = this.sortDirection[column];
+
+    // Use the sorting service to sort the data
+    this.filteredSelfRecords = this.sortingService.sort(this.filteredSelfRecords, column, direction);
+  }
+
+  applyDateFilter(): void {
+    const { startDate, endDate } = this.filterForm.value;
+
+    this.filteredSelfRecords = this.filteringService.filter(
+      this.selfRecords,
+      {}, // Pass an empty object for generic filters as no other filters are applied
+      [
+        {
+          field: 'date',
+          range: [startDate || null, endDate || null], // Pass null for missing dates
+        },
+      ]
+    );
   }
 }

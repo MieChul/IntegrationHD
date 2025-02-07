@@ -1,6 +1,7 @@
 using HealthDesk.Application;
 using HealthDesk.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace HealthDesk.API.Controllers
 {
@@ -379,5 +380,20 @@ namespace HealthDesk.API.Controllers
             return Ok(new { Success = true, Data = slots });
         }
 
+        [HttpPost("multi-appointments")]
+        public async Task<IActionResult> SaveMultipleAppointment([FromBody] SaveMultipleAppointmentsRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new
+                {
+                    Success = false,
+                    Message = "Invalid input."
+                });
+            }
+
+            await _physicianService.SaveMultipleAppointment(request.Status, request.Date, request.Time, request.Reason, request.Dtos);
+            return Ok(new { Success = true, Message = "Appointments saved successfully." });
+        }
     }
 }

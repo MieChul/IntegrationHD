@@ -204,6 +204,14 @@ public class ReminderDto
     public string Instruction { get; set; }
 }
 
+public class SaveMultipleAppointmentsRequest
+{
+    public string Status { get; set; } = string.Empty;
+    public string? Time { get; set; }
+    public string? Reason { get; set; }
+    public DateTime? Date { get; set; }
+    public List<AppointmentDto> Dtos { get; set; } = new List<AppointmentDto>();
+}
 public class ProfileDTO
 {
     public string? Id { get; set; }

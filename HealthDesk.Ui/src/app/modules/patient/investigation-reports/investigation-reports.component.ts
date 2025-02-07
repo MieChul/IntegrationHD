@@ -3,8 +3,8 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { Modal } from 'bootstrap';
 
 interface InvestigationReport {
-  dateOfAssessment: Date;
-  timeOfAssessment: string;
+  date: Date;
+  time: string;
   typeOfAssessment: string;
   assessmentParameters: string;
   results: string;
@@ -24,6 +24,8 @@ export class InvestigationReportsComponent implements OnInit {
   selectedReport!: InvestigationReport;
   editIndex: number | null = null;
   selectedFile!: File | null;
+  submitted:boolean = false;
+  filterForm!: FormGroup;
 
   assessmentTypes: string[] = ['Blood Test', 'X-ray', 'MRI', 'CT Scan', 'Ultrasound'];
 
@@ -33,65 +35,25 @@ export class InvestigationReportsComponent implements OnInit {
 
   ngOnInit(): void {
     this.reportForm = this.fb.group({
-      dateOfAssessment: [''],
-      timeOfAssessment: [''],
+      date: [''],
+      time: [''],
       typeOfAssessment: [''],
       assessmentParameters: [''],
       results: [''],
       comment: ['']
     });
 
+    this.filterForm = this.fb.group(
+      {
+        f_startDate: this.fb.control(null),
+        f_endDate: this.fb.control(null)
+      }
+    );
+
     this.loadDummyData();
   }
 
   loadDummyData(): void {
-    this.investigationReports = [
-      {
-        dateOfAssessment: new Date('2024-08-01'),
-        timeOfAssessment: '10:30 AM',
-        typeOfAssessment: 'Blood Test',
-        assessmentParameters: 'Hemoglobin, WBC, Platelets',
-        results: 'Normal',
-        comment: 'No issues found',
-        reportFileName: '1_investigation.pdf'
-      },
-      {
-        dateOfAssessment: new Date('2024-07-20'),
-        timeOfAssessment: '09:00 AM',
-        typeOfAssessment: 'X-ray',
-        assessmentParameters: 'Chest X-ray',
-        results: 'No abnormalities detected',
-        comment: 'Normal chest X-ray',
-        reportFileName: '2_investigation.pdf'
-      },
-      {
-        dateOfAssessment: new Date('2024-07-15'),
-        timeOfAssessment: '08:00 AM',
-        typeOfAssessment: 'MRI',
-        assessmentParameters: 'Brain MRI',
-        results: 'No signs of stroke',
-        comment: 'Brain MRI is clear',
-        reportFileName: '3_investigation.pdf'
-      },
-      {
-        dateOfAssessment: new Date('2024-07-10'),
-        timeOfAssessment: '02:00 PM',
-        typeOfAssessment: 'CT Scan',
-        assessmentParameters: 'Abdomen CT Scan',
-        results: 'Normal',
-        comment: 'No abnormalities detected',
-        reportFileName: '4_investigation.pdf'
-      },
-      {
-        dateOfAssessment: new Date('2024-07-05'),
-        timeOfAssessment: '11:30 AM',
-        typeOfAssessment: 'Ultrasound',
-        assessmentParameters: 'Pelvic Ultrasound',
-        results: 'No issues detected',
-        comment: 'Normal ultrasound',
-        reportFileName: '5_investigation.pdf'
-      }
-    ];
   }
 
   addReport(): void {

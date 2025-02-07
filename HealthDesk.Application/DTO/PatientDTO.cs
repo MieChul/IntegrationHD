@@ -117,37 +117,79 @@ public class AppointmentDto
 
 public class SelfRecordDto
 {
-    public string Id { get; set; }
+    public string? Id { get; set; }
+
+    [Required(ErrorMessage = "Date is required.")]
+    [DataType(DataType.Date)]
     public DateTime Date { get; set; }
-    public string RecordType { get; set; }
-    public string Description { get; set; }
+
+    [Required(ErrorMessage = "Type is required.")]
+    public string Type { get; set; }
+
+    [Required(ErrorMessage = "Value is required.")]
+    [Range(0, double.MaxValue, ErrorMessage = "Value must be a positive number.")]
+    public double Value { get; set; }
+
+    [Required(ErrorMessage = "Unit is required.")]
+    [StringLength(50, ErrorMessage = "Uit must not exceed 50 characters.")]
+    public string Unit { get; set; }
 }
 
 public class SymptomDto
 {
-    public string Id { get; set; }
-    public DateTime Date { get; set; }
-    public string Time { get; set; }
+    public string? Id { get; set; }
+
+    [Required(ErrorMessage = "Date is required.")]
+    [DataType(DataType.Date)]
+    public DateTime DateOfOnset { get; set; }
+
+    [Required(ErrorMessage = "TimeOfOnset is required.")]
+    public string TimeOfOnset { get; set; }
+
+
+    [Required(ErrorMessage = "Symptom is required.")]
     public string SymptomType { get; set; }
-    public string Description { get; set; }
+
+    [StringLength(100, ErrorMessage = "Uit must not exceed 100 characters.")]
+    public string? Description { get; set; }
+
+
+    [Required(ErrorMessage = "Severity is required.")]
     public string Severity { get; set; }
-    public string Comment { get; set; }
+
+    [StringLength(100, ErrorMessage = "Unit must not exceed 100 characters.")]
+    public string? Comment { get; set; }
+
+    public DateTime? EndDate { get; set; }
 }
 
 public class LabInvestigationDto
 {
-    public string Id { get; set; }
-    public string Name { get; set; }
+    public string? Id { get; set; }
+
+    [Required(ErrorMessage = "Name is required.")]
+    public string LaboratoryName { get; set; }
+
+    [Required(ErrorMessage = "Date is required.")]
+    [DataType(DataType.Date)]
     public DateTime Date { get; set; }
+
+    [Required(ErrorMessage = "Time is required.")]
     public string Time { get; set; }
-    public string Test { get; set; }
+
+    [Required(ErrorMessage = "Test is required.")]
+    public string LabTest { get; set; }
+
+    [Required(ErrorMessage = "Value is required.")]
     public string Value { get; set; }
+
+    [Required(ErrorMessage = "Unit is required.")]
     public string Unit { get; set; }
 }
 
 public class ReportDto
 {
-    public string Id { get; set; }
+    public string? Id { get; set; }
     public DateTime Date { get; set; }
     public string Time { get; set; }
     public string Type { get; set; }
@@ -159,12 +201,19 @@ public class ReportDto
 
 public class ImmunizationDto
 {
-    public string Id { get; set; }
+    public string? Id { get; set; }
+    [Required(ErrorMessage = "Date is required.")]
+    [DataType(DataType.Date)]
     public DateTime Date { get; set; }
+    [Required(ErrorMessage = "Vaccine is required.")]
     public string Vaccine { get; set; }
+    [Required(ErrorMessage = "Disease is required.")]
     public string Disease { get; set; }
+    [Required(ErrorMessage = "Route is required.")]
     public string Route { get; set; }
-    public string Dosage { get; set; }
+    [Required(ErrorMessage = "Dosage is required.")]
+    public string DosageForm { get; set; }
+    [Required(ErrorMessage = "Details is required.")]
     public string Details { get; set; }
 }
 

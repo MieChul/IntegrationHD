@@ -5,22 +5,14 @@
     <!-- User Details Section -->
     <div class="row justify-content-center">
         <div class="col card shadow-sm fade-in bg-dark">
-            <div class="card-header text-center"><h6>User Info</h6></div>
+            <div class="card-header text-center"><h6>BMI</h6></div>
             <div class="card-body">
                 <div class="row">
                     <div class="col mb-3">
-                        <h6><i class="bi bi-gender-ambiguous me-2"></i>Gender: <span>{{ gender }}</span></h6>
+                        <h6><i class="bi bi-calendar me-2"></i>Age: <span>42</span></h6>
                     </div>
                     <div class="col mb-3">
-                        <h6><i class="bi bi-calendar me-2"></i>Age: <span>{{ age }}</span></h6>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col mb-3">
-                        <h6><i class="bi bi-rulers me-2"></i>Height: <span>{{ height }} cm</span></h6>
-                    </div>
-                    <div class="col mb-3">
-                        <h6><i class="bi bi-weight me-2"></i>Weight: <span>{{ weight }} kg</span></h6>
+                        <h6><i class="bi bi-gender-ambiguous me-2"></i>Gender: <span>Male</span></h6>
                     </div>
                 </div>
                 <div class="row">
@@ -31,6 +23,14 @@
                         <h6><i class="bi bi-activity me-2"></i>Lifestyle: <span>{{ lifestyle }}</span></h6>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col mb-3">
+                        <h6><i class="bi bi-rulers me-2"></i>Height: <span>{{ height }} cm</span></h6>
+                    </div>
+                    <div class="col mb-3">
+                        <h6><i class="bi bi-weight me-2"></i>Weight: <span>{{ weight }} kg</span></h6>
+                    </div>
+                </div>             
             </div>
             <div class="card-footer">
                 <div class="text-center">
@@ -82,7 +82,7 @@
                     <th>Calories Burnt</th>
                     <th>Total Burnt</th>
                     <th>Total Gain/Loss</th>
-                    <th>Comment</th>
+                    <th>Calorie Deficit/Excess Feedback</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -105,7 +105,7 @@
                         {{ activity.totalGainLoss > 0 ? '+' : '' }}{{ activity.totalGainLoss }}
                     </td>
                     <td>{{ activity.comment }}</td>
-                    <td>
+                    <td class="text-center align-middle text-nowrap">
                         <button class="btn btn-warning btn-sm me-1" (click)="editActivity(activity)">
                             <i class="bi bi-pencil"></i>
                         </button>
@@ -130,39 +130,53 @@
             </div>
             <div class="modal-body">
                 <form [formGroup]="editForm">
-                    <div class="mb-3">
-                        <label for="weight" class="form-label label-modern shadow"><i class="bi bi-weight"></i> Weight
-                            (kg)</label>
-                        <input type="number" id="weight" formControlName="weight" class="form-control">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Height</mat-label>
+                                <input matInput formControlName="height" maxlength="25" required />
+                                <mat-error *ngIf="editForm.get('height')?.hasError('required')">
+                                   Height is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Weight</mat-label>
+                                <input matInput formControlName="weight" maxlength="25" required />
+                                <mat-error *ngIf="editForm.get('weight')?.hasError('required')">
+                                    Weight is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="height" class="form-label label-modern shadow"><i class="bi bi-rulers"></i> Height
-                            (cm)</label>
-                        <input type="number" id="height" formControlName="height" class="form-control">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Age</mat-label>
+                                <input matInput formControlName="age" maxlength="25" required />
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Gender</mat-label>
+                                <input matInput formControlName="gender" maxlength="25" required />
+                            </mat-form-field>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="age" class="form-label label-modern shadow"><i class="bi bi-calendar"></i>
-                            Age</label>
-                        <input type="number" id="age" formControlName="age" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label for="gender" class="form-label label-modern shadow"><i
-                                class="bi bi-gender-ambiguous"></i> Gender</label>
-                        <select id="gender" formControlName="gender" class="form-select">
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="occupation" class="form-label label-modern shadow"><i class="bi bi-briefcase"></i>
-                            Occupation</label>
-                        <input type="text" id="occupation" formControlName="occupation" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label for="lifestyle" class="form-label label-modern shadow"><i class="bi bi-activity"></i>
-                            Lifestyle</label>
-                        <input type="text" id="lifestyle" formControlName="lifestyle" class="form-control">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Occupation</mat-label>
+                                <input matInput formControlName="occupation" maxlength="25" required />
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Lifestyle</mat-label>
+                                <input matInput formControlName="lifestyle" maxlength="25" required />
+                            </mat-form-field>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -173,13 +187,14 @@
         </div>
     </div>
 </div>
+
 <!-- Activity Modal -->
 <div class="modal fade" id="activityModal" tabindex="-1" aria-labelledby="activityModalLabel" aria-hidden="true"
     #activityModal>
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="activityModalLabel">{{ isEditMode ? 'Edit Daily Activity' : 'Add Daily Activity' }}</h5>
+                <h5 class="modal-title" id="activityModalLabel">{{ isEditMode ? 'Edit Meal/Physical Activity' : 'Add Meal/Physical Activity' }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -189,6 +204,20 @@
                         <input type="date" id="date" formControlName="date" class="form-control">
                     </div>
 
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Date</mat-label>
+                                <input matInput [matDatepicker]="dateOfOnsetPicker" formControlName="date" />
+                                <mat-datepicker-toggle matSuffix [for]="dateOfOnsetPicker"></mat-datepicker-toggle>
+                                <mat-datepicker #dateOfOnsetPicker></mat-datepicker>
+                                <mat-error *ngIf="activityForm.get('date')?.hasError('required')">
+                                    Date of Onset is required.
+                                </mat-error>
+                                <mat-error *ngIf="activityForm.get('date')?.hasError('futureDate')">
+                                    Date of Onset cannot be in the future.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
                     <!-- Calories Consumed Section -->
                     <div class="mb-3">
                         <h5>Calories Consumed</h5>

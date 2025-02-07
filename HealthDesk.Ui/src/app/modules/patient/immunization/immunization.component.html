@@ -2,10 +2,37 @@
     <h1 class="animated-heading">
         <i class="bi bi-shield-virus me-2"></i>Immunization Records
     </h1>
-
+    <!-- Date Filter -->
     <div class="row mb-3 align-items-center">
-        <div class="col-md-4 col-sm-6 d-flex justify-content-start flex-wrap">
-            <button class="btn btn-primary" (click)="addImmunization()">Add Immunization</button>
+        <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
+            <form [formGroup]="filterForm" class="w-100">
+                <div class="row">
+                    <!-- Start Date -->
+                    <div class="col-md-6">
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-label>Filter by Start Date</mat-label>
+                            <input matInput [matDatepicker]="f_startDatePicker" formControlName="f_startDate" />
+                            <mat-datepicker-toggle matSuffix [for]="f_startDatePicker"></mat-datepicker-toggle>
+                            <mat-datepicker #f_startDatePicker></mat-datepicker>
+                        </mat-form-field>
+                    </div>
+                    <!-- End Date -->
+                    <div class="col-md-6">
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-label>Filter by End Date</mat-label>
+                            <input matInput [matDatepicker]="f_endDatePicker" formControlName="f_endDate" />
+                            <mat-datepicker-toggle matSuffix [for]="f_endDatePicker"></mat-datepicker-toggle>
+                            <mat-datepicker #f_endDatePicker></mat-datepicker>
+                            <mat-error *ngIf="filterForm.get('f_endDate')?.hasError('invalidDateRange')">
+                                Cannot be earlier than start date.
+                            </mat-error>
+                        </mat-form-field>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-4 col-sm-6 d-flex justify-content-end">
+            <button class="btn btn-primary" (click)="openImmunizationModal(false)">Add Immunization</button>
         </div>
     </div>
 
@@ -13,7 +40,7 @@
         <table class="table table-hover table-modern">
             <thead>
                 <tr>
-                    <th (click)="sortTable('dateOfAdministration')">Date of Administration</th>
+                    <th (click)="sortTable('dateOfAdministration')">Date of Immunization</th>
                     <th (click)="sortTable('vaccineName')">Vaccine Name</th>
                     <th (click)="sortTable('preventableDisease')">Preventable Disease</th>
                     <th (click)="sortTable('routeOfAdministration')">Route of Administration</th>
@@ -23,15 +50,15 @@
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let immunization of immunizationRecords">
-                    <td>{{ immunization.dateOfAdministration | date: 'dd-MM-yyyy' }}</td>
-                    <td>{{ immunization.vaccineName }}</td>
-                    <td>{{ immunization.preventableDisease }}</td>
-                    <td>{{ immunization.routeOfAdministration }}</td>
+                <tr *ngFor="let immunization of filteredimmunizationRecords">
+                    <td>{{ immunization.date | date: 'dd-MM-yyyy' }}</td>
+                    <td>{{ immunization.vaccine }}</td>
+                    <td>{{ immunization.disease }}</td>
+                    <td>{{ immunization.route }}</td>
                     <td>{{ immunization.dosageForm }}</td>
-                    <td>{{ immunization.dosageDetails }}</td>
-                    <td>
-                        <button class="btn btn-warning btn-sm me-1" (click)="editImmunization(immunization)">
+                    <td>{{ immunization.details }}</td>
+                    <td class="text-center align-middle text-nowrap">
+                        <button class="btn btn-warning btn-sm me-1" (click)="openImmunizationModal(true,immunization)">
                             <i class="bi bi-pencil"></i>
                         </button>
                         <button class="btn btn-danger btn-sm" (click)="deleteImmunization(immunization)">
@@ -41,56 +68,127 @@
                 </tr>
             </tbody>
         </table>
+        <!-- No Records Found -->
+        <div *ngIf="filteredimmunizationRecords?.length === 0" class="alert alert-info">
+            No treatments found. Click "Add Treatment" to get started.
+        </div>
     </div>
 </div>
 
 <!-- Add/Edit Immunization Modal -->
-<div class="modal fade" id="immunizationModal" tabindex="-1" aria-labelledby="immunizationModalLabel" aria-hidden="true" #immunizationModal>
+<div class="modal fade" data-bs-focus="false" id="immunizationModal" tabindex="-1"
+    aria-labelledby="immunizationModalLabel" aria-hidden="true" #immunizationModal>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="immunizationModalLabel">{{ isEditMode ? 'Edit Immunization' : 'Add Immunization' }}</h5>
+                <h5 class="modal-title" id="immunizationModalLabel">{{ isEditMode ? 'Edit Immunization' : 'Add
+                    Immunization' }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form [formGroup]="immunizationForm">
-                    <div class="mb-3">
-                        <label for="dateOfAdministration" class="form-label label-modern shadow">Date of Administration</label>
-                        <input type="date" id="dateOfAdministration" formControlName="dateOfAdministration" class="form-control">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Date Of Immunization</mat-label>
+                                <input matInput [matDatepicker]="datePicker" formControlName="date" />
+                                <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
+                                <mat-datepicker #datePicker></mat-datepicker>
+                                <mat-error *ngIf="immunizationForm.get('date')?.hasError('required')">
+                                    Date of Immunization is required.
+                                </mat-error>
+                                <mat-error *ngIf="immunizationForm.get('date')?.hasError('futureDate')">
+                                    Date of Immunization cannot be in the future.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Vaccine</mat-label>
+                                <mat-select formControlName="vaccine" required>
+                                    <mat-option>
+                                        <ngx-mat-select-search [formControl]="vaccineFilterCtrl"
+                                            placeholderLabel="Search Vaccines"></ngx-mat-select-search>
+                                    </mat-option>
+                                    <mat-option *ngFor="let vaccine of filteredvaccines | async" [value]="vaccine">
+                                        {{ vaccine }}
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="immunizationForm.get('vaccine')?.hasError('required')">
+                                    Vaccine is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="vaccineName" class="form-label label-modern shadow">Vaccine Name</label>
-                        <select id="vaccineName" formControlName="vaccineName" class="form-select">
-                            <option *ngFor="let vaccine of vaccines" [value]="vaccine">{{ vaccine }}</option>
-                        </select>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Preventable Disease</mat-label>
+                                <mat-select formControlName="disease" required>
+                                    <mat-option>
+                                        <ngx-mat-select-search [formControl]="diseaseFilterCtrl"
+                                            placeholderLabel="Search disease"></ngx-mat-select-search>
+                                    </mat-option>
+                                    <mat-option *ngFor="let disease of filteredDiseases | async" [value]="disease">
+                                        {{ disease }}
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="immunizationForm.get('disease')?.hasError('required')">Disease is
+                                    required</mat-error>
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Route of
+                                    Administration</mat-label>
+                                <mat-select formControlName="route" required>
+                                    <mat-option>
+                                        <ngx-mat-select-search [formControl]="routetFilterCtrl"
+                                            placeholderLabel="Search Route"></ngx-mat-select-search>
+                                    </mat-option>
+                                    <mat-option *ngFor="let unit of filteredroutes | async" [value]="unit">
+                                        {{ unit }}
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="immunizationForm.get('route')?.hasError('required')">Strength unit
+                                    is required</mat-error>
+                            </mat-form-field>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="preventableDisease" class="form-label label-modern shadow">Preventable Disease</label>
-                        <select id="preventableDisease" formControlName="preventableDisease" class="form-select">
-                            <option *ngFor="let disease of preventableDiseases" [value]="disease">{{ disease }}</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="routeOfAdministration" class="form-label label-modern shadow">Route of Administration</label>
-                        <select id="routeOfAdministration" formControlName="routeOfAdministration" class="form-select">
-                            <option *ngFor="let route of routesOfAdministration" [value]="route">{{ route }}</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="dosageForm" class="form-label label-modern shadow">Dosage Form</label>
-                        <input type="text" id="dosageForm" formControlName="dosageForm" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label for="dosageDetails" class="form-label label-modern shadow">Dosage Details</label>
-                        <select id="dosageDetails" formControlName="dosageDetails" class="form-select">
-                            <option *ngFor="let detail of dosageDetails" [value]="detail">{{ detail }}</option>
-                        </select>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Dosage Form</mat-label>
+                                <mat-select formControlName="dosageForm" required>
+                                    <mat-option>
+                                        <ngx-mat-select-search [formControl]="dosageFormFilterCtrl"
+                                            placeholderLabel="Search dosage form"></ngx-mat-select-search>
+                                    </mat-option>
+                                    <mat-option *ngFor="let form of filteredDosageForms | async" [value]="form">
+                                        {{ form }}
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="immunizationForm.get('dosageForm')?.hasError('required')">
+                                    Dosage form is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Dosage Details</mat-label>
+                                <input matInput formControlName="details" maxlength="25" required />
+                                <mat-error *ngIf="immunizationForm.get('details')?.hasError('required')">
+                                    Dosage details is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" (click)="saveImmunization()">{{ isEditMode ? 'Save Changes' : 'Add Immunization' }}</button>
+                <button type="button" class="btn btn-primary" (click)="saveImmunization()">{{ isEditMode ? 'Save
+                    Changes' : 'Add Immunization' }}</button>
             </div>
         </div>
     </div>

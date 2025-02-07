@@ -7,6 +7,9 @@ import { AccountService } from '../../services/account.service';
 import { catchError, forkJoin, Observable, of, switchMap, tap } from 'rxjs';
 import { PhysicianService } from '../../services/physician.service';
 import { PatientService } from '../../services/patient.service';
+import { SortingService } from '../../../shared/services/sorting.service';
+import { FilteringService } from '../../../shared/services/filter.service';
+import { Tooltip } from 'bootstrap';
 
 @Component({
   selector: 'app-manage-appointments',
@@ -18,28 +21,53 @@ export class ManageAppointmentsComponent implements OnInit {
   @ViewChild('proposeTimeModal') proposeTimeModal!: ElementRef;
   @ViewChild('rejectReasonModal') rejectReasonModal!: ElementRef;
 
-  appointmentsForm!: FormGroup;
+  ngAfterViewInit(): void {
+    this.setupModalEventListeners();
+  }
+
+  /** ✅ Attach Event Listeners for Modal Close Events */
+  setupModalEventListeners(): void {
+    const proposeModalEl = this.proposeTimeModal.nativeElement;
+    const rejectModalEl = this.rejectReasonModal.nativeElement;
+
+    proposeModalEl.addEventListener('hidden.bs.modal', () => {
+      this.onModalClose();
+    });
+
+    rejectModalEl.addEventListener('hidden.bs.modal', () => {
+      this.onModalClose();
+    });
+  }
+
   proposeTimeForm!: FormGroup;
   rejectReasonForm!: FormGroup;
+  isMultipleAction: boolean = false;
+  toggleAllChecked: boolean = false;
 
-  pendingAppointments: Appointment[] = [];
-  filteredPendingAppointments: Appointment[] = [];
-  acceptedAppointments: Appointment[] = [];
-  rejectedAppointments: Appointment[] = [];
-
-  selectedAppointment!: Appointment;
+  filteredAppointments: any = [];
+  appointments: any = [];
+  currentCarouselIndex: number = 0;
+  availableDates: Date[] = [];
+  selectedDate: Date | null = null;
+  selectedAppointment!: any;
   clinics: any[] = [];
-  sortDirection: { [key: string]: string } = {};
+  sortDirection: { [key: string]: 'asc' | 'desc' } = {};
   userData: any;
   today: Date = new Date();
+  status = ''
+  multipleSelectedAppointments: any[] = [];
 
-  constructor(private fb: FormBuilder, config: NgbTooltipConfig, private accountService: AccountService, private physicianService: PhysicianService, private patientService: PatientService) {
+
+
+  constructor(private fb: FormBuilder, config: NgbTooltipConfig, private accountService: AccountService, private physicianService: PhysicianService, private patientService: PatientService, private sortingService: SortingService, private filteringService: FilteringService) {
     config.placement = 'top';
     config.triggers = 'hover';
   }
 
   ngOnInit(): void {
+    this.initializeTooltips();
     this.initializeForms();
+    this.updateAvailableDates();
     this.accountService.getUserData().pipe(
       tap((data) => (this.userData = data)),
       switchMap(() => forkJoin([this.loadAppointments(), this.loadClinics()])),
@@ -50,29 +78,29 @@ export class ManageAppointmentsComponent implements OnInit {
     ).subscribe();
   }
 
+  initializeTooltips(): void {
+    setTimeout(() => {
+      const tooltipElements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+      tooltipElements.forEach(el => new Tooltip(el));
+    }, 500);
+  }
 
   private initializeForms(): void {
-    this.appointmentsForm = this.fb.group({
-      startDate: [''],
-      endDate: ['', [this.endDateValidator.bind(this)]],
-    });
 
     this.proposeTimeForm = this.fb.group({
       date: ['', [Validators.required, this.pastDateValidator()]],
       time: ['', Validators.required],
       clinicName: ['', Validators.required],
-      physicianId: [''], // Optional if required
-      patientId: [''], // Optional if required
-      physicianName: [''], // Optional if required
-      mobile: [''], // Optional if required
+      physicianId: [''],
+      patientId: [''],
+      physicianName: [''],
+      mobile: [''],
       patientName: ['']
     });
 
     this.rejectReasonForm = this.fb.group({
-      reason: ['', Validators.required], // Ensure reason is required
+      reason: ['', Validators.required],
     });
-
-    this.appointmentsForm.valueChanges.subscribe(() => this.filterAppointments());
   }
 
   pastDateValidator() {
@@ -82,44 +110,6 @@ export class ManageAppointmentsComponent implements OnInit {
       today.setHours(0, 0, 0, 0); // Remove time part for comparison
       return selectedDate >= today ? null : { pastDate: true };
     };
-  }
-
-  filterAppointments(): void {
-    const { startDate, endDate } = this.appointmentsForm.value;
-
-    this.filteredPendingAppointments = this.pendingAppointments.filter((appointment) => {
-      const appointmentDate = new Date(appointment.date);
-      return (
-        (!startDate || appointmentDate >= new Date(startDate)) &&
-        (!endDate || appointmentDate <= new Date(endDate))
-      );
-    });
-  }
-
-  // Custom Validator: Ensures endDate is not earlier than startDate
-  endDateValidator(control: AbstractControl): { [key: string]: any } | null {
-    const startDate = this.appointmentsForm?.get('startDate')?.value;
-    if (startDate && control.value && new Date(control.value) < new Date(startDate)) {
-      return { invalidEndDate: true };
-    }
-    return null;
-  }
-
-  futureDateValidator(control: AbstractControl): { [key: string]: any } | null {
-    if (control.value && new Date(control.value) < new Date(this.today)) {
-      return { invaliddate: true };
-    }
-    return null;
-  }
-
-  // Helper: Check for invalid endDate
-  isEndDateInvalid(): boolean {
-    return this.appointmentsForm.get('endDate')?.hasError('invalidEndDate')!;
-  }
-
-  // Helper: Check for invalid date
-  isdateInvalid(): boolean {
-    return this.proposeTimeForm.get('date')?.hasError('invaliddate')!;
   }
 
   loadClinics(): Observable<any> {
@@ -151,45 +141,14 @@ export class ManageAppointmentsComponent implements OnInit {
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-        this.pendingAppointments = appointments.data.filter(
-          (a: any) =>
-            new Date(a.date) >= today && a.status !== 'cancelled' && a.status !== 'rejected'
-        );
-
-        this.acceptedAppointments = appointments.data.filter(
-          (a: any) =>
-            new Date(a.date) < today && a.status !== 'cancelled' && a.status !== 'rejected'
-        );
-
-        this.rejectedAppointments = appointments.data.filter(
-          (a: any) => a.status === 'cancelled' || a.status === 'rejected'
-        );
-
-        this.filteredPendingAppointments = [...this.pendingAppointments];
+        this.appointments = appointments.data;
+        this.applyFilters();
       }),
       catchError((error) => {
         console.error('Error loading appointments:', error);
         return of({ data: [] }); // Return empty data on error
       })
     );
-  }
-
-
-  filterAppointmentsByDate(): void {
-    const startDate = this.appointmentsForm.get('startDate')?.value;
-    const endDate = this.appointmentsForm.get('endDate')?.value;
-
-    if (startDate && endDate) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-
-      this.filteredPendingAppointments = this.pendingAppointments.filter((appointment) => {
-        const date = appointment.date;
-        return date >= start && date <= end;
-      });
-    } else {
-      this.filteredPendingAppointments = [...this.pendingAppointments];
-    }
   }
 
 
@@ -211,7 +170,7 @@ export class ManageAppointmentsComponent implements OnInit {
       .subscribe();
   }
 
-  proposetime(appointment: Appointment): void {
+  proposetime(appointment: Appointment, isMultiple: boolean = false): void {
     this.selectedAppointment = { ...appointment };
 
     this.proposeTimeForm.reset(); // Reset the form before patching
@@ -262,30 +221,6 @@ export class ManageAppointmentsComponent implements OnInit {
     modalInstance.show();
   }
 
-  sortAppointments(column: keyof Appointment): void {
-    const direction = this.sortDirection[column] === 'asc' ? 'desc' : 'asc';
-    this.sortDirection[column] = direction;
-
-    this.filteredPendingAppointments.sort((a, b) => this.compareValues(a[column], b[column], direction));
-  }
-
-  private compareValues(a: unknown, b: unknown, direction: string): number {
-    if (a instanceof Date && b instanceof Date) {
-      return direction === 'asc' ? a.getTime() - b.getTime() : b.getTime() - a.getTime();
-    } else if (typeof a === 'string' && typeof b === 'string') {
-      return direction === 'asc' ? a.localeCompare(b) : b.localeCompare(a);
-    } else if (typeof a === 'boolean' && typeof b === 'boolean') {
-      return direction === 'asc' ? Number(a) - Number(b) : Number(b) - Number(a);
-    } else {
-      return 0;
-    }
-  }
-
-  isUpcoming(appointment: Appointment): boolean {
-    const today = new Date();
-    return appointment.date >= today;
-  }
-
 
   saveProposedTime(): void {
 
@@ -323,5 +258,315 @@ export class ManageAppointmentsComponent implements OnInit {
       .subscribe();
   }
 
+  sortTable(column: string): void {
+    // Toggle the sort direction
+    this.sortDirection[column] = this.sortDirection[column] === 'asc' ? 'desc' : 'asc';
+    const direction = this.sortDirection[column];
+    // Use the sorting service to sort the data
+    this.filteredAppointments = this.sortingService.sort(this.filteredAppointments, column, direction);
+  }
+
+  applyFilters(): void {
+    this.filteredAppointments = this.filteringService.filter(
+      this.appointments,
+      {
+        status: this.status
+      },
+      [
+        {
+          field: 'date',
+          range: [this.selectedDate?.toISOString() || null, null], // Pass null for missing dates
+        },
+      ],
+      true
+    );
+  }
+
+  // Helper: Check for invalid date
+  isdateInvalid(): boolean {
+    return this.proposeTimeForm.get('date')?.hasError('invaliddate')!;
+  }
+
+
+  /** Format a Date to 'yyyy-mm-dd' for form binding. */
+  formatDateInput(date: Date): string {
+    return date.toISOString().substring(0, 10);
+  }
+
+  updateAvailableDates(): void {
+
+    this.availableDates = [];
+    const today = new Date();
+
+    for (let i = 7; i > 0; i--) {
+      let pastDate = new Date(today);
+      pastDate.setDate(today.getDate() - i);
+      this.availableDates.push(pastDate);
+    }
+
+    this.availableDates.push(new Date(today));
+
+    for (let i = 1; i <= 7; i++) {
+      let futureDate = new Date(today);
+      futureDate.setDate(today.getDate() + i);
+      this.availableDates.push(futureDate);
+    }
+
+    const firstCushionDate = new Date(this.availableDates[0]);
+    firstCushionDate.setDate(firstCushionDate.getDate() - 1);
+    this.availableDates.unshift(firstCushionDate);
+
+    const lastCushionDate = new Date(this.availableDates[this.availableDates.length - 1]);
+    lastCushionDate.setDate(lastCushionDate.getDate() + 1);
+    this.availableDates.push(lastCushionDate);
+
+    const todayIndex = this.availableDates.findIndex(d => d.toDateString() === today.toDateString());
+    if (todayIndex !== -1) {
+      this.currentCarouselIndex = todayIndex;
+    } else {
+      this.currentCarouselIndex = 8;
+    }
+
+    this.selectedDate = this.availableDates[this.currentCarouselIndex];
+  }
+
+  get visibleDates(): Date[] {
+    return this.availableDates.slice(this.currentCarouselIndex - 1, this.currentCarouselIndex + 2);
+  }
+
+  previousDateCarousel(): void {
+    if (this.currentCarouselIndex > 1) {
+      this.currentCarouselIndex--;
+      this.selectedDate = this.availableDates[this.currentCarouselIndex];
+      this.applyFilters();
+    }
+  }
+
+
+  nextDateCarousel(): void {
+    if (this.currentCarouselIndex < this.availableDates.length - 2) {
+      this.currentCarouselIndex++;
+      this.selectedDate = this.availableDates[this.currentCarouselIndex];
+      this.applyFilters();
+    }
+  }
+
+
+  selectDate(date: Date): void {
+    const index = this.availableDates.findIndex(d => d.toDateString() === date.toDateString());
+
+    if (index > 1 && index < this.availableDates.length - 2) {
+      this.currentCarouselIndex = index;
+      this.selectedDate = this.availableDates[this.currentCarouselIndex];
+    }
+  }
+
+
+  getCarouselOffset(): number {
+    const itemWidth = 100;
+    const itemMargin = 10;
+    const containerWidth = 140;
+
+    return (this.currentCarouselIndex - 1) * (itemWidth + itemMargin) - (containerWidth / 2 - itemWidth / 2);
+  }
+
+  canShowAppointmentAction(appointment: any): boolean {
+    if (!appointment?.date || !appointment?.time || appointment?.status === 'accepted' || appointment?.status === 'rejected' || appointment?.status === 'cancelled') return false;
+
+    const appointmentDateTime = this.combineDateAndTime(appointment.date, appointment.time);
+    const currentDateTime = new Date();
+    const thresholdDateTime = new Date(currentDateTime.getTime() + 30 * 60 * 1000); // 30 minutes from now
+
+    return appointmentDateTime >= thresholdDateTime;
+  }
+
+  private combineDateAndTime(date: string, time: string): Date {
+    const timeParts = time.match(/(\d+):(\d+)\s?(AM|PM)/i);
+    if (!timeParts) return new Date(NaN); // Invalid time format
+
+    let hours = parseInt(timeParts[1], 10);
+    const minutes = parseInt(timeParts[2], 10);
+    const period = timeParts[3].toUpperCase();
+
+    if (period === 'PM' && hours !== 12) {
+      hours += 12;
+    } else if (period === 'AM' && hours === 12) {
+      hours = 0;
+    }
+
+    const combinedDate = new Date(date);
+    combinedDate.setHours(hours, minutes, 0, 0);
+    return combinedDate;
+  }
+
+
+  acceptMultipleAppointments(): void {
+    const updatedAppointments = this.multipleSelectedAppointments.map(appointment => ({
+      ...appointment,
+      status: 'accepted',
+    }));
+
+    this.physicianService.saveMultipleAppointments('accepted', null, null, null, updatedAppointments)
+      .pipe(
+        switchMap(() => this.loadAppointments()),
+        tap(() => {
+          this.resetSelection(); 
+          console.log('Multiple appointments accepted successfully');
+        }),
+        catchError((error) => {
+          console.error('Error accepting multiple appointments:', error);
+          return of(null);
+        })
+      )
+      .subscribe();
+  }
+
+  toggleAllSelection(event: any): void {
+    this.toggleAllChecked = event.target.checked;
+    const isChecked = event.target.checked;
+    this.multipleSelectedAppointments = [];
+
+    this.filteredAppointments.forEach((appointment: any) => {
+      if (this.canShowAppointmentAction(appointment)) {
+        appointment.isChecked = isChecked; // Ensures UI reflects the selection
+        if (isChecked) {
+          this.multipleSelectedAppointments.push(appointment);
+        }
+      }
+    });
+  }
+
+  toggleSelection(appointment: any, event: any): void {
+    appointment.isChecked = event.target.checked;
+
+    if (event.target.checked) {
+      this.multipleSelectedAppointments.push(appointment);
+    } else {
+      this.multipleSelectedAppointments = this.multipleSelectedAppointments.filter(a => a.id !== appointment.id);
+    }
+  }
+
+  resetSelection(): void {
+    this.toggleAllChecked = false; // Uncheck "Select All"
+    this.multipleSelectedAppointments = [];
+    this.filteredAppointments.forEach((appointment: any) => {
+      appointment.isChecked = false; // Uncheck all individual checkboxes
+    });
+  }
+
+  isAnyAppointmentSelected(): boolean {
+    return this.multipleSelectedAppointments.length > 0;
+  }
+
+  multipleAction(action: string): void {
+
+    if (!this.isAnyAppointmentSelected()) {
+      return;
+    }
+    this.isMultipleAction = true;
+    switch (action) {
+      case 'accept':
+        this.acceptMultipleAppointments();
+        break;
+      case 'reject':
+        this.openRejectMultipleModal(); // Open modal before rejecting
+        break;
+      case 'propose':
+        this.openProposeTimeModal(); // Open modal before proposing
+        break;
+    }
+  }
+
+
+  openRejectMultipleModal(): void {
+    if (!this.isAnyAppointmentSelected()) {
+      return;
+    }
+    const modalInstance = new Modal(this.rejectReasonModal.nativeElement);
+    modalInstance.show();
+  }
+
+  /** ✅ Confirms Rejection After Modal */
+  confirmRejectMultiple(): void {
+    if (this.rejectReasonForm.invalid) {
+      Object.keys(this.rejectReasonForm.controls).forEach((key) => {
+        this.rejectReasonForm.get(key)?.markAsTouched();
+      });
+      return;
+    }
+
+    const reason = this.rejectReasonForm.value.reason;
+    const updatedAppointments = this.multipleSelectedAppointments.map(appointment => ({
+      ...appointment,
+      status: 'rejected',
+      reason: reason
+    }));
+
+    this.physicianService.saveMultipleAppointments('rejected', null, null, reason, updatedAppointments)
+      .pipe(
+        switchMap(() => this.loadAppointments()),
+        tap(() => {
+          this.resetSelection(); 
+          const rejectReasonModalInstance = Modal.getInstance(this.rejectReasonModal.nativeElement);
+          rejectReasonModalInstance?.hide();
+        }),
+        catchError((error) => {
+          console.error('Error rejecting multiple appointments:', error);
+          return of(null);
+        })
+      )
+      .subscribe();
+  }
+
+  /** ✅ Opens Propose New Time Modal Before Proposing Multiple */
+  openProposeTimeModal(): void {
+    if (!this.isAnyAppointmentSelected()) {
+      return;
+    }
+
+    this.proposeTimeForm.reset();
+    const modalInstance = new Modal(this.proposeTimeModal.nativeElement);
+    modalInstance.show();
+  }
+
+  /** ✅ Confirms Proposed Time After Modal */
+  confirmProposeNewTime(): void {
+    if (this.proposeTimeForm.invalid) {
+      Object.keys(this.proposeTimeForm.controls).forEach((key) => {
+        const control = this.proposeTimeForm.get(key);
+        if (control) {
+          control.markAsTouched();
+        }
+      });
+      return;
+    }
+
+    const formData = this.proposeTimeForm.value;
+    const updatedAppointments = this.multipleSelectedAppointments.map(appointment => ({
+      ...appointment,
+      status: 'proposed',
+      date: formData.date,
+      time: formData.time,
+    }));
+
+    this.physicianService.saveMultipleAppointments('proposed', formData.date, formData.time, null, updatedAppointments)
+      .pipe(
+        switchMap(() => this.loadAppointments()),
+        tap(() => {
+          this.resetSelection(); 
+          const modal = Modal.getInstance(this.proposeTimeModal.nativeElement);
+          modal?.hide();
+        }),
+        catchError((error) => {
+          console.error('Error proposing new time for multiple appointments:', error);
+          return of(null);
+        })
+      )
+      .subscribe();
+  }
+
+  onModalClose(): void {
+    this.isMultipleAction = false;
+  }
 }
 

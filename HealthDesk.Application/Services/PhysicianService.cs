@@ -5,6 +5,7 @@ using HealthDesk.Application.DTO;
 using HealthDesk.Core;
 using HealthDesk.Core.Enum;
 using HealthDesk.Infrastructure;
+using Microsoft.AspNetCore.Http;
 using MongoDB.Bson;
 
 namespace HealthDesk.Application;
@@ -511,5 +512,20 @@ public class PhysicianService : IPhysicianService
         if (percentBooked > 0.5) return "bg-orange";
         if (percentBooked > 0) return "bg-warning";
         return "bg-success";
+    }
+
+    public async Task SaveMultipleAppointment(string status, DateTime? date, string? time, string? reason, List<AppointmentDto> dtos)
+    {
+        foreach (var appoint in dtos)
+        {
+            appoint.Status = status;
+            if (date.HasValue)
+                appoint.Date = date.Value;
+            if (!string.IsNullOrEmpty(time))
+                appoint.Time = time;
+            if (!string.IsNullOrEmpty(reason))
+                appoint.Reason = reason;
+            await _patientService.SaveAppointmentAsync(appoint.PatientId, appoint);
+        }
     }
 }

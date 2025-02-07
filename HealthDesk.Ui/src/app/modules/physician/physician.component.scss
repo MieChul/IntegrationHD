@@ -448,15 +448,15 @@ background-color: rgba(252, 165, 165, 0.3); // Light red background on hover
 }
 
 .proposed-time {
-background-color: rgba(253, 230, 138, 0.6);  /* Light yellow for proposed time */
+background-color:#e6b71d8a;  /* Light yellow for proposed time */
 }
 
 .upcoming-appointment {
-background-color: rgba(167, 243, 208, 0.6);  /* Light green for upcoming appointment */
+background-color: #32ed5ea9;  /* Light green for upcoming appointment */
 }
 
 .past-appointment {
-background-color: rgba(253, 164, 175, 0.6);  /* Light pink for past appointment */
+background-color: #cf3c487b;  /* Light pink for past appointment */
 }
 
 .tab-content {
@@ -602,3 +602,6 @@ transform: scale(1.05);
   }
 }
 
+.cdk-overlay-container {
+  z-index: 9999;
+}

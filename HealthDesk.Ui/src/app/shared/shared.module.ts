@@ -25,7 +25,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
-import { NgxMatTimepickerModule } from 'ngx-mat-timepicker';
+import { NgxMatTimepickerModule, NgxMatTimepickerToggleComponent } from 'ngx-mat-timepicker';
 import { MatRadioModule } from '@angular/material/radio'; 
 import { NgxMatColorPickerModule, NGX_MAT_COLOR_FORMATS, MAT_COLOR_FORMATS  } from '@angular-material-components/color-picker';
 
@@ -63,7 +63,8 @@ SidebarComponent,
     NgxMatSelectSearchModule,
     NgxMatTimepickerModule,
     MatRadioModule,
-    NgxMatColorPickerModule  
+    NgxMatColorPickerModule ,
+    NgxMatTimepickerToggleComponent  
   ],
   exports: [
     LoaderComponent,
@@ -94,7 +95,8 @@ SidebarComponent,
     NgxMatSelectSearchModule,
     NgxMatTimepickerModule,
     MatRadioModule,
-    NgxMatColorPickerModule 
+    NgxMatColorPickerModule ,
+    NgxMatTimepickerToggleComponent 
   ],
   providers: [
     { provide: MAT_COLOR_FORMATS, useValue: NGX_MAT_COLOR_FORMATS }

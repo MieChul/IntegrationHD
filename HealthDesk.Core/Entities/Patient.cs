@@ -66,7 +66,7 @@ public class MedicalHistory : BaseEntity
     [BsonElement("strength")]
     public double Strength { get; set; }
 
-    
+
     [BsonElement("strength_unit")]
     public string StrengthUnit { get; set; }
 
@@ -179,20 +179,23 @@ public class SelfRecord : BaseEntity
     [BsonElement("date")]
     public DateTime Date { get; set; }
 
-    [BsonElement("record_type")]
-    public string RecordType { get; set; }
+    [BsonElement("type")]
+    public string Type { get; set; }
 
-    [BsonElement("description")]
-    public string Description { get; set; }
+    [BsonElement("value")]
+    public double Value { get; set; }
+
+    [BsonElement("unit")]
+    public string Unit { get; set; }
 }
 
 public class Symptom : BaseEntity
 {
     [BsonElement("date")]
-    public DateTime Date { get; set; }
+    public DateTime DateOfOnset { get; set; }
 
     [BsonElement("time")]
-    public string Time { get; set; }
+    public string TimeOfOnset { get; set; }
 
     [BsonElement("symptom_type")]
     public string SymptomType { get; set; }
@@ -205,13 +208,16 @@ public class Symptom : BaseEntity
 
     [BsonElement("comment")]
     public string Comment { get; set; }
+
+    [BsonElement("endDate")]
+    public DateTime? EndDate { get; set; }
 }
 
 public class LabInvestigation : BaseEntity
 {
 
     [BsonElement("name")]
-    public string Name { get; set; }
+    public string LaboratoryName { get; set; }
 
     [BsonElement("date")]
     public DateTime Date { get; set; }
@@ -220,7 +226,7 @@ public class LabInvestigation : BaseEntity
     public string Time { get; set; }
 
     [BsonElement("test")]
-    public string Test { get; set; }
+    public string LabTest { get; set; }
 
     [BsonElement("value")]
     public string Value { get; set; }
@@ -245,7 +251,7 @@ public class Immunization : BaseEntity
     public string Route { get; set; }
 
     [BsonElement("dosage")]
-    public string Dosage { get; set; }
+    public string DosageForm { get; set; }
 
     [BsonElement("details")]
     public string Details { get; set; }

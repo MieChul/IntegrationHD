@@ -88,8 +88,8 @@ export class DailyActivityComponent implements OnInit {
     this.editForm = this.fb.group({
       weight: [this.weight],
       height: [this.height],
-      age: [this.age],
-      gender: [this.gender],
+      age: new FormControl({ value: '42', disabled: true }),
+      gender: new FormControl({ value: 'Male', disabled: true }),
       occupation: [this.occupation],
       lifestyle: [this.lifestyle]
     });
@@ -403,8 +403,8 @@ addDailyActivity(): void {
     const formData = this.editForm.value;
     this.weight = formData.weight;
     this.height = formData.height;
-    this.age = formData.age;
-    this.gender = formData.gender;
+    this.age = 42;
+    this.gender = 'Male';
     this.occupation = formData.occupation;
     this.lifestyle = formData.lifestyle;
 

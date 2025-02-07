@@ -37,4 +37,5 @@ public interface IPhysicianService
     Task<int> GetPrescriptionCountAsync(string physicianId, string patientId);
     Task<string> GetLatestPrescriptionAsync(string physicianId, string patientId);
     Task<dynamic> GetClinicSlotsAsync(string physicianId, string clinicId, DateTime date);
+    Task SaveMultipleAppointment(string status, DateTime? date, string? time, string? reason, List<AppointmentDto> dtos);
 }

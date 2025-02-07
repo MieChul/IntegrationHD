@@ -88,8 +88,6 @@ export class ManageClinicComponent implements OnInit {
     return this.clinicForm.get('clinicSlots') as FormArray<FormGroup>;
   }
 
-
-
   addSlot(slotData?: any): void {
     const slotGroup = this.fb.group({
       id: [slotData ? slotData.id : ''],
@@ -234,9 +232,6 @@ export class ManageClinicComponent implements OnInit {
       next: (data: any) => {
         this.clinics = data?.data.map((clinic: any) => ({ ...clinic }));
         this.filteredClinics = [...this.clinics];
-      },
-      error: (error) => {
-        console.error('Error loading clinics:', error);
       }
     });
   }

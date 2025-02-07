@@ -1,11 +1,37 @@
 <div class="container">
     <h1 class="animated-heading">
-        <i class="bi bi-file-earmark-text me-2"></i>Investigation Reports
+        <i class="bi bi-file-earmark-text me-2"></i>Investigations
     </h1>
-
     <div class="row mb-3 align-items-center">
+        <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
+            <form [formGroup]="filterForm" class="w-100">
+                <div class="row">
+                    <!-- Start Date -->
+                    <div class="col-md-6">
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-label>Filter by Start Date</mat-label>
+                            <input matInput [matDatepicker]="f_startDatePicker" formControlName="f_startDate" />
+                            <mat-datepicker-toggle matSuffix [for]="f_startDatePicker"></mat-datepicker-toggle>
+                            <mat-datepicker #f_startDatePicker></mat-datepicker>
+                        </mat-form-field>
+                    </div>
+                    <!-- End Date -->
+                    <div class="col-md-6">
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-label>Filter by End Date</mat-label>
+                            <input matInput [matDatepicker]="f_endDatePicker" formControlName="f_endDate" />
+                            <mat-datepicker-toggle matSuffix [for]="f_endDatePicker"></mat-datepicker-toggle>
+                            <mat-datepicker #f_endDatePicker></mat-datepicker>
+                            <mat-error *ngIf="filterForm.get('f_endDate')?.hasError('invalidDateRange')">
+                                Cannot be earlier than start date.
+                            </mat-error>
+                        </mat-form-field>
+                    </div>
+                </div>
+            </form>
+        </div>
         <div class="col-md-4 col-sm-6 d-flex justify-content-start flex-wrap">
-            <button class="btn btn-primary" (click)="addReport()">Add Investigation Report</button>
+            <button class="btn btn-primary" (click)="addReport()">Add Investigation</button>
         </div>
     </div>
 
@@ -13,8 +39,8 @@
         <table class="table table-hover table-modern">
             <thead>
                 <tr>
-                    <th (click)="sortTable('dateOfAssessment')">Date of Assessment</th>
-                    <th (click)="sortTable('timeOfAssessment')">Time of Assessment</th>
+                    <th (click)="sortTable('date')">Date of Assessment</th>
+                    <th (click)="sortTable('time')">Time of Assessment</th>
                     <th (click)="sortTable('typeOfAssessment')">Type of Assessment</th>
                     <th (click)="sortTable('assessmentParameters')">Assessment Parameters</th>
                     <th (click)="sortTable('results')">Results</th>
@@ -24,8 +50,8 @@
             </thead>
             <tbody>
                 <tr *ngFor="let report of investigationReports; let i = index">
-                    <td>{{ report.dateOfAssessment | date: 'dd-MM-yyyy' }}</td>
-                    <td>{{ report.timeOfAssessment }}</td>
+                    <td>{{ report.date | date: 'dd-MM-yyyy' }}</td>
+                    <td>{{ report.time }}</td>
                     <td>{{ report.typeOfAssessment }}</td>
                     <td>{{ report.assessmentParameters }}</td>
                     <td>{{ report.results }}</td>
@@ -38,6 +64,9 @@
                 </tr>
             </tbody>
         </table>
+        <div *ngIf="investigationReports?.length === 0" class="alert alert-info">
+            No treatments found. Click "Add Treatment" to get started.
+        </div>
     </div>
 </div>
 
@@ -51,34 +80,79 @@
             </div>
             <div class="modal-body">
                 <form [formGroup]="reportForm">
-                    <div class="mb-3">
-                        <label for="dateOfAssessment" class="form-label label-modern shadow">Date of Assessment</label>
-                        <input type="date" id="dateOfAssessment" formControlName="dateOfAssessment" class="form-control">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Date of Assessment</mat-label>
+                                <input matInput [matDatepicker]="datePicker" formControlName="date" />
+                                <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
+                                <mat-datepicker #datePicker></mat-datepicker>
+                                <mat-error *ngIf="reportForm.get('date')?.hasError('required')">
+                                    Date of Assessment is required.
+                                </mat-error>
+                                <mat-error *ngIf="reportForm.get('date')?.hasError('futureDate')">
+                                    Date of Assessmentt cannot be in the future.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Time of Assessment</mat-label>
+                                <input matInput [ngxMatTimepicker]="timePickertime" formControlName="time"
+                                    placeholder="Time (HH:mm)" />
+                                <ngx-mat-timepicker-toggle [for]="timePickertime"
+                                    matSuffix></ngx-mat-timepicker-toggle>
+                                <ngx-mat-timepicker #timePickertime></ngx-mat-timepicker>
+                                <mat-error *ngIf="submitted && reportForm.get('time')?.hasError('required')">Time of Assessment
+                                    required</mat-error>
+                                <mat-error *ngIf="submitted && reportForm.get('time')?.hasError('pattern')">Invalid
+                                    Time of Assessment
+                                    format. Use HH:mm.</mat-error>
+                            </mat-form-field>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Type of Assessment</mat-label>
+                                <input matInput formControlName="typeOfAssessment" maxlength="25" required />
+                                <mat-error *ngIf="reportForm.get('typeOfAssessment')?.hasError('required')">
+                                   Type is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Assessment Parameters</mat-label>
+                                <input matInput formControlName="assessmentParameters" maxlength="25" required />
+                                <mat-error *ngIf="reportForm.get('assessmentParameters')?.hasError('required')">
+                                   Parameter is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Type of Assessment</mat-label>
+                                <input matInput formControlName="results" maxlength="25" required />
+                                <mat-error *ngIf="reportForm.get('results')?.hasError('required')">
+                                   Type is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Comment</mat-label>
+                                <textarea matInput formControlName="comment"></textarea>
+                                <mat-error *ngIf="reportForm.get('comment')?.hasError('maxLength')">
+                                    Comment cannot exceed 100 characters.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label for="timeOfAssessment" class="form-label label-modern shadow">Time of Assessment</label>
-                        <input type="time" id="timeOfAssessment" formControlName="timeOfAssessment" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label for="typeOfAssessment" class="form-label label-modern shadow">Type of Assessment</label>
-                        <select id="typeOfAssessment" formControlName="typeOfAssessment" class="form-select">
-                            <option *ngFor="let type of assessmentTypes" [value]="type">{{ type }}</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="assessmentParameters" class="form-label label-modern shadow">Assessment Parameters</label>
-                        <input type="text" id="assessmentParameters" formControlName="assessmentParameters" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label for="results" class="form-label label-modern shadow">Results</label>
-                        <input type="text" id="results" formControlName="results" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label for="comment" class="form-label label-modern shadow">Comment</label>
-                        <input type="text" id="comment" formControlName="comment" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label for="reportFile" class="form-label label-modern shadow">Upload Report (PDF only)</label>
+                        <mat-label>Upload Report (PDF only)</mat-label>
                         <input type="file" id="reportFile" (change)="onFileSelected($event)" class="form-control" accept="application/pdf">
                     </div>
                 </form>
