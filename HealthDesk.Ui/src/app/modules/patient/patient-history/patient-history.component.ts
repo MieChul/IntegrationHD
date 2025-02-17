@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import * as bootstrap from 'bootstrap';
 import { map, Observable, startWith } from 'rxjs';
 import { AccountService } from '../../services/account.service';
@@ -59,7 +59,8 @@ export class PatientHistoryComponent implements OnInit {
       disease: this.fb.control('', Validators.required),
       start: this.fb.control('', [Validators.required, this.futureDateValidator]),
       end: this.fb.control('', [this.futureDateValidator])
-    });
+    }, { validators: this.dateOrderValidator });  // Attach cross-field validator
+
 
     this.filterForm = this.fb.group(
       {
@@ -74,6 +75,30 @@ export class PatientHistoryComponent implements OnInit {
     });
   }
 
+  dateOrderValidator(formGroup: AbstractControl): ValidationErrors | null {
+    const start = formGroup.get('start')?.value;
+    const diag = formGroup.get('dateOfDiagnosis')?.value;
+    const end = formGroup.get('end')?.value;
+    const errors: any = {};
+  
+    if (start && diag) {
+      if (new Date(diag) < new Date(start)) {
+        errors.dateDiagnosisBeforeStart = true;
+      }
+    }
+    if (start && end) {
+      if (new Date(end) < new Date(start)) {
+        errors.endBeforeStart = true;
+      }
+    }
+    if (diag && end) {
+      if (new Date(end) < new Date(diag)) {
+        errors.endBeforeDiagnosis = true;
+      }
+    }
+  
+    return Object.keys(errors).length ? errors : null;
+  }
   initializeSearch(): void {
     this.filteredDiseases = this.diseaseFilterCtrl.valueChanges.pipe(
       startWith(''),
@@ -159,6 +184,7 @@ export class PatientHistoryComponent implements OnInit {
 
   saveHistory(): void {
     this.historyForm.markAllAsTouched();
+    this.historyForm.updateValueAndValidity(); 
     if (this.historyForm.invalid) return;
 
     const historyData = this.historyForm.value;
@@ -212,7 +238,7 @@ export class PatientHistoryComponent implements OnInit {
 
   applyDateFilter(): void {
     const { startDate, endDate } = this.filterForm.value;
-  
+
     this.filteredHistories = this.filteringService.filter(
       this.patientHistories,
       {}, // Pass an empty object for generic filters as no other filters are applied

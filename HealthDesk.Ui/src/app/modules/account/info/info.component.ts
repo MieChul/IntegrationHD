@@ -454,6 +454,51 @@ export class InfoComponent {
   save() {
     this.errorsFound = false;
     this.updateErrors = false;
+    this.submitted = true;
+    if(this.userData.status === 'Submitted' || this.userData.status === 'Approved'){
+      if (this.form.invalid) {
+        this.errorsFound = true;
+
+        if (this.user.role == 'physician') {
+          this.getDocError();
+        }
+        this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
+        return;
+      }
+  
+      if (this.user.role == 'physician') {
+        if (this.getDocError())
+          return;
+      }
+  
+      if (!this.form.value.noDocConsentProvided && this.user.role === 'physician') {
+        if (!this.form.value.graduation.document) {
+          this.gDocError = true;
+          this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
+          return;
+        }
+        else
+          this.gDocError = false;
+      }
+  
+      if (this.user.role === 'physician' || this.user.role === 'patient') {
+        if (this.form.value.mobile1 === this.form.value.mobile2) {
+          this.mobileSameError = true;
+          this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
+          return;
+        }
+        else
+          this.mobileSameError = false;
+  
+        if (this.form.value.email1 && this.form.value.email1 === this.form.value.email2) {
+          this.emailSameError = true;
+          this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
+          return;
+        }
+        else
+          this.emailSameError = false;
+      }
+    }
 
     this.form.value.isSave = true;
     this.accountService.registerUserInfo(this.user.id, this.form.value)
@@ -599,7 +644,7 @@ export class InfoComponent {
   getDocError() {
     var has_error = false;
 
-    if (!this.form.value.graduation.year) {
+    if (!this.form.value.noDocConsentProvided && !this.form.value.graduation.year) {
       this.gYearError = true;
       this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
       has_error = true;
@@ -607,7 +652,7 @@ export class InfoComponent {
     else
       this.gYearError = false;
 
-    if (!this.form.value.graduation.institute) {
+    if (!this.form.value.noDocConsentProvided && !this.form.value.graduation.institute) {
       this.gInstituteError = true;
       this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
       has_error = true;
@@ -631,7 +676,7 @@ export class InfoComponent {
     else
       this.councilError = false;
 
-    if (!this.form.value.medicalRegistration.document) {
+    if (!this.form.value.noDocConsentProvided && !this.form.value.medicalRegistration.document) {
       this.docError = true;
       this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
       has_error = true;

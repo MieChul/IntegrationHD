@@ -1,4 +1,4 @@
-<div class="container-fluid bg-transparent userInfo" >
+<div class="container-fluid bg-transparent userInfo">
     <div class="row">
         <div class="col-lg-3">
             <div class="card mb-4 text-center">
@@ -18,8 +18,8 @@
                     <div class="row mb-3" *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
                         <div class=" col-sm-9">
                             <div class="input-group">
-                                <input class="form-control dobbox" autocomplete="off" value="{{ user.birthDate | date: 'dd/MM/yyyy' }}"
-                                    [readOnly]="true">
+                                <input class="form-control dobbox" autocomplete="off"
+                                    value="{{ user.birthDate | date: 'dd/MM/yyyy' }}" [readOnly]="true">
                             </div>
                         </div>
                         <div class="form-floating col-sm-3">
@@ -488,14 +488,35 @@
                     </div>
                 </div>
             </div>
-            <div class="row" >
+            <div class="row">
                 <div class="card bg-light">
                     <div class="row card-body">
                         <div class="text-center ">
-                            <button type="submit" class="btn btn-outline-success col-sm-2 m-1 text-center"
-                                (click)="onSubmit('Approved')">Approve</button>
-                            <button class="btn btn-outline-danger col-sm-2 m-1 text-center"
-                                (click)="open(content)">Reject</button>
+                            <button *ngIf="roleStatus !== 'Blocked' && roleStatus !== 'Approved'" type="submit"
+                                class="btn btn-outline-success col-sm-2 m-1 text-center" (click)="onSubmit('Approved')">
+                                Approve
+                            </button>
+
+                            <!-- Reject Button (only when status is NOT 'Blocked' or 'Approved') -->
+                            <button *ngIf="roleStatus !== 'Blocked' && roleStatus !== 'Approved'"
+                                class="btn btn-outline-danger col-sm-2 m-1 text-center"
+                                (click)="open(content, 'Rejected')">
+                                Reject
+                            </button>
+
+                            <!-- Block Button (only when status is 'Approved') -->
+                            <button *ngIf="roleStatus === 'Approved'"
+                                class="btn btn-outline-danger col-sm-2 m-1 text-center"
+                                (click)="open(content, 'Blocked')">
+                                Block
+                            </button>
+
+                            <!-- Unblock Button (only when status is 'Blocked') -->
+                            <button *ngIf="roleStatus === 'Blocked'"
+                                class="btn btn-outline-success col-sm-2 m-1 text-center"
+                                (click)="open(content, 'Approved')">
+                                Unblock
+                            </button>
                             <button type="button" class="btn btn-outline-secondary col-sm-2 m-1 text-center"
                                 (click)="back()">Back</button>
                         </div>
@@ -522,6 +543,6 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-outline-dark" (click)="onSubmit('Rejected')">Save</button>
+        <button type="button" class="btn btn-outline-dark" (click)="onSubmit()">Save</button>
     </div>
 </ng-template>

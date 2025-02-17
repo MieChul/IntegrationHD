@@ -25,7 +25,7 @@ public class AuthService : IAuthService
     public async Task<UserDto> Authenticate(string username, string password)
     {
         var user = await _userRepository.GetByUsernameAsync(username);
-        if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+        if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash) || (user.Roles.FirstOrDefault().Status == "Blocked"))
         {
             return null;
         }

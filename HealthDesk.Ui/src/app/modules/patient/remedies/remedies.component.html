@@ -1,124 +1,422 @@
-<div class="container">
-  <h2 class="animated-heading">
+<div class="container my-4">
+  <h2 class="animated-heading mb-4">
     <i class="bi bi-journal-medical me-2"></i>Home Remedies
   </h2>
 
-  <!-- Search Filter -->
-  <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
-    <div class="col-12 col-md-10 mb-2 me-3">
+  <!-- Search Filter and Preferences Button (applies to Others Remedies) -->
+  <div class="row mb-3 align-items-center">
+    <div class="col-md-8">
       <mat-form-field appearance="outline" class="w-100">
         <mat-label>Search by Specialty/Doctor Name</mat-label>
-        <input matInput placeholder="Search by Specialty/Doctor Name" [(ngModel)]="searchValue" (input)="searchRemedies()" />
+        <input
+          matInput
+          placeholder="Search by Specialty/Doctor Name"
+          [(ngModel)]="searchValue"
+          (input)="searchRemedies()"
+        />
       </mat-form-field>
+    </div>
+    <div class="col-md-4 text-end">
+      <button
+        class="btn btn-outline-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#preferencesModal"
+      >
+        Set Preferences
+      </button>
     </div>
   </div>
 
-  <!-- Preferences Section -->
-  <div class="d-flex justify-content-end mb-3">
-    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#preferencesModal">
-      Set Preferences
-    </button>
+  <!-- Display Selected Preferences -->
+  <div id="preferencesTags" class="mb-4">
+    <span *ngFor="let tag of preferences" class="badge bg-primary me-2">
+      {{ tag }}
+    </span>
   </div>
 
-  <div id="preferencesTags" class="mb-3">
-    <span *ngFor="let tag of preferences" class="badge bg-primary me-2">{{ tag }}</span>
-  </div>
-
-  <!-- Tabs for Remedies -->
+  <!-- Tabs -->
   <ul class="nav nav-tabs" id="medicalCasesTabs" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="other-cases-tab" data-bs-toggle="tab" data-bs-target="#other-cases" type="button" role="tab" aria-controls="other-cases" aria-selected="true">
+      <button
+        class="nav-link active"
+        id="others-tab"
+        data-bs-toggle="tab"
+        data-bs-target="#others"
+        type="button"
+        role="tab"
+        aria-controls="others"
+        aria-selected="true"
+      >
         Others Remedies
       </button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="your-cases-tab" data-bs-toggle="tab" data-bs-target="#your-cases" type="button" role="tab" aria-controls="your-cases" aria-selected="false">
+      <button
+        class="nav-link"
+        id="yours-tab"
+        data-bs-toggle="tab"
+        data-bs-target="#yours"
+        type="button"
+        role="tab"
+        aria-controls="yours"
+        aria-selected="false"
+      >
         Your Remedies
       </button>
     </li>
   </ul>
-
   <div class="tab-content" id="medicalCasesTabsContent">
-    <!-- Other Remedies Tab -->
-    <div class="tab-pane fade show active" id="other-cases" role="tabpanel" aria-labelledby="other-cases-tab">
-      <!-- Recommended Remedies -->
-      <h4>Recommended</h4>
-      <div *ngIf="recommendedRemedies.length > 0; else noRecommended">
-        <div class="row">
-          <div class="col-6 mb-3 border-end border-dark" *ngFor="let case of recommendedRemedies">
-            <div class="card small">
-              <img [src]="case.thumbnail" class="card-img-top" alt="Case Image" style="height: 120px; object-fit: cover;">
-              <div class="card-body p-2">
-                <h6 class="card-title text-truncate">Case {{ case.id }}</h6>
-                <p class="card-text text-truncate">{{ case.shortDescription }}...</p>
-                <p class="card-text"><small>Submitted by: {{ case.submittedBy }}</small></p>
-                <button class="btn btn-primary btn-sm" (click)="viewCase(case.id)">View</button>
+    <!-- Others Remedies Tab -->
+    <div
+      class="tab-pane fade show active"
+      id="others"
+      role="tabpanel"
+      aria-labelledby="others-tab"
+    >
+      <div class="row mt-3">
+        <!-- Recommended (Left Column) -->
+        <div class="col-md-4" style="border-right: 1px solid #ccc;">
+          <h4>Recommended</h4>
+          <div *ngIf="recommendedRemedies.length > 0; else noRecommended">
+            <div class="row row-cols-2 g-2">
+              <div class="col" *ngFor="let remedy of recommendedRemedies">
+                <div class="card h-100">
+                  <img
+                    [src]="remedy.thumbnail"
+                    class="card-img-top"
+                    alt="Thumbnail"
+                    style="height: 120px; object-fit: cover"
+                  />
+                  <div class="card-body p-2">
+                    <h6 class="card-title text-truncate">
+                      Case {{ remedy.id }}
+                    </h6>
+                    <p class="card-text text-truncate">
+                      {{ remedy.shortDescription }}
+                    </p>
+                    <p class="card-text">
+                      <small>Submitted by: {{ remedy.submittedBy }}</small>
+                    </p>
+                    <button
+                      class="btn btn-primary btn-sm mb-2"
+                      (click)="viewCase(remedy.id)"
+                    >
+                      View
+                    </button>
+                    <!-- Icon-only action buttons with counts -->
+                    <div>
+                      <button
+                        class="btn btn-outline-primary btn-sm me-1"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        title="Like"
+                        (click)="likeCase(remedy.id)"
+                      >
+                        <i class="bi bi-hand-thumbs-up"></i>
+                        <span class="ms-1">{{ remedy.likeCount }}</span>
+                      </button>
+                      <button
+                        class="btn btn-outline-secondary btn-sm me-1"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        title="Comment"
+                        (click)="viewComments(remedy.id)"
+                      >
+                        <i class="bi bi-chat"></i>
+                        <span class="ms-1">{{ remedy.comments.length }}</span>
+                      </button>
+                      <button
+                        class="btn btn-outline-info btn-sm"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        title="Share"
+                        (click)="shareCase(remedy.id)"
+                      >
+                        <i class="bi bi-share"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+          <ng-template #noRecommended>
+            <p class="text-muted">No recommended remedies available.</p>
+          </ng-template>
         </div>
-      </div>
-      <ng-template #noRecommended><p>No recommended remedies available.</p></ng-template>
 
-      <!-- Latest Remedies -->
-      <h4>Latest</h4>
-      <div *ngIf="latestRemedies.length > 0; else noLatest">
-        <div class="row">
-          <div class="col-6 mb-3 border-end border-dark" *ngFor="let case of latestRemedies">
-            <div class="card small">
-              <img [src]="case.thumbnail" class="card-img-top" alt="Case Image" style="height: 150px; object-fit: cover;">
-              <div class="card-body p-2">
-                <h6 class="card-title text-truncate">Case {{ case.id }}</h6>
-                <p class="card-text text-truncate">{{ case.shortDescription }}...</p>
-                <p class="card-text"><small>Submitted by: {{ case.submittedBy }}</small></p>
-                <button class="btn btn-primary btn-sm" (click)="viewCase(case.id)">View</button>
+        <!-- Latest (Center Column) -->
+        <div class="col-md-4" style="border-right: 1px solid #ccc;">
+          <h4>Latest</h4>
+          <div *ngIf="latestRemedies.length > 0; else noLatest">
+            <div class="row row-cols-2 g-2">
+              <div class="col" *ngFor="let remedy of latestRemedies">
+                <div class="card h-100">
+                  <img
+                    [src]="remedy.thumbnail"
+                    class="card-img-top"
+                    alt="Thumbnail"
+                    style="height: 120px; object-fit: cover"
+                  />
+                  <div class="card-body p-2">
+                    <h6 class="card-title text-truncate">
+                      Case {{ remedy.id }}
+                    </h6>
+                    <p class="card-text text-truncate">
+                      {{ remedy.shortDescription }}
+                    </p>
+                    <p class="card-text">
+                      <small>Submitted by: {{ remedy.submittedBy }}</small>
+                    </p>
+                    <button
+                      class="btn btn-primary btn-sm mb-2"
+                      (click)="viewCase(remedy.id)"
+                    >
+                      View
+                    </button>
+                    <!-- Icon-only action buttons with counts -->
+                    <div>
+                      <button
+                        class="btn btn-outline-primary btn-sm me-1"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        title="Like"
+                        (click)="likeCase(remedy.id)"
+                      >
+                        <i class="bi bi-hand-thumbs-up"></i>
+                        <span class="ms-1">{{ remedy.likeCount }}</span>
+                      </button>
+                      <button
+                        class="btn btn-outline-secondary btn-sm me-1"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        title="Comment"
+                        (click)="viewComments(remedy.id)"
+                      >
+                        <i class="bi bi-chat"></i>
+                        <span class="ms-1">{{ remedy.comments.length }}</span>
+                      </button>
+                      <button
+                        class="btn btn-outline-info btn-sm"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        title="Share"
+                        (click)="shareCase(remedy.id)"
+                      >
+                        <i class="bi bi-share"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+          <ng-template #noLatest>
+            <p class="text-muted">No latest remedies available.</p>
+          </ng-template>
         </div>
-      </div>
-      <ng-template #noLatest><p>No latest remedies available.</p></ng-template>
 
-      <!-- Trending Remedies -->
-      <h4>Trending</h4>
-      <div *ngIf="trendingRemedies.length > 0; else noTrending">
-        <div class="row">
-          <div class="col-6 mb-3 border-end border-dark" *ngFor="let case of trendingRemedies">
-            <div class="card small">
-              <img [src]="case.thumbnail" class="card-img-top" alt="Case Image" style="height: 120px; object-fit: cover;">
+        <!-- Trending (Right Column) -->
+        <div class="col-md-4">
+          <h4>Trending</h4>
+          <div *ngIf="trendingRemedies.length > 0; else noTrending">
+            <div class="row row-cols-2 g-2">
+              <div class="col" *ngFor="let remedy of trendingRemedies">
+                <div class="card h-100">
+                  <img
+                    [src]="remedy.thumbnail"
+                    class="card-img-top"
+                    alt="Thumbnail"
+                    style="height: 120px; object-fit: cover"
+                  />
+                  <div class="card-body p-2">
+                    <h6 class="card-title text-truncate">
+                      Case {{ remedy.id }}
+                    </h6>
+                    <p class="card-text text-truncate">
+                      {{ remedy.shortDescription }}
+                    </p>
+                    <p class="card-text">
+                      <small>Submitted by: {{ remedy.submittedBy }}</small>
+                    </p>
+                    <button
+                      class="btn btn-primary btn-sm mb-2"
+                      (click)="viewCase(remedy.id)"
+                    >
+                      View
+                    </button>
+                    <!-- Icon-only action buttons with counts -->
+                    <div>
+                      <button
+                        class="btn btn-outline-primary btn-sm me-1"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        title="Like"
+                        (click)="likeCase(remedy.id)"
+                      >
+                        <i class="bi bi-hand-thumbs-up"></i>
+                        <span class="ms-1">{{ remedy.likeCount }}</span>
+                      </button>
+                      <button
+                        class="btn btn-outline-secondary btn-sm me-1"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        title="Comment"
+                        (click)="viewComments(remedy.id)"
+                      >
+                        <i class="bi bi-chat"></i>
+                        <span class="ms-1">{{ remedy.comments.length }}</span>
+                      </button>
+                      <button
+                        class="btn btn-outline-info btn-sm"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        title="Share"
+                        (click)="shareCase(remedy.id)"
+                      >
+                        <i class="bi bi-share"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ng-template #noTrending>
+            <p class="text-muted">No trending remedies available.</p>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Your Remedies Tab -->
+    <div
+      class="tab-pane fade"
+      id="yours"
+      role="tabpanel"
+      aria-labelledby="yours-tab"
+    >
+      <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
+        <h4>Your Remedies</h4>
+        <button class="btn btn-success" (click)="createNewCase()">
+          Add New Case
+        </button>
+      </div>
+      <div *ngIf="yourRemedies.length > 0; else noYourRemedies">
+        <div class="row row-cols-2 g-2">
+          <div class="col" *ngFor="let remedy of yourRemedies">
+            <div class="card h-100">
+              <img
+                [src]="remedy.thumbnail"
+                class="card-img-top"
+                alt="Thumbnail"
+                style="height: 120px; object-fit: cover"
+              />
               <div class="card-body p-2">
-                <h6 class="card-title text-truncate">Case {{ case.id }}</h6>
-                <p class="card-text text-truncate">{{ case.shortDescription }}...</p>
-                <p class="card-text"><small>Submitted by: {{ case.submittedBy }}</small></p>
-                <button class="btn btn-primary btn-sm" (click)="viewCase(case.id)">View</button>
+                <h6 class="card-title text-truncate">
+                  Case {{ remedy.id }}
+                </h6>
+                <p class="card-text text-truncate">
+                  {{ remedy.shortDescription }}
+                </p>
+                <p class="card-text">
+                  <small>Submitted by: {{ remedy.submittedBy }}</small>
+                </p>
+                <button
+                  class="btn btn-primary btn-sm mb-2"
+                  (click)="viewCase(remedy.id)"
+                >
+                  View
+                </button>
+                <!-- Icon-only action buttons with counts -->
+                <div>
+                  <button
+                    class="btn btn-outline-primary btn-sm me-1"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Like"
+                    (click)="likeCase(remedy.id)"
+                  >
+                    <i class="bi bi-hand-thumbs-up"></i>
+                    <span class="ms-1">{{ remedy.likeCount }}</span>
+                  </button>
+                  <button
+                    class="btn btn-outline-secondary btn-sm me-1"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Comment"
+                    (click)="viewComments(remedy.id)"
+                  >
+                    <i class="bi bi-chat"></i>
+                    <span class="ms-1">{{ remedy.comments.length }}</span>
+                  </button>
+                  <button
+                    class="btn btn-outline-info btn-sm"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Share"
+                    (click)="shareCase(remedy.id)"
+                  >
+                    <i class="bi bi-share"></i>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <ng-template #noTrending><p>No trending remedies available.</p></ng-template>
+      <ng-template #noYourRemedies>
+        <p class="text-muted">
+          No cases added yet. Click "Add New Case" to get started.
+        </p>
+      </ng-template>
     </div>
   </div>
 </div>
 
-  
-  <!-- Preferences Modal -->
-  <div class="modal fade" id="preferencesModal" tabindex="-1" aria-labelledby="preferencesModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="preferencesModalLabel">Set Preferences</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<!-- Preferences Modal -->
+<div
+  class="modal fade"
+  id="preferencesModal"
+  tabindex="-1"
+  aria-labelledby="preferencesModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="preferencesModalLabel">
+          Set Preferences
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="newPreference"
+            placeholder="Enter a tag"
+          />
+          <button class="btn btn-primary" (click)="addPreference()">
+            Add
+          </button>
         </div>
-        <div class="modal-body">
-          <div class="input-group">
-            <input type="text" class="form-control" [(ngModel)]="newPreference" placeholder="Enter a tag">
-            <button class="btn btn-primary" (click)="addPreference()">Add</button>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        </div>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+        >
+          Close
+        </button>
       </div>
     </div>
   </div>
+</div>

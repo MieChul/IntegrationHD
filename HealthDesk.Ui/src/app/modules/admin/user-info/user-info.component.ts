@@ -6,8 +6,18 @@ import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AuthService } from '../../../shared/services/auth.service';
 import { AccountService } from '../../services/account.service';
 import { AdminService } from '../../services/admin.service';
+export enum Role {
+    physician = 1,
+    patient = 2,
+    admin = 3,
+    hospital = 4,
+    laboratory = 5,
+    pharmaceutical = 6,
+    pharmacy = 7
+}
 
 @Component({ templateUrl: 'user-info.component.html' })
+
 export class UserInfoComponent implements OnInit {
     form!: FormGroup;
     id?: string;
@@ -26,6 +36,9 @@ export class UserInfoComponent implements OnInit {
     comments: any = '';
     gender: any;
     commentError: any = false;
+    roleStatus:any;
+    selectedAction: string = '';
+
     constructor(
         private router: Router,
         private accountService: AccountService,
@@ -38,6 +51,7 @@ export class UserInfoComponent implements OnInit {
                 .subscribe(x => {
                     this.user = x;
                     this.user.role = history.state.role;
+                    this.roleStatus = this.getRoleStatus(history.state.role);
                     this.gender = this.user.gender;
                     if (this.user.role != 'patient' && this.user.role != 'physician')
                         this.tab = 'hosp_info';
@@ -48,6 +62,25 @@ export class UserInfoComponent implements OnInit {
             this.router.navigateByUrl('/admin');
         }
 
+    }
+
+    getRoleStatus(role: any): string | null {
+        // Convert role name string to Enum key (if it exists)
+        const roleKey = role as keyof typeof Role;
+
+        if (!roleKey || !(roleKey in Role)) {
+            console.error(`Invalid role: ${role}`);
+            return null;
+        }
+
+        // Get role ID from Enum
+        const roleId = Role[roleKey];
+
+        // Find the role in user.roles
+        const matchingRole = this.user.roles.find((r: any) => r.role === roleId);
+
+        // Return status if found, otherwise return null
+        return matchingRole ? matchingRole.status : null;
     }
 
     ngAfterViewInit() {
@@ -89,16 +122,19 @@ export class UserInfoComponent implements OnInit {
         this.router.navigateByUrl('/admin');
     }
 
-    onSubmit(value: string) {
+    onSubmit(action?: string) {
         this.submitted = true;
         this.updateErrors = false;
+        if (action) {
+            this.selectedAction = action;
+        }
 
-        if (value == 'Rejected' && !this.comments) {
+        if ((this.selectedAction == 'Rejected' || this.selectedAction == 'Blocked') && !this.comments) {
             this.commentError = true;
             return;
         }
 
-        this.adminService.adminAction(this.user.id, this.user.role, value, this.comments)
+        this.adminService.adminAction(this.user.id, this.user.role, this.selectedAction, this.comments)
             .pipe(first())
             .subscribe({
                 next: () => {
@@ -113,7 +149,8 @@ export class UserInfoComponent implements OnInit {
     }
 
 
-    open(content: TemplateRef<any>) {
+    open(content: TemplateRef<any>, action: string) {
+        this.selectedAction = action; 
         this.modalService.open(content, { ariaLabelledBy: 'modal-basic-title' }).result.then(
             (result) => {
                 this.closeResult = `Closed with: ${result}`;

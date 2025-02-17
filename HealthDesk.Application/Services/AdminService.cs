@@ -23,7 +23,7 @@ public class AdminService : IAdminService
         {
             user.Roles.ForEach(r =>
             {
-                if (r.Role.ToString().ToLower() == userRole)
+                if (value =="Blocked" || r.Role.ToString().ToLower() == userRole)
                 {
                     r.Status = value;
                 }
@@ -31,10 +31,15 @@ public class AdminService : IAdminService
             user.RejectionComments = comments;
             await _userRepository.UpdateAsync(user);
 
-            if (string.IsNullOrEmpty(user.Mobile))
-                _messageService.SendEmail(user.Email, "Congratulations, Your application for using HealthDesk has been approved.", "Hello " + user.FirstName + ", We are pleased to inform that your application has been approved for using HealtDesk App.\n Login using User name:" + user.Username + "\n Thank You, Admin HealthDesk");
-            else
-                _messageService.SendSms(user.Mobile, "Congratulations " + user.FirstName + ", Your application for using HealthDesk has been approved. Login using User name:" + user.Username);
+            if (string.IsNullOrEmpty(user.RejectionComments))
+            {
+
+                if (string.IsNullOrEmpty(user.Mobile))
+                    _messageService.SendEmail(user.Email, "Congratulations, Your application for using HealthDesk has been approved.", "Hello " + user.FirstName + ", We are pleased to inform that your application has been approved for using HealtDesk App.\n Login using User name:" + user.Username + "\n Thank You, Admin HealthDesk");
+                else
+                    _messageService.SendSms(user.Mobile, "Congratulations " + user.FirstName + ", Your application for using HealthDesk has been approved. Login using User name:" + user.Username);
+
+            }
         }
     }
 
@@ -55,13 +60,13 @@ public class AdminService : IAdminService
                 Contact = !string.IsNullOrEmpty(user.Mobile) ? user.Mobile : user.Email,
                 Role = role.Role.ToString(), // Role from the current iteration
                 Status = role.Status,
-                DependentName =user.DependentName,
+                DependentName = user.DependentName,
                 City = (role.Role == Role.Physician || role.Role == Role.Patient)
                     ? user.City
                     : user.ClinicCity
             }))
             .ToList();
 
-        return userList; 
+        return userList;
     }
 }
