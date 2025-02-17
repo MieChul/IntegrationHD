@@ -1,30 +1,34 @@
 <div class="container-fluid bg-transparent userInfo">
     <div class="row">
-        <div class="col-lg-2"> 
+        <div class="col-lg-2">
             <div class="card">
                 <div class="card-body">
                     <ul class="list-group">
-                        <li class="statusLink list-group-item d-flex justify-content-between align-items-center bg-primary cursor-pointer" (click)="filterRecords('All')">
-                          All
-                          <span class="badge bg-primary rounded-pill">{{countAll}}</span>
+                        <li class="statusLink list-group-item d-flex justify-content-between align-items-center bg-primary cursor-pointer"
+                            (click)="filterRecords('All')">
+                            All
+                            <span class="badge bg-primary rounded-pill">{{countAll}}</span>
                         </li>
-                        <li class="statusLink list-group-item d-flex justify-content-between align-items-center bg-warning cursor-pointer" (click)="filterRecords('Submitted')">
-                          Submitted
-                          <span class="badge bg-primary rounded-pill">{{countSubmitted}}</span>
+                        <li class="statusLink list-group-item d-flex justify-content-between align-items-center bg-warning cursor-pointer"
+                            (click)="filterRecords('Submitted')">
+                            Submitted
+                            <span class="badge bg-primary rounded-pill">{{countSubmitted}}</span>
                         </li>
-                        <li class="statusLink list-group-item d-flex justify-content-between align-items-center bg-success cursor-pointer" (click)="filterRecords('Approved')">
-                        Approved
-                          <span class="badge bg-primary rounded-pill">{{countApproved}}</span>
+                        <li class="statusLink list-group-item d-flex justify-content-between align-items-center bg-success cursor-pointer"
+                            (click)="filterRecords('Approved')">
+                            Approved
+                            <span class="badge bg-primary rounded-pill">{{countApproved}}</span>
                         </li>
-                        <li class="statusLink list-group-item d-flex justify-content-between align-items-center bg-danger cursor-pointer" (click)="filterRecords('Rejected')">
+                        <li class="statusLink list-group-item d-flex justify-content-between align-items-center bg-danger cursor-pointer"
+                            (click)="filterRecords('Rejected')">
                             Rejected
-                              <span class="badge bg-primary rounded-pill">{{countRejected}}</span>
-                            </li>
-                      </ul>
+                            <span class="badge bg-primary rounded-pill">{{countRejected}}</span>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
-        <div class="col-lg-10"> 
+        <div class="col-lg-10">
             <div class="card">
                 <div class="card-body">
                     <table class="table table-hover table-responsive">
@@ -40,14 +44,17 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr scope="row" *ngFor="let user of filteredUsers; index as i" class="cursor-pointer" (click)="userClicked(user.id, user.role)">
+                            <tr scope="row" *ngFor="let user of filteredUsers; index as i" class="cursor-pointer"
+                                (click)="userClicked(user.id, user.role)">
                                 <td>{{i+1}}</td>
                                 <td>{{user.name}}</td>
                                 <td>{{user.contact}}</td>
                                 <td>{{user.city}}</td>
-                                <td>{{user.role  | titlecase}}</td>
-                                <td>{{user.dependentName  | titlecase}}</td>
-                                <td ><span class="listStatus" [ngClass]="[user.status=='Submitted' ? 'bg-warning' : user.status=='Approved' ? 'bg-success' : user.status=='Rejected' ? 'bg-danger' : '']">{{user.status}}</span></td>
+                                <td>{{user.role | titlecase}}</td>
+                                <td>{{(user.role === 'Patient' ? user.dependentName : '') | titlecase}}</td>
+                                <td><span class="listStatus"
+                                        [ngClass]="[user.status=='Submitted' ? 'bg-warning' : user.status=='Approved' ? 'bg-success' : user.status=='Rejected' ? 'bg-danger' : '']">{{user.status}}</span>
+                                </td>
                             </tr>
                             <tr *ngIf="!users">
                                 <td colspan="4" class="text-center">

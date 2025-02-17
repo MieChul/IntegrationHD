@@ -12,20 +12,18 @@
                 </mat-form-field>
             </div>
         </div>
-        <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
-            <button class="btn btn-primary" (click)="addMedicine()">Add Medicine</button>
-        </div>
     </div>
 
     <div class="table-responsive">
         <table class="table table-hover table-modern">
             <thead>
                 <tr>
+                    <th (click)="sortTable('brand')">Brand Name</th>
+                    <th (click)="sortTable('treatmentDrug')">Treatment Drug</th>
                     <th (click)="sortTable('dosageForm')">Dosage Form</th>
-                    <th (click)="sortTable('drugName')">Drug Name</th>
                     <th (click)="sortTable('strength')">Strength</th>
-                    <th (click)="sortTable('strength')">Unit</th>
                     <th (click)="sortTable('frequency')">Frequency</th>
+                    <th (click)="sortTable('startDate')">Start Date</th>
                     <th (click)="sortTable('compliancePer')">Compliance</th>
                     <th (click)="sortTable('pillCount')">Pills Counter</th>
                     <th>Action</th>
@@ -33,13 +31,14 @@
             </thead>
             <tbody>
                 <tr *ngFor="let compliance of filteredPatientCompliances">
+                    <td>{{ compliance.brand }}</td>
+                    <td>{{ compliance.treatmentDrug }}</td>
                     <td>{{ compliance.dosageForm }}</td>
-                    <td>{{ compliance.drugName }}</td>
-                    <td>{{ compliance.strength }}</td>
-                    <td>{{ compliance.strengthUnit }}</td>
+                    <td>{{ compliance.strength }} {{ compliance.strengthUnit }}</td>
                     <td>{{ compliance.frequency }}</td>
-                    <td>{{ compliance.compliancePer }}%</td>
-                    <td>{{ compliance.pillCount }} remaining</td>
+                    <td>{{ compliance.startDate | date: 'dd-MM-yyyy' }}</td>
+                    <td>{{ compliance.compliancePer !== undefined ? compliance.compliancePer + '%' : 'NA' }}</td>
+                    <td>{{ compliance.pillCount !== undefined ? compliance.pillCount + ' remaining' : 'NA' }}</td>                    
                     <td>
                         <button class="btn btn-info btn-sm me-1" (click)="viewCompliance(compliance)"
                             ngbTooltip="View Compliance" tooltipClass="view-tooltip">
@@ -53,18 +52,13 @@
                             ngbTooltip="Medicine Info" tooltipClass="info-tooltip">
                             <i class="bi bi-info-circle"></i>
                         </button>
-                        <button class="btn btn-primary btn-sm me-1" (click)="editMedicine(compliance)"
-                            ngbTooltip="Edit Medicine" tooltipClass="edit-tooltip">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm" (click)="deleteMedicine(compliance)"
-                            ngbTooltip="Delete Medicine" tooltipClass="delete-tooltip">
-                            <i class="bi bi-trash"></i>
-                        </button>
                     </td>
                 </tr>
             </tbody>
         </table>
+        <div *ngIf="filteredPatientCompliances?.length === 0" class="alert alert-info">
+            No ongoing treatments found. Add ongoing Treatments under treatments to get started.
+        </div>
     </div>
 </div>
 
@@ -82,92 +76,27 @@
                     <div class="row">
                         <!-- Treatment Drug -->
                         <div class="col-md-6">
-                            <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Drug</mat-label>
-                                <mat-select formControlName="drugName" required>
-                                    <mat-option>
-                                        <ngx-mat-select-search [formControl]="drugFilterCtrl"
-                                            placeholderLabel="Search drug"></ngx-mat-select-search>
-                                    </mat-option>
-                                    <mat-option *ngFor="let drug of filteredDrugs | async" [value]="drug">
-                                        {{ drug }}
-                                    </mat-option>
-                                </mat-select>
-                                <mat-error *ngIf="reminderForm.get('treatmentDrug')?.hasError('required')">Drug is
-                                    required</mat-error>
-                            </mat-form-field>
+                           
                         </div>
 
                         <!-- Dosage Form -->
                         <div class="col-md-6">
-                            <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Dosage Form</mat-label>
-                                <mat-select formControlName="dosageForm" required>
-                                    <mat-option>
-                                        <ngx-mat-select-search [formControl]="dosageFormFilterCtrl"
-                                            placeholderLabel="Search form"></ngx-mat-select-search>
-                                    </mat-option>
-                                    <mat-option *ngFor="let form of filteredDosageForms | async" [value]="form">
-                                        {{ form }}
-                                    </mat-option>
-                                </mat-select>
-                                <mat-error *ngIf="reminderForm.get('dosageForm')?.hasError('required')">Dosage form is
-                                    required</mat-error>
-                            </mat-form-field>
+                            
                         </div>
                     </div>
                     <div class="row">
                         <!-- Strength -->
                         <div class="col-md-6">
-                            <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Strength</mat-label>
-                                <input matInput type="number" formControlName="strength" required />
-                                <mat-error *ngIf="reminderForm.get('strength')?.hasError('required')">Strength is
-                                    required</mat-error>
-                                <mat-error *ngIf="reminderForm.get('strength')?.hasError('min')">Strength must be a
-                                    positive number</mat-error>
-                            </mat-form-field>
+                          
                         </div>
-
-                        <!-- Strength Unit -->
+ <!-- Frequency -->
                         <div class="col-md-6">
-                            <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Strength Unit</mat-label>
-                                <mat-select formControlName="strengthUnit" required>
-                                    <mat-option>
-                                        <ngx-mat-select-search [formControl]="strengthUnitFilterCtrl"
-                                            placeholderLabel="Search unit"></ngx-mat-select-search>
-                                    </mat-option>
-                                    <mat-option *ngFor="let unit of filteredStrengthUnits | async" [value]="unit">
-                                        {{ unit }}
-                                    </mat-option>
-                                </mat-select>
-                                <mat-error *ngIf="reminderForm.get('strengthUnit')?.hasError('required')">Strength unit
-                                    is required</mat-error>
-                            </mat-form-field>
+                          
                         </div>
+                        
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Frequency</mat-label>
-                                <input matInput type="number" formControlName="frequency"
-                                    (change)="updateReminderRows()">
-                            </mat-form-field>
-                        </div>
-                        <div class="col-md-6">
-                            <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>How Often</mat-label>
-                                <mat-select formControlName="howOften" (selectionChange)="onHowOftenChange($event)">
-                                    <mat-option value="everyDay">Every Day</mat-option>
-                                    <mat-option value="alternateDay">Every Alternate Day</mat-option>
-                                    <mat-option value="specificDays">Specific Days</mat-option>
-                                    <mat-option value="customDays">Custom Days</mat-option>
-                                </mat-select>
-                            </mat-form-field>
-                        </div>
-                    </div>
+                    
                     <div class="row">
                         <div class="col-md-6">
                           <mat-form-field appearance="outline" class="w-100">
@@ -183,28 +112,6 @@
                           </mat-form-field>
                         </div>
                       </div>                  
-                    <div *ngIf="specificDays" class="row">
-                        <div class="col-md-12">
-                            <label class="form-label">Select Days</label>
-                            <div class="d-flex justify-content-between">
-                                <mat-checkbox *ngFor="let day of days" [formControlName]="'day-' + day">
-                                    {{ day }}
-                                </mat-checkbox>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div *ngIf="customDays" class="row">
-                        <div class="col-md-6">
-                            <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Custom Dates</mat-label>
-                                <input matInput [matDatepicker]="customDatePicker" formControlName="customDates"
-                                    placeholder="Select Date">
-                                <mat-datepicker-toggle matSuffix [for]="customDatePicker"></mat-datepicker-toggle>
-                                <mat-datepicker #customDatePicker></mat-datepicker>
-                            </mat-form-field>
-                        </div>
-                    </div>
                     <div class="row">
                         <div class="col-md-12">
                             <mat-form-field appearance="outline" class="w-100">
@@ -327,55 +234,6 @@
     </div>
 </div>
 
-<!-- Add Medicine Modal -->
-<div class="modal fade" id="addMedicineModal" tabindex="-1" aria-labelledby="addMedicineModalLabel" aria-hidden="true"
-    #addMedicineModal>
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addMedicineModalLabel">Add Medicine</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form [formGroup]="addMedicineForm">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Dosage Form</mat-label>
-                                <input matInput formControlName="dosageForm">
-                            </mat-form-field>
-                        </div>
-                        <div class="col-md-6">
-                            <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Drug Name</mat-label>
-                                <input matInput formControlName="drugName">
-                            </mat-form-field>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Strength</mat-label>
-                                <input matInput type="number" formControlName="strength">
-                            </mat-form-field>
-                        </div>
-                        <div class="col-md-6">
-                            <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Frequency</mat-label>
-                                <input matInput formControlName="frequency">
-                            </mat-form-field>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" (click)="saveMedicine()">Save Medicine</button>
-            </div>
-        </div>
-    </div>
-</div>
 <!-- Reminder Confirmation Popup Modal -->
 <div class="modal fade" id="reminderPopupModal" tabindex="-1" aria-labelledby="reminderPopupModalLabel" aria-hidden="true" #reminderPopupModal>
     <div class="modal-dialog modal-dialog-centered">

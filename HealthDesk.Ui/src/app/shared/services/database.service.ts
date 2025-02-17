@@ -1,6 +1,17 @@
 import { Injectable } from '@angular/core';
 import * as XLSX from 'xlsx';
 
+interface DrugEntry {
+  name: string;
+  dosageForm: string;
+  strengthUnit: string;
+}
+
+interface SelfRecordEntry {
+  recordType: string;
+  unit: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -17,20 +28,30 @@ export class DatabaseService {
     Durations: string[];
     Investigations: string[];
     Councils: string[];
+    Assessments: string[];
+    Colleges: string[];
+    Brands: string[];
+    SelfRecords: string[];
   } = {
-    Drugs: [],
-    Strengths: [],
-    Frequencies: [],
-    Systems: [],
-    Routes: [],
-    Forms: [],
-    Symptoms: [],
-    Vaccines: [],
-    Durations: [],
-    Investigations: [],
-    Councils: [],
-  };
+      Drugs: [],
+      Strengths: [],
+      Frequencies: [],
+      Systems: [],
+      Routes: [],
+      Forms: [],
+      Symptoms: [],
+      Vaccines: [],
+      Durations: [],
+      Investigations: [],
+      Councils: [],
+      Assessments: [],
+      Colleges: [],
+      Brands: [],
+      SelfRecords: []
+    };
 
+  private drugData: DrugEntry[] = [];
+  private selfRecordData: SelfRecordEntry[] = [];
   private readonly CACHE_KEY = 'databaseCache';
   private isLoaded = false;
 
@@ -40,8 +61,10 @@ export class DatabaseService {
     // Check for cached data
     const cachedData = localStorage.getItem(this.CACHE_KEY);
     if (cachedData) {
-      this.database = JSON.parse(cachedData);
-      this.isLoaded = true;
+      const parsedData = JSON.parse(cachedData);
+      this.database = parsedData.database;
+      this.drugData = parsedData.drugData || [];
+      this.selfRecordData = parsedData.selfRecordData || [];
       console.log('Loaded database from cache.');
       return;
     }
@@ -56,16 +79,53 @@ export class DatabaseService {
       for (const sheetName of Object.keys(this.database)) {
         const sheet = workbook.Sheets[sheetName];
         if (sheet) {
-          const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-          const columnA = data.slice(1).map((row: any) => row[0] as string); // Skip header row
-          this.database[sheetName as keyof typeof this.database] = Array.from(
-            new Set(columnA)
-          ).filter((value) => value); // Remove duplicates and blanks
+          if (sheetName === 'Drugs') {
+            const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            // Assuming the first row is a header and:
+            // Column 0: drug name, Column 1: dosage form, Column 2: strength unit.
+            const entries: DrugEntry[] = data
+              .map((row: any) => ({
+                name: row[0] as string,
+                dosageForm: row[1] as string,
+                strengthUnit: row[2] as string,
+              }))
+              .filter((entry) => entry.name); // Filter out rows without a drug name
+
+            this.drugData = entries;
+            // Populate the Drugs array with unique drug names.
+            this.database.Drugs = Array.from(
+              new Set(entries.map((entry) => entry.name))
+            ).filter(Boolean);
+          } 
+          else if (sheetName === 'SelfRecords') {
+            // Load SelfRecords data
+            const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            const entries: SelfRecordEntry[] = data
+              .map((row: any) => ({
+                recordType: row[0] as string,
+                unit: row[1] as string,
+              }))
+              .filter((entry) => entry.recordType);
+
+            this.selfRecordData = entries;
+            this.database.SelfRecords = Array.from(new Set(entries.map((entry) => entry.recordType))).filter(Boolean);
+          } 
+          else {
+            const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            const columnA = data.map((row: any) => row[0] as string); // Skip header row
+            this.database[sheetName as keyof typeof this.database] = Array.from(
+              new Set(columnA)
+            ).filter((value) => value); // Remove duplicates and blanks
+          }
         }
       }
 
       // Cache the database for future use
-      localStorage.setItem(this.CACHE_KEY, JSON.stringify(this.database));
+      localStorage.setItem(this.CACHE_KEY, JSON.stringify({
+        database: this.database,
+        drugData: this.drugData,
+        selfRecordData: this.selfRecordData
+      }));
       this.isLoaded = true;
       console.log('Database loaded and cached successfully.');
     } catch (error) {
@@ -83,8 +143,15 @@ export class DatabaseService {
     return this.database.Drugs;
   }
 
-  getStrengths(): string[] {
-    return this.database.Strengths;
+  getStrengths(drugName: string,
+    dosageForm: string): string[] {
+    const strengthUnits = this.drugData
+      .filter(
+        (entry) => entry.name === drugName && entry.dosageForm === dosageForm
+      )
+      .map((entry) => entry.strengthUnit)
+      .filter(Boolean);
+    return Array.from(new Set(strengthUnits));
   }
 
   getFrequencies(): string[] {
@@ -99,8 +166,12 @@ export class DatabaseService {
     return this.database.Routes;
   }
 
-  getForms(): string[] {
-    return this.database.Forms;
+  getForms(drugName: string): string[] {
+    const dosageForms = this.drugData
+      .filter((entry) => entry.name === drugName)
+      .map((entry) => entry.dosageForm)
+      .filter(Boolean);
+    return Array.from(new Set(dosageForms));
   }
 
   getSymptoms(): string[] {
@@ -121,5 +192,34 @@ export class DatabaseService {
 
   getCouncils(): string[] {
     return this.database.Councils;
+  }
+
+  getAssessments(): string[] {
+    return this.database.Assessments;
+  }
+
+  getMedicalColleges(): string[] {
+    return this.database.Colleges;
+  }
+
+  getDrugBrands(): string[] {
+    return this.database.Brands;
+  }
+
+  getSelfRecords(): string[] {
+    return this.database.SelfRecords;
+  }
+
+  getSelfRecordUnit(recordType: string): string | null {
+    const record = this.selfRecordData.find((entry) => entry.recordType === recordType);
+    return record ? record.unit : null;
+  }
+
+  getUnits(){
+    return this.database.Strengths;
+  }
+
+  getDosageForms(){
+    return this.database.Forms;
   }
 }

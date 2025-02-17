@@ -54,37 +54,23 @@ public class MedicalHistory : BaseEntity
     [BsonElement("date_of_diagnosis")]
     public DateTime DateOfDiagnosis { get; set; }
 
-    [BsonElement("treatment")]
-    public string TreatmentDrug { get; set; }
+    [BsonElement("start_date")]
+    public DateTime Start { get; set; }
 
-    [BsonElement("outcome")]
-    public string? Outcome { get; set; }
-
-    [BsonElement("dosage_form")]
-    public string DosageForm { get; set; }
-
-    [BsonElement("strength")]
-    public double Strength { get; set; }
-
-
-    [BsonElement("strength_unit")]
-    public string StrengthUnit { get; set; }
-
-    [BsonElement("frequency")]
-    public string Frequency { get; set; }
+    [BsonElement("end_date")]
+    public DateTime? End { get; set; }
 }
 
 public class Treatment : BaseEntity
 {
+    [BsonElement("brand")]
+    public string Brand { get; set; }
 
     [BsonElement("drug")]
     public string TreatmentDrug { get; set; }
 
     [BsonElement("dosage_form")]
     public string DosageForm { get; set; }
-
-    [BsonElement("strength")]
-    public double Strength { get; set; }
 
     [BsonElement("strength_unit")]
     public string StrengthUnit { get; set; }
@@ -182,8 +168,11 @@ public class SelfRecord : BaseEntity
     [BsonElement("type")]
     public string Type { get; set; }
 
-    [BsonElement("value")]
-    public double Value { get; set; }
+    [BsonElement("value1")]
+    public double Value1 { get; set; }
+
+    [BsonElement("value2")]
+    public double? Value2 { get; set; }
 
     [BsonElement("unit")]
     public string Unit { get; set; }
@@ -269,29 +258,14 @@ public class HomeRemedy : BaseEntity
 public class Compliance : BaseEntity
 {
 
-    [BsonElement("dosage_form")]
-    public string DosageForm { get; set; }
-
-    [BsonElement("drug_name")]
-    public string DrugName { get; set; }
-
-    [BsonElement("strength")]
-    public string Strength { get; set; }
-
-    [BsonElement("frequency")]
-    public string Frequency { get; set; }
-
-    [BsonElement("pills_count")]
-    public int PillsCount { get; set; }
-
-    [BsonElement("compliance_details")]
-    public List<ComplianceDetail> ComplianceDetails { get; set; } = new();
-
-    [BsonElement("reminders")]
+    public string Id { get; set; }
+    public string TreatmentId { get; set; }
+    public List<PatientComplianceDetail> ComplianceDetails { get; set; } = new();
+    public List<PatientMedicineInfo> PatientMedicineInfos { get; set; } = new();
     public List<Reminder> Reminders { get; set; } = new();
 }
 
-public class ComplianceDetail : BaseEntity
+public class PatientComplianceDetail : BaseEntity
 {
     [BsonElement("date")]
     public DateTime Date { get; set; }
@@ -299,31 +273,26 @@ public class ComplianceDetail : BaseEntity
     [BsonElement("time")]
     public string Time { get; set; }
 
-    [BsonElement("is_compliant")]
-    public bool IsCompliant { get; set; }
+    [BsonElement("pill_taken")]
+    public bool PillTaken { get; set; }
+}
+
+public class PatientMedicineInfo : BaseEntity
+{
+    public DateTime PurchaseDate { get; set; }
+    public int Count { get; set; }
+    public int ThreshHold { get; set; }
+    public bool IsActive { get; set; }
 }
 
 public class Reminder : BaseEntity
 {
 
-    [BsonElement("frequency_time")]
-    public List<string> TimesOfDay { get; set; }
-
-    [BsonElement("days")]
-    public List<FrequencyDays> Days { get; set; }
-
-    [BsonElement("instruction")]
+    public string Id { get; set; }
+    public List<string> TimesOfDay { get; set; } = new();
     public string Instruction { get; set; }
 }
 
-public class FrequencyDays : BaseEntity
-{
-    public DateTime? FromDate { get; set; }
-    public DateTime? ToDate { get; set; }
-
-    public int FrequencyDayTypeKey { get; set; }
-    public List<string> WeekDaysSelected { get; set; }
-}
 
 public class PatientInfo : BaseEntity
 {

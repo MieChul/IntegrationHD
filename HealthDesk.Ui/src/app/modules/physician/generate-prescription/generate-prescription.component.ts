@@ -59,9 +59,9 @@ export class GeneratePrescriptionComponent implements OnInit {
           next: async (response: any) => {
             this.headerImg = await this.fetchImageAsBase64(response.data.header);
             this.footerImg = await this.fetchImageAsBase64(response.data.footer);
-            this.dosageForms = await this.databaseService.getForms();
+            //this.dosageForms = await this.databaseService.getForms();
             this.drugNames = await this.databaseService.getDrugs();
-            this.strengths = await this.databaseService.getStrengths();
+            //this.strengths = await this.databaseService.getStrengths();
             this.times = await this.databaseService.getFrequencies();
             this.durations = await this.databaseService.getDurations();
             this.systemsDd = await this.databaseService.getSystems();

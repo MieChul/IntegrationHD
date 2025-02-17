@@ -9,12 +9,20 @@ public class AccountService : IAccountService
 {
     private readonly IUserRepository _userRepository;
     private readonly IPhysicianRepository _physicianRepository;
+    private readonly IPatientRepository _patientRepository;
+    private readonly IHospitalRepository _hospitalRepository;
+    private readonly ILaboratoryRepository _laboratoryRepository;
+    private readonly IPharmacyRepository _pharmacyRepository;
     private readonly IMessageService _messageService;
-    public AccountService(IUserRepository userRepository, IMessageService messageService, IPhysicianRepository physicianRepository)
+    public AccountService(IUserRepository userRepository, IMessageService messageService, IPhysicianRepository physicianRepository, IPatientRepository patientRepository, IHospitalRepository hospitalRepository, ILaboratoryRepository laboratoryRepository, IPharmacyRepository pharmacyRepository)
     {
         _userRepository = userRepository;
         _messageService = messageService;
         _physicianRepository = physicianRepository;
+        _hospitalRepository = hospitalRepository;
+        _laboratoryRepository = laboratoryRepository;
+        _patientRepository = patientRepository;
+        _pharmacyRepository = pharmacyRepository;
     }
 
     public async Task<User> GetById(string id)
@@ -67,12 +75,27 @@ public class AccountService : IAccountService
             user.AuthMob = model.AuthMob;
             user.AuthEmail = model.AuthEmail;
             user.Roles.ForEach(r =>
-            {
-                if (r.Role.ToString().ToLower() == model.Role)
-                {
-                    r.Status = model.IsSave && r.Status != "Submitted" && r.Status != "Approved" ? "Saved" : r.Role == Role.Physician ? "Submitted" : "Approved";
-                }
-            });
+ {
+     if (r.Role.ToString().ToLower() == model.Role)
+     {
+         // If no status is present and model.IsSave is true, set status to "Saved"
+         if (string.IsNullOrEmpty(r.Status) && model.IsSave)
+         {
+             r.Status = "Saved";
+         }
+         // If status is already present and model.IsSave is true, retain the existing status
+         else if (!string.IsNullOrEmpty(r.Status) && model.IsSave)
+         {
+             r.Status = r.Status;
+         }
+         // If model.IsSave is false, set status based on role
+         else if (!model.IsSave)
+         {
+             r.Status = (r.Role == Role.Physician) ? "Submitted" : "Approved";
+         }
+     }
+ });
+
 
             if (user.Roles.Any(u => u.Status == "Approved"))
                 user.CanSwitch = true;
@@ -196,6 +219,7 @@ public class AccountService : IAccountService
     public async Task<dynamic> SwithRole(string id, string role)
     {
         var userEntity = await _userRepository.GetByIdAsync(id);
+        string roleId = string.Empty;
         if (userEntity == null) throw new KeyNotFoundException("User not found");
 
         if (userEntity.Roles.Any(r => r.Role.ToString().ToLower() == role && r.Status == "Approved"))
@@ -204,9 +228,84 @@ public class AccountService : IAccountService
         {
             if (!userEntity.Roles.Any(r => r.Role.ToString().ToLower() == role))
             {
-                userEntity.Roles.Add(new UserRole { Role = (Role)Enum.Parse(typeof(Role), role, true), Status = "New" });
+                if (Enum.TryParse(role, true, out Role roleSwitch)) // Case-insensitive conversion
+                {
+                    switch (roleSwitch)
+                    {
+                        case Role.Physician:
+                            var physician = new Physician
+                            {
+                                UserId = id, // Link to the user
+                                Clinics = new List<Clinic>(),
+                                DesignPrescriptions = new List<DesignPrescription>(),
+                                Patients = new List<PatientRecord>(),
+                                MedicalCases = new List<MedicalCase>()
+                            };
+                            await _physicianRepository.AddAsync(physician);
+                            roleId = physician.Id;
+                            break;
+
+                        case Role.Patient:
+                            var patient = new Patient
+                            {
+                                UserId = id,
+                                MedicalHistory = new List<MedicalHistory>(),
+                                CurrentTreatments = new List<Treatment>(),
+                                Appointments = new List<Appointment>(),
+                                SelfRecords = new List<SelfRecord>(),
+                                Symptoms = new List<Symptom>(),
+                                LabInvestigations = new List<LabInvestigation>(),
+                                Immunizations = new List<Immunization>(),
+                                Compliance = new List<Compliance>(),
+                                Activities = new List<Activity>(),
+                                PatientInfo = new PatientInfo(),
+                                HomeRemedies = new List<HomeRemedy>(),
+                                Reports = new List<Report>()
+                            };
+                            await _patientRepository.AddAsync(patient);
+                            roleId = patient.Id;
+                            break;
+
+                        case Role.Hospital:
+                            var hospital = new Hospital
+                            {
+                                UserId = id,
+                                Physicians = new List<string>(),
+                                Services = new List<Service>(),
+                                MedicalCases = new List<MedicalCase>()
+                            };
+                            await _hospitalRepository.AddAsync(hospital);
+                            roleId = hospital.Id;
+                            break;
+
+                        case Role.Laboratory:
+                            var laboratory = new Laboratory
+                            {
+                                UserId = id,
+                                LabTests = new List<LabTest>()
+                            };
+                            await _laboratoryRepository.AddAsync(laboratory);
+                            roleId = laboratory.Id;
+                            break;
+
+                        case Role.Pharmacy:
+                            var pharmacy = new Pharmacy
+                            {
+                                UserId = id,
+                                Medicines = new List<Medicine>()
+                            };
+                            await _pharmacyRepository.AddAsync(pharmacy);
+                            roleId = pharmacy.Id;
+                            break;
+
+                        default:
+                            throw new InvalidOperationException("Unsupported role");
+                    }
+                    userEntity.Roles.Add(new UserRole { Id = roleId, Role = (Role)Enum.Parse(typeof(Role), role, true), Status = "New" });
+                }
                 _userRepository.UpdateAsync(userEntity);
             }
+
             return new { role = role, username = userEntity.Username, id = userEntity.Id, profImage = userEntity.ProfImage, status = "Confirm", canswitch = userEntity.CanSwitch, dependentId = userEntity.DependentId, dependentName = userEntity.DependentName, hasDependent = userEntity.HasDependent };
         }
 
@@ -329,24 +428,46 @@ public class AccountService : IAccountService
         // Initialize a new dependent user
         var user = new User
         {
-            Roles = new List<UserRole> { new UserRole { Role = Role.Patient, Status = "New" } },
             PasswordHash = userEntity.PasswordHash,
             Mobile = userEntity.Mobile,
             Email = userEntity.Email,
             Username = userEntity.Username,
             DependentId = userEntity.Id,
             DependentName = $"{userEntity.FirstName} {userEntity.LastName}",
-            HasDependent = false
+            HasDependent = false,
+            CanSwitch = false
         };
 
         // Add the new dependent to the database
         try
         {
+
             await _userRepository.AddAsync(user);
             // Ensure the ID is retrieved
             if (string.IsNullOrEmpty(user.Id))
                 throw new InvalidOperationException("Failed to retrieve the generated ID for the new user.");
 
+            var roleId = string.Empty;
+            var patient = new Patient
+            {
+                UserId = user.Id,
+                MedicalHistory = new List<MedicalHistory>(),
+                CurrentTreatments = new List<Treatment>(),
+                Appointments = new List<Appointment>(),
+                SelfRecords = new List<SelfRecord>(),
+                Symptoms = new List<Symptom>(),
+                LabInvestigations = new List<LabInvestigation>(),
+                Immunizations = new List<Immunization>(),
+                Compliance = new List<Compliance>(),
+                Activities = new List<Activity>(),
+                PatientInfo = new PatientInfo(),
+                HomeRemedies = new List<HomeRemedy>(),
+                Reports = new List<Report>()
+            };
+            await _patientRepository.AddAsync(patient);
+            roleId = patient.Id;
+            user.Roles = new List<UserRole> { new UserRole { Id = roleId, Role = Role.Patient, Status = "New" } };
+            await _userRepository.UpdateAsync(user);
             userEntity.HasDependent = true;
             userEntity.DependentName = $"{user.FirstName} {user.LastName}";
             await _userRepository.UpdateAsync(userEntity);

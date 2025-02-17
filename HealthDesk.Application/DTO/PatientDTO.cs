@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Security.AccessControl;
 
 namespace HealthDesk.Application;
 public class MedicalHistoryDto
@@ -13,47 +14,28 @@ public class MedicalHistoryDto
     [StringLength(100, ErrorMessage = "Disease must not exceed 100 characters.")]
     public string Disease { get; set; }
 
+    [Required(ErrorMessage = "Start Date is required.")]
+    [DataType(DataType.Date)]
+    public DateTime Start { get; set; }
 
-    [Required(ErrorMessage = "Treatment drug is required.")]
-    [StringLength(100, ErrorMessage = "Treatment drug must not exceed 100 characters.")]
-    public string TreatmentDrug { get; set; }
-
-    [Required(ErrorMessage = "Dosage form is required.")]
-    [StringLength(50, ErrorMessage = "Dosage form must not exceed 50 characters.")]
-    public string DosageForm { get; set; }
-
-    [Required(ErrorMessage = "Strength is required.")]
-    [Range(0, double.MaxValue, ErrorMessage = "Strength must be a positive number.")]
-    public double Strength { get; set; }
-
-    [Required(ErrorMessage = "Strength unit is required.")]
-    [StringLength(50, ErrorMessage = "Strength unit must not exceed 50 characters.")]
-    public string StrengthUnit { get; set; }
-
-    [Required(ErrorMessage = "Frequency is required.")]
-    [StringLength(50, ErrorMessage = "Frequency must not exceed 50 characters.")]
-    public string Frequency { get; set; }
-
-    [Required(ErrorMessage = "Outcome is required.")]
-    [StringLength(50, ErrorMessage = "Outcome must not exceed 50 characters.")]
-    public string Outcome { get; set; }
+    [DataType(DataType.Date)]
+    public DateTime? End { get; set; }
 }
 
 public class CurrentTreatmentDto
 {
     public string? Id { get; set; }
 
+    [Required(ErrorMessage = "Brand is required.")]
+    [StringLength(100, ErrorMessage = "Treatment drug must not exceed 100 characters.")]
+    public string Brand { get; set; }
+
     [Required(ErrorMessage = "Treatment drug is required.")]
     [StringLength(100, ErrorMessage = "Treatment drug must not exceed 100 characters.")]
     public string TreatmentDrug { get; set; }
     [Required(ErrorMessage = "Dosage form is required.")]
     [StringLength(50, ErrorMessage = "Dosage form must not exceed 50 characters.")]
     public string DosageForm { get; set; }
-
-
-    [Required(ErrorMessage = "Strength is required.")]
-    [Range(0, double.MaxValue, ErrorMessage = "Strength must be a positive number.")]
-    public double Strength { get; set; }
 
     [Required(ErrorMessage = "Strength unit is required.")]
     [StringLength(50, ErrorMessage = "Strength unit must not exceed 50 characters.")]
@@ -128,7 +110,10 @@ public class SelfRecordDto
 
     [Required(ErrorMessage = "Value is required.")]
     [Range(0, double.MaxValue, ErrorMessage = "Value must be a positive number.")]
-    public double Value { get; set; }
+    public double Value1 { get; set; }
+
+    [Range(0, double.MaxValue, ErrorMessage = "Value must be a positive number.")]
+    public double? Value2 { get; set; }
 
     [Required(ErrorMessage = "Unit is required.")]
     [StringLength(50, ErrorMessage = "Uit must not exceed 50 characters.")]
@@ -228,22 +213,42 @@ public class PatientInfoDto
 public class PatientComplianceDto
 {
     public string Id { get; set; }
-    public string DosageForm { get; set; }
-    public string DrugName { get; set; }
-    public string Strength { get; set; }
-    public string Frequency { get; set; }
-    public double CompliancePercentage { get; set; }
-    public int PillsCount { get; set; }
-    public List<ComplianceDetailDto> ComplianceDetails { get; set; } = new();
-    public List<ReminderDto> Reminders { get; set; } = new();
+    public string TreatmentId { get; set; }
+    public double CompliancePercentage{ get; set; }
+      
+    public int PillsCount{ get; set; }
+    public List<PatientComplianceDetailDto> ComplianceDetails { get; set; } = new();
+    public List<PatientMedicineInfoDto> PatientMedicineInfos { get; set; } = new();
+    public List<PatientReminderDto> Reminders { get; set; } = new();
+    public string? Brand { get; set; }
+    public string? TreatmentDrug { get; set; }
+    public string? DosageForm { get; set; }
+    public string? StrengthUnit { get; set; }
+    public string? Frequency { get; set; }
+    public DateTime? StartDate { get; set; }
 }
 
-public class FrequencyDaysDto
+public class PatientComplianceDetailDto
 {
-    public DateTime? FromDate { get; set; }
-    public DateTime? ToDate { get; set; }
-    public int FrequencyDayTypeKey { get; set; }
-    public List<string> WeekDaysSelected { get; set; } = new();
+    public string Id { get; set; }
+    public DateTime Date { get; set; }
+    public string Time { get; set; }
+    public bool PillTaken { get; set; }
+}
+
+public class PatientMedicineInfoDto
+{
+    public DateTime PurchaseDate { get; set; }
+    public int Count { get; set; }
+    public int ThreshHold { get; set; }
+    public bool IsActive { get; set; }
+}
+
+public class PatientReminderDto
+{
+    public string Id { get; set; }
+    public List<string> TimesOfDay { get; set; } = new();
+    public string Instruction { get; set; }
 }
 
 public class ActivityDto

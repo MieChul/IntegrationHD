@@ -22,13 +22,19 @@ export class SelfRecordComponent implements OnInit {
   sortDirection: { [key: string]: 'asc' | 'desc' } = {};
   filteredSelfRecords: any;
   units: any = [];
+  types: any = [];
   filteredUnits!: Observable<string[]>;
+  filteredTypes!: Observable<string[]>;
   unitFilterCtrl = new FormControl();
+  typeFilterCtrl = new FormControl();
   submitted: boolean = false;
+  showValue2: boolean = false;
   filterForm!: FormGroup<{
     startDate: FormControl<string | null>;
     endDate: FormControl<string | null>;
   }>;
+
+  allowedDecimalTypes = ['Weight', 'Blood Sugar (Fasting)', 'Blood Sugar (Postprandial)', 'Blood Sugar (Random)', 'Body Temperature'];
 
   @ViewChild('selfRecordModal') selfRecordModal!: ElementRef;
 
@@ -41,7 +47,7 @@ export class SelfRecordComponent implements OnInit {
       next: async (data) => {
         this.userData = data;
 
-        this.units = await this.databaseService.getStrengths();
+        this.types = await this.databaseService.getSelfRecords();
 
         await this.loadSelfRecords();
         await this.initializeSearch();
@@ -55,7 +61,8 @@ export class SelfRecordComponent implements OnInit {
       id: this.fb.control(''),
       date: this.fb.control('', [Validators.required, this.futureDateValidator]),
       type: this.fb.control('', [Validators.required, Validators.max(50)]),
-      value: this.fb.control('', [Validators.required, Validators.min(0)]),
+      value1: this.fb.control('', [Validators.required, Validators.min(0)]),
+      value2: this.fb.control(''),
       unit: this.fb.control('', Validators.required)
     });
 
@@ -108,6 +115,11 @@ export class SelfRecordComponent implements OnInit {
   }
 
   initializeSearch() {
+    this.filteredTypes = this.typeFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search: any) => this.filterOptions(search, this.types))
+    );
+
     this.filteredUnits = this.unitFilterCtrl.valueChanges.pipe(
       startWith(''),
       map((search: any) => this.filterOptions(search, this.units))
@@ -119,10 +131,52 @@ export class SelfRecordComponent implements OnInit {
     return options.filter(option => option.toLowerCase().includes(filterValue));
   }
 
+  async onSelfRecordChange() {
+    const selectedRecord = this.selfRecordForm.get('type')?.value;
+    this.selfRecordForm.patchValue({ unit: this.databaseService.getSelfRecordUnit(selectedRecord) });
+
+    // Show value2 (Diastolic) only if type is Blood Pressure
+    this.showValue2 = selectedRecord === 'Blood Pressure';
+
+    // Update value1 and value2 validators based on selected type
+    this.updateValidators(selectedRecord);
+  }
+
+  updateValidators(recordType: string) {
+    const value1Control = this.selfRecordForm.get('value1');
+    const value2Control = this.selfRecordForm.get('value2');
+
+    // Reset previous validators
+    value1Control?.clearValidators();
+    value2Control?.clearValidators();
+
+    // Default validators: Required & Min value (No decimals allowed)
+    let validatorsForValue1 = [Validators.required, Validators.min(0)];
+    let validatorsForValue2 = [Validators.required, Validators.min(0)];
+
+    // Allow decimals for specific record types
+    if (this.allowedDecimalTypes.includes(recordType)) {
+      validatorsForValue1.push(Validators.pattern(/^\d+(\.\d{1})?$/)); // Allows up to 1 decimal place
+    }
+
+    // Apply validators
+    value1Control?.setValidators(validatorsForValue1);
+
+    if (this.showValue2) {
+      value2Control?.setValidators(validatorsForValue2);
+    } else {
+      value2Control?.reset(); // Clear value2 if not needed
+    }
+
+    // Update form validity
+    value1Control?.updateValueAndValidity();
+    value2Control?.updateValueAndValidity();
+  }
 
   addSelfRecord(): void {
     this.selfRecordForm.reset();
     this.isEditMode = false;
+    this.showValue2 = false;
     const modal = new bootstrap.Modal(document.getElementById('selfRecordModal')!);
     modal.show();
   }
@@ -164,6 +218,7 @@ export class SelfRecordComponent implements OnInit {
   editSelfRecord(record: any): void {
     this.isEditMode = true;
     this.selfRecordForm.patchValue(record);
+    this.showValue2 = record.type === 'Blood Pressure';
     const modal = new bootstrap.Modal(document.getElementById('selfRecordModal')!);
     modal.show();
   }

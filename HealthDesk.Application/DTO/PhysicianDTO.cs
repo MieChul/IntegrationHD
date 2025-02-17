@@ -200,7 +200,6 @@ public class ReminderDto
 {
     public string Id { get; set; }
     public List<string> TimesOfDay { get; set; } = new();
-    public List<FrequencyDaysDto> Days { get; set; } = new();
     public string Instruction { get; set; }
 }
 

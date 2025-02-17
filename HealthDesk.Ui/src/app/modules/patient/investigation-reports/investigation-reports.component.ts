@@ -1,16 +1,13 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { Modal } from 'bootstrap';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import * as bootstrap from 'bootstrap';
+import { FilteringService } from '../../../shared/services/filter.service';
+import { PatientService } from '../../services/patient.service';
+import { AccountService } from '../../services/account.service';
+import { DatabaseService } from '../../../shared/services/database.service';
+import { SortingService } from '../../../shared/services/sorting.service';
+import { map, Observable, startWith } from 'rxjs';
 
-interface InvestigationReport {
-  date: Date;
-  time: string;
-  typeOfAssessment: string;
-  assessmentParameters: string;
-  results: string;
-  comment: string;
-  reportFileName?: string;
-}
 
 @Component({
   selector: 'app-investigation-reports',
@@ -18,27 +15,60 @@ interface InvestigationReport {
   styleUrls: ['./investigation-reports.component.scss']
 })
 export class InvestigationReportsComponent implements OnInit {
-  investigationReports: InvestigationReport[] = [];
+  investigationReports: any = [];
+  filteredInvestigationReports: any = [];
   reportForm!: FormGroup;
   isEditMode: boolean = false;
-  selectedReport!: InvestigationReport;
-  editIndex: number | null = null;
+  selectedReport!: any;
   selectedFile!: File | null;
-  submitted:boolean = false;
+  submitted: boolean = false;
   filterForm!: FormGroup;
+  sortDirection: { [key: string]: 'asc' | 'desc' } = {};
+  userData: any;
+  assessments: string[] = [];
 
-  assessmentTypes: string[] = ['Blood Test', 'X-ray', 'MRI', 'CT Scan', 'Ultrasound'];
+  assessmentFilterCtrl = new FormControl();
+  filteredAssessments!: Observable<string[]>;
+  filteredAssessmentsData: any = [];
 
   @ViewChild('reportModal') reportModal!: ElementRef;
 
-  constructor(private fb: FormBuilder) {}
+  constructor(
+    private fb: FormBuilder,
+    private sortingService: SortingService,
+    private filteringService: FilteringService,
+    private patientService: PatientService,
+    private accountService: AccountService,
+    private databaseService: DatabaseService
+  ) { }
 
   ngOnInit(): void {
+    this.initializeForms();
+
+    this.accountService.getUserData().subscribe({
+      next: async (data) => {
+        this.userData = data;
+        this.assessments = await this.databaseService.getAssessments();
+
+        // Load symptoms
+        await this.loadRecords();
+        await this.initializeSearch();
+
+      },
+      error: (err) => console.error('Error fetching user data:', err)
+    });
+  }
+
+  initializeForms(): void {
     this.reportForm = this.fb.group({
-      date: [''],
-      time: [''],
-      typeOfAssessment: [''],
-      assessmentParameters: [''],
+      id: this.fb.control(''),
+      date: this.fb.control('', [
+        Validators.required,
+        this.futureDateValidator
+      ]),
+      time: this.fb.control('', Validators.required),
+      typeOfAssessment: this.fb.control('', Validators.required),
+      assessmentParameters: this.fb.control('', Validators.required),
       results: [''],
       comment: ['']
     });
@@ -50,20 +80,42 @@ export class InvestigationReportsComponent implements OnInit {
       }
     );
 
-    this.loadDummyData();
+    this.filterForm.valueChanges.subscribe(() => this.applyDateFilter());
   }
 
-  loadDummyData(): void {
+  loadRecords(): void {
+    if (!this.userData?.id) {
+      console.error('User ID is missing');
+      return;
+    }
+
+    this.patientService.getReports(this.userData.id).subscribe({
+      next: (data: any) => {
+        this.investigationReports = data?.data.map((investigationData: any) => ({
+          ...investigationData
+        })).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());;
+        this.filteredInvestigationReports = [...this.investigationReports];
+      },
+      error: (error) => {
+        console.error('Error loading symptom:', error);
+      }
+    });
   }
 
-  addReport(): void {
-    this.reportForm.reset();
-    this.isEditMode = false;
-    this.editIndex = null;
-    this.selectedFile = null;
-    const modal = new Modal(this.reportModal.nativeElement);
-    modal.show();
+
+  initializeSearch(): void {
+    this.filteredAssessments = this.assessmentFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.assessments))
+    );
+
   }
+
+  filterOptions(search: string, options: string[]): string[] {
+    const filterValue = search.toLowerCase();
+    return options.filter(option => option.toLowerCase().includes(filterValue));
+  }
+
 
   onFileSelected(event: any): void {
     const file = event.target.files[0];
@@ -75,35 +127,56 @@ export class InvestigationReportsComponent implements OnInit {
     }
   }
 
-  saveReport(): void {
-    const formData = this.reportForm.value;
+  openReportModal(isEditMode: boolean, record: any = null): void {
+    this.isEditMode = isEditMode;
 
-    if (this.isEditMode && this.editIndex !== null) {
-      // Update existing report
-      this.investigationReports[this.editIndex] = formData;
-      if (this.selectedFile) {
-        formData.reportFileName = `${this.editIndex}_investigation.pdf`;
-        this.saveFile(this.selectedFile, formData.reportFileName);
-      }
+    if (isEditMode && record) {
+      this.selectedReport = record;
+      this.reportForm.patchValue(record);
     } else {
-      // Add new report
-      formData.reportFileName = `${this.investigationReports.length}_investigation.pdf`;
-      this.investigationReports.push(formData);
-      if (this.selectedFile) {
-        this.saveFile(this.selectedFile, formData.reportFileName);
-      }
+      this.selectedReport = null;
+      this.reportForm.reset();
     }
 
-    const modal = Modal.getInstance(this.reportModal.nativeElement);
-    if (modal) {
-      modal.hide();
+    const modal = new bootstrap.Modal(this.reportModal.nativeElement);
+    modal.show();
+  }
+
+  saveReport(): void {
+    this.reportForm.markAllAsTouched();
+    if (this.reportForm.invalid || !this.userData.id) return;
+
+    if (this.isEditMode) {
+      this.patientService.saveReport(this.userData.id, this.reportForm.value).subscribe({
+        next: (response: any) => {
+          this.loadRecords();
+        },
+        error: (error: any) => {
+          console.error('Error updating symptoms:', error);
+        },
+      });
+    } else {
+      // Add new medical symptom
+      this.patientService
+        .saveReport(this.userData.id, this.reportForm.value)
+        .subscribe({
+          next: (response) => {
+            this.loadRecords();
+          },
+          error: (error) => {
+            console.error('Error adding symptoms:', error);
+          },
+        });
     }
+
+    bootstrap.Modal.getInstance(this.reportModal.nativeElement)?.hide();
+
   }
 
   saveFile(file: File, fileName: string): void {
     const filePath = `src/assets/investigations/${fileName}`;
     const reader = new FileReader();
-    reader.onload = function() {
+    reader.onload = function () {
       const blob = new Blob([reader.result as ArrayBuffer], { type: 'application/pdf' });
       const link = document.createElement('a');
       link.href = window.URL.createObjectURL(blob);
@@ -119,18 +192,46 @@ export class InvestigationReportsComponent implements OnInit {
     window.open(filePath, '_blank');
   }
 
-  sortTable(column: keyof InvestigationReport): void {
-    this.investigationReports.sort((a, b) => {
-      const aValue = a[column] ?? ''; // Use nullish coalescing to default to an empty string if undefined
-      const bValue = b[column] ?? ''; // Same for b
+  deleteReport(report: any): void {
+    if (!this.userData.id || !report.id) return;
 
-      if (aValue < bValue) {
-        return -1;
-      } else if (aValue > bValue) {
-        return 1;
-      } else {
-        return 0;
+    this.patientService.deleteReport(this.userData.id, report.id).subscribe({
+      next: (response) => {
+        console.log(response.message); // Success message from API
+        this.loadRecords(); // Reload the list after successful deletion
+      },
+      error: (error) => {
+        console.error('Error deleting symptom:', error); // Handle errors
       }
     });
+  }
+
+  applyDateFilter(): void {
+    const { f_startDate, f_endDate } = this.filterForm.value;
+
+    // Apply the date filter using the filtering service
+    this.filteredInvestigationReports = this.filteringService.filter(
+      this.investigationReports,
+      {},
+      [
+        {
+          field: 'dateOfOnset',
+          range: [f_startDate || null, f_endDate || null]
+        }
+      ]
+    );
+  }
+
+  sortTable(column: string): void {
+    this.sortDirection[column] = this.sortDirection[column] === 'asc' ? 'desc' : 'asc';
+    this.filteredInvestigationReports = this.sortingService.sort(this.filteredInvestigationReports, column, this.sortDirection[column]);
+  }
+
+  futureDateValidator(control: any): { [key: string]: boolean } | null {
+    const currentDate = new Date();
+    if (new Date(control.value) > currentDate) {
+      return { futureDate: true };
+    }
+    return null;
   }
 }

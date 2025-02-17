@@ -359,50 +359,179 @@ public class PatientService : IPatientService
             throw new ArgumentException("Patient not found.");
         return patient;
     }
+
     public async Task<IEnumerable<PatientComplianceDto>> GetComplianceAsync(string patientId)
     {
-        var patient = await _patientRepository.GetByIdAsync(patientId);
-        return patient.Compliance.Select(c => GenericMapper.Map<Compliance, PatientComplianceDto>(c));
-    }
-
-    public async Task AddOrUpdateComplianceAsync(string patientId, PatientComplianceDto dto)
-    {
-        var patient = await _patientRepository.GetByIdAsync(patientId);
-        var compliance = patient.Compliance.FirstOrDefault(c => c.Id == dto.Id) ?? new Compliance { };
-
-        GenericMapper.Map(dto, compliance);
-
-        if (!patient.Compliance.Any(c => c.Id == compliance.Id))
-            patient.Compliance.Add(compliance);
-
-        await _patientRepository.UpdateAsync(patient);
-    }
-
-    public async Task DeleteComplianceAsync(string patientId, string complianceId)
-    {
-        var patient = await _patientRepository.GetByIdAsync(patientId);
-        patient.Compliance.RemoveAll(c => c.Id == complianceId);
-        await _patientRepository.UpdateAsync(patient);
-    }
-
-    public async Task UpdatePillsCountAsync(string patientId, string complianceId, int count)
-    {
-        var patient = await _patientRepository.GetByIdAsync(patientId);
-        var compliance = patient.Compliance.FirstOrDefault(c => c.Id == complianceId);
-        if (compliance != null)
+        // Retrieve the patient document from your data store.
+        var patient = await GetPatientByIdAsync(patientId);
+        if (patient == null)
         {
-            compliance.PillsCount += count;
-            await _patientRepository.UpdateAsync(patient);
+            throw new Exception("Patient not found");
         }
+
+        var complianceDtos = new List<PatientComplianceDto>();
+
+        // Get active treatments (those that have not ended)
+        var activeTreatments = patient.CurrentTreatments.Where(t => t.EndDate == null).ToList();
+
+        foreach (var treatment in activeTreatments)
+        {
+            // Find the associated compliance record for this treatment.
+            // We assume each treatment has at most one compliance record.
+            var complianceEntity = patient.Compliance.FirstOrDefault(c => c.TreatmentId == treatment.Id);
+            if (complianceEntity != null)
+            {
+                var dto = new PatientComplianceDto
+                {
+                    Id = complianceEntity.Id,
+                    TreatmentId = complianceEntity.TreatmentId,
+                    Brand = treatment.Brand,
+                    TreatmentDrug = treatment.TreatmentDrug,
+                    DosageForm = treatment.DosageForm,
+                    StrengthUnit = treatment.StrengthUnit,
+                    Frequency = treatment.Frequency,
+                    StartDate = treatment.StartDate
+                };
+
+                if (complianceEntity.ComplianceDetails == null || complianceEntity.ComplianceDetails.Count == 0)
+                    dto.CompliancePercentage = 0;
+                else
+                {
+                    var taken = complianceEntity.ComplianceDetails.Count(cd => cd.PillTaken);
+                    dto.CompliancePercentage = Math.Round((double)taken / complianceEntity.ComplianceDetails.Count * 100, 2);
+
+                }
+
+                if (complianceEntity.PatientMedicineInfos == null || complianceEntity.PatientMedicineInfos.Count == 0 || !complianceEntity.PatientMedicineInfos.Any(m => m.IsActive))
+                    dto.PillsCount = 0;
+
+                var activeInfo = complianceEntity.PatientMedicineInfos.Where(m => m.IsActive).FirstOrDefault();
+                if (complianceEntity.ComplianceDetails == null || !complianceEntity.ComplianceDetails.Any())
+                    dto.PillsCount = activeInfo.Count;
+                else
+                {
+                    int taken = complianceEntity.ComplianceDetails.Count(cd => cd.PillTaken);
+                    dto.PillsCount = activeInfo.Count - taken;
+                }
+                complianceDtos.Add(dto);
+            }
+        }
+
+        return complianceDtos;
     }
 
-    public async Task<double> GetCompliancePercentageAsync(string patientId)
+
+    public async Task AddOrUpdateMedicalInfoAsync(string patientId, string treatmentId, PatientMedicineInfoDto dto)
     {
-        var patient = await _patientRepository.GetByIdAsync(patientId);
-        var compliantDetails = patient.Compliance.SelectMany(c => c.ComplianceDetails).Where(cd => cd.IsCompliant).Count();
-        var totalDetails = patient.Compliance.SelectMany(c => c.ComplianceDetails).Count();
-        return totalDetails > 0 ? (double)compliantDetails / totalDetails * 100 : 0;
+        var patient = await GetPatientByIdAsync(patientId);
+        if (patient == null)
+        {
+            throw new Exception("Patient not found");
+        }
+
+        // Find the compliance record using dto.Id (which should be set to the relevant compliance record's id)
+        var compliance = patient.Compliance.FirstOrDefault(c => c.TreatmentId == treatmentId);
+        if (compliance == null)
+        {
+            throw new Exception("Compliance record not found for updating medicine info");
+        }
+
+        // Mark all existing PatientMedicineInfo records as inactive.
+        foreach (var info in compliance.PatientMedicineInfos)
+        {
+            info.IsActive = false;
+        }
+
+        // Set the new medicine info as active.
+        dto.IsActive = true;
+
+        // Option 1: Update an existing active record if it exists (here we always add a new record)
+        // Option 2: Simply add the new medicine info record.
+        var entity = new PatientMedicineInfo();
+        GenericMapper.Map(dto, entity);
+        compliance.PatientMedicineInfos.Add(entity);
+
+        // Save the updated patient document.
+        await _patientRepository.UpdateAsync(patient);
     }
+
+    public async Task ConfirmIntake(string patientId, string treatmentId, bool isTaken)
+    {
+        var patient = await GetPatientByIdAsync(patientId);
+        if (patient == null)
+        {
+            throw new Exception("Patient not found");
+        }
+
+        var compliance = patient.Compliance.FirstOrDefault(c => c.TreatmentId == treatmentId);
+        if (compliance == null)
+        {
+            throw new Exception("No compliance record available for intake confirmation.");
+        }
+
+        // Create a new compliance detail record
+        var detail = new PatientComplianceDetail
+        {
+            Date = DateTime.UtcNow,
+            Time = DateTime.UtcNow.ToString("HH:mm"), // Format as needed
+            PillTaken = isTaken
+        };
+
+        // Add the new detail record
+        compliance.ComplianceDetails.Add(detail);
+
+        // The CompliancePercentage and PillsCount are computed automatically by the DTO getters.
+        // Save changes to the patient document.
+        await _patientRepository.UpdateAsync(patient);
+    }
+
+
+    // public async Task AddOrUpdateRemainderInfoAsync(string patientId, PatientReminderDto dto)
+    // {
+    //     var patient = await GetPatientByIdAsync(patientId);
+    //     if (patient == null)
+    //     {
+    //         throw new Exception("Patient not found");
+    //     }
+
+    //     // Here, dto should include a ComplianceId property (we're using "TreatmentId" linkage)
+    //     // For this example, assume that dto.Id is the reminder id, and we expect a compliance record with that id.
+    //     var compliance = patient.Compliance.FirstOrDefault(c => c.Id == dto.Id);
+    //     if (compliance == null)
+    //     {
+    //         throw new Exception("Compliance record not found for updating reminder");
+    //     }
+
+    //     // Look for an existing reminder with the same id (if any)
+    //     var existingReminder = compliance.Reminders.FirstOrDefault(r => r.Id == dto.Id);
+    //     if (existingReminder != null)
+    //     {
+    //         // Update the reminder.
+    //         existingReminder.TimesOfDay = dto.TimesOfDay;
+    //         existingReminder.Instruction = dto.Instruction;
+    //     }
+    //     else
+    //     {
+    //         // If no id was passed, generate a new one.
+    //         if (string.IsNullOrEmpty(dto.Id))
+    //         {
+    //             dto.Id = ObjectId.GenerateNewId().ToString();
+    //         }
+    //         // Add new reminder.
+    //         var newReminder = new Reminder
+    //         {
+    //             Id = dto.Id,
+    //             TimesOfDay = dto.TimesOfDay,
+    //             Instruction = dto.Instruction
+    //         };
+    //         compliance.Reminders.Add(newReminder);
+    //     }
+
+    //     await UpdatePatientAsync(patient);
+    // }
+
+
+
 
     public async Task<IEnumerable<ActivityDto>> GetActivitiesAsync(string patientId)
     {
@@ -429,33 +558,8 @@ public class PatientService : IPatientService
         patient.Activities.RemoveAll(a => a.Id == activityId);
         await _patientRepository.UpdateAsync(patient);
     }
-    public async Task<IEnumerable<ComplianceDetailDto>> GetComplianceDetailsAsync(string patientId, string complianceId)
-    {
-        var patient = await _patientRepository.GetByIdAsync(patientId);
-        var compliance = patient.Compliance.FirstOrDefault(c => c.Id == complianceId);
-
-        if (compliance == null)
-            throw new ArgumentException("Compliance not found.");
-
-        return compliance.ComplianceDetails.Select(cd => GenericMapper.Map<ComplianceDetail, ComplianceDetailDto>(cd));
-    }
-
-    public async Task AddOrUpdateComplianceDetailAsync(string patientId, string complianceId, ComplianceDetailDto dto)
-    {
-        var patient = await _patientRepository.GetByIdAsync(patientId);
-        var compliance = patient.Compliance.FirstOrDefault(c => c.Id == complianceId);
-
-        if (compliance == null)
-            throw new ArgumentException("Compliance not found.");
-
-        var detail = compliance.ComplianceDetails.FirstOrDefault(cd => cd.Id == dto.Id) ?? new ComplianceDetail { };
-        GenericMapper.Map(dto, detail);
-
-        if (!compliance.ComplianceDetails.Any(cd => cd.Id == detail.Id))
-            compliance.ComplianceDetails.Add(detail);
-
-        await _patientRepository.UpdateAsync(patient);
-    }
+    
+   
 
     public async Task<IEnumerable<ReminderDto>> GetRemindersAsync(string patientId)
     {

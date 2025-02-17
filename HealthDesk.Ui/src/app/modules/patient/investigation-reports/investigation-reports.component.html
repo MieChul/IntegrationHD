@@ -31,7 +31,7 @@
             </form>
         </div>
         <div class="col-md-4 col-sm-6 d-flex justify-content-start flex-wrap">
-            <button class="btn btn-primary" (click)="addReport()">Add Investigation</button>
+            <button class="btn btn-primary" (click)="openReportModal(false)">Add Investigation</button>
         </div>
     </div>
 
@@ -65,7 +65,7 @@
             </tbody>
         </table>
         <div *ngIf="investigationReports?.length === 0" class="alert alert-info">
-            No treatments found. Click "Add Treatment" to get started.
+            No investigations found. Click "Add Investigation" to get started.
         </div>
     </div>
 </div>
@@ -132,15 +132,6 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-6">
-                            <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Type of Assessment</mat-label>
-                                <input matInput formControlName="results" maxlength="25" required />
-                                <mat-error *ngIf="reportForm.get('results')?.hasError('required')">
-                                   Type is required.
-                                </mat-error>
-                            </mat-form-field>
-                        </div>
                         <div class="col-md-6">
                             <mat-form-field appearance="outline" class="w-100">
                                 <mat-label>Comment</mat-label>

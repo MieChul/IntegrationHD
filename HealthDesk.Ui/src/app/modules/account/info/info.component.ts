@@ -1,12 +1,13 @@
 import { Component, ElementRef, inject, TemplateRef, ViewChild } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AccountService } from '../../services/account.service';
 import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { BehaviorSubject, debounceTime, first, map, startWith } from 'rxjs';
+import { BehaviorSubject, debounceTime, first, map, Observable, startWith } from 'rxjs';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { Country, State, City } from 'country-state-city';
 import { AuthService } from '../../../shared/services/auth.service';
+import { DatabaseService } from '../../../shared/services/database.service';
 
 @Component({
   selector: 'app-info',
@@ -44,6 +45,11 @@ export class InfoComponent {
   cities: any[] = [];
   clinicstates: any[] = [];
   clinicCities: any[] = [];
+  councils: any[] = [];
+  colleges: any[] = [];
+
+  councilFilterCtrl = new FormControl();
+  collegeFilterCtrl = new FormControl();
   stateFilterCtrl = new FormControl();
   cityFilterCtrl = new FormControl();
   filteredStates = new BehaviorSubject<any[]>([]);
@@ -52,6 +58,10 @@ export class InfoComponent {
   clinicCityFilterCtrl = new FormControl();
   filteredClinicStates = new BehaviorSubject<any[]>([]);
   filteredClinicCities = new BehaviorSubject<any[]>([]);
+  filteredCouncils!: Observable<string[]>;
+  filteredColleges!: Observable<string[]>;
+  yearsList: number[] = [];
+
   private modalService = inject(NgbModal);
   constructor(
     private formBuilder: FormBuilder,
@@ -59,6 +69,7 @@ export class InfoComponent {
     private router: Router,
     private accountService: AccountService,
     private notificationService: NotificationService,
+    private databaseService: DatabaseService,
     private authService: AuthService
   ) {
   }
@@ -67,14 +78,20 @@ export class InfoComponent {
   @ViewChild('fileInputClinic') fileInputClinic!: ElementRef;
 
   ngOnInit() {
+    const currentYear = new Date().getFullYear();
+    for (let year = currentYear; year >= 1900; year--) {
+      this.yearsList.push(year);
+    }
     this.userData = this.accountService.getUserData().subscribe({
-      next: (data) => {
+      next: async (data) => {
         this.userData = data; // Assign the result to a variable
         this.initializeUserAndForm();
         this.states = State.getStatesOfCountry('IN');
         this.clinicstates = State.getStatesOfCountry('IN');
         this.filteredStates.next(this.states);
         this.filteredClinicStates.next(this.clinicstates);
+        this.councils = await this.databaseService.getCouncils();
+        this.colleges = await this.databaseService.getMedicalColleges();
         this.stateFilterCtrl.valueChanges
           .pipe(
             debounceTime(200),
@@ -126,7 +143,24 @@ export class InfoComponent {
       error: (error) => {
       }
     });
+
+    this.filteredCouncils = this.councilFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.councils))
+    );
+
+    this.filteredColleges = this.collegeFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.colleges))
+    );
+
   }
+
+  filterOptions(search: string, options: string[]): string[] {
+    const filterValue = search.toLowerCase();
+    return options.filter(option => option.toLowerCase().includes(filterValue));
+  }
+
 
   triggerFileUpload(): void {
     this.fileInput.nativeElement.click();
@@ -201,48 +235,30 @@ export class InfoComponent {
       pincode: [this.user.pincode],
       noDocConsentProvided: [this.user.noDocConsentProvided],
       graduation: new FormGroup({
-        year: new FormControl(this.user.graduation?.year, [
-          Validators.pattern(/^(19|20)\d{2}$/), // Matches valid years from 1900 to 2099
-        ]),
-        institute: new FormControl(this.user.graduation?.institute, [
-          Validators.pattern(/^[a-zA-Z0-9\s,.'-]{2,100}$/), // Allows alphanumeric, spaces, commas, periods, and dashes
-        ]),
+        year: new FormControl(this.user.graduation?.year),
+        institute: new FormControl(this.user.graduation?.institute),
         document: new FormControl(this.user.graduation?.document)
       }),
       postGraduation: new FormGroup({
-        year: new FormControl(this.user.postGraduation?.year, [
-          Validators.pattern(/^(19|20)\d{2}$/), // Matches valid years from 1900 to 2099
-        ]),
-        institute: new FormControl(this.user.postGraduation?.institute, [
-          Validators.pattern(/^[a-zA-Z0-9\s,.'-]{2,50}$/), // Allows alphanumeric, spaces, commas, periods, and dashes
-        ]),
+        year: new FormControl(this.user.postGraduation?.year),
+        institute: new FormControl(this.user.postGraduation?.institute),
         document: new FormControl(this.user.postGraduation?.document)
       }),
       superSpecialization: new FormGroup({
-        year: new FormControl(this.user.superSpecialization?.year, [
-          Validators.pattern(/^(19|20)\d{2}$/), // Matches valid years from 1900 to 2099
-        ]),
-        institute: new FormControl(this.user.superSpecialization?.institute, [
-          Validators.pattern(/^[a-zA-Z0-9\s,.'-]{2,50}$/), // Allows alphanumeric, spaces, commas, periods, and dashes
-        ]),
+        year: new FormControl(this.user.superSpecialization?.year),
+        institute: new FormControl(this.user.superSpecialization?.institute),
         document: new FormControl(this.user.superSpecialization?.document)
       }),
       additionalQualification: new FormGroup({
-        year: new FormControl(this.user.additionalQualification?.year, [
-          Validators.pattern(/^(19|20)\d{2}$/), // Matches valid years from 1900 to 2099
-        ]),
-        institute: new FormControl(this.user.additionalQualification?.institute, [
-          Validators.pattern(/^[a-zA-Z0-9\s,.'-]{2,50}$/), // Allows alphanumeric, spaces, commas, periods, and dashes
-        ]),
+        year: new FormControl(this.user.additionalQualification?.year),
+        institute: new FormControl(this.user.additionalQualification?.institute),
         document: new FormControl(this.user.additionalQualification?.document)
       }),
       medicalRegistration: new FormGroup({
         certificateNumber: new FormControl(this.user.medicalRegistration?.certificateNumber, [
-          Validators.pattern(/^[a-zA-Z0-9\s,.'-]{2,50}$/), // Allows alphanumeric, spaces, commas, periods, and dashes
+          Validators.pattern(/^[a-zA-Z0-9\s.\-\/\\]{2,50}$/), // Allows alphanumeric, spaces, commas, periods, and dashes
         ]),
-        councilName: new FormControl(this.user.medicalRegistration?.councilName, [
-          Validators.pattern(/^[a-zA-Z0-9\s,.'-]{2,50}$/), // Allows alphanumeric, spaces, commas, periods, and dashes
-        ]),
+        councilName: new FormControl(this.user.medicalRegistration?.councilName),
         document: new FormControl(this.user.medicalRegistration?.document)
       }),
       birthDate: [this.user.birthDate],
@@ -287,12 +303,12 @@ export class InfoComponent {
     const isPhysician = this.user.role === 'physician';
     const isNonPatient = this.user.role !== 'patient';
     const isOtherRoles = this.user.role !== 'patient' && this.user.role !== 'physician';
-    const nameValidator = Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,25}$/);
+    const nameValidator = Validators.pattern(/^[a-zA-Z][a-zA-Z .'’-]{1,25}$/);
     // Define control and validation map
     const validationMap: { [key: string]: any } = {
-      username: isPatientOrPhysician ? [Validators.required, nameValidator] : [],
+      username: isPatientOrPhysician ? [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z0-9@_ .'’-]{1,25}$/)] : [],
       displayName: isPatientOrPhysician ? [Validators.required, nameValidator] : [],
-      firstName: isPatientOrPhysician ? [Validators.required, nameValidator] : [],
+      firstName: isPatientOrPhysician ? [Validators.required, nameValidator, Validators.minLength(2)] : [],
       lastName: isPatientOrPhysician ? [Validators.required, nameValidator] : [],
       gender: isPatientOrPhysician ? [Validators.required] : [],
       address1: isPatientOrPhysician ? [Validators.required] : [],
@@ -302,7 +318,7 @@ export class InfoComponent {
       area: isPatientOrPhysician ? [Validators.required] : [],
       pincode: isPatientOrPhysician ? [Validators.required, Validators.pattern(/^[1-9][0-9]{5}$/)] : [],
 
-      clinicName: isPhysician ? [Validators.required] : [],
+      clinicName: isPhysician ? [Validators.required,  Validators.pattern(/^[a-zA-Z][a-zA-Z0-9@_ .'’-]{1,25}$/)] : [],
       clinicArea: isNonPatient ? [Validators.required] : [],
       clinicCity: isNonPatient ? [Validators.required] : [],
       clinicState: isNonPatient ? [Validators.required] : [],
@@ -312,7 +328,7 @@ export class InfoComponent {
       authLastName: isOtherRoles ? [Validators.required, nameValidator] : [],
       authDesignation: isOtherRoles ? [Validators.required] : [],
       authMob: isOtherRoles ? [Validators.required] : [],
-      birthDate: isPatientOrPhysician ? [Validators.required] : []
+      birthDate: isPatientOrPhysician ? [Validators.required, (control: AbstractControl) => this.validateAge(control)] : []
     };
 
     // Apply validations
@@ -624,5 +640,30 @@ export class InfoComponent {
       this.docError = false
 
     return has_error;
+  }
+
+  validateAge(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) return null; // Allow empty values (handled by required validator)
+
+    const birthDate = new Date(control.value); // Directly parse the date
+    const today = new Date(); // Get today's date
+
+    let age = today.getFullYear() - birthDate.getFullYear();
+
+    // Check if the birthday has passed in the current year
+    const isBirthdayPassed =
+      today.getMonth() > birthDate.getMonth() ||
+      (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
+
+    if (!isBirthdayPassed) {
+      age--; // Adjust if birthday hasn't occurred yet this year
+    }
+
+    // Validate if the user must be at least 18 years old (only if dependentId is NOT present)
+    if (!this.userData?.dependentId && age < 18) {
+      return { minAge: true }; // Validation fails
+    }
+
+    return null; // Validation passes
   }
 }

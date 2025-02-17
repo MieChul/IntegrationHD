@@ -17,7 +17,7 @@
                                 <mat-datepicker #startDatePicker></mat-datepicker>
                             </mat-form-field>
                         </div>
-        
+
                         <!-- End Date -->
                         <div class="col-md-6">
                             <mat-form-field appearance="outline" class="w-100">
@@ -25,10 +25,11 @@
                                 <input matInput [matDatepicker]="endDatePicker" formControlName="endDate" />
                                 <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
                                 <mat-datepicker #endDatePicker></mat-datepicker>
-                                <mat-error *ngIf="filterForm.get('endDate')?.hasError('invalidDateRange')" class="text-danger mt-2">
-                                 Cannot be greater than start date.
+                                <mat-error *ngIf="filterForm.get('endDate')?.hasError('invalidDateRange')"
+                                    class="text-danger mt-2">
+                                    Cannot be greater than start date.
                                 </mat-error>
-                              </mat-form-field>
+                            </mat-form-field>
                         </div>
                     </div>
                 </form>
@@ -38,33 +39,27 @@
             <button class="btn btn-primary" (click)="openHistoryModal(false)">Add History</button>
         </div>
     </div>
-    
-    <div *ngIf="filteredHistories?.length === 0" class="alert alert-info">
-        No history found. Click "Add History" to get started.
-      </div>
-    <div class="table-responsive" *ngIf="filteredHistories?.length > 0">
+
+    <div *ngIf="filteredHistories?.length > 0" class="alert alert-info">
+        Treatment taken for these diseases shall be added to Treatment -> Past treatment.
+    </div>
+    <div class="table-responsive">
         <table class="table table-hover table-modern">
             <thead>
                 <tr>
-                  <th (click)="sortTable('dateOfDiagnosis')">Date of Diagnosis</th>
-                  <th (click)="sortTable('disease')">Disease</th>
-                  <th (click)="sortTable('treatmentDrug')">Treatment Drug</th>
-                  <th (click)="sortTable('dosageForm')">Dosage Form</th>
-                  <th (click)="sortTable('strength')">Strength</th>
-                  <th (click)="sortTable('frequency')">Frequency</th>
-                  <th (click)="sortTable('outcome')">Outcome</th>
-                  <th>Action</th>
+                    <th (click)="sortTable('dateOfDiagnosis')">Date of Diagnosis</th>
+                    <th (click)="sortTable('disease')">Disease</th>
+                    <th (click)="sortTable('start')">Start Date</th>
+                    <th (click)="sortTable('end')">End Date</th>
+                    <th>Action</th>
                 </tr>
-              </thead>
+            </thead>
             <tbody>
                 <tr *ngFor="let history of filteredHistories">
                     <td>{{ history.dateOfDiagnosis | date: 'dd-MM-yyyy' }}</td>
                     <td>{{ history.disease }}</td>
-                    <td>{{ history.treatmentDrug }}</td>
-                    <td>{{ history.dosageForm }}</td>
-                    <td>{{ history.strength }} {{ history.strengthUnit }}</td> <!-- Combined Strength and StrengthUnit -->
-                    <td>{{ history.frequency }}</td>
-                    <td>{{ history.outcome }}</td>
+                    <td>{{ history.start | date: 'dd-MM-yyyy' }}</td>
+                    <td>{{ history.end ? (history.end | date: 'dd-MM-yyyy') : 'Ongoing' }}</td>
                     <td class="text-center align-middle text-nowrap">
                         <button class="btn btn-warning btn-sm me-1" (click)="openHistoryModal(true, history)">
                             <i class="bi bi-pencil"></i>
@@ -76,6 +71,9 @@
                 </tr>
             </tbody>
         </table>
+    </div>
+    <div *ngIf="filteredHistories?.length === 0" class="alert alert-info">
+        No history found. Click "Add History" to get started.
     </div>
 </div>
 
@@ -95,7 +93,8 @@
                         <div class="col-md-6">
                             <mat-form-field appearance="outline" class="w-100">
                                 <mat-label>Date of Diagnosis</mat-label>
-                                <input matInput [matDatepicker]="datePicker" formControlName="dateOfDiagnosis" required />
+                                <input matInput [matDatepicker]="datePicker" formControlName="dateOfDiagnosis"
+                                    required />
                                 <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
                                 <mat-datepicker #datePicker></mat-datepicker>
                                 <mat-error *ngIf="historyForm.get('dateOfDiagnosis')?.hasError('required')">
@@ -127,106 +126,31 @@
                     </div>
 
                     <div class="row">
-                        <!-- Treatment Drug -->
                         <div class="col-md-6">
                             <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Treatment Drug</mat-label>
-                                <mat-select formControlName="treatmentDrug" required>
-                                    <mat-option>
-                                        <ngx-mat-select-search [formControl]="drugFilterCtrl"
-                                            placeholderLabel="Search drug"></ngx-mat-select-search>
-                                    </mat-option>
-                                    <mat-option *ngFor="let drug of filteredDrugs | async" [value]="drug">
-                                        {{ drug }}
-                                    </mat-option>
-                                </mat-select>
-                                <mat-error *ngIf="historyForm.get('treatmentDrug')?.hasError('required')">Drug is
-                                    required</mat-error>
+                                <mat-label>Start Date</mat-label>
+                                <input matInput [matDatepicker]="datePickerStart" formControlName="start"
+                                    required />
+                                <mat-datepicker-toggle matSuffix [for]="datePickerStart"></mat-datepicker-toggle>
+                                <mat-datepicker #datePickerStart></mat-datepicker>
+                                <mat-error *ngIf="historyForm.get('start')?.hasError('required')">
+                                    Start Date is required
+                                </mat-error>
+                                <mat-error *ngIf="historyForm.get('start')?.hasError('futureDate')">
+                                    Date cannot be in the future
+                                </mat-error>
                             </mat-form-field>
                         </div>
 
-                        <!-- Dosage Form -->
                         <div class="col-md-6">
                             <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Dosage Form</mat-label>
-                                <mat-select formControlName="dosageForm" required>
-                                    <mat-option>
-                                        <ngx-mat-select-search [formControl]="dosageFormFilterCtrl"
-                                            placeholderLabel="Search form"></ngx-mat-select-search>
-                                    </mat-option>
-                                    <mat-option *ngFor="let form of filteredDosageForms | async" [value]="form">
-                                        {{ form }}
-                                    </mat-option>
-                                </mat-select>
-                                <mat-error *ngIf="historyForm.get('dosageForm')?.hasError('required')">Dosage form is
-                                    required</mat-error>
-                            </mat-form-field>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <!-- Strength -->
-                        <div class="col-md-6">
-                            <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Strength</mat-label>
-                                <input matInput type="number" formControlName="strength" required />
-                                <mat-error *ngIf="historyForm.get('strength')?.hasError('required')">Strength is
-                                    required</mat-error>
-                                    <mat-error *ngIf="historyForm.get('strength')?.hasError('min')">Strength must be a positive number</mat-error>
-                            </mat-form-field>
-                        </div>
-
-                        <!-- Strength Unit -->
-                        <div class="col-md-6">
-                            <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Strength Unit</mat-label>
-                                <mat-select formControlName="strengthUnit" required>
-                                    <mat-option>
-                                        <ngx-mat-select-search [formControl]="strengthUnitFilterCtrl"
-                                            placeholderLabel="Search unit"></ngx-mat-select-search>
-                                    </mat-option>
-                                    <mat-option *ngFor="let unit of filteredStrengthUnits | async" [value]="unit">
-                                        {{ unit }}
-                                    </mat-option>
-                                </mat-select>
-                                <mat-error *ngIf="historyForm.get('strengthUnit')?.hasError('required')">Strength unit
-                                    is required</mat-error>
-                            </mat-form-field>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Frequency</mat-label>
-                                <mat-select formControlName="frequency" required>
-                                    <mat-option>
-                                        <ngx-mat-select-search [formControl]="frequencyFilterCtrl"
-                                            placeholderLabel="Search frequency"></ngx-mat-select-search>
-                                    </mat-option>
-                                    <mat-option *ngFor="let frequency of filteredFrequencies | async" [value]="frequency">
-                                        {{ frequency }}
-                                    </mat-option>
-                                </mat-select>
-                                <mat-error *ngIf="historyForm.get('frequency')?.hasError('required')">Frequency is
-                                    required</mat-error>
-                            </mat-form-field>
-                        </div>
-                        <!-- Outcome -->
-                        <div class="col-md-6">
-                            <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Outcome</mat-label>
-                                <mat-select formControlName="outcome" required>
-                                    <mat-option>
-                                        <ngx-mat-select-search [formControl]="outcomeFilterCtrl"
-                                            placeholderLabel="Search outcome"></ngx-mat-select-search>
-                                    </mat-option>
-                                    <mat-option *ngFor="let outcome of filteredOutcomes | async" [value]="outcome">
-                                        {{ outcome }}
-                                    </mat-option>
-                                </mat-select>
-                                <mat-error *ngIf="historyForm.get('outcome')?.hasError('required')">Outcome is
-                                    required</mat-error>
+                                <mat-label>End Date</mat-label>
+                                <input matInput [matDatepicker]="datePickerEnd" formControlName="end"/>
+                                <mat-datepicker-toggle matSuffix [for]="datePickerEnd"></mat-datepicker-toggle>
+                                <mat-datepicker #datePickerEnd></mat-datepicker>
+                                <mat-error *ngIf="historyForm.get('end')?.hasError('futureDate')">
+                                    Date cannot be in the future
+                                </mat-error>
                             </mat-form-field>
                         </div>
                     </div>

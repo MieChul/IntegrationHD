@@ -52,7 +52,7 @@ export class LabDataComponent implements OnInit {
     this.accountService.getUserData().subscribe({
       next: async (data) => {
         this.userData = data;
-        this.strengthUnits = await this.databaseService.getStrengths();
+        this.strengthUnits = await this.databaseService.getUnits();
         this.diseases = await this.databaseService.getInvestigations();
 
         // Load treatments

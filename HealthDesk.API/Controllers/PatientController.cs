@@ -210,46 +210,6 @@ namespace HealthDesk.API.Controllers
             return Ok(new { Success = true, Message = "Patient info updated successfully." });
         }
 
-        [HttpGet("{patientId}/compliance")]
-        public async Task<IActionResult> GetCompliance(string patientId)
-        {
-            var compliance = await _patientService.GetComplianceAsync(patientId);
-            return Ok(new { Success = true, Message = "Compliance retrieved successfully.", Data = compliance });
-        }
-
-        [HttpPost("{patientId}/compliance")]
-        public async Task<IActionResult> AddOrUpdateCompliance(string patientId, [FromBody] PatientComplianceDto dto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(new { Success = false, Message = "Invalid input.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
-
-            await _patientService.AddOrUpdateComplianceAsync(patientId, dto);
-            return Ok(new { Success = true, Message = "Compliance saved successfully." });
-        }
-
-        [HttpDelete("{patientId}/compliance/{complianceId}")]
-        public async Task<IActionResult> DeleteCompliance(string patientId, string complianceId)
-        {
-            await _patientService.DeleteComplianceAsync(patientId, complianceId);
-            return Ok(new { Success = true, Message = "Compliance deleted successfully." });
-        }
-
-        [HttpPatch("{patientId}/compliance/{complianceId}/pills-count")]
-        public async Task<IActionResult> UpdatePillsCount(string patientId, string complianceId, [FromBody] int count)
-        {
-            if (count < 0)
-                return BadRequest(new { Success = false, Message = "Count cannot be negative." });
-
-            await _patientService.UpdatePillsCountAsync(patientId, complianceId, count);
-            return Ok(new { Success = true, Message = "Pills count updated successfully." });
-        }
-
-        [HttpGet("{patientId}/compliance-percentage")]
-        public async Task<IActionResult> GetCompliancePercentage(string patientId)
-        {
-            var percentage = await _patientService.GetCompliancePercentageAsync(patientId);
-            return Ok(new { Success = true, Message = "Compliance percentage calculated successfully.", Data = percentage });
-        }
 
         [HttpGet("{patientId}/activities")]
         public async Task<IActionResult> GetActivities(string patientId)
@@ -275,21 +235,27 @@ namespace HealthDesk.API.Controllers
             return Ok(new { Success = true, Message = "Activity deleted successfully." });
         }
 
-        [HttpGet("{patientId}/compliance-details/{complianceId}")]
-        public async Task<IActionResult> GetComplianceDetails(string patientId, string complianceId)
+        [HttpGet("{patientId}")]
+        public async Task<IActionResult> GetCompliance(string patientId)
         {
-            var complianceDetails = await _patientService.GetComplianceDetailsAsync(patientId, complianceId);
-            return Ok(new { Success = true, Message = "Compliance details retrieved successfully.", Data = complianceDetails });
+            IEnumerable<PatientComplianceDto> compliances = await _patientService.GetComplianceAsync(patientId);
+            return Ok(compliances);
         }
 
-        [HttpPost("{patientId}/compliance-details/{complianceId}")]
-        public async Task<IActionResult> AddOrUpdateComplianceDetail(string patientId, string complianceId, [FromBody] ComplianceDetailDto dto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(new { Success = false, Message = "Invalid input.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
 
-            await _patientService.AddOrUpdateComplianceDetailAsync(patientId, complianceId, dto);
-            return Ok(new { Success = true, Message = "Compliance detail saved successfully." });
+        [HttpPost("medicineinfo/{patientId}/{treatmentId}")]
+        public async Task<IActionResult> AddOrUpdateMedicalInfo(string patientId, string treatmentId, [FromBody] PatientMedicineInfoDto dto)
+        {
+            await _patientService.AddOrUpdateMedicalInfoAsync(patientId, treatmentId, dto);
+            return Ok();
+        }
+
+
+        [HttpPost("confirmintake/{patientId}/{treatmentId}")]
+        public async Task<IActionResult> ConfirmIntake(string patientId, string treatmentId, [FromQuery] bool isTaken)
+        {
+            await _patientService.ConfirmIntake(patientId, treatmentId, isTaken);
+            return Ok();
         }
 
         [HttpGet("physicians")]

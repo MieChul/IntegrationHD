@@ -57,7 +57,7 @@ public class AccountController : ControllerBase
         string folderPath;
 
         // For production deployment
-      if (_env.IsDevelopment())
+      if (true)
         {
             // For local development
             folderPath = Path.Combine(

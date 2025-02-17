@@ -15,17 +15,7 @@ import { SortingService } from '../../../shared/services/sorting.service';
 })
 export class PatientHistoryComponent implements OnInit {
   patientHistories: any[] = [];
-  historyForm!: FormGroup<{
-    id: FormControl<string | null>;
-    dateOfDiagnosis: FormControl<string | null>;
-    disease: FormControl<string | null>;
-    treatmentDrug: FormControl<string | null>;
-    dosageForm: FormControl<string | null>;
-    strength: FormControl<string | null>;
-    strengthUnit: FormControl<string | null>;
-    outcome: FormControl<string | null>;
-    frequency: FormControl<string | null>;
-  }>;
+  historyForm!: FormGroup;
 
   sortDirection: { [key: string]: 'asc' | 'desc' } = {};
   filterForm!: FormGroup<{
@@ -35,27 +25,12 @@ export class PatientHistoryComponent implements OnInit {
   isEditMode = false;
   selectedHistory!: any;
   diseases: any = [];
-  drugs: any = [];
-  dosageForms: any = [];
-  strengthUnits: any = [];
-  frequencies: any = [];
-  outcomes = ['Resolved', 'Ongoing'];
   userData: any = [];
 
   diseaseFilterCtrl = new FormControl();
-  drugFilterCtrl = new FormControl();
-  dosageFormFilterCtrl = new FormControl();
-  strengthUnitFilterCtrl = new FormControl();
-  outcomeFilterCtrl = new FormControl();
-  frequencyFilterCtrl = new FormControl();
 
   // Filtered Observables
   filteredDiseases!: Observable<string[]>;
-  filteredDrugs!: Observable<string[]>;
-  filteredDosageForms!: Observable<string[]>;
-  filteredStrengthUnits!: Observable<string[]>;
-  filteredOutcomes!: Observable<string[]>;
-  filteredFrequencies!: Observable<string[]>;
 
   filteredHistories: any;
 
@@ -69,10 +44,6 @@ export class PatientHistoryComponent implements OnInit {
     this.accountService.getUserData().subscribe({
       next: async (data) => {
         this.userData = data;
-        this.dosageForms = await this.databaseService.getForms();
-        this.drugs = await this.databaseService.getDrugs();
-        this.strengthUnits = await this.databaseService.getStrengths();
-        this.frequencies = await this.databaseService.getFrequencies();
         this.diseases = await this.databaseService.getSymptoms();
         await this.loadHistory();
         await this.initializeSearch();
@@ -86,12 +57,8 @@ export class PatientHistoryComponent implements OnInit {
       id: this.fb.control(''),
       dateOfDiagnosis: this.fb.control('', [Validators.required, this.futureDateValidator]),
       disease: this.fb.control('', Validators.required),
-      treatmentDrug: this.fb.control('', Validators.required),
-      dosageForm: this.fb.control('', Validators.required),
-      strength: this.fb.control('', [Validators.required, Validators.min(0)]),
-      strengthUnit: this.fb.control('', Validators.required),
-      outcome: this.fb.control('', Validators.required),
-      frequency: this.fb.control('', Validators.required)
+      start: this.fb.control('', [Validators.required, this.futureDateValidator]),
+      end: this.fb.control('', [this.futureDateValidator])
     });
 
     this.filterForm = this.fb.group(
@@ -112,32 +79,6 @@ export class PatientHistoryComponent implements OnInit {
       startWith(''),
       map((search) => this.filterOptions(search, this.diseases))
     );
-
-    this.filteredDrugs = this.drugFilterCtrl.valueChanges.pipe(
-      startWith(''),
-      map((search) => this.filterOptions(search, this.drugs))
-    );
-
-    this.filteredDosageForms = this.dosageFormFilterCtrl.valueChanges.pipe(
-      startWith(''),
-      map((search) => this.filterOptions(search, this.dosageForms))
-    );
-
-    this.filteredStrengthUnits = this.strengthUnitFilterCtrl.valueChanges.pipe(
-      startWith(''),
-      map((search) => this.filterOptions(search, this.strengthUnits))
-    );
-
-    this.filteredOutcomes = this.outcomeFilterCtrl.valueChanges.pipe(
-      startWith(''),
-      map((search) => this.filterOptions(search, this.outcomes))
-    );
-
-    this.filteredFrequencies = this.frequencyFilterCtrl.valueChanges.pipe(
-      startWith(''),
-      map((search) => this.filterOptions(search, this.frequencies))
-    );
-
   }
 
   dateRangeValidator(group: FormGroup): void {

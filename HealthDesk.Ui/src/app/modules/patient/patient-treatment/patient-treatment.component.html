@@ -55,10 +55,11 @@
 
 
     <!-- Treatment Table -->
-    <div class="table-responsive" *ngIf="filteredTreatments.length > 0">
+    <div class="table-responsive">
         <table class="table table-hover table-modern">
             <thead>
                 <tr>
+                    <th (click)="sortTable('brand')">Brand Name</th>
                     <th (click)="sortTable('treatmentDrug')">Treatment Drug</th>
                     <th (click)="sortTable('dosageForm')">Dosage Form</th>
                     <th (click)="sortTable('strength')">Strength</th>
@@ -70,6 +71,7 @@
             </thead>
             <tbody>
                 <tr *ngFor="let treatment of filteredTreatments">
+                    <td>{{ treatment.brand }}</td>
                     <td>{{ treatment.treatmentDrug }}</td>
                     <td>{{ treatment.dosageForm }}</td>
                     <td>{{ treatment.strength }} {{ treatment.strengthUnit }}</td>
@@ -106,11 +108,28 @@
                 <div class="modal-body">
                     <form [formGroup]="treatmentForm">
                         <div class="row">
+                            <div class="col-md-6">
+                                <mat-form-field appearance="outline" class="w-100">
+                                    <mat-label>Drug Brand</mat-label>
+                                    <mat-select formControlName="brand" required>
+                                        <mat-option>
+                                            <ngx-mat-select-search [formControl]="brandFilterCtrl"
+                                                placeholderLabel="Search Brand"></ngx-mat-select-search>
+                                        </mat-option>
+                                        <mat-option *ngFor="let brand of filteredBrands | async" [value]="brand">
+                                            {{ brand }}
+                                        </mat-option>
+                                    </mat-select>
+                                    <mat-error *ngIf="treatmentForm.get('brand')?.hasError('required')">
+                                        Drug Brand is required.
+                                    </mat-error>
+                                </mat-form-field>
+                            </div>
                             <!-- Treatment Drug -->
                             <div class="col-md-6">
                                 <mat-form-field appearance="outline" class="w-100">
                                     <mat-label>Treatment Drug</mat-label>
-                                    <mat-select formControlName="treatmentDrug" required>
+                                    <mat-select formControlName="treatmentDrug" (selectionChange)="onDrugChange()" required>
                                         <mat-option>
                                             <ngx-mat-select-search [formControl]="drugFilterCtrl"
                                                 placeholderLabel="Search treatment drug"></ngx-mat-select-search>
@@ -125,11 +144,15 @@
                                 </mat-form-field>
                             </div>
 
-                            <!-- Dosage Form -->
+                           
+                           
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-6">
                                 <mat-form-field appearance="outline" class="w-100">
                                     <mat-label>Dosage Form</mat-label>
-                                    <mat-select formControlName="dosageForm" required>
+                                    <mat-select formControlName="dosageForm" (selectionChange)="onDosageFormChange()" required [disabled]="!!treatmentForm.get('dosageForm')?.disabled">
                                         <mat-option>
                                             <ngx-mat-select-search [formControl]="dosageFormFilterCtrl"
                                                 placeholderLabel="Search dosage form"></ngx-mat-select-search>
@@ -143,28 +166,11 @@
                                     </mat-error>
                                 </mat-form-field>
                             </div>
-                        </div>
-
-                        <div class="row">
-                            <!-- Strength -->
-                            <div class="col-md-6">
-                                <mat-form-field appearance="outline" class="w-100">
-                                    <mat-label>Strength</mat-label>
-                                    <input matInput type="number" formControlName="strength" />
-                                    <mat-error *ngIf="treatmentForm.get('strength')?.hasError('required')">
-                                        Strength is required.
-                                    </mat-error>
-                                    <mat-error *ngIf="treatmentForm.get('strength')?.hasError('min')">
-                                        Strength must be a positive number.
-                                    </mat-error>
-                                </mat-form-field>
-                            </div>
-
                             <!-- Strength Unit -->
                             <div class="col-md-6">
                                 <mat-form-field appearance="outline" class="w-100">
                                     <mat-label>Strength Unit</mat-label>
-                                    <mat-select formControlName="strengthUnit" required>
+                                    <mat-select formControlName="strengthUnit" required [disabled]="!!treatmentForm.get('strengthUnit')?.disabled">
                                         <mat-option>
                                             <ngx-mat-select-search [formControl]="strengthUnitFilterCtrl"
                                                 placeholderLabel="Search strength unit"></ngx-mat-select-search>
@@ -222,7 +228,9 @@
                             <!-- End Date -->
                             <div class="col-md-6">
                                 <mat-form-field appearance="outline" class="w-100">
-                                    <mat-label>End Date (If Ongoing then blank) </mat-label>
+                                    <mat-label>End Date <i class="bi bi-info-circle text-primary" data-bs-toggle="tooltip" 
+                                        title="If end date is in the future, keep this blank and edit it once treatment ends">
+                                     </i> </mat-label>
                                     <input matInput [matDatepicker]="endDatePicker" formControlName="endDate" />
                                     <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
                                     <mat-datepicker #endDatePicker></mat-datepicker>

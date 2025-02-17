@@ -7,13 +7,12 @@
                         <div class="row mb-3">
                             <span>Upload Profile Image</span>
                             <div class="cursor-pointer mb-2" (click)="triggerFileUpload()">
-                                <img [src]="form.get('profImage')?.value"
-                                    class="rounded-circle img-fluid" alt="Profile Image" (error)="setDefaultImage()"
-                                    id="profImg" />
+                                <img [src]="form.get('profImage')?.value" class="rounded-circle img-fluid"
+                                    alt="Profile Image" (error)="setDefaultImage()" id="profImg" />
                                 <input type="file" accept="image/*" (change)="upload($event, 'profileImage')"
                                     style="display: none" #fileInput />
                             </div>
-                            <div class="form-floating mb-2" 
+                            <div class="form-floating mb-2"
                                 *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
                                 <input type="text" formControlName="username" class="form-control" id="floatingInput"
                                     placeholder="User Name" autocomplete="off"
@@ -53,6 +52,10 @@
                                 <div class="invalid-feedback d-block"
                                     *ngIf="form.get('birthDate')?.hasError('required') && submitted">
                                     Birth Date is required
+                                </div>
+                                <div class="invalid-feedback d-block"
+                                    *ngIf="form.get('birthDate')?.hasError('minAge') && submitted">
+                                    Must be 18+ years
                                 </div>
 
                             </div>
@@ -125,7 +128,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="card bg-success text-center" *ngIf="userData.role !=='physician' && userData.status ==='Confirm'">
+                <div class="card bg-success text-center"
+                    *ngIf="userData.role !=='physician' && userData.status ==='Confirm'">
                     <div class="row">
                         <div class="col top-info"><i class="bi bi-exclamation-triangle-fill"></i> Please confirm the
                             details you had shared for previous roles to use application as {{userData.role}}.
@@ -400,21 +404,24 @@
                                             Number<i class="danger">*</i></label>
                                     </div>
                                     <div class="form-floating col-sm-4">
-                                        <input type="text" class="form-control" id="councilName"
-                                            placeholder="Council Name" autocomplete="off" formControlName="councilName"
-                                            [ngClass]="{ 'is-invalid': submitted && (councilError || f['medicalRegistration'].get('councilName')?.errors) }">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Council</mat-label>
+                                            <mat-select formControlName="councilName"
+                                                [ngClass]="{ 'is-invalid': submitted && (councilError || f['medicalRegistration'].get('councilName')?.errors) }"
+                                                required>
+                                                <mat-option>
+                                                    <ngx-mat-select-search [formControl]="councilFilterCtrl"
+                                                        placeholderLabel="Search Council"></ngx-mat-select-search>
+                                                </mat-option>
+                                                <mat-option *ngFor="let council of filteredCouncils | async"
+                                                    [value]="council">
+                                                    {{ council }}
+                                                </mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
                                         <div *ngIf="submitted && councilError" class="invalid-feedback d-flex">
                                             <div>Council Name is required</div>
                                         </div>
-                                        <div *ngIf="submitted && f['medicalRegistration'].get('councilName')?.errors"
-                                            class="invalid-feedback">
-                                            <div
-                                                *ngIf="f['medicalRegistration'].get('councilName')?.errors?.['pattern']">
-                                                Please enter a valid Council Name.
-                                            </div>
-                                        </div>
-                                        <label for="councilName" class="form-label-floating">Council Name<i
-                                                class="danger">*</i></label>
                                     </div>
                                     <div class="form-floating mb-3 col-sm-4">
                                         <div class="row">
@@ -446,35 +453,36 @@
                                 <div class="row mb-1" formGroupName="graduation">
                                     <span class="text-success font-italic mb-2">Graduation<i class="danger">*</i></span>
                                     <div class="form-floating mb-3 col-sm-4">
-                                        <input type="text" class="form-control" id="year" placeholder="Year"
-                                            autocomplete="off" formControlName="year"
+                                        <select class="form-select" id="year" formControlName="year"
                                             [ngClass]="{ 'is-invalid': submitted && (gYearError || f['graduation'].get('year')?.errors) }">
+                                            <option value="" disabled selected>Select Year</option>
+                                            <option *ngFor="let year of yearsList" [value]="year">{{ year }}</option>
+                                        </select>
                                         <div *ngIf="submitted && gYearError" class="invalid-feedback d-flex">
                                             <div>Year is required</div>
-                                        </div>
-                                        <div *ngIf="submitted && f['graduation'].get('year')?.errors"
-                                            class="invalid-feedback">
-                                            <div *ngIf="f['graduation'].get('year')?.errors?.['pattern']">
-                                                Please enter a valid year (e.g., 1990 or 2023).
-                                            </div>
                                         </div>
                                         <label for="year" class="form-label-floating">Year Of passing</label>
                                     </div>
 
                                     <div class="form-floating mb-3 col-sm-4">
-                                        <input type="text" class="form-control" id="institute" placeholder="Institute"
-                                            autocomplete="off" formControlName="institute"
-                                            [ngClass]="{ 'is-invalid': submitted && (gInstituteError ||  f['graduation'].get('institute')?.errors) }">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Institute Name</mat-label>
+                                            <mat-select formControlName="institute"
+                                                [ngClass]="{ 'is-invalid': submitted && (gInstituteError ||  f['graduation'].get('institute')?.errors) }"
+                                                required>
+                                                <mat-option>
+                                                    <ngx-mat-select-search [formControl]="collegeFilterCtrl"
+                                                        placeholderLabel="Search Institute"></ngx-mat-select-search>
+                                                </mat-option>
+                                                <mat-option *ngFor="let college of filteredColleges | async"
+                                                    [value]="college">
+                                                    {{ college }}
+                                                </mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
                                         <div *ngIf="submitted && gInstituteError" class="invalid-feedback d-flex">
                                             <div>Institute is required</div>
                                         </div>
-                                        <div *ngIf="submitted && f['graduation'].get('institute')?.errors"
-                                            class="invalid-feedback">
-                                            <div *ngIf="f['graduation'].get('institute')?.errors?.['pattern']">
-                                                Please enter a valid institute name.
-                                            </div>
-                                        </div>
-                                        <label for="institute" class="form-label-floating">Name Of Institute</label>
                                     </div>
                                     <div class="form-floating mb-3 col-sm-4">
                                         <div class="row">
@@ -498,15 +506,27 @@
                                 <div class="row" formGroupName="postGraduation">
                                     <span class="text-success font-italic mb-2">Post Graduation</span>
                                     <div class="form-floating col-sm-4">
-                                        <input type="text" class="form-control" id="year" placeholder="Year"
-                                            autocomplete="off" formControlName="year">
-                                        <label for="year" class="form-label-floating">Year Of passing</label>
+                                        <select class="form-select" id="year" formControlName="year"
+                                            [ngClass]="{ 'is-invalid': submitted && (gYearError || f['graduation'].get('year')?.errors) }">
+                                            <option value="" disabled selected>Select Year</option>
+                                            <option *ngFor="let year of yearsList" [value]="year">{{ year }}</option>
+                                        </select>
                                     </div>
 
                                     <div class="form-floating col-sm-4">
-                                        <input type="text" class="form-control" id="institute" placeholder="institute"
-                                            autocomplete="off" formControlName="institute">
-                                        <label for="institute" class="form-label-floating">Name Of Institute</label>
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Institute Name</mat-label>
+                                            <mat-select formControlName="institute">
+                                                <mat-option>
+                                                    <ngx-mat-select-search [formControl]="collegeFilterCtrl"
+                                                        placeholderLabel="Search Institute"></ngx-mat-select-search>
+                                                </mat-option>
+                                                <mat-option *ngFor="let college of filteredColleges | async"
+                                                    [value]="college">
+                                                    {{ college }}
+                                                </mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
                                     </div>
                                     <div class="form-floating mb-3 col-sm-4">
                                         <div class="row">
@@ -527,15 +547,26 @@
                                 <div class="row" formGroupName="superSpecialization">
                                     <span class="text-success font-italic mb-2">Super Specialization</span>
                                     <div class="form-floating col-sm-4">
-                                        <input type="text" class="form-control" id="year" placeholder="Year"
-                                            autocomplete="off" formControlName="year">
-                                        <label for="year" class="form-label-floating">Year Of passing</label>
+                                        <select class="form-select" id="year" formControlName="year">
+                                            <option value="" disabled selected>Select Year</option>
+                                            <option *ngFor="let year of yearsList" [value]="year">{{ year }}</option>
+                                        </select>
                                     </div>
 
                                     <div class="form-floating col-sm-4">
-                                        <input type="text" class="form-control" id="institute" placeholder="Institute"
-                                            autocomplete="off" formControlName="institute">
-                                        <label for="institute" class="form-label-floating">Name Of Institute</label>
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Institute Name</mat-label>
+                                            <mat-select formControlName="institute">
+                                                <mat-option>
+                                                    <ngx-mat-select-search [formControl]="collegeFilterCtrl"
+                                                        placeholderLabel="Search Institute"></ngx-mat-select-search>
+                                                </mat-option>
+                                                <mat-option *ngFor="let college of filteredColleges | async"
+                                                    [value]="college">
+                                                    {{ college }}
+                                                </mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
                                     </div>
                                     <div class="form-floating mb-3 col-sm-4">
                                         <div class="row">
@@ -555,15 +586,26 @@
                                 <div class="row" formGroupName="additionalQualification">
                                     <span class="text-success font-italic mb-2">Additional Qualifications</span>
                                     <div class="form-floating col-sm-4">
-                                        <input type="text" class="form-control" id="year" placeholder="Year"
-                                            autocomplete="off" formControlName="year">
-                                        <label for="year" class="form-label-floating">Year Of passing</label>
+                                        <select class="form-select" id="year" formControlName="year">
+                                            <option value="" disabled selected>Select Year</option>
+                                            <option *ngFor="let year of yearsList" [value]="year">{{ year }}</option>
+                                        </select>
                                     </div>
 
                                     <div class="form-floating col-sm-4">
-                                        <input type="text" class="form-control" id="institute" placeholder="Institute"
-                                            autocomplete="off" formControlName="institute">
-                                        <label for="institute" class="form-label-floating">Name Of Institute</label>
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Institute Name</mat-label>
+                                            <mat-select formControlName="institute">
+                                                <mat-option>
+                                                    <ngx-mat-select-search [formControl]="collegeFilterCtrl"
+                                                        placeholderLabel="Search Institute"></ngx-mat-select-search>
+                                                </mat-option>
+                                                <mat-option *ngFor="let college of filteredColleges | async"
+                                                    [value]="college">
+                                                    {{ college }}
+                                                </mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
                                     </div>
                                     <div class="form-floating mb-3 col-sm-4">
                                         <div class="row">
@@ -599,10 +641,13 @@
                                     <input type="text" class="form-control" id="email" formControlName="clinicName"
                                         placeholder="Hospital Clinic Name" autocomplete="off"
                                         [ngClass]="{ 'is-invalid': submitted && f['clinicName'].errors }">
-                                    <div *ngIf="submitted && f['clinicName'].errors" class="invalid-feedback">
-                                        <div>Hospital Clinic Name is required</div>
+                                    <div *ngIf="submitted && f['clinicName']?.errors?.['required']" class="invalid-feedback">
+                                        <div>Hospital/Clinic Name is required</div>
                                     </div>
-                                    <label for="mobile" class="form-label-floating">Hospital Clinic Name<i
+                                    <div *ngIf="submitted && f['clinicName']?.errors?.['pattern']" class="invalid-feedback">
+                                        <div>Enter valid Hospital/Clinic Name</div>
+                                    </div>
+                                    <label for="mobile" class="form-label-floating">Hospital/Clinic Name<i
                                             class="danger">*</i></label>
                                 </div>
                                 <div *ngIf="user.role!='physician'" class="form-floating mb-3 col-sm-6">

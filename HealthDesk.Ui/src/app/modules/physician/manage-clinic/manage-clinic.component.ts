@@ -61,10 +61,10 @@ export class ManageClinicComponent implements OnInit {
 
     this.clinicForm = this.fb.group({
       id: [''],
-      name: ['', [Validators.required, Validators.maxLength(25), Validators.pattern(/^[a-zA-Z0-9\s]+$/)]],
-      flatNumber: ['', [Validators.maxLength(50), Validators.pattern(/^[a-zA-Z0-9\s]+$/)]],
-      building: ['', [Validators.maxLength(50), Validators.pattern(/^[a-zA-Z0-9\s]+$/)]],
-      area: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/^[a-zA-Z0-9\s]+$/)]],
+      name: ['', [Validators.required, Validators.maxLength(25),Validators.pattern(/^[a-zA-Z0-9@ ,\/\\'.-]+$/)]],
+      flatNumber: ['', [Validators.maxLength(50), Validators.pattern(/^[a-zA-Z0-9@ ,\/\\'.-]+$/)]],
+      building: ['', [Validators.maxLength(50), Validators.pattern(/^[a-zA-Z0-9@ ,\/\\'.-]+$/)]],
+      area: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/^[a-zA-Z0-9@ ,\/\\'.-]+$/)]],
       pinCode: ['', [Validators.required, Validators.pattern(/^[1-9][0-9]{5}$/)]],
       state: ['', Validators.required],
       city: ['', Validators.required],
@@ -120,7 +120,6 @@ export class ManageClinicComponent implements OnInit {
   }
 
 
-  // Add this helper function inside your component:
   parseTime12(timeStr: string): number | null {
     const parts = timeStr.trim().split(' ');
     if (parts.length < 2) return null; // Expecting "hh:mm AM/PM"
@@ -139,7 +138,7 @@ export class ManageClinicComponent implements OnInit {
     return adjustedHours * 60 + minutes;
   }
 
-  // Update validateTimeRange:
+
   validateTimeRange(group: FormGroup): ValidationErrors | null {
     const from = group.get('timingFrom')?.value;
     const to = group.get('timingTo')?.value;
@@ -152,10 +151,10 @@ export class ManageClinicComponent implements OnInit {
       return { timeFormat: 'Invalid time format' };
     }
     if (toTotal < fromTotal) {
-      return { timeRange: 'Time difference cannot exceed 9 hours' };
+      return { timeRange: 'Time difference cannot exceed 12 hours' };
     }
-    if (toTotal - fromTotal > 540) { // 9 hours = 540 minutes
-      return { timeRange: 'Time difference cannot exceed 9 hours' };
+    if (toTotal - fromTotal > 720) { // 9 hours = 540 minutes
+      return { timeRange: 'Time difference cannot exceed 12 hours' };
     }
     return null;
   }

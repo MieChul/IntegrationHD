@@ -12,8 +12,8 @@
           <div class="card-body">
             <h5 class="card-title">Medical History</h5>
             <p class="card-text">Access and update medical history.</p>
-            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Medical History</a>
-            <a *ngIf="userData.status === 'Approved'" href="/patient/history" class="btn btn-primary">Go to Medical History</a>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go <i class="bi bi-arrow-right"></i></a>
+            <a *ngIf="userData.status === 'Approved'" href="/patient/history" class="btn btn-primary">Go <i class="bi bi-arrow-right"></i></a>
           </div>
         </div>
       </div>
@@ -22,9 +22,9 @@
           <img src="assets/patient-record.png" class="card-img-top" alt="">
           <div class="card-body">
             <h5 class="card-title">Treatments</h5>
-            <p class="card-text">Review and analyze Treatments.</p>
-            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Treatments</a>
-            <a *ngIf="userData.status === 'Approved'" href="/patient/treatment" class="btn btn-primary">Go to Treatments</a>
+            <p class="card-text">Access and update treatments.</p>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go <i class="bi bi-arrow-right"></i></a>
+            <a *ngIf="userData.status === 'Approved'" href="/patient/treatment" class="btn btn-primary">Go <i class="bi bi-arrow-right"></i></a>
           </div>
         </div>
       </div>
@@ -32,45 +32,21 @@
         <div class="h-100 fade-in">
           <img src="assets/appointment.png" class="card-img-top" alt="">
           <div class="card-body">
-            <h5 class="card-title">Manage Appointments</h5>
-            <p class="card-text">Accept/Reject and manage appointments.</p>
-            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Appointments</a>
-            <a *ngIf="userData.status === 'Approved'" href="/patient/appointments" class="btn btn-primary">Go to Appointments</a>
+            <h5 class="card-title">Appointments</h5>
+            <p class="card-text">Schedule and manage appointments.</p>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go <i class="bi bi-arrow-right"></i></a>
+            <a *ngIf="userData.status === 'Approved'" href="/patient/appointments" class="btn btn-primary">Go <i class="bi bi-arrow-right"></i></a>
           </div>
         </div>
       </div>
-    </div>
-    <div class="row justify-content-center">
       <div class="col card small">
         <div class="h-100 fade-in">
           <img src="assets/medical-journal.png" class="card-img-top" alt="">
           <div class="card-body">
             <h5 class="card-title">Self Records</h5>
-            <p class="card-text">Review and analyze Self Records.</p>
-            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Self Records</a>
-            <a *ngIf="userData.status === 'Approved'" href="/patient/self-recording" class="btn btn-primary">Go to Self Records</a>
-          </div>
-        </div>
-      </div>
-      <div class="col card small">
-        <div class="h-100 fade-in">
-          <img src="assets/cases.png" class="card-img-top" alt="">
-          <div class="card-body">
-            <h5 class="card-title">Medicine Refill & Complaince</h5>
-            <p class="card-text">Access and update Medicine Refill & Complaince.</p>
-            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Medicine Refill & Complaince</a>
-            <a *ngIf="userData.status === 'Approved'" href="/patient/refill" class="btn btn-primary">Go to Medicine Refill & Complaince</a>
-          </div>
-        </div>
-      </div>
-      <div class="col card small">
-        <div class="h-100 fade-in">
-          <img src="assets/survey.png" class="card-img-top" alt="">
-          <div class="card-body">
-            <h5 class="card-title">Diet and Daily Physical Activity</h5>
-            <p class="card-text">Create and manage Diet and Daily Physicial Activity.</p>
-            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Daily Physical Activity</a>
-            <a *ngIf="userData.status === 'Approved'" href="/patient/daily-activity" class="btn btn-primary">Go to Daily Physical Activity</a>
+            <p class="card-text">Access and update self records.</p>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go <i class="bi bi-arrow-right"></i></a>
+            <a *ngIf="userData.status === 'Approved'" href="/patient/self-recording" class="btn btn-primary">Go <i class="bi bi-arrow-right"></i></a>
           </div>
         </div>
       </div>
@@ -78,12 +54,34 @@
     <div class="row justify-content-center">
       <div class="col card small">
         <div class="h-100 fade-in">
+          <img src="assets/cases.png" class="card-img-top" alt="">
+          <div class="card-body">
+            <h5 class="card-title">Medicine Refill and Compliance</h5>
+            <p class="card-text">Access and update medicine refill and compliance.</p>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go <i class="bi bi-arrow-right"></i></a>
+            <a *ngIf="userData.status === 'Approved'" href="/patient/refill" class="btn btn-primary">Go <i class="bi bi-arrow-right"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="col card small">
+        <div class="h-100 fade-in">
+          <img src="assets/survey.png" class="card-img-top" alt="">
+          <div class="card-body">
+            <h5 class="card-title">Diet and Physical Activity</h5>
+            <p class="card-text">Access and update diet and physicial activity.</p>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go <i class="bi bi-arrow-right"></i></a>
+            <a *ngIf="userData.status === 'Approved'" href="/patient/daily-activity" class="btn btn-primary">Go <i class="bi bi-arrow-right"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="col card small">
+        <div class="h-100 fade-in">
           <img src="assets/survey.png" class="card-img-top" alt="">
           <div class="card-body">
             <h5 class="card-title">Search and Rate</h5>
-            <p class="card-text">Search and Rate.</p>
-            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Search and Rate</a>
-            <a *ngIf="userData.status === 'Approved'" href="/patient/rate" class="btn btn-primary">Go to Search and Rate</a>
+            <p class="card-text">Search and rate doctor, hospital, laboratory or pharmacy.</p>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go <i class="bi bi-arrow-right"></i></a>
+            <a *ngIf="userData.status === 'Approved'" href="/patient/rate" class="btn btn-primary">Go <i class="bi bi-arrow-right"></i></a>
           </div>
         </div>
       </div>
@@ -92,9 +90,9 @@
           <img src="assets/survey.png" class="card-img-top" alt="">
           <div class="card-body">
             <h5 class="card-title">Home Remidies</h5>
-            <p class="card-text">Create and manage Home Remidies.</p>
-            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go to Home Remidies</a>
-            <a *ngIf="userData.status === 'Approved'" href="/patient/remidies" class="btn btn-primary">Go to Home Remidies</a>
+            <p class="card-text">Access or add home remidies.</p>
+            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Go <i class="bi bi-arrow-right"></i></a>
+            <a *ngIf="userData.status === 'Approved'" href="/patient/remidies" class="btn btn-primary">Go <i class="bi bi-arrow-right"></i></a>
           </div>
         </div>
       </div>

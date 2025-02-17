@@ -28,12 +28,14 @@ export class PatientTreatmentComponent implements OnInit {
   dosageFormFilterCtrl = new FormControl();
   strengthUnitFilterCtrl = new FormControl();
   frequencyFilterCtrl = new FormControl();
+  brandFilterCtrl = new FormControl();
 
   filteredDiseases!: Observable<string[]>;
   filteredDrugs!: Observable<string[]>;
   filteredDosageForms!: Observable<string[]>;
   filteredStrengthUnits!: Observable<string[]>;
   filteredFrequencies!: Observable<string[]>;
+  filteredBrands!: Observable<string[]>;
 
   // Dropdowns
   drugs: string[] = [];
@@ -41,6 +43,7 @@ export class PatientTreatmentComponent implements OnInit {
   strengthUnits: string[] = [];
   frequencies: string[] = [];
   diseases: string[] = [];
+  brands: string[] = [];
 
   sortDirection: { [key: string]: 'asc' | 'desc' } = {};
 
@@ -62,10 +65,9 @@ export class PatientTreatmentComponent implements OnInit {
       next: async (data) => {
         this.userData = data;
         this.drugs = await this.databaseService.getDrugs();
-        this.dosageForms = await this.databaseService.getForms();
-        this.strengthUnits = await this.databaseService.getStrengths();
         this.frequencies = await this.databaseService.getFrequencies();
         this.diseases = await this.databaseService.getSymptoms();
+        this.brands = await this.databaseService.getDrugBrands();
 
         // Load treatments
         await this.loadTreatments();
@@ -76,16 +78,20 @@ export class PatientTreatmentComponent implements OnInit {
     });
   }
 
+  ngAfterViewInit() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  }
+
   initializeForms(): void {
     this.treatmentForm = this.fb.group(
       {
         id: this.fb.control(''),
+        brand: this.fb.control('', Validators.required),
         treatmentDrug: this.fb.control('', Validators.required),
         dosageForm: this.fb.control('', Validators.required),
-        strength: this.fb.control<number | null>(null, [
-          Validators.required,
-          Validators.min(0)
-        ]),
         strengthUnit: this.fb.control('', Validators.required),
         frequency: this.fb.control('', Validators.required),
         startDate: this.fb.control('', [
@@ -135,12 +141,61 @@ export class PatientTreatmentComponent implements OnInit {
       map((search) => this.filterOptions(search, this.frequencies))
     );
 
+    this.filteredBrands = this.brandFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.brands))
+    );
+
   }
 
   filterOptions(search: string, options: string[]): string[] {
     const filterValue = search.toLowerCase();
     return options.filter(option => option.toLowerCase().includes(filterValue));
   }
+
+  async onDrugChange() {
+    const selectedDrug = this.treatmentForm.get('treatmentDrug')?.value;
+
+    // Disable dependent dropdowns while data is loading
+    this.treatmentForm.get('dosageForm')?.disable();
+    this.treatmentForm.get('strengthUnit')?.disable();
+
+    // Fetch new dosage forms
+    this.dosageForms = [];
+    this.strengthUnits = [];
+    if (selectedDrug) {
+      this.dosageForms = await this.databaseService.getForms(selectedDrug);
+    }
+
+    // Reset and enable dosage form dropdown if data is available
+    this.treatmentForm.patchValue({ dosageForm: '', strengthUnit: '' });
+
+    if (this.dosageForms.length > 0) {
+      this.treatmentForm.get('dosageForm')?.enable();
+    }
+  }
+
+  async onDosageFormChange() {
+    const selectedDrug = this.treatmentForm.get('treatmentDrug')?.value;
+    const selectedDosageForm = this.treatmentForm.get('dosageForm')?.value;
+
+    // Disable strength unit dropdown while loading
+    this.treatmentForm.get('strengthUnit')?.disable();
+
+    // Fetch new strength units
+    this.strengthUnits = [];
+    if (selectedDrug && selectedDosageForm) {
+      this.strengthUnits = await this.databaseService.getStrengths(selectedDrug, selectedDosageForm);
+    }
+
+    // Reset and enable strength unit dropdown if data is available
+    this.treatmentForm.patchValue({ strengthUnit: '' });
+
+    if (this.strengthUnits.length > 0) {
+      this.treatmentForm.get('strengthUnit')?.enable();
+    }
+  }
+
 
   loadTreatments(): void {
     if (!this.userData?.id) {
@@ -152,7 +207,7 @@ export class PatientTreatmentComponent implements OnInit {
       next: (data: any) => {
         this.patientTreatments = data?.data.map((treatments: any) => ({
           ...treatments
-        })).sort((a: any, b: any) => new Date(b.dateOfDiagnosis).getTime() - new Date(a.dateOfDiagnosis).getTime());;
+        })).sort((a: any, b: any) => new Date(b.dateOfDiagnosis).getTime() - new Date(a.dateOfDiagnosis).getTime());
         this.filteredTreatments = [...this.patientTreatments];
         this.filterTreatments('ongoing');
       },
