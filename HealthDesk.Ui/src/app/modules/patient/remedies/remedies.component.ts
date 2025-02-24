@@ -46,43 +46,27 @@ export class RemediesComponent implements OnInit {
 
   // Base remedies plus 25 additional dummy cases
   otherRemedies: MedicalCase[] = [
-    { id: 1, submittedBy: 'Dr. Smith', speciality: 'Cardiology', comments: ['Great case!'], likeCount: 10, shareCount: 5, shortDescription: 'A detailed case study on cardiology', thumbnail: 'https://via.placeholder.com/150?text=Case+1' },
-    { id: 2, submittedBy: 'Dr. Johnson', speciality: 'Neurology', comments: [], likeCount: 7, shareCount: 2, shortDescription: 'An intriguing neurology case', thumbnail: 'https://via.placeholder.com/150?text=Case+2' },
-    { id: 3, submittedBy: 'Dr. Lee', speciality: 'Orthopedics', comments: [], likeCount: 15, shareCount: 3, shortDescription: 'Orthopedics case study and analysis', thumbnail: 'https://via.placeholder.com/150?text=Case+3' },
-    { id: 4, submittedBy: 'Dr. Brown', speciality: 'Dermatology', comments: [], likeCount: 8, shareCount: 4, shortDescription: 'Dermatology case with treatment details', thumbnail: 'https://via.placeholder.com/150?text=Case+4' },
-    { id: 5, submittedBy: 'Dr. Taylor', speciality: 'Pediatrics', comments: [], likeCount: 12, shareCount: 6, shortDescription: 'A pediatric case involving rare symptoms', thumbnail: 'https://via.placeholder.com/150?text=Case+5' },
-    // Dummy remedies from ID 6 to 30
-    { id: 6, submittedBy: 'Dr. Adams', speciality: 'Oncology', comments: [], likeCount: 9, shareCount: 3, shortDescription: 'Case study on oncology treatment', thumbnail: 'https://via.placeholder.com/150?text=Case+6' },
-    { id: 7, submittedBy: 'Dr. Clark', speciality: 'Gastroenterology', comments: [], likeCount: 11, shareCount: 4, shortDescription: 'Digestive health case analysis', thumbnail: 'https://via.placeholder.com/150?text=Case+7' },
-    { id: 8, submittedBy: 'Dr. Evans', speciality: 'Urology', comments: [], likeCount: 6, shareCount: 2, shortDescription: 'Urological case study', thumbnail: 'https://via.placeholder.com/150?text=Case+8' },
-    { id: 9, submittedBy: 'Dr. Foster', speciality: 'Endocrinology', comments: [], likeCount: 14, shareCount: 5, shortDescription: 'Endocrine system analysis', thumbnail: 'https://via.placeholder.com/150?text=Case+9' },
-    { id: 10, submittedBy: 'Dr. Green', speciality: 'Rheumatology', comments: [], likeCount: 5, shareCount: 1, shortDescription: 'Rheumatology case report', thumbnail: 'https://via.placeholder.com/150?text=Case+10' },
-    { id: 11, submittedBy: 'Dr. Harris', speciality: 'Nephrology', comments: [], likeCount: 13, shareCount: 4, shortDescription: 'Kidney disease case study', thumbnail: 'https://via.placeholder.com/150?text=Case+11' },
-    { id: 12, submittedBy: 'Dr. Irving', speciality: 'Ophthalmology', comments: [], likeCount: 7, shareCount: 3, shortDescription: 'Eye condition and treatment', thumbnail: 'https://via.placeholder.com/150?text=Case+12' },
-    { id: 13, submittedBy: 'Dr. Jones', speciality: 'ENT', comments: [], likeCount: 8, shareCount: 2, shortDescription: 'ENT examination report', thumbnail: 'https://via.placeholder.com/150?text=Case+13' },
-    { id: 14, submittedBy: 'Dr. King', speciality: 'Psychiatry', comments: [], likeCount: 10, shareCount: 3, shortDescription: 'Psychiatric case discussion', thumbnail: 'https://via.placeholder.com/150?text=Case+14' },
-    { id: 15, submittedBy: 'Dr. Lewis', speciality: 'Immunology', comments: [], likeCount: 9, shareCount: 2, shortDescription: 'Immunology and allergies case', thumbnail: 'https://via.placeholder.com/150?text=Case+15' },
-    { id: 16, submittedBy: 'Dr. Martin', speciality: 'Cardiology', comments: [], likeCount: 11, shareCount: 3, shortDescription: 'Cardiac arrest emergency case', thumbnail: 'https://via.placeholder.com/150?text=Case+16' },
-    { id: 17, submittedBy: 'Dr. Nelson', speciality: 'Neurology', comments: [], likeCount: 12, shareCount: 5, shortDescription: 'Neurological disorder diagnosis', thumbnail: 'https://via.placeholder.com/150?text=Case+17' },
-    { id: 18, submittedBy: 'Dr. O’Brien', speciality: 'Orthopedics', comments: [], likeCount: 15, shareCount: 4, shortDescription: 'Fracture management and recovery', thumbnail: 'https://via.placeholder.com/150?text=Case+18' },
-    { id: 19, submittedBy: 'Dr. Parker', speciality: 'Dermatology', comments: [], likeCount: 8, shareCount: 3, shortDescription: 'Skin rash and treatment case', thumbnail: 'https://via.placeholder.com/150?text=Case+19' },
-    { id: 20, submittedBy: 'Dr. Quinn', speciality: 'Pediatrics', comments: [], likeCount: 10, shareCount: 4, shortDescription: 'Childhood illness case study', thumbnail: 'https://via.placeholder.com/150?text=Case+20' },
-    { id: 21, submittedBy: 'Dr. Roberts', speciality: 'Oncology', comments: [], likeCount: 9, shareCount: 2, shortDescription: 'Cancer treatment analysis', thumbnail: 'https://via.placeholder.com/150?text=Case+21' },
-    { id: 22, submittedBy: 'Dr. Scott', speciality: 'Gastroenterology', comments: [], likeCount: 7, shareCount: 3, shortDescription: 'Stomach ulcer management', thumbnail: 'https://via.placeholder.com/150?text=Case+22' },
-    { id: 23, submittedBy: 'Dr. Turner', speciality: 'Urology', comments: [], likeCount: 8, shareCount: 2, shortDescription: 'Bladder infection case study', thumbnail: 'https://via.placeholder.com/150?text=Case+23' },
-    { id: 24, submittedBy: 'Dr. Underwood', speciality: 'Endocrinology', comments: [], likeCount: 10, shareCount: 3, shortDescription: 'Diabetes management case', thumbnail: 'https://via.placeholder.com/150?text=Case+24' },
-    { id: 25, submittedBy: 'Dr. Vincent', speciality: 'Rheumatology', comments: [], likeCount: 6, shareCount: 1, shortDescription: 'Arthritis patient review', thumbnail: 'https://via.placeholder.com/150?text=Case+25' },
-    { id: 26, submittedBy: 'Dr. White', speciality: 'Nephrology', comments: [], likeCount: 11, shareCount: 4, shortDescription: 'Renal failure and dialysis', thumbnail: 'https://via.placeholder.com/150?text=Case+26' },
-    { id: 27, submittedBy: 'Dr. Xander', speciality: 'Ophthalmology', comments: [], likeCount: 7, shareCount: 3, shortDescription: 'Cataract surgery review', thumbnail: 'https://via.placeholder.com/150?text=Case+27' },
-    { id: 28, submittedBy: 'Dr. Young', speciality: 'ENT', comments: [], likeCount: 8, shareCount: 2, shortDescription: 'Sinus infection case study', thumbnail: 'https://via.placeholder.com/150?text=Case+28' },
-    { id: 29, submittedBy: 'Dr. Zimmerman', speciality: 'Psychiatry', comments: [], likeCount: 9, shareCount: 3, shortDescription: 'Mental health case discussion', thumbnail: 'https://via.placeholder.com/150?text=Case+29' },
-    { id: 30, submittedBy: 'Dr. Allen', speciality: 'Immunology', comments: [], likeCount: 10, shareCount: 4, shortDescription: 'Vaccine response case study', thumbnail: 'https://via.placeholder.com/150?text=Case+30' },
+    { id: 1, submittedBy: 'Dr. Smith', speciality: 'Cardiology', comments: ['Great case!'], likeCount: 10, shareCount: 5, shortDescription: 'A detailed case study on cardiology', thumbnail: 'assets/remedies/3.jpg' },
+    { id: 2, submittedBy: 'Dr. Johnson', speciality: 'Neurology', comments: [], likeCount: 7, shareCount: 2, shortDescription: 'An intriguing neurology case', thumbnail: 'assets/remedies/7.jpg' },
+    { id: 3, submittedBy: 'Dr. Lee', speciality: 'Orthopedics', comments: [], likeCount: 15, shareCount: 3, shortDescription: 'Orthopedics case study and analysis', thumbnail: 'assets/remedies/2.jpg' },
+    { id: 4, submittedBy: 'Dr. Brown', speciality: 'Dermatology', comments: [], likeCount: 8, shareCount: 4, shortDescription: 'Dermatology case with treatment details', thumbnail: 'assets/remedies/8.jpg' },
+    { id: 5, submittedBy: 'Dr. Taylor', speciality: 'Pediatrics', comments: [], likeCount: 12, shareCount: 6, shortDescription: 'A pediatric case involving rare symptoms', thumbnail: 'assets/remedies/5.jpg' },
+    { id: 6, submittedBy: 'Dr. Adams', speciality: 'Oncology', comments: [], likeCount: 9, shareCount: 3, shortDescription: 'Case study on oncology treatment', thumbnail: 'assets/remedies/4.jpg' },
+    { id: 7, submittedBy: 'Dr. Clark', speciality: 'Gastroenterology', comments: [], likeCount: 11, shareCount: 4, shortDescription: 'Digestive health case analysis', thumbnail: 'assets/remedies/10.jpg' },
+    { id: 8, submittedBy: 'Dr. Evans', speciality: 'Urology', comments: [], likeCount: 6, shareCount: 2, shortDescription: 'Urological case study', thumbnail: 'assets/remedies/9.jpg' },
+    { id: 9, submittedBy: 'Dr. Foster', speciality: 'Endocrinology', comments: [], likeCount: 14, shareCount: 5, shortDescription: 'Endocrine system analysis', thumbnail: 'assets/remedies/1.jpg' },
+    { id: 10, submittedBy: 'Dr. Green', speciality: 'Rheumatology', comments: [], likeCount: 5, shareCount: 1, shortDescription: 'Rheumatology case report', thumbnail: 'assets/remedies/6.jpg' },
+    { id: 11, submittedBy: 'Dr. Harris', speciality: 'Nephrology', comments: [], likeCount: 13, shareCount: 4, shortDescription: 'Kidney disease case study', thumbnail: 'assets/remedies/11.jpg' },
+    { id: 12, submittedBy: 'Dr. Irving', speciality: 'Ophthalmology', comments: [], likeCount: 7, shareCount: 3, shortDescription: 'Eye condition and treatment', thumbnail: 'assets/remedies/12.jpg' },
+    { id: 13, submittedBy: 'Dr. Jones', speciality: 'ENT', comments: [], likeCount: 8, shareCount: 2, shortDescription: 'ENT examination report', thumbnail: 'assets/remedies/2.jpg' },
+    { id: 14, submittedBy: 'Dr. King', speciality: 'Psychiatry', comments: [], likeCount: 10, shareCount: 3, shortDescription: 'Psychiatric case discussion', thumbnail: 'assets/remedies/4.jpg' },
+    { id: 15, submittedBy: 'Dr. Lewis', speciality: 'Immunology', comments: [], likeCount: 9, shareCount: 2, shortDescription: 'Immunology and allergies case', thumbnail: 'assets/remedies/7.jpg' }
   ];
-
+  
   yourRemedies: MedicalCase[] = [
-    { id: 1, submittedBy: 'You', speciality: 'Cardiology', comments: [], likeCount: 0, shareCount: 0, shortDescription: 'Your own case study on cardiology', thumbnail: 'https://via.placeholder.com/150?text=Your+Case+1' },
-    { id: 2, submittedBy: 'You', speciality: 'Neurology', comments: [], likeCount: 0, shareCount: 0, shortDescription: 'Your own case study on neurology', thumbnail: 'https://via.placeholder.com/150?text=Your+Case+2' },
-    { id: 3, submittedBy: 'You', speciality: 'Orthopedics', comments: [], likeCount: 0, shareCount: 0, shortDescription: 'Your own case study on orthopedics', thumbnail: 'https://via.placeholder.com/150?text=Your+Case+3' },
+    { id: 1, submittedBy: 'You', speciality: 'Cardiology', comments: [], likeCount: 0, shareCount: 0, shortDescription: 'Your own case study on cardiology', thumbnail: 'assets/remedies/3.jpg' },
+    { id: 2, submittedBy: 'You', speciality: 'Neurology', comments: [], likeCount: 0, shareCount: 0, shortDescription: 'Your own case study on neurology', thumbnail: 'assets/remedies/9.jpg' },
+    { id: 3, submittedBy: 'You', speciality: 'Orthopedics', comments: [], likeCount: 0, shareCount: 0, shortDescription: 'Your own case study on orthopedics', thumbnail: 'assets/remedies/5.jpg' }
   ];
 
   constructor(private router: Router, private modalService: NgbModal) {}

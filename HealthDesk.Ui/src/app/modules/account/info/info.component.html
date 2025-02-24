@@ -387,7 +387,7 @@
                                 <div class="row" formGroupName="medicalRegistration">
                                     <div class="form-floating col-sm-4">
                                         <input type="text" class="form-control" id="certificateNumber"
-                                            placeholder="Certificate Number" autocomplete="off"
+                                            placeholder="Medical registration Certificate (MRC)" autocomplete="off"
                                             formControlName="certificateNumber"
                                             [ngClass]="{ 'is-invalid': submitted && (certificateNumberError || f['medicalRegistration'].get('certificateNumber')?.errors) }">
                                         <div *ngIf="submitted && certificateNumberError"
@@ -401,12 +401,11 @@
                                                 Please enter a valid Certificate Number.
                                             </div>
                                         </div>
-                                        <label for="certificateNumber" class="form-label-floating">Certification
-                                            Number<i class="danger">*</i></label>
+                                        <label for="certificateNumber" class="form-label-floating">Medical registration Certificate (MRC)<i class="danger">*</i></label>
                                     </div>
                                     <div class="form-floating col-sm-4">
                                         <mat-form-field appearance="outline" class="w-100">
-                                            <mat-label>Council</mat-label>
+                                            <mat-label>Medical Council Name</mat-label>
                                             <mat-select formControlName="councilName"
                                                 [ngClass]="{ 'is-invalid': submitted && (councilError || f['medicalRegistration'].get('councilName')?.errors) }"
                                                 required>
@@ -446,7 +445,7 @@
                                 <p class="mb-4"><span class="text-primary font-italic me-1">Qualification
                                         Documents</span>
                                 </p>
-                                <mat-checkbox formControlName="noDocConsentProvided">
+                                <mat-checkbox formControlName="noDocConsentProvided" class="m-2">
                                     I confirm I am Qualified Registered Medical Practioner and do not wish to provide
                                     qualification documens or medical registration certificate copy. I take full
                                     responsibility of legal use of healthdesk as physician.

@@ -113,7 +113,7 @@ public class PhysicianService : IPhysicianService
         if (physician == null)
             throw new ArgumentException("Physician not found.");
 
-        physician.Clinics.RemoveAll(c => c.Id == clinicId);
+        RemoveIfNotExpired(physician.Clinics, r => r.Id == clinicId);
         await _physicianRepository.UpdateAsync(physician);
     }
 
@@ -134,7 +134,7 @@ public class PhysicianService : IPhysicianService
     public async Task DeleteDesignPrescriptionAsync(string physicianId, string prescriptionId)
     {
         var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
-        physician.DesignPrescriptions.RemoveAll(dp => dp.Id == prescriptionId);
+        RemoveIfNotExpired(physician.DesignPrescriptions, r => r.Id == prescriptionId);
         await _physicianRepository.UpdateAsync(physician);
     }
 
@@ -526,6 +526,25 @@ public class PhysicianService : IPhysicianService
             if (!string.IsNullOrEmpty(reason))
                 appoint.Reason = reason;
             await _patientService.SaveAppointmentAsync(appoint.PatientId, appoint);
+        }
+    }
+
+    private void RemoveIfNotExpired<T>(List<T> items, Func<T, bool> predicate) where T : class
+    {
+        var currentTime = DateTime.UtcNow;
+        var toRemove = items
+            .Where(item => predicate(item) &&
+                           (item.GetType().GetProperty("CreateDate")?.GetValue(item) is DateTime createDate) &&
+                           (currentTime - createDate).TotalHours <= 1)
+            .ToList();
+
+        if (toRemove.Any())
+        {
+            items.RemoveAll(i => toRemove.Contains(i));
+        }
+        else
+        {
+            throw new InvalidOperationException("Cannot remove item(s) as they were created more than 1 hour ago. Please contact admin.");
         }
     }
 }

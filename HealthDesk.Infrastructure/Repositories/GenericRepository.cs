@@ -48,4 +48,6 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
         // Add DeleteManyAsync method
         public async Task DeleteManyAsync(Expression<Func<T, bool>> filterExpression) =>
             await _collection.DeleteManyAsync(filterExpression);
+
+            
     }

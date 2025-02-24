@@ -50,7 +50,7 @@ public class PatientService : IPatientService
     public async Task DeleteMedicalHistoryAsync(string patientId, string historyId)
     {
         var patient = await GetPatientByIdAsync(patientId);
-        patient.MedicalHistory.RemoveAll(h => h.Id == historyId);
+        RemoveIfNotExpired(patient.MedicalHistory, h => h.Id == historyId);
         await _patientRepository.UpdateAsync(patient);
     }
 
@@ -85,7 +85,7 @@ public class PatientService : IPatientService
     public async Task DeleteCurrentTreatmentAsync(string patientId, string treatmentId)
     {
         var patient = await GetPatientByIdAsync(patientId);
-        patient.CurrentTreatments.RemoveAll(t => t.Id == treatmentId);
+        RemoveIfNotExpired(patient.CurrentTreatments, h => h.Id == treatmentId);
         await _patientRepository.UpdateAsync(patient);
     }
 
@@ -193,7 +193,7 @@ public class PatientService : IPatientService
     public async Task DeleteSelfRecordAsync(string patientId, string recordId)
     {
         var patient = await GetPatientByIdAsync(patientId);
-        patient.SelfRecords.RemoveAll(r => r.Id == recordId);
+        RemoveIfNotExpired(patient.SelfRecords, r => r.Id == recordId);
         await _patientRepository.UpdateAsync(patient);
     }
 
@@ -228,7 +228,7 @@ public class PatientService : IPatientService
     public async Task DeleteSymptomAsync(string patientId, string symptomId)
     {
         var patient = await GetPatientByIdAsync(patientId);
-        patient.Symptoms.RemoveAll(s => s.Id == symptomId);
+        RemoveIfNotExpired(patient.Symptoms, r => r.Id == symptomId);
         await _patientRepository.UpdateAsync(patient);
     }
 
@@ -263,7 +263,7 @@ public class PatientService : IPatientService
     public async Task DeleteLabInvestigationAsync(string patientId, string investigationId)
     {
         var patient = await GetPatientByIdAsync(patientId);
-        patient.LabInvestigations.RemoveAll(i => i.Id == investigationId);
+        RemoveIfNotExpired(patient.LabInvestigations, r => r.Id == investigationId);
         await _patientRepository.UpdateAsync(patient);
     }
 
@@ -298,7 +298,7 @@ public class PatientService : IPatientService
     public async Task DeleteReportAsync(string patientId, string reportId)
     {
         var patient = await GetPatientByIdAsync(patientId);
-        patient.Reports.RemoveAll(r => r.Id == reportId);
+        RemoveIfNotExpired(patient.Reports, r => r.Id == reportId);
         await _patientRepository.UpdateAsync(patient);
     }
 
@@ -333,7 +333,7 @@ public class PatientService : IPatientService
     public async Task DeleteImmunizationAsync(string patientId, string immunizationId)
     {
         var patient = await GetPatientByIdAsync(patientId);
-        patient.Immunizations.RemoveAll(i => i.Id == immunizationId);
+        RemoveIfNotExpired(patient.Immunizations, r => r.Id == patientId);
         await _patientRepository.UpdateAsync(patient);
     }
 
@@ -555,11 +555,11 @@ public class PatientService : IPatientService
     public async Task DeleteActivityAsync(string patientId, string activityId)
     {
         var patient = await _patientRepository.GetByIdAsync(patientId);
-        patient.Activities.RemoveAll(a => a.Id == activityId);
+        RemoveIfNotExpired(patient.Activities, r => r.Id == activityId);
         await _patientRepository.UpdateAsync(patient);
     }
-    
-   
+
+
 
     public async Task<IEnumerable<ReminderDto>> GetRemindersAsync(string patientId)
     {
@@ -585,7 +585,7 @@ public class PatientService : IPatientService
         var patient = await _patientRepository.GetByIdAsync(patientId);
 
         foreach (var compliance in patient.Compliance)
-            compliance.Reminders.RemoveAll(r => r.Id == reminderId);
+            RemoveIfNotExpired(compliance.Reminders, r => r.Id == reminderId);
 
         await _patientRepository.UpdateAsync(patient);
     }
@@ -613,4 +613,22 @@ public class PatientService : IPatientService
         return physicianDetails;
     }
 
+    private void RemoveIfNotExpired<T>(List<T> items, Func<T, bool> predicate) where T : class
+    {
+        var currentTime = DateTime.UtcNow;
+        var toRemove = items
+            .Where(item => predicate(item) &&
+                           (item.GetType().GetProperty("CreateDate")?.GetValue(item) is DateTime createDate) &&
+                           (currentTime - createDate).TotalHours <= 1)
+            .ToList();
+
+        if (toRemove.Any())
+        {
+            items.RemoveAll(i => toRemove.Contains(i));
+        }
+        else
+        {
+            throw new InvalidOperationException("Upon confirmation, data can be deleted only by Admin.");
+        }
+    }
 }

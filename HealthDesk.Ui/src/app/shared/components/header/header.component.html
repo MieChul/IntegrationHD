@@ -31,7 +31,7 @@
                 <mat-icon>person_add</mat-icon>{{ dependentText }}
               </button>
             </div>
-            <div *ngIf="userData.status ==='Approved' && userData.role !== 'admin' && userData.role !== 'pharmaceutical' && !userData.dependentId">
+            <div *ngIf="(userData.role === 'patient' && !userData.dependentId) || (userData.status ==='Approved' && userData.role !== 'admin' && userData.role !== 'pharmaceutical' && !userData.dependentId)">
               <mat-divider></mat-divider>
               <button mat-menu-item (click)="handleSwitchRole()">
                 <mat-icon>settings</mat-icon> {{ switchRole }}
