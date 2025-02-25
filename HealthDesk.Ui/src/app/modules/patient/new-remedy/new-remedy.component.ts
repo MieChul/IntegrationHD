@@ -79,10 +79,8 @@ export class NewRemedyComponent implements OnInit {
         quantities: this.quantities
       };
       console.log('Remedy Data:', remedyData);
-      alert('Home Remedy Submitted Successfully!');
-      this.router.navigate(['/remedies']);
+      this.router.navigate(['/patient/remedies']);
     } else {
-      alert('Please fill all required fields.');
     }
   }
 
