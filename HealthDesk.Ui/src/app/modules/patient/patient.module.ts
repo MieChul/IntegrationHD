@@ -19,6 +19,8 @@ import { RemediesComponent } from './remedies/remedies.component';
 import { SelfRecordComponent } from './self-record/self-record.component';
 import { SharedModule } from '../../shared/shared.module';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NewRemedyComponent } from './new-remedy/new-remedy.component';
+import { ViewRemedyComponent } from './view-remedy/view-remedy.component';
 
 
 @NgModule({
@@ -37,7 +39,9 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
     PatientTreatmentComponent,
     RateComponent,
     RemediesComponent,
-    SelfRecordComponent
+    SelfRecordComponent,
+    NewRemedyComponent,
+    ViewRemedyComponent
   ],
   imports: [
     NgbModule,

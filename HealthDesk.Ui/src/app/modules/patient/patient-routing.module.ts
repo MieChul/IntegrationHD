@@ -14,6 +14,8 @@ import { PatientSelfRecordingComponent } from './patient-self-recording/patient-
 import { PatientSymptomsComponent } from './patient-symptoms/patient-symptoms.component';
 import { RateComponent } from './rate/rate.component';
 import { RemediesComponent } from './remedies/remedies.component';
+import { NewRemedyComponent } from './new-remedy/new-remedy.component';
+import { ViewRemedyComponent } from './view-remedy/view-remedy.component';
 
 const routes: Routes = [{ path: '', component: PatientComponent,
   children: [
@@ -29,7 +31,9 @@ const routes: Routes = [{ path: '', component: PatientComponent,
     { path: 'reports', component: InvestigationReportsComponent },
     { path: 'immunization', component: ImmunizationComponent },
     { path: 'rate', component: RateComponent },
-    { path: 'remidies', component: RemediesComponent }
+    { path: 'remidies', component: RemediesComponent },
+    { path: 'new-remedy', component: NewRemedyComponent },
+    { path: 'view-remedy', component: ViewRemedyComponent },
     // Add other routes here
   ]
  }];

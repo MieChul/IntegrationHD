@@ -76,7 +76,7 @@ export class RemediesComponent implements OnInit {
   }
 
   createNewCase(): void {
-    this.router.navigate(['/physician/new-medical-case']);
+    this.router.navigate(['/patient/new-remedy']);
   }
 
   addComment(caseId: number): void {
@@ -156,6 +156,6 @@ export class RemediesComponent implements OnInit {
   }
 
   viewCase(caseId: number): void {
-    this.router.navigate(['/physician/view-medical-case', caseId]);
+    this.router.navigate(['/patient/view-remedy', caseId]);
   }
 }
