@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { Router } from '@angular/router';
 
 @Component({
@@ -6,79 +7,86 @@ import { Router } from '@angular/router';
   templateUrl: './new-remedy.component.html',
   styleUrls: ['./new-remedy.component.scss']
 })
-export class NewRemedyComponent {
-  speciality = '';
-  diagnosis = '';
-  patientInitials = '';
-  age: number | null = null;
-  chiefComplaints: string[] = [''];
-  pastHistory = '';
-  examination = '';
-  investigation = '';
-  treatment = '';
-  caseSummary = '';
+export class NewRemedyComponent implements OnInit {
+  remedyForm!: FormGroup;
   images: File[] = [];
-  validInitials: boolean = true;
-  ageError: string | null = null;
+  quantities: string[] = [];
 
-  constructor(private router: Router) { }
+  constructor(private fb: FormBuilder, private router: Router) { }
 
-  submitCase() {
-    this.validInitials = /^[A-Za-z.']{3}$/.test(this.patientInitials);
-    if (!this.validInitials) return;
-    if (!this.validateAge()) return;
-    // Logic to handle form submission
-    console.log({
-      speciality: this.speciality,
-      diagnosis: this.diagnosis,
-      patientInitials: this.patientInitials,
-      age: this.age,
-      chiefComplaints: this.chiefComplaints,
-      pastHistory: this.pastHistory,
-      examination: this.examination,
-      investigation: this.investigation,
-      treatment: this.treatment,
-      caseSummary: this.caseSummary,
-      images: this.images
+  ngOnInit(): void {
+    this.remedyForm = this.fb.group({
+      name: ['', Validators.required],
+      remedyFor: ['', Validators.required],
+      ingredients: this.fb.array([this.createIngredient()]),
+      preparationMethod: ['', Validators.required],
+      usageDirections: ['', Validators.required],
+      precautions: ['']
     });
-    this.router.navigate(['/patient/remidies']);
   }
 
-  goBack() {
-    this.router.navigate(['/patient/remidies']);
+  /**
+   * Form Array for Ingredients
+   */
+  get ingredients(): FormArray {
+    return this.remedyForm.get('ingredients') as FormArray;
   }
 
-  addImage() {
+  createIngredient(): FormGroup {
+    return this.fb.group({
+      ingredient: ['', Validators.required]
+    });
+  }
+
+  addIngredient(): void {
+    this.ingredients.push(this.createIngredient());
+    this.quantities.push('');
+  }
+
+  removeIngredient(index: number): void {
+    this.ingredients.removeAt(index);
+    this.quantities.splice(index, 1);
+  }
+
+  /**
+   * Handle Image Uploads
+   */
+  addImage(): void {
     if (this.images.length < 3) {
-      this.images.push(null as any); // Allow null as a placeholder for a File type
+      this.images.push(new File([], ''));
     }
   }
-  removeImage(index: number) {
+
+  removeImage(index: number): void {
     this.images.splice(index, 1);
   }
 
-  onFileSelected(event: any, index: number) {
+  onFileSelected(event: any, index: number): void {
     const file = event.target.files[0];
     if (file) {
       this.images[index] = file;
     }
   }
 
-  addComplaint() {
-    this.chiefComplaints.push('');
-  }
-
-  validateAge(): boolean {
-    if ((this.age ?? 0) < 1 || (this.age ?? 0) > 150) {
-      this.ageError = 'Age must be between 1 and 150.';
-      return false;
+  /**
+   * Submit the Remedy
+   */
+  submitRemedy(): void {
+    if (this.remedyForm.valid) {
+      const remedyData = {
+        ...this.remedyForm.value,
+        images: this.images,
+        quantities: this.quantities
+      };
+      console.log('Remedy Data:', remedyData);
+      alert('Home Remedy Submitted Successfully!');
+      this.router.navigate(['/remedies']);
+    } else {
+      alert('Please fill all required fields.');
     }
-
-    this.ageError = null;
-    return true;
   }
 
-  removeComplaint(index: number) {
-    this.chiefComplaints.splice(index, 1);
+  goBack() {
+    this.router.navigate(['/patient/remidies']);
   }
 }
