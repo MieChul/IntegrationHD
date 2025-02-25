@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.AccessControl;
+using HealthDesk.Core.Enum;
 
 namespace HealthDesk.Application;
 public class MedicalHistoryDto
@@ -214,9 +215,9 @@ public class PatientComplianceDto
 {
     public string Id { get; set; }
     public string TreatmentId { get; set; }
-    public double CompliancePercentage{ get; set; }
-      
-    public int PillsCount{ get; set; }
+    public double CompliancePercentage { get; set; }
+
+    public int PillsCount { get; set; }
     public List<PatientComplianceDetailDto> ComplianceDetails { get; set; } = new();
     public List<PatientMedicineInfoDto> PatientMedicineInfos { get; set; } = new();
     public List<PatientReminderDto> Reminders { get; set; } = new();
@@ -272,6 +273,15 @@ public class ExerciseDto
     public string Id { get; set; }
     public string Type { get; set; }
     public int DurationMinutes { get; set; }
+}
+
+public class ReviewRequestDto
+{
+    public string UserId { get; set; }
+    public string EntityId { get; set; }
+    public string EntityType { get; set; }
+    public int Rating { get; set; }
+    public string Comment { get; set; }
 }
 
 

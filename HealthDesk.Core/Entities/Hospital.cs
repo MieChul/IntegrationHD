@@ -18,6 +18,9 @@ public class Hospital : BaseEntity
 
     [BsonElement("medical_cases")]
     public List<MedicalCase> MedicalCases { get; set; }
+
+    [BsonElement("reviews")]
+    public List<Reviews> Reviews { get; set; } = new();
 }
 
 public class Service : BaseEntity

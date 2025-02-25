@@ -171,5 +171,14 @@ export class PatientService {
   confirmIntake(patientId: string, treatmentId: string, isTaken: boolean): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/${patientId}/compliance/confirmintake/${treatmentId}?isTaken=${isTaken}`, {});
   }
-  
+
+  getEntities(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/entities`);
+  }
+
+  // Add or Update Review
+  addOrUpdateReview(review: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/review`, review);
+  }
+
 }

@@ -4,33 +4,36 @@
     </h1>
     <div class="row mb-3 align-items-center">
         <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
-            <form [formGroup]="filterForm" class="w-100">
-                <div class="row">
-                    <!-- Start Date -->
-                    <div class="col-md-6">
-                        <mat-form-field appearance="outline" class="w-100">
-                            <mat-label>Filter by Start Date</mat-label>
-                            <input matInput [matDatepicker]="f_startDatePicker" formControlName="f_startDate" />
-                            <mat-datepicker-toggle matSuffix [for]="f_startDatePicker"></mat-datepicker-toggle>
-                            <mat-datepicker #f_startDatePicker></mat-datepicker>
-                        </mat-form-field>
+            <div class="mb-2 me-3">
+                <form [formGroup]="filterForm" class="w-100">
+                    <div class="row">
+                        <!-- Start Date -->
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Filter by Start Date</mat-label>
+                                <input matInput [matDatepicker]="f_startDatePicker" formControlName="f_startDate" />
+                                <mat-datepicker-toggle matSuffix [for]="f_startDatePicker"></mat-datepicker-toggle>
+                                <mat-datepicker #f_startDatePicker></mat-datepicker>
+                            </mat-form-field>
+                        </div>
+                        <!-- End Date -->
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Filter by End Date</mat-label>
+                                <input matInput [matDatepicker]="f_endDatePicker" formControlName="f_endDate" />
+                                <mat-datepicker-toggle matSuffix [for]="f_endDatePicker"></mat-datepicker-toggle>
+                                <mat-datepicker #f_endDatePicker></mat-datepicker>
+                                <mat-error *ngIf="filterForm.get('f_endDate')?.hasError('invalidDateRange')">
+                                    Cannot be earlier than start date.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
                     </div>
-                    <!-- End Date -->
-                    <div class="col-md-6">
-                        <mat-form-field appearance="outline" class="w-100">
-                            <mat-label>Filter by End Date</mat-label>
-                            <input matInput [matDatepicker]="f_endDatePicker" formControlName="f_endDate" />
-                            <mat-datepicker-toggle matSuffix [for]="f_endDatePicker"></mat-datepicker-toggle>
-                            <mat-datepicker #f_endDatePicker></mat-datepicker>
-                            <mat-error *ngIf="filterForm.get('f_endDate')?.hasError('invalidDateRange')">
-                                Cannot be earlier than start date.
-                            </mat-error>
-                        </mat-form-field>
-                    </div>
-                </div>
-            </form>
+                </form>
+            </div>
+
         </div>
-        <div class="col-md-4 col-sm-6 d-flex justify-content-start flex-wrap">
+        <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
             <button class="btn btn-primary" (click)="openReportModal(false)">Add Investigation</button>
         </div>
     </div>
@@ -71,11 +74,13 @@
 </div>
 
 <!-- Add/Edit Investigation Report Modal -->
-<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true" #reportModal>
+<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true"
+    #reportModal>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="reportModalLabel">{{ isEditMode ? 'Edit Report' : 'Add Investigation Report' }}</h5>
+                <h5 class="modal-title" id="reportModalLabel">{{ isEditMode ? 'Edit Report' : 'Add Investigation Report'
+                    }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -100,10 +105,10 @@
                                 <mat-label>Time of Assessment</mat-label>
                                 <input matInput [ngxMatTimepicker]="timePickertime" formControlName="time"
                                     placeholder="Time (HH:mm)" />
-                                <ngx-mat-timepicker-toggle [for]="timePickertime"
-                                    matSuffix></ngx-mat-timepicker-toggle>
+                                <ngx-mat-timepicker-toggle [for]="timePickertime" matSuffix></ngx-mat-timepicker-toggle>
                                 <ngx-mat-timepicker #timePickertime></ngx-mat-timepicker>
-                                <mat-error *ngIf="submitted && reportForm.get('time')?.hasError('required')">Time of Assessment
+                                <mat-error *ngIf="submitted && reportForm.get('time')?.hasError('required')">Time of
+                                    Assessment
                                     required</mat-error>
                                 <mat-error *ngIf="submitted && reportForm.get('time')?.hasError('pattern')">Invalid
                                     Time of Assessment
@@ -117,7 +122,7 @@
                                 <mat-label>Type of Assessment</mat-label>
                                 <input matInput formControlName="typeOfAssessment" maxlength="25" required />
                                 <mat-error *ngIf="reportForm.get('typeOfAssessment')?.hasError('required')">
-                                   Type is required.
+                                    Type is required.
                                 </mat-error>
                             </mat-form-field>
                         </div>
@@ -126,7 +131,7 @@
                                 <mat-label>Assessment Parameters</mat-label>
                                 <input matInput formControlName="assessmentParameters" maxlength="25" required />
                                 <mat-error *ngIf="reportForm.get('assessmentParameters')?.hasError('required')">
-                                   Parameter is required.
+                                    Parameter is required.
                                 </mat-error>
                             </mat-form-field>
                         </div>
@@ -144,13 +149,15 @@
                     </div>
                     <div class="mb-3">
                         <mat-label>Upload Report (PDF only)</mat-label>
-                        <input type="file" id="reportFile" (change)="onFileSelected($event)" class="form-control" accept="application/pdf">
+                        <input type="file" id="reportFile" (change)="onFileSelected($event)" class="form-control"
+                            accept="application/pdf">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" (click)="saveReport()">{{ isEditMode ? 'Save Changes' : 'Add Report' }}</button>
+                <button type="button" class="btn btn-primary" (click)="saveReport()">{{ isEditMode ? 'Save Changes' :
+                    'Add Report' }}</button>
             </div>
         </div>
     </div>

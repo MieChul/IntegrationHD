@@ -1,4 +1,5 @@
 using HealthDesk.Core;
+using HealthDesk.Core.Enum;
 using HealthDesk.Infrastructure;
 
 namespace HealthDesk.Application;
@@ -8,15 +9,20 @@ public class PatientService : IPatientService
 
     private readonly IPatientRepository _patientRepository;
     private readonly IPhysicianRepository _physicianRepository;
-
+    private readonly IHospitalRepository _hospitalRepository;
+    private readonly ILaboratoryRepository _laboratoryRepository;
+    private readonly IPharmacyRepository _pharmacyRepository;
     private readonly IUserRepository _userRepository;
     private readonly IMessageService _messageService;
-    public PatientService(IPatientRepository patientRepository, IMessageService messageService, IPhysicianRepository physicianRepository, IUserRepository userRepository)
+    public PatientService(IPatientRepository patientRepository, IMessageService messageService, IPhysicianRepository physicianRepository, IUserRepository userRepository, IHospitalRepository hospitalRepository, ILaboratoryRepository laboratoryRepository, IPharmacyRepository pharmacyRepository)
     {
         _patientRepository = patientRepository;
         _messageService = messageService;
         _physicianRepository = physicianRepository;
         _userRepository = userRepository;
+        _hospitalRepository = hospitalRepository;
+        _laboratoryRepository = laboratoryRepository;
+        _pharmacyRepository = pharmacyRepository;
     }
 
     // 1. Medical History
@@ -629,6 +635,285 @@ public class PatientService : IPatientService
         else
         {
             throw new InvalidOperationException("Upon confirmation, data can be deleted only by Admin.");
+        }
+    }
+
+
+    public async Task<dynamic> GetEntities()
+    {
+        var users = await _userRepository.GetAllAsync();
+        var entitiesList = new List<dynamic>();
+
+        foreach (var user in users)
+        {
+            foreach (var role in user.Roles)
+            {
+                switch (role.Role)
+                {
+                    case Role.Physician:
+                        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", user.Id);
+                        foreach (var clinic in physician.Clinics)
+                        {
+
+                            var timings = clinic.ClinicSlots != null ? clinic.ClinicSlots.Select(slot => $"{slot?.TimingFrom} - {slot?.TimingTo}") : null;
+                            var averageRating = physician.Reviews.Any()
+                                ? physician.Reviews.Average(r => r.Rating)
+                                : 0;
+
+                            var physicianEntity = new
+                            {
+                                entityType = "physician",
+                                entityId = physician.Id,
+                                userId = user.Id,
+                                name = $"Dr. {user.FirstName} {user.LastName}",
+                                clinicName = clinic.Name,
+                                location = $"{clinic.Area}, {clinic.City}, {clinic.State}",
+                                speciality = "",
+                                timing = timings != null ? string.Join(", ", timings) : "",
+                                rating = averageRating,
+                                reviews = physician.Reviews.Select(r => new
+                                {
+                                    r.UserId,
+                                    r.Rating,
+                                    r.Comment
+                                }).ToList(),
+                                services = new List<string>(),
+                                physicians = new List<string>(),
+                                testname = string.Empty,
+                                drugName = string.Empty
+                            };
+
+                            entitiesList.Add(physicianEntity);
+                        }
+                        break;
+
+                    case Role.Hospital:
+                        var hospital = await _hospitalRepository.GetByDynamicPropertyAsync("UserId", user.Id);
+
+                        var averageRating1 = hospital.Reviews.Any()
+                            ? hospital.Reviews.Average(r => r.Rating)
+                            : 0;
+
+                        var hospitalEntity = new
+                        {
+                            entityType = "hospital",
+                            name = user.ClinicName,
+                            userId = user.Id,
+                            entityId = hospital.Id,
+                            clinicName = user.ClinicName,
+                            location = $"{user.ClinicArea}, {user.ClinicCity}, {user.State}",
+                            speciality = string.Empty,
+                            timing = string.Empty,
+                            rating = averageRating1,
+                            reviews = hospital.Reviews.Select(r => new
+                            {
+                                r.UserId,
+                                r.Rating,
+                                r.Comment
+                            }).ToList(),
+                            services = new List<string>(),
+                            physicians = new List<string>(),
+                            testname = string.Empty,
+                            drugName = string.Empty
+                        };
+
+                        entitiesList.Add(hospitalEntity);
+                        break;
+
+                    case Role.Pharmacy:
+                        var pharmacy = await _pharmacyRepository.GetByDynamicPropertyAsync("UserId", user.Id);
+
+                        var averageRating2 = pharmacy.Reviews.Any()
+                            ? pharmacy.Reviews.Average(r => r.Rating)
+                            : 0;
+
+                        var pharmacyEntity = new
+                        {
+                            entityType = "pharmacy",
+                            name = user.OrgName,
+                            entityId = pharmacy.Id,
+                            userId = user.Id,
+                            clinicName = user.ClinicName,
+                            location = $"{user.ClinicArea}, {user.ClinicCity}, {user.State}",
+                            speciality = string.Empty,
+                            timing = string.Empty,
+                            rating = averageRating2,
+                            reviews = pharmacy.Reviews.Select(r => new
+                            {
+                                r.UserId,
+                                r.Rating,
+                                r.Comment
+                            }).ToList(),
+                            services = new List<string>(),
+                            physicians = new List<string>(),
+                            testname = string.Empty,
+                            drugName = string.Empty
+                        };
+
+                        entitiesList.Add(pharmacyEntity);
+                        break;
+
+                    case Role.Laboratory:
+                        var laboratory = await _laboratoryRepository.GetByDynamicPropertyAsync("UserId", user.Id);
+
+                        var averageRating3 = laboratory.Reviews.Any()
+                            ? laboratory.Reviews.Average(r => r.Rating)
+                            : 0;
+
+                        var laboratoryEntity = new
+                        {
+                            entityType = "laboratory",
+                            name = user.OrgName,
+                            entityId = laboratory.Id,
+                            userId = user.Id,
+                            clinicName = user.ClinicName,
+                            location = $"{user.ClinicArea}, {user.ClinicCity}, {user.State}",
+                            speciality = string.Empty,
+                            timing = string.Empty,
+                            rating = averageRating3,
+                            reviews = laboratory.Reviews.Select(r => new
+                            {
+                                r.UserId,
+                                r.Rating,
+                                r.Comment
+                            }).ToList(),
+                            services = new List<string>(),
+                            physicians = new List<string>(),
+                            testname = string.Empty,
+                            drugName = string.Empty
+                        };
+
+                        entitiesList.Add(laboratoryEntity);
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        }
+
+        return entitiesList;
+    }
+
+
+    public async Task AddOrUpdateReview(string userId, string entityId, Role entityType, int rating, string comment)
+    {
+        switch (entityType)
+        {
+            case Role.Physician:
+                var physician = await _physicianRepository.GetByIdAsync(entityId);
+                if (physician == null)
+                    throw new Exception("Physician not found.");
+
+                var existingPhysicianReview = physician.Reviews.FirstOrDefault(r => r.UserId == userId);
+                if (existingPhysicianReview != null)
+                {
+                    // Update Review
+                    existingPhysicianReview.Rating = rating;
+                    existingPhysicianReview.Comment = comment;
+                }
+                else
+                {
+                    // Add New Review
+                    var newReview = new Reviews
+                    {
+                        UserId = userId,
+                        Rating = rating,
+                        Comment = comment,
+                    };
+
+                    physician.Reviews.Add(newReview);
+                }
+
+                await _physicianRepository.UpdateAsync(physician);
+                break;
+
+            case Role.Hospital:
+                var hospital = await _hospitalRepository.GetByIdAsync(entityId);
+                if (hospital == null)
+                    throw new Exception("Hospital not found.");
+
+                var existingHospitalReview = hospital.Reviews.FirstOrDefault(r => r.UserId == userId);
+                if (existingHospitalReview != null)
+                {
+                    // Update Review
+                    existingHospitalReview.Rating = rating;
+                    existingHospitalReview.Comment = comment;
+                }
+                else
+                {
+                    // Add New Review
+                    var newReview = new Reviews
+                    {
+                        UserId = userId,
+                        Rating = rating,
+                        Comment = comment,
+                    };
+
+                    hospital.Reviews.Add(newReview);
+                }
+
+                await _hospitalRepository.UpdateAsync(hospital);
+                break;
+
+            case Role.Pharmacy:
+                var pharmacy = await _pharmacyRepository.GetByIdAsync(entityId);
+                if (pharmacy == null)
+                    throw new Exception("Pharmacy not found.");
+
+                var existingPharmacyReview = pharmacy.Reviews.FirstOrDefault(r => r.UserId == userId);
+                if (existingPharmacyReview != null)
+                {
+                    // Update Review
+                    existingPharmacyReview.Rating = rating;
+                    existingPharmacyReview.Comment = comment;
+                }
+                else
+                {
+                    // Add New Review
+                    var newReview = new Reviews
+                    {
+                        UserId = userId,
+                        Rating = rating,
+                        Comment = comment,
+                    };
+
+                    pharmacy.Reviews.Add(newReview);
+                }
+
+                await _pharmacyRepository.UpdateAsync(pharmacy);
+                break;
+
+            case Role.Laboratory:
+                var laboratory = await _laboratoryRepository.GetByIdAsync(entityId);
+                if (laboratory == null)
+                    throw new Exception("Laboratory not found.");
+
+                var existingLabReview = laboratory.Reviews.FirstOrDefault(r => r.UserId == userId);
+                if (existingLabReview != null)
+                {
+                    // Update Review
+                    existingLabReview.Rating = rating;
+                    existingLabReview.Comment = comment;
+                }
+                else
+                {
+                    // Add New Review
+                    var newReview = new Reviews
+                    {
+                        UserId = userId,
+                        Rating = rating,
+                        Comment = comment,
+                    };
+
+                    laboratory.Reviews.Add(newReview);
+                }
+
+                await _laboratoryRepository.UpdateAsync(laboratory);
+                break;
+
+            default:
+                throw new Exception("Invalid entity type.");
         }
     }
 }

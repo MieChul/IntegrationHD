@@ -12,6 +12,9 @@ public class Laboratory : BaseEntity
 
     [BsonElement("lab_tests")]
     public List<LabTest> LabTests { get; set; }
+    
+    [BsonElement("reviews")]
+    public List<Reviews> Reviews { get; set; } = new();
 }
 
 public class LabTest : BaseEntity

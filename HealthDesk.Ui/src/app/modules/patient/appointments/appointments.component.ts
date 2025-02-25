@@ -7,6 +7,7 @@ import { PhysicianService } from '../../services/physician.service';
 import { catchError, forkJoin, of, tap, switchMap, Subscription, interval, Observable, startWith, map, concatMap } from 'rxjs';
 import { FilteringService } from '../../../shared/services/filter.service';
 import { SortingService } from '../../../shared/services/sorting.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-appointments',
@@ -48,6 +49,8 @@ export class AppointmentsComponent implements OnInit {
   filteredClinics!: Observable<any[]>;
   physicianFilterCtrl = new FormControl();
   clinicFilterCtrl = new FormControl();
+  entityId: string | null = null;
+  clinicName: string | null = null;
 
 
   constructor(
@@ -56,12 +59,17 @@ export class AppointmentsComponent implements OnInit {
     private accountService: AccountService,
     private physicianService: PhysicianService,
     private sortingService: SortingService,
-    private filteringService: FilteringService
+    private filteringService: FilteringService,
+    private route: ActivatedRoute
   ) { }
 
   ngOnInit(): void {
     this.initializeForm();
     this.initializeAvailableDates();
+    this.route.queryParams.subscribe(params => {
+      this.entityId = params['entityId'];
+      this.clinicName = params['clinicName'];
+    });
     this.accountService.getUserData().pipe(
       tap((data) => (this.userData = data)),
       concatMap(() => this.loadAppointments()),
@@ -70,6 +78,9 @@ export class AppointmentsComponent implements OnInit {
     ).subscribe({
       next: () => {
         console.log('All initialization calls completed successfully.');
+        if (this.entityId && this.clinicName) {
+          this.scheduleNewAppointment();
+        }
       },
       error: (error: any) => {
         console.error('Error during initialization:', error);
@@ -250,9 +261,50 @@ export class AppointmentsComponent implements OnInit {
     this.selectedClinic = null;
     this.selectedSubSlot = null;
     this.selectedAppointmentTime = null;
+
+    if (this.entityId && this.clinicName) {
+      // Wait until physicians and clinics are loaded
+      const selectedPhysician = this.physicians.find(p => p.id === this.entityId);
+
+      if (selectedPhysician) {
+        this.selectedPhysician = selectedPhysician;
+        this.clinics = this.selectedPhysician.clinics;
+        this.selectedClinic = this.clinics.find((c: any) => c.name === this.clinicName);
+
+        // Patch form with the pre-selected values
+        this.appointmentForm.patchValue({
+          physicianId: this.selectedPhysician.id,
+          physicianName: this.selectedPhysician.name,
+          clinicName: this.selectedClinic ? this.selectedClinic.name : ''
+        });
+
+        // Trigger change detection for the filtered dropdowns
+        this.physicianFilterCtrl.setValue(this.selectedPhysician.name);
+        this.clinicFilterCtrl.setValue(this.selectedClinic?.name);
+
+        // Load available dates and slots for the selected clinic
+        if (this.selectedClinic) {
+          this.updateAvailableDates();
+
+          const firstValidDate = this.availableDates.find((d, index) => index !== 0 && index !== this.availableDates.length - 1);
+
+          if (firstValidDate) {
+            this.selectedDate = firstValidDate;
+            this.appointmentForm.patchValue({ date: this.formatDateInput(this.selectedDate) });
+
+            this.fetchClinicSlots(this.selectedDate).subscribe();
+          }
+
+          this.startSlotAutoRefresh();
+        }
+      }
+    }
+
+    // Show the modal after all selections are patched
     const modal = new Modal(this.appointmentModal.nativeElement);
     modal.show();
   }
+
 
   // When a physician is selected, patch both the ID and name.
   onPhysicianChange(physicianId: string): void {
@@ -652,9 +704,9 @@ export class AppointmentsComponent implements OnInit {
     if (this.currentCarouselIndex > 1) { // Ensure we don't move into the first cushion date
       this.currentCarouselIndex--;
       this.selectedDate = this.availableDates[this.currentCarouselIndex];
-      this.appointmentForm.patchValue({ date: this.formatDateInput(this.selectedDate),slotId:'', slotName:'',time :'' });
+      this.appointmentForm.patchValue({ date: this.formatDateInput(this.selectedDate), slotId: '', slotName: '', time: '' });
       this.selectedSubSlot = null;
-      this.selectedAppointmentTime = null; 
+      this.selectedAppointmentTime = null;
       this.fetchClinicSlots(this.selectedDate).subscribe();
     }
   }
@@ -664,9 +716,9 @@ export class AppointmentsComponent implements OnInit {
     if (this.currentCarouselIndex < this.availableDates.length - 2) { // Prevent selecting last cushion date
       this.currentCarouselIndex++;
       this.selectedDate = this.availableDates[this.currentCarouselIndex];
-      this.appointmentForm.patchValue({ date: this.formatDateInput(this.selectedDate), slotId:'', slotName:'',time :'' });
+      this.appointmentForm.patchValue({ date: this.formatDateInput(this.selectedDate), slotId: '', slotName: '', time: '' });
       this.selectedSubSlot = null;
-      this.selectedAppointmentTime = null; 
+      this.selectedAppointmentTime = null;
       this.fetchClinicSlots(this.selectedDate).subscribe();
     }
   }
@@ -678,9 +730,9 @@ export class AppointmentsComponent implements OnInit {
     if (index > 1 && index < this.availableDates.length - 2) { // Ensure not selecting cushion dates
       this.currentCarouselIndex = index;
       this.selectedDate = this.availableDates[this.currentCarouselIndex];
-      this.appointmentForm.patchValue({ date: this.formatDateInput(this.selectedDate), slotId:'', slotName:'',time :''});
+      this.appointmentForm.patchValue({ date: this.formatDateInput(this.selectedDate), slotId: '', slotName: '', time: '' });
       this.selectedSubSlot = null;
-      this.selectedAppointmentTime = null;  
+      this.selectedAppointmentTime = null;
       this.fetchClinicSlots(this.selectedDate).subscribe();
     }
   }

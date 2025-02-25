@@ -12,6 +12,10 @@ public class Pharmacy : BaseEntity
 
     [BsonElement("medicines")]
     public List<Medicine> Medicines { get; set; }
+
+    [BsonElement("reviews")]
+    public List<Reviews> Reviews { get; set; } = new();
+
 }
 
 public class Medicine
@@ -43,3 +47,17 @@ public class Medicine
     [BsonElement("comment")]
     public string Comment { get; set; }
 }
+
+public class Reviews : BaseEntity
+{
+    [BsonElement("user_id")]
+    public string UserId { get; set; }
+
+    [BsonElement("rating")]
+    public int Rating { get; set; }
+
+    [BsonElement("comment")]
+    public string Comment { get; set; }
+
+}
+

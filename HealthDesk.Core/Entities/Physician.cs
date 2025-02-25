@@ -23,6 +23,10 @@ public class Physician : BaseEntity
 
     [BsonElement("profiles")]
     public List<Profile> Profiles { get; set; } = new();
+
+    [BsonElement("reviews")]
+    public List<Reviews> Reviews { get; set; } = new();
+
 }
 
 public class Clinic : BaseEntity
@@ -66,13 +70,13 @@ public class Clinic : BaseEntity
 
 public class ClinicSlots : BaseEntity
 {
-     [BsonElement("name")]
+    [BsonElement("name")]
     public string Name { get; set; }
 
     [BsonElement("from")]
     public string TimingFrom { get; set; }
 
-     [BsonElement("to")]
+    [BsonElement("to")]
     public string TimingTo { get; set; }
 }
 

@@ -1,5 +1,7 @@
 
 
+using HealthDesk.Core.Enum;
+
 namespace HealthDesk.Application;
 public interface IPatientService
 {
@@ -55,4 +57,7 @@ public interface IPatientService
     Task<IEnumerable<PatientComplianceDto>> GetComplianceAsync(string patientId);
     Task AddOrUpdateMedicalInfoAsync(string patientId, string treatmentId, PatientMedicineInfoDto dto);
     Task ConfirmIntake(string patientId, string treatmentId, bool isTaken);
+
+    Task<dynamic> GetEntities();
+    Task AddOrUpdateReview(string userId, string entityId, Role entityType, int rating, string comment);
 }

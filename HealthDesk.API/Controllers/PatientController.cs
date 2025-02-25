@@ -1,5 +1,6 @@
 using HealthDesk.Application;
 using HealthDesk.Application.Interfaces;
+using HealthDesk.Core.Enum;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HealthDesk.API.Controllers
@@ -261,5 +262,33 @@ namespace HealthDesk.API.Controllers
         [HttpGet("physicians")]
         public async Task<IActionResult> GetPhysicians() =>
            Ok(new { Success = true, Message = "Physicians retrieved successfully.", Data = await _patientService.GetPhysicians() });
+
+        [HttpGet("entities")]
+        public async Task<IActionResult> GetEntities()
+        {
+            var entities = await _patientService.GetEntities();
+            return Ok(entities);
+        }
+
+        // POST: api/patient/review
+        [HttpPost("review")]
+        public async Task<IActionResult> AddOrUpdateReview([FromBody] ReviewRequestDto request)
+        {
+            if (request == null || string.IsNullOrEmpty(request.UserId) || string.IsNullOrEmpty(request.EntityId))
+            {
+                return BadRequest("Invalid request data.");
+            }
+
+            // Convert string to Role enum
+            if (!Enum.TryParse(typeof(Role), request.EntityType, true, out var roleEnum) || roleEnum == null)
+            {
+                return BadRequest("Invalid entity type.");
+            }
+
+            // Call the service method with the converted enum
+            await _patientService.AddOrUpdateReview(request.UserId, request.EntityId, (Role)roleEnum, request.Rating, request.Comment);
+            return Ok(new { Success = true, Message = "Review added or updated successfully." });
+        }
+
     }
 }
