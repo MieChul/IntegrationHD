@@ -46,21 +46,21 @@ export class RemediesComponent implements OnInit {
 
   // Base remedies plus 25 additional dummy cases
   otherRemedies: MedicalCase[] = [
-    { id: 1, submittedBy: 'Dr. Smith', speciality: 'Cardiology', comments: ['Great case!'], likeCount: 10, shareCount: 5, shortDescription: 'A detailed case study on cardiology', thumbnail: 'assets/remedies/3.jpg' },
-    { id: 2, submittedBy: 'Dr. Johnson', speciality: 'Neurology', comments: [], likeCount: 7, shareCount: 2, shortDescription: 'An intriguing neurology case', thumbnail: 'assets/remedies/7.jpg' },
-    { id: 3, submittedBy: 'Dr. Lee', speciality: 'Orthopedics', comments: [], likeCount: 15, shareCount: 3, shortDescription: 'Orthopedics case study and analysis', thumbnail: 'assets/remedies/2.jpg' },
-    { id: 4, submittedBy: 'Dr. Brown', speciality: 'Dermatology', comments: [], likeCount: 8, shareCount: 4, shortDescription: 'Dermatology case with treatment details', thumbnail: 'assets/remedies/8.jpg' },
-    { id: 5, submittedBy: 'Dr. Taylor', speciality: 'Pediatrics', comments: [], likeCount: 12, shareCount: 6, shortDescription: 'A pediatric case involving rare symptoms', thumbnail: 'assets/remedies/5.jpg' },
-    { id: 6, submittedBy: 'Dr. Adams', speciality: 'Oncology', comments: [], likeCount: 9, shareCount: 3, shortDescription: 'Case study on oncology treatment', thumbnail: 'assets/remedies/4.jpg' },
-    { id: 7, submittedBy: 'Dr. Clark', speciality: 'Gastroenterology', comments: [], likeCount: 11, shareCount: 4, shortDescription: 'Digestive health case analysis', thumbnail: 'assets/remedies/10.jpg' },
-    { id: 8, submittedBy: 'Dr. Evans', speciality: 'Urology', comments: [], likeCount: 6, shareCount: 2, shortDescription: 'Urological case study', thumbnail: 'assets/remedies/9.jpg' },
-    { id: 9, submittedBy: 'Dr. Foster', speciality: 'Endocrinology', comments: [], likeCount: 14, shareCount: 5, shortDescription: 'Endocrine system analysis', thumbnail: 'assets/remedies/1.jpg' },
-    { id: 10, submittedBy: 'Dr. Green', speciality: 'Rheumatology', comments: [], likeCount: 5, shareCount: 1, shortDescription: 'Rheumatology case report', thumbnail: 'assets/remedies/6.jpg' },
-    { id: 11, submittedBy: 'Dr. Harris', speciality: 'Nephrology', comments: [], likeCount: 13, shareCount: 4, shortDescription: 'Kidney disease case study', thumbnail: 'assets/remedies/11.jpg' },
-    { id: 12, submittedBy: 'Dr. Irving', speciality: 'Ophthalmology', comments: [], likeCount: 7, shareCount: 3, shortDescription: 'Eye condition and treatment', thumbnail: 'assets/remedies/12.jpg' },
-    { id: 13, submittedBy: 'Dr. Jones', speciality: 'ENT', comments: [], likeCount: 8, shareCount: 2, shortDescription: 'ENT examination report', thumbnail: 'assets/remedies/2.jpg' },
-    { id: 14, submittedBy: 'Dr. King', speciality: 'Psychiatry', comments: [], likeCount: 10, shareCount: 3, shortDescription: 'Psychiatric case discussion', thumbnail: 'assets/remedies/4.jpg' },
-    { id: 15, submittedBy: 'Dr. Lewis', speciality: 'Immunology', comments: [], likeCount: 9, shareCount: 2, shortDescription: 'Immunology and allergies case', thumbnail: 'assets/remedies/7.jpg' }
+    { id: 1, submittedBy: ' Smith', speciality: 'Cardiology', comments: ['Great case!'], likeCount: 10, shareCount: 5, shortDescription: 'A detailed case study on cardiology', thumbnail: 'assets/remedies/3.jpg' },
+    { id: 2, submittedBy: ' Johnson', speciality: 'Neurology', comments: [], likeCount: 7, shareCount: 2, shortDescription: 'An intriguing neurology case', thumbnail: 'assets/remedies/7.jpg' },
+    { id: 3, submittedBy: ' Lee', speciality: 'Orthopedics', comments: [], likeCount: 15, shareCount: 3, shortDescription: 'Orthopedics case study and analysis', thumbnail: 'assets/remedies/2.jpg' },
+    { id: 4, submittedBy: ' Brown', speciality: 'Dermatology', comments: [], likeCount: 8, shareCount: 4, shortDescription: 'Dermatology case with treatment details', thumbnail: 'assets/remedies/8.jpg' },
+    { id: 5, submittedBy: ' Taylor', speciality: 'Pediatrics', comments: [], likeCount: 12, shareCount: 6, shortDescription: 'A pediatric case involving rare symptoms', thumbnail: 'assets/remedies/5.jpg' },
+    { id: 6, submittedBy: ' Adams', speciality: 'Oncology', comments: [], likeCount: 9, shareCount: 3, shortDescription: 'Case study on oncology treatment', thumbnail: 'assets/remedies/4.jpg' },
+    { id: 7, submittedBy: ' Clark', speciality: 'Gastroenterology', comments: [], likeCount: 11, shareCount: 4, shortDescription: 'Digestive health case analysis', thumbnail: 'assets/remedies/10.jpg' },
+    { id: 8, submittedBy: ' Evans', speciality: 'Urology', comments: [], likeCount: 6, shareCount: 2, shortDescription: 'Urological case study', thumbnail: 'assets/remedies/9.jpg' },
+    { id: 9, submittedBy: ' Foster', speciality: 'Endocrinology', comments: [], likeCount: 14, shareCount: 5, shortDescription: 'Endocrine system analysis', thumbnail: 'assets/remedies/1.jpg' },
+    { id: 10, submittedBy: ' Green', speciality: 'Rheumatology', comments: [], likeCount: 5, shareCount: 1, shortDescription: 'Rheumatology case report', thumbnail: 'assets/remedies/6.jpg' },
+    { id: 11, submittedBy: ' Harris', speciality: 'Nephrology', comments: [], likeCount: 13, shareCount: 4, shortDescription: 'Kidney disease case study', thumbnail: 'assets/remedies/11.jpg' },
+    { id: 12, submittedBy: ' Irving', speciality: 'Ophthalmology', comments: [], likeCount: 7, shareCount: 3, shortDescription: 'Eye condition and treatment', thumbnail: 'assets/remedies/12.jpg' },
+    { id: 13, submittedBy: ' Jones', speciality: 'ENT', comments: [], likeCount: 8, shareCount: 2, shortDescription: 'ENT examination report', thumbnail: 'assets/remedies/2.jpg' },
+    { id: 14, submittedBy: ' King', speciality: 'Psychiatry', comments: [], likeCount: 10, shareCount: 3, shortDescription: 'Psychiatric case discussion', thumbnail: 'assets/remedies/4.jpg' },
+    { id: 15, submittedBy: ' Lewis', speciality: 'Immunology', comments: [], likeCount: 9, shareCount: 2, shortDescription: 'Immunology and allergies case', thumbnail: 'assets/remedies/7.jpg' }
   ];
   
   yourRemedies: MedicalCase[] = [
