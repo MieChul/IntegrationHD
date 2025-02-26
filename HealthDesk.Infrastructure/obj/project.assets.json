@@ -769,11 +769,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "d:\\IntegrationHD\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj",
+      "projectUniqueName": "D:\\IntegrationHD\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj",
       "projectName": "HealthDesk.Infrastructure",
-      "projectPath": "d:\\IntegrationHD\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj",
+      "projectPath": "D:\\IntegrationHD\\HealthDesk.Infrastructure\\HealthDesk.Infrastructure.csproj",
       "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-      "outputPath": "d:\\IntegrationHD\\HealthDesk.Infrastructure\\obj\\",
+      "outputPath": "D:\\IntegrationHD\\HealthDesk.Infrastructure\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config"

@@ -203,13 +203,7 @@ public class ImmunizationDto
     public string Details { get; set; }
 }
 
-public class PatientInfoDto
-{
-    public double Weight { get; set; }
-    public double Height { get; set; }
-    public string Occupation { get; set; }
-    public string Lifestyle { get; set; }
-}
+
 
 public class PatientComplianceDto
 {
@@ -252,27 +246,111 @@ public class PatientReminderDto
     public string Instruction { get; set; }
 }
 
-public class ActivityDto
+public class ActivityDto : IValidatableObject
 {
-    public string Id { get; set; }
+    public string? Id { get; set; }
+
+    [Required(ErrorMessage = "Date is required.")]
+    [DataType(DataType.Date)]
     public DateTime Date { get; set; }
-    public List<MealDto> Meals { get; set; } = new();
+    public List<MealsDto> Meals { get; set; } = new();
     public List<ExerciseDto> Exercises { get; set; } = new();
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        // Check if at least one meal or exercise is present
+        if ((Meals == null || !Meals.Any()) && (Exercises == null || !Exercises.Any()))
+        {
+            yield return new ValidationResult(
+                "At least one Meal or one Exercise is required.",
+                new[] { nameof(Meals), nameof(Exercises) }
+            );
+        }
+    }
 }
 
-public class MealDto
+public class MealsDto : IValidatableObject
 {
-    public string Id { get; set; }
-    public string MealType { get; set; }
-    public string Food { get; set; }
-    public string Quantity { get; set; }
-}
+    public string? Id { get; set; }
 
-public class ExerciseDto
-{
-    public string Id { get; set; }
+    [Required(ErrorMessage = "Meal Type is required.")]
     public string Type { get; set; }
+
+    [Required(ErrorMessage = "Food is required.")]
+    public string Food { get; set; }
+
+    [Required(ErrorMessage = "Quantity is required.")]
+    [Range(1, int.MaxValue, ErrorMessage = "Quantity should be greater than 0.")]
+    public int Quantity { get; set; }
+
+    // Custom Validation to ensure all fields are present if Meals list is not empty
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!string.IsNullOrEmpty(Food) || !string.IsNullOrEmpty(Type) || Quantity > 0)
+        {
+            if (string.IsNullOrEmpty(Food))
+            {
+                yield return new ValidationResult("Food is required when Meal is present.", new[] { nameof(Food) });
+            }
+            if (string.IsNullOrEmpty(Type))
+            {
+                yield return new ValidationResult("Meal Type is required when Meal is present.", new[] { nameof(Type) });
+            }
+            if (Quantity <= 0)
+            {
+                yield return new ValidationResult("Quantity is required when Meal is present.", new[] { nameof(Quantity) });
+            }
+        }
+    }
+}
+
+public class ExerciseDto : IValidatableObject
+{
+    public string? Id { get; set; }
+
+    [Required(ErrorMessage = "Exercise Type is required.")]
+    public string Type { get; set; }
+
+    [Required(ErrorMessage = "Exercise Name is required.")]
+    public string Exercise { get; set; }
+
+    [Required(ErrorMessage = "Duration is required.")]
+    [Range(1, int.MaxValue, ErrorMessage = "Duration must be greater than 0.")]
     public int DurationMinutes { get; set; }
+
+    // Custom Validation to ensure all fields are present if Exercises list is not empty
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!string.IsNullOrEmpty(Exercise) || !string.IsNullOrEmpty(Type) || DurationMinutes > 0)
+        {
+            if (string.IsNullOrEmpty(Exercise))
+            {
+                yield return new ValidationResult("Exercise Name is required when Exercise is present.", new[] { nameof(Exercise) });
+            }
+            if (string.IsNullOrEmpty(Type))
+            {
+                yield return new ValidationResult("Exercise Type is required when Exercise is present.", new[] { nameof(Type) });
+            }
+            if (DurationMinutes <= 0)
+            {
+                yield return new ValidationResult("Duration must be greater than 0 when Exercise is present.", new[] { nameof(DurationMinutes) });
+            }
+        }
+    }
+}
+
+public class PatientInfoDto
+{
+
+    [Required(ErrorMessage = "Height is required.")]
+    public double Height { get; set; }
+
+    [Required(ErrorMessage = "Weight is required.")]
+    public double Weight { get; set; }
+
+    [Required(ErrorMessage = "Lifestyle is required.")]
+    public string LifeStyle { get; set; }
+
 }
 
 public class ReviewRequestDto

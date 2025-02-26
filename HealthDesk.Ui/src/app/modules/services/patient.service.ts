@@ -138,6 +138,7 @@ export class PatientService {
     return this.http.post<any>(`${this.apiUrl}/${patientId}/activities`, activity);
   }
 
+
   deleteActivity(patientId: string, activityId: string): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/${patientId}/activities/${activityId}`);
   }

@@ -23,7 +23,7 @@ public class AdminService : IAdminService
         {
             user.Roles.ForEach(r =>
             {
-                if (value =="Blocked" || r.Role.ToString().ToLower() == userRole)
+                if (value == "Blocked" || r.Role.ToString().ToLower() == userRole)
                 {
                     r.Status = value;
                 }
@@ -58,9 +58,9 @@ public class AdminService : IAdminService
                     : user.OrgName,
                 LastName = user.LastName,
                 Contact = !string.IsNullOrEmpty(user.Mobile) ? user.Mobile : user.Email,
-                Role = role.Role.ToString(), // Role from the current iteration
+                Role = user.DependentId != null ? "Dependent Patient" : role.Role.ToString(), // Role from the current iteration
                 Status = role.Status,
-                DependentName = user.DependentName,
+                DependentName = user.DependentId == null && role.Role != Role.Physician ? user.DependentName : "",
                 City = (role.Role == Role.Physician || role.Role == Role.Patient)
                     ? user.City
                     : user.ClinicCity

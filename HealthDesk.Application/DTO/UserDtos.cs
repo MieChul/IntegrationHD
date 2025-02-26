@@ -28,8 +28,11 @@ public class UserDto
     public string ProfImage { get; set; }
     public bool CanSwitch { get; set; }
     public string DependentId { get; set; }
-    public bool HasDependent { get; internal set; }
-    public string DependentName { get; internal set; }
+    public bool HasDependent { get; set; }
+    public string DependentName { get; set; }
+    public bool IsMainApproved { get; set; }
+    public string DateOfBirth { get; set; }
+    public string Gender { get; set; }
 }
 
 public class UserRegistrationDto

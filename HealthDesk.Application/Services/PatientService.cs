@@ -541,22 +541,167 @@ public class PatientService : IPatientService
 
     public async Task<IEnumerable<ActivityDto>> GetActivitiesAsync(string patientId)
     {
-        var patient = await _patientRepository.GetByIdAsync(patientId);
+        var patient = await GetPatientByIdAsync(patientId);
         return patient.Activities.Select(a => GenericMapper.Map<Activity, ActivityDto>(a));
     }
 
     public async Task AddOrUpdateActivityAsync(string patientId, ActivityDto dto)
     {
-        var patient = await _patientRepository.GetByIdAsync(patientId);
-        var activity = patient.Activities.FirstOrDefault(a => a.Id == dto.Id) ?? new Activity { };
+        // Fetch the patient by dynamic property
+        var patient = await GetPatientByIdAsync(patientId);;
+        if (patient == null)
+            throw new ArgumentException("Patient not found.");
 
-        GenericMapper.Map(dto, activity);
+        // Find the activity to update or create a new one if not found
+        var activity = patient.Activities.FirstOrDefault(a => a.Id == dto.Id);
 
-        if (!patient.Activities.Any(a => a.Id == activity.Id))
+        if (activity == null)
+        {
+            // New Activity: Map the DTO and add to patient's activities
+            activity = new Activity();
+            GenericMapper.Map(dto, activity);
+
+            // Map Meals
+            activity.Meals = dto.Meals?.Select(mdto => new Meal
+            {
+                MealType = mdto.Type,
+                Food = mdto.Food,
+                Quantity = mdto.Quantity
+            }).ToList();
+
+            // Map Exercises
+            activity.Exercises = dto.Exercises?.Select(edto => new Exercise
+            {
+                Id = Guid.NewGuid().ToString(),
+                Type = edto.Type,
+                ExerciseName = edto.Exercise,
+                DurationMinutes = edto.DurationMinutes
+            }).ToList();
+
             patient.Activities.Add(activity);
+        }
+        else
+        {
+            // Update existing activity
+            GenericMapper.Map(dto, activity);
 
+            // === Handle Meals ===
+            if (activity.Meals == null)
+                activity.Meals = new List<Meal>();
+
+            var dtoMeals = dto.Meals ?? new List<MealsDto>();
+            var dtoMealIds = dtoMeals.Where(m => !string.IsNullOrEmpty(m.Id)).Select(m => m.Id).ToList();
+
+            // Remove meals not present in the DTO
+            var mealsToRemove = activity.Meals
+                .Where(m => !string.IsNullOrEmpty(m.Id) && !dtoMealIds.Contains(m.Id))
+                .ToList();
+            foreach (var meal in mealsToRemove)
+            {
+                activity.Meals.Remove(meal);
+            }
+
+            // Process each meal from DTO
+            foreach (var mealDto in dtoMeals)
+            {
+                if (!string.IsNullOrEmpty(mealDto.Id))
+                {
+                    // Update existing meal
+                    var existingMeal = activity.Meals.FirstOrDefault(m => m.Id == mealDto.Id);
+                    if (existingMeal != null)
+                    {
+                        existingMeal.MealType = mealDto.Type;
+                        existingMeal.Food = mealDto.Food;
+                        existingMeal.Quantity = mealDto.Quantity;
+                    }
+                    else
+                    {
+                        // If Id is provided but not found, consider it a new meal
+                        var newMeal = new Meal
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            MealType = mealDto.Type,
+                            Food = mealDto.Food,
+                            Quantity = mealDto.Quantity
+                        };
+                        activity.Meals.Add(newMeal);
+                    }
+                }
+                else
+                {
+                    // New meal (no Id provided)
+                    var newMeal = new Meal
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        MealType = mealDto.Type,
+                        Food = mealDto.Food,
+                        Quantity = mealDto.Quantity
+                    };
+                    activity.Meals.Add(newMeal);
+                }
+            }
+
+            // === Handle Exercises ===
+            if (activity.Exercises == null)
+                activity.Exercises = new List<Exercise>();
+
+            var dtoExercises = dto.Exercises ?? new List<ExerciseDto>();
+            var dtoExerciseIds = dtoExercises.Where(e => !string.IsNullOrEmpty(e.Id)).Select(e => e.Id).ToList();
+
+            // Remove exercises not present in the DTO
+            var exercisesToRemove = activity.Exercises
+                .Where(e => !string.IsNullOrEmpty(e.Id) && !dtoExerciseIds.Contains(e.Id))
+                .ToList();
+            foreach (var exercise in exercisesToRemove)
+            {
+                activity.Exercises.Remove(exercise);
+            }
+
+            // Process each exercise from DTO
+            foreach (var exerciseDto in dtoExercises)
+            {
+                if (!string.IsNullOrEmpty(exerciseDto.Id))
+                {
+                    // Update existing exercise
+                    var existingExercise = activity.Exercises.FirstOrDefault(e => e.Id == exerciseDto.Id);
+                    if (existingExercise != null)
+                    {
+                        existingExercise.Type = exerciseDto.Type;
+                        existingExercise.ExerciseName = exerciseDto.Exercise;
+                        existingExercise.DurationMinutes = exerciseDto.DurationMinutes;
+                    }
+                    else
+                    {
+                        // If Id is provided but not found, consider it a new exercise
+                        var newExercise = new Exercise
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            Type = exerciseDto.Type,
+                            ExerciseName = exerciseDto.Exercise,
+                            DurationMinutes = exerciseDto.DurationMinutes
+                        };
+                        activity.Exercises.Add(newExercise);
+                    }
+                }
+                else
+                {
+                    // New exercise (no Id provided)
+                    var newExercise = new Exercise
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Type = exerciseDto.Type,
+                        ExerciseName = exerciseDto.Exercise,
+                        DurationMinutes = exerciseDto.DurationMinutes
+                    };
+                    activity.Exercises.Add(newExercise);
+                }
+            }
+        }
+
+        // Update patient in repository
         await _patientRepository.UpdateAsync(patient);
     }
+
 
     public async Task DeleteActivityAsync(string patientId, string activityId)
     {

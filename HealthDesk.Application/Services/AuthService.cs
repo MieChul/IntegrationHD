@@ -39,7 +39,10 @@ public class AuthService : IAuthService
             CanSwitch = user.CanSwitch,
             DependentId = user.DependentId,
             DependentName = user.DependentName,
-            HasDependent = user.HasDependent
+            HasDependent = user.HasDependent,
+            IsMainApproved = user.DependentId == null && user.Roles.Any(r => r.Status == "Approved"),
+            DateOfBirth = user.BirthDate,
+            Gender = user.Gender
         };
 
         user.Roles.ForEach(u => userDto.Roles.Add(new UserRoleDto { Role = u.Role, Status = u.Status }));

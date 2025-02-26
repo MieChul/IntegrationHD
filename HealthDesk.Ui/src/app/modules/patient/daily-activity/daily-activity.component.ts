@@ -1,28 +1,14 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { Modal } from 'bootstrap';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import * as bootstrap from 'bootstrap';
+import { map, Observable, startWith } from 'rxjs';
+import { AccountService } from '../../services/account.service';
+import { DatabaseService } from '../../../shared/services/database.service';
+import { PatientService } from '../../services/patient.service';
+import { FilteringService } from '../../../shared/services/filter.service';
+import { SortingService } from '../../../shared/services/sorting.service';
 
-interface FoodDetail {
-  mealType: string;
-  name: string;
-  calories: number;
-}
 
-interface ExerciseDetail {
-  timeOfDay: string;
-  name: string;
-  caloriesBurnt: number;
-}
-
-interface DailyActivity {
-  date: Date;
-  foodDetails: FoodDetail[];
-  totalCalories: number;
-  exerciseDetails: ExerciseDetail[];
-  caloriesBurnt: number;
-  totalGainLoss: number;
-  comment: string;
-}
 
 @Component({
   selector: 'app-daily-activity',
@@ -30,68 +16,48 @@ interface DailyActivity {
   styleUrls: ['./daily-activity.component.scss']
 })
 export class DailyActivityComponent implements OnInit {
-  dailyActivities: DailyActivity[] = [];
+  dailyActivities: any = [];
   activityForm!: FormGroup;
   editForm!: FormGroup;
-  isEditMode: boolean = false;
-  selectedActivity!: DailyActivity;
-  editIndex: number | null = null;
-
-  weight!: number;
-  height!: number;
-  age!: number;
-  gender!: string;
-  occupation!: string;
-  lifestyle!: string;
-  bmi!: number;
-
-  foodItems: FoodDetail[] = [
-    { name: 'Rice', calories: 130 , mealType:''},
-    { name: 'Chapati', calories: 70 , mealType:''},
-    { name: 'Dal', calories: 120 , mealType:''},
-    { name: 'Chicken Curry', calories: 210 , mealType:''},
-    { name: 'Paneer', calories: 290 , mealType:''},
-    { name: 'Roti', calories: 80 , mealType:''},
-    { name: 'Idli', calories: 58 , mealType:''},
-    { name: 'Dosa', calories: 168 , mealType:''},
-    { name: 'Samosa', calories: 262 , mealType:''},
-    { name: 'Gulab Jamun', calories: 150 , mealType:''}
-  ];
-
-  exerciseItems: ExerciseDetail[] = [
-    { name: 'Running', caloriesBurnt: 10,timeOfDay:''},
-    { name: 'Cycling', caloriesBurnt: 15,timeOfDay:''},
-    { name: 'Swimming', caloriesBurnt: 20,timeOfDay:''},
-    { name: 'Yoga', caloriesBurnt: 4 ,timeOfDay:''},
-    { name: 'Weight Lifting', caloriesBurnt: 6 ,timeOfDay:''},
-    { name: 'Walking', caloriesBurnt: 5 ,timeOfDay:''},
-    { name: 'Skipping', caloriesBurnt: 12 ,timeOfDay:''},
-    { name: 'Dancing', caloriesBurnt: 7 ,timeOfDay:''},
-    { name: 'Aerobics', caloriesBurnt: 9 ,timeOfDay:''},
-    { name: 'Basketball', caloriesBurnt: 10 ,timeOfDay:''}
-  ];
-
-
+  isEditMode = false;
+  sortDirection: { [key: string]: 'asc' | 'desc' } = {};
+  selectedActivity!: any;
   meals: string[] = ['Breakfast', 'Lunch', 'Dinner'];
   exercises: string[] = ['Exercise'];
-  
+  userData: any;
+  age: any;
+  foodItems: any;
+  exerciseItems: any;
+  bmi:any;
+
+  foodItemsFilterCtrl = new FormControl();
+
+  // Filtered Observables
+  filteredFoodItems!: Observable<string[]>;
+
+  exercisesFilterCtrl = new FormControl();
+
+  // Filtered Observables
+  filteredExercises!: Observable<string[]>;
+
   @ViewChild('activityModal') activityModal!: ElementRef;
   @ViewChild('editDetailsModal') editDetailsModal!: ElementRef;
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private accountService: AccountService, private databaseService: DatabaseService, private patientService: PatientService, private sortingService: SortingService, private filteringService: FilteringService) { }
 
   ngOnInit(): void {
-    this.activityForm = this.fb.group({
-      date: [''],
-    });
-
-    this.editForm = this.fb.group({
-      weight: [this.weight],
-      height: [this.height],
-      age: new FormControl({ value: '42', disabled: true }),
-      gender: new FormControl({ value: 'Male', disabled: true }),
-      occupation: [this.occupation],
-      lifestyle: [this.lifestyle]
+    this.accountService.getUserData().subscribe({
+      next: async (data) => {
+        this.userData = data;
+        this.initializeForm();
+        this.calculateAge();
+        this.foodItems = await this.databaseService.getFoodItems();
+        this.exerciseItems = await this.databaseService.getExercises();
+        await this.loadActivity();
+        await this.loadDetails();
+        await this.initializeSearch();
+      },
+      error: (err) => console.error('Error fetching user data:', err)
     });
 
     // Initialize default form controls for meals and exercises
@@ -103,143 +69,238 @@ export class DailyActivityComponent implements OnInit {
       this.addExerciseControls(index);
     });
 
-    this.loadDummyData();
-    this.calculateBMI();
   }
 
-  loadDummyData(): void {
-    this.dailyActivities = [
-        {
-            date: new Date('2024-08-01'),
-            foodDetails: [
-                { mealType: 'Breakfast', name: 'Rice', calories: 200 },
-                { mealType: 'Lunch', name: 'Dal', calories: 150 },
-            ],
-            totalCalories: 350,
-            exerciseDetails: [
-                { timeOfDay: 'Morning', name: 'Running', caloriesBurnt: 200 },
-                { timeOfDay: 'Evening', name: 'Yoga', caloriesBurnt: 100 },
-            ],
-            caloriesBurnt: 300,
-            totalGainLoss: 350 - 300,
-            comment: 'Great job! Keep it up!',
-        },
-        {
-            date: new Date('2024-08-02'),
-            foodDetails: [
-                { mealType: 'Lunch', name: 'Chapati', calories: 150 },
-                { mealType: 'Dinner', name: 'Paneer', calories: 250 },
-            ],
-            totalCalories: 400,
-            exerciseDetails: [
-                { timeOfDay: 'Morning', name: 'Cycling', caloriesBurnt: 300 },
-                { timeOfDay: 'Afternoon', name: 'Swimming', caloriesBurnt: 200 },
-            ],
-            caloriesBurnt: 500,
-            totalGainLoss: 400 - 500,
-            comment: 'You are on the right track!',
-        },
-        {
-            date: new Date('2024-08-03'),
-            foodDetails: [
-                { mealType: 'Breakfast', name: 'Dosa', calories: 200 },
-                { mealType: 'Lunch', name: 'Samosa', calories: 300 },
-            ],
-            totalCalories: 500,
-            exerciseDetails: [
-                { timeOfDay: 'Afternoon', name: 'Walking', caloriesBurnt: 150 },
-            ],
-            caloriesBurnt: 150,
-            totalGainLoss: 500 - 150,
-            comment: 'You need to burn more calories! Consider more intense exercises.',
-        },
-        {
-            date: new Date('2024-08-04'),
-            foodDetails: [
-                { mealType: 'Breakfast', name: 'Idli', calories: 120 },
-                { mealType: 'Lunch', name: 'Paneer', calories: 200 },
-                { mealType: 'Dinner', name: 'Chapati', calories: 150 },
-            ],
-            totalCalories: 470,
-            exerciseDetails: [
-                { timeOfDay: 'Morning', name: 'Running', caloriesBurnt: 300 },
-                { timeOfDay: 'Evening', name: 'Weight Lifting', caloriesBurnt: 100 },
-            ],
-            caloriesBurnt: 400,
-            totalGainLoss: 470 - 400,
-            comment: 'Good effort! Keep working towards your goal!',
-        },
-        {
-            date: new Date('2024-08-05'),
-            foodDetails: [
-                { mealType: 'Lunch', name: 'Roti', calories: 180 },
-                { mealType: 'Dinner', name: 'Chicken Curry', calories: 250 },
-            ],
-            totalCalories: 430,
-            exerciseDetails: [
-                { timeOfDay: 'Morning', name: 'Skipping', caloriesBurnt: 350 },
-                { timeOfDay: 'Evening', name: 'Yoga', caloriesBurnt: 100 },
-            ],
-            caloriesBurnt: 450,
-            totalGainLoss: 430 - 450,
-            comment: 'Excellent balance! You’re making great progress!',
-        },
-        {
-            date: new Date('2024-08-06'),
-            foodDetails: [
-                { mealType: 'Lunch', name: 'Rice', calories: 220 },
-                { mealType: 'Dinner', name: 'Gulab Jamun', calories: 150 },
-            ],
-            totalCalories: 370,
-            exerciseDetails: [
-                { timeOfDay: 'Afternoon', name: 'Swimming', caloriesBurnt: 300 },
-            ],
-            caloriesBurnt: 300,
-            totalGainLoss: 370 - 300,
-            comment: 'Almost there! Try to include a bit more exercise next time.',
-        },
-        {
-            date: new Date('2024-08-07'),
-            foodDetails: [
-                { mealType: 'Breakfast', name: 'Paneer', calories: 200 },
-                { mealType: 'Lunch', name: 'Dal', calories: 150 },
-            ],
-            totalCalories: 350,
-            exerciseDetails: [
-                { timeOfDay: 'Morning', name: 'Aerobics', caloriesBurnt: 250 },
-                { timeOfDay: 'Evening', name: 'Dancing', caloriesBurnt: 150 },
-            ],
-            caloriesBurnt: 400,
-            totalGainLoss: 350 - 400,
-            comment: 'Fantastic! You’re ahead of your goal!',
+
+  initializeSearch(): void {
+    this.filteredFoodItems = this.foodItemsFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.foodItems))
+    );
+
+    this.filteredExercises = this.exercisesFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.foodItems))
+    );
+  }
+
+  filterOptions(search: string, options: string[]): string[] {
+    const filterValue = search.toLowerCase();
+    return options.filter(option => option.toLowerCase().includes(filterValue));
+  }
+
+  initializeForm(): void {
+    this.editForm = this.fb.group({
+      height: this.fb.control('', [
+        Validators.required,
+        Validators.min(50),
+        Validators.max(300)
+      ]),
+      weight: this.fb.control('', [
+        Validators.required,
+        Validators.min(20),
+        Validators.max(300)
+      ]),
+      age: new FormControl({ value: this.age, disabled: true }),
+      gender: new FormControl({ value: this.userData.gender, disabled: true }),
+      lifestyle: this.fb.control('', Validators.required)
+    });
+
+    this.activityForm = this.fb.group({
+      date: ['', [Validators.required, this.futureDateValidator]],
+      meals: this.fb.array([this.createMeal()]),
+      exercises: this.fb.array([this.createExercise()]),
+      totalCalories: [0],         // To store total calories consumed
+      totalCaloriesBurnt: [0]     // To store total calories burnt
+    });
+
+
+  }
+
+  createMeal(): FormGroup {
+    return this.fb.group({
+      type: ['', Validators.required],          // Changed from mealType to type
+      food: ['', Validators.required],
+      quantity: [0, [Validators.required, Validators.min(1)]],
+      calories: [{ value: 0, disabled: true }]
+    });
+  }
+
+  createExercise(): FormGroup {
+    return this.fb.group({
+      type: ['', Validators.required],           // Changed from timeOfDay to type
+      exercise: ['', Validators.required],
+      durationMinutes: [0, [Validators.required, Validators.min(1)]], // Changed from duration to durationMinutes
+      caloriesBurnt: [{ value: 0, disabled: true }]
+    });
+  }
+
+  futureDateValidator(control: any): { [key: string]: boolean } | null {
+    const currentDate = new Date();
+    if (new Date(control.value) > currentDate) {
+      return { futureDate: true };
+    }
+    return null;
+  }
+
+  calculateAge(): void {
+    const birthDateValue = this.userData.dateOfBirth;
+
+    if (birthDateValue) {
+      const today = new Date();
+      const birthDate = new Date(birthDateValue);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+
+      this.age = age;
+    }
+  }
+
+  loadActivity(): void {
+    if (!this.userData?.id) {
+      console.error('User ID is missing');
+      return;
+    }
+
+    this.patientService.getActivities(this.userData.id).subscribe({
+      next: (data: any) => {
+        this.dailyActivities = data?.data.map((activity: any) => ({
+          ...activity
+        })).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      },
+      error: (error) => {
+        console.error('Error loading data:', error);
+      }
+    });
+  }
+
+  loadDetails(): void {
+    if (!this.userData?.id) {
+      console.error('User ID is missing');
+      return;
+    }
+
+    this.patientService.getPatientInfo(this.userData.id).subscribe({
+      next: (data: any) => {
+        if (data) {
+          // Patch the form with the retrieved user data
+          this.editForm.patchValue({
+            weight: data.weight || '', // Use empty string if data is not available
+            height: data.height || '',
+            age: data.age || '',
+            gender: data.gender || '',
+            lifestyle: data.lifestyle || ''
+          });
+        } else {
+          console.warn('No data found for the user.');
         }
-    ];
-}
+      },
+      error: (error) => {
+        console.error('Error loading data:', error);
+      }
+    });
+  }
 
-addDailyActivity(): void {
-  this.activityForm.reset();
-  this.isEditMode = false;
-  this.editIndex = null;
+  openDailyActivityModal(isEditMode: boolean, activity: any = null): void {
+    this.isEditMode = isEditMode;
 
-  // Clear existing form controls for meals and exercises
-  this.meals = [];
-  this.exercises = [];
-  this.activityForm = this.fb.group({
-      date: [''],
-  });
 
-  // Initialize with one meal and one exercise by default
-  this.addMeal();
-  this.addExercise();
+    if (isEditMode && activity) {
+      this.selectedActivity = activity;
+      this.activityForm.patchValue(activity); // Populate the form with existing data
+    } else {
+      this.selectedActivity = null;
+      this.activityForm.reset(); // Clear the form for a new entry
+    }
 
-  const modal = new Modal(this.activityModal.nativeElement);
-  modal.show();
-}
-  openEditPopup(): void {
-    const modal = new Modal(this.editDetailsModal.nativeElement);
+    // Initialize with one meal and one exercise by default
+    this.addMeal();
+    this.addExercise();
+
+    const modal = new bootstrap.Modal(document.getElementById('activityModal')!);
     modal.show();
   }
-  
+
+  openUserDetailModal(): void {
+    const modal = new bootstrap.Modal(document.getElementById('editDetailsModal')!);
+    modal.show();
+  }
+
+  deleteActivity(activity: any): void {
+    this.patientService.deleteActivity(this.userData.id, activity.id).subscribe({
+      next: (response) => {
+        console.log(response.message); // Success message from API
+        this.loadActivity(); // Reload the list after successful deletion
+      },
+      error: (error) => {
+        console.error('Error deleting clinic:', error); // Handle errors
+      }
+    });
+  }
+
+  saveActivity(): void {
+    this.activityForm.markAllAsTouched();
+    if (this.activityForm.invalid) return;
+
+    const activityData = this.activityForm.value;
+
+    if (this.isEditMode) {
+      // Update existing medical activity
+      activityData.id = this.selectedActivity?.id; // Attach the existing activity ID for update
+      this.patientService
+        .saveActivity(this.userData.id, activityData)
+        .subscribe({
+          next: (response) => {
+            this.loadActivity();
+          },
+          error: (error) => {
+            console.error('Error updating medical activity:', error);
+          },
+        });
+    } else {
+      // Add new medical activity
+      this.patientService
+        .saveActivity(this.userData.id, activityData)
+        .subscribe({
+          next: (response) => {
+            this.loadActivity();
+          },
+          error: (error) => {
+            console.error('Error adding medical activity:', error);
+          },
+        });
+    }
+
+    // Close the modal
+
+    bootstrap.Modal.getInstance(document.getElementById('activityModal')!)?.hide();
+  }
+
+
+  saveDetail(): void {
+    this.editForm.markAllAsTouched();
+    if (this.editForm.invalid) return;
+
+    const detailData = this.editForm.value;
+
+    this.patientService
+      .updatePatientInfo(this.userData.id, detailData)
+      .subscribe({
+        next: (response) => {
+          this.loadActivity();
+        },
+        error: (error) => {
+          console.error('Error updating data:', error);
+        },
+      });
+
+    bootstrap.Modal.getInstance(document.getElementById('activityModal')!)?.hide();
+  }
+
 
   addMealControls(index: number): void {
     this.activityForm.addControl('mealType' + index, new FormControl(''));
@@ -254,103 +315,84 @@ addDailyActivity(): void {
   }
 
   addMeal(): void {
-    const index = this.meals.length;
-    this.meals.push('Meal ' + (index + 1));
-    this.addMealControls(index);
+    this.mealsArray.push(this.createMeal());
   }
 
   removeMeal(index: number): void {
-    this.meals.splice(index, 1);
-    this.activityForm.removeControl('mealType' + index);
-    this.activityForm.removeControl('food' + index);
-    this.activityForm.removeControl('quantity' + index);
+    this.mealsArray.removeAt(index);
   }
 
   addExercise(): void {
-    const index = this.exercises.length;
-    this.exercises.push('Exercise ' + (index + 1));
-    this.addExerciseControls(index);
+    this.exercisesArray.push(this.createExercise());
   }
 
   removeExercise(index: number): void {
-    this.exercises.splice(index, 1);
-    this.activityForm.removeControl('timeOfDay' + index);
-    this.activityForm.removeControl('exercise' + index);
-    this.activityForm.removeControl('duration' + index);
+    this.exercisesArray.removeAt(index);
   }
 
+  get mealsArray(): FormArray {
+    return this.activityForm.get('meals') as FormArray;
+  }
+
+  get exercisesArray(): FormArray {
+    return this.activityForm.get('exercises') as FormArray;
+  }
+
+
   calculateCaloriesConsumed(): void {
+    // Ensure food items are loaded before calculation
+    if (!this.foodItems || this.foodItems.length === 0) {
+      this.foodItems = this.databaseService.getFoodItems();
+    }
+
     let totalCalories = 0;
-    this.meals.forEach((meal, index) => {
-      const food = this.foodItems.find(item => item.name === this.activityForm.get('food' + index)?.value);
-      const quantity = this.activityForm.get('quantity' + index)?.value;
-      if (food && quantity) {
-        totalCalories += (food.calories * quantity) / 100;
-      }
+    this.mealsArray.controls.forEach((mealGroup: AbstractControl, index) => {
+      const foodName = mealGroup.get('food')?.value;
+      const quantity = mealGroup.get('quantity')?.value;
+
+      // Find the food object from the loaded list
+      const food = this.foodItems.find((item: any) => item.name === foodName);
+
+      // Calculate calories for the current meal
+      const calories = food && quantity ? (food.calories * quantity) / 100 : 0;
+
+      // Update the individual meal calories in the form control
+      mealGroup.patchValue({ calories });
+
+      // Add to the total
+      totalCalories += calories;
     });
+
+    // Update total calories in the main form
     this.activityForm.patchValue({ totalCalories });
   }
 
   calculateCaloriesBurnt(): void {
+    // Ensure exercise items are loaded before calculation
+    if (!this.exerciseItems || this.exerciseItems.length === 0) {
+      this.exerciseItems = this.databaseService.getExercises();
+    }
+
     let totalCaloriesBurnt = 0;
-    this.exercises.forEach((exercise, index) => {
-      const exerciseItem = this.exerciseItems.find(item => item.name === this.activityForm.get('exercise' + index)?.value);
-      const duration = this.activityForm.get('duration' + index)?.value;
-      if (exerciseItem && duration) {
-        totalCaloriesBurnt += exerciseItem.caloriesBurnt * duration;
-      }
+    this.exercisesArray.controls.forEach((exerciseGroup: AbstractControl, index) => {
+      const exerciseName = exerciseGroup.get('exercise')?.value;
+      const duration = exerciseGroup.get('duration')?.value;
+
+      // Find the exercise object from the loaded list
+      const exercise = this.exerciseItems.find((item: any) => item.name === exerciseName);
+
+      // Calculate calories burnt for the current exercise
+      const caloriesBurnt = exercise && duration ? exercise.calories * duration : 0;
+
+      // Update the individual exercise calories burnt in the form control
+      exerciseGroup.patchValue({ caloriesBurnt });
+
+      // Add to the total
+      totalCaloriesBurnt += caloriesBurnt;
     });
+
+    // Update total calories burnt in the main form
     this.activityForm.patchValue({ totalCaloriesBurnt });
-  }
-
-  calculateFoodCalories(index: number): number {
-    const food = this.foodItems.find(item => item.name === this.activityForm.get('food' + index)?.value);
-    const quantity = this.activityForm.get('quantity' + index)?.value;
-    return food && quantity ? (food.calories * quantity) / 100 : 0;
-  }
-
-  calculateExerciseCalories(index: number): number {
-    const exercise = this.exerciseItems.find(item => item.name === this.activityForm.get('exercise' + index)?.value);
-    const duration = this.activityForm.get('duration' + index)?.value;
-    return exercise && duration ? exercise.caloriesBurnt * duration : 0;
-  }
-
-  saveActivity(): void {
-    const formData = this.activityForm.value;
-    const foodDetails = this.meals.map((meal, i) => ({
-      mealType: this.activityForm.get('mealType' + i)?.value,
-      name: this.activityForm.get('food' + i)?.value,
-      calories: this.calculateFoodCalories(i)
-    }));
-    const exerciseDetails = this.exercises.map((exercise, j) => ({
-      timeOfDay: this.activityForm.get('timeOfDay' + j)?.value,
-      name: this.activityForm.get('exercise' + j)?.value,
-      caloriesBurnt: this.calculateExerciseCalories(j)
-    }));
-
-    const totalCalories = foodDetails.reduce((acc, item) => acc + item.calories, 0);
-    const caloriesBurnt = exerciseDetails.reduce((acc, item) => acc + item.caloriesBurnt, 0);
-
-    const activity: DailyActivity = {
-      date: formData.date,
-      foodDetails,
-      totalCalories,
-      exerciseDetails,
-      caloriesBurnt,
-      totalGainLoss: totalCalories - caloriesBurnt,
-      comment: this.getComment(totalCalories - caloriesBurnt)
-    };
-
-    if (this.isEditMode && this.editIndex !== null) {
-      this.dailyActivities[this.editIndex] = activity;
-    } else {
-      this.dailyActivities.push(activity);
-    }
-
-    const modal = Modal.getInstance(this.activityModal.nativeElement);
-    if (modal) {
-      modal.hide();
-    }
   }
 
   getComment(totalGainLoss: number): string {
@@ -363,56 +405,24 @@ addDailyActivity(): void {
     }
   }
 
-  editActivity(activity: DailyActivity): void {
-    this.isEditMode = true;
-    this.editIndex = this.dailyActivities.indexOf(activity);
-    this.activityForm.patchValue(activity);
-
-    // Ensure the form controls are added when editing
-    this.meals.forEach((meal, index) => {
-      if (!this.activityForm.contains('food' + index)) {
-        this.addMealControls(index);
-      }
-    });
-
-    this.exercises.forEach((exercise, index) => {
-      if (!this.activityForm.contains('exercise' + index)) {
-        this.addExerciseControls(index);
-      }
-    });
-
-    const modal = new Modal(this.activityModal.nativeElement);
-    modal.show();
-  }
-
-  deleteActivity(activity: DailyActivity): void {
-    const index = this.dailyActivities.indexOf(activity);
-    if (index > -1) {
-      this.dailyActivities.splice(index, 1);
-    }
-  }
-
   calculateBMI(): void {
-    if (this.height && this.weight) {
-      const heightInMeters = this.height / 100;
-      this.bmi = this.weight / (heightInMeters * heightInMeters);
-    }
-  }
-  
-  saveDetails(): void {
-    const formData = this.editForm.value;
-    this.weight = formData.weight;
-    this.height = formData.height;
-    this.age = 42;
-    this.gender = 'Male';
-    this.occupation = formData.occupation;
-    this.lifestyle = formData.lifestyle;
+    // Get the values from the form
+    const weight = this.editForm.get('weight')?.value;
+    const height = this.editForm.get('height')?.value;
 
-    this.calculateBMI();
+    // Ensure the values are present and valid numbers
+    if (height && weight && !isNaN(height) && !isNaN(weight)) {
+      // Convert height from centimeters to meters
+      const heightInMeters = height / 100;
 
-    const modal = Modal.getInstance(this.editDetailsModal.nativeElement);
-    if (modal) {
-      modal.hide();
+      // Calculate BMI using the standard formula
+      const bmi = weight / (heightInMeters * heightInMeters);
+
+      // Update the form with the calculated BMI
+      this.bmi=  bmi.toFixed(2);
+
+    } else {
+      console.warn('Height or weight is invalid');
     }
   }
 }

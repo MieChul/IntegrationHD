@@ -142,22 +142,31 @@ public class Activity : BaseEntity
 public class Meal : BaseEntity
 {
     [BsonElement("meal_type")]
-    public string MealType { get; set; }
+    public string MealType { get; set; } = string.Empty;
 
     [BsonElement("food")]
-    public string Food { get; set; }
+    public string Food { get; set; } = string.Empty;
 
     [BsonElement("quantity")]
-    public string Quantity { get; set; }
+    public int Quantity { get; set; } 
+
+    [BsonElement("calories")]
+    public int Calories { get; set; } // Added to store calculated calories
 }
 
 public class Exercise : BaseEntity
 {
     [BsonElement("type")]
-    public string Type { get; set; }
+    public string Type { get; set; } = string.Empty;
+
+    [BsonElement("exercise")]
+    public string ExerciseName { get; set; } = string.Empty;
 
     [BsonElement("duration_minutes")]
     public int DurationMinutes { get; set; }
+
+    [BsonElement("calories_burnt")]
+    public int CaloriesBurnt { get; set; } // Added to store calculated calories burnt
 }
 
 public class SelfRecord : BaseEntity
@@ -301,9 +310,6 @@ public class PatientInfo : BaseEntity
 
     [BsonElement("height")]
     public double Height { get; set; }
-
-    [BsonElement("occupation")]
-    public string Occupation { get; set; }
 
     [BsonElement("lifestyle")]
     public string Lifestyle { get; set; }

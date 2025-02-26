@@ -99,6 +99,7 @@ export class PatientHistoryComponent implements OnInit {
   
     return Object.keys(errors).length ? errors : null;
   }
+  
   initializeSearch(): void {
     this.filteredDiseases = this.diseaseFilterCtrl.valueChanges.pipe(
       startWith(''),

@@ -229,6 +229,7 @@ namespace HealthDesk.API.Controllers
             return Ok(new { Success = true, Message = "Activity saved successfully." });
         }
 
+
         [HttpDelete("{patientId}/activities/{activityId}")]
         public async Task<IActionResult> DeleteActivity(string patientId, string activityId)
         {

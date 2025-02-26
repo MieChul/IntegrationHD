@@ -387,7 +387,7 @@
                                 <div class="row" formGroupName="medicalRegistration">
                                     <div class="form-floating col-sm-4">
                                         <input type="text" class="form-control" id="certificateNumber"
-                                            placeholder="Medical registration Certificate (MRC)" autocomplete="off"
+                                            placeholder="MRC Number" autocomplete="off"
                                             formControlName="certificateNumber"
                                             [ngClass]="{ 'is-invalid': submitted && (certificateNumberError || f['medicalRegistration'].get('certificateNumber')?.errors) }">
                                         <div *ngIf="submitted && certificateNumberError"
@@ -401,7 +401,7 @@
                                                 Please enter a valid Certificate Number.
                                             </div>
                                         </div>
-                                        <label for="certificateNumber" class="form-label-floating">Medical registration Certificate (MRC)<i class="danger">*</i></label>
+                                        <label for="certificateNumber" class="form-label-floating">MRC Number<i class="danger">*</i></label>
                                     </div>
                                     <div class="form-floating col-sm-4">
                                         <mat-form-field appearance="outline" class="w-100">

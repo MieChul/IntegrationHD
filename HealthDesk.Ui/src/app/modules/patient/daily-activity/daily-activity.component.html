@@ -12,9 +12,9 @@
               'bg-info': !bmi
             }">
                 <!-- Top Row: BMI Text and Edit Pencil -->
-                <div class="d-flex justify-content-between align-items-center p-1">
-                    <h5 class="mb-0"><i class="bi bi-calculator me-1"></i>BMI Details</h5>
-                    <button class="btn btn-primary btn-sm m-2" (click)="openEditPopup()">
+                <div class="d-flex justify-content-between align-items-center bg-white m-1">
+                    <h5 class="mb-0 "><i class="bi bi-calculator me-1"></i>BMI Details</h5>
+                    <button class="btn btn-primary btn-sm m-2" (click)="openUserDetailModal()">
                         <i class="bi bi-pencil"></i>
                     </button>
                 </div>
@@ -24,7 +24,9 @@
                     <div class="legend">
                         <span class="badge bg-success me-1">Normal (18.5-24.9 mg/m2)</span>
                         <span class="badge bg-warning me-1">Over/Underweight (10-18.4 / 25-29.9 mg/m2)</span>
-                        <span class="badge bg-danger">Obese/Severely Underweight (<10 />30 kg/m2)</span>
+                        <span class="badge bg-danger">Obese/Severely Underweight (
+                            <10 />30 kg/m2)
+                        </span>
                     </div>
                 </div>
 
@@ -32,13 +34,18 @@
                 <div class="card-body d-flex justify-content-between align-items-center p-2" style="min-height: auto;">
                     <!-- Personal details in one line -->
                     <div class="d-flex flex-wrap align-items-center" style="font-size: 0.85rem;">
-                        <span class="me-3"><i class="bi bi-calendar me-1"></i>Age: {{ age }}</span>
-                        <span class="me-3"><i class="bi bi-gender-ambiguous me-1"></i>Gender: {{ gender }}</span>
-                        <span class="me-3"><i class="bi bi-activity me-1"></i>Lifestyle: {{ lifestyle }}</span>
-                        <span class="me-3"><i class="bi bi-rulers me-1"></i>Height: {{ height }} (cms)</span>
-                        <span class="me-3"><i class="bi bi-weight me-1"></i>Weight: {{ weight }} (kg)</span>
-                        <span class="me-3"><i class="bi bi-calculator me-1"></i>BMI:
-                            {{ bmi | number: '1.2-2' }} (Kg/m2)</span>
+                        <span class="me-3"><i class="bi bi-calendar me-1"></i>Age: {{ editForm.get('age')?.value
+                            }}</span>
+                        <span class="me-3"><i class="bi bi-gender-ambiguous me-1"></i>Gender: {{
+                            editForm.get('gender')?.value }}</span>
+                        <span class="me-3"><i class="bi bi-activity me-1"></i>Lifestyle: {{
+                            editForm.get('lifestyle')?.value }}</span>
+                        <span class="me-3"><i class="bi bi-rulers me-1"></i>Height: {{ editForm.get('height')?.value }}
+                            (cms)</span>
+                        <span class="me-3"><i class="bi bi-weight me-1"></i>Weight: {{ editForm.get('weight')?.value }}
+                            (kg)</span>
+                        <span class="me-3"><i class="bi bi-calculator me-1"></i>BMI: {{ bmi | number: '1.2-2' }}
+                            (Kg/m2)</span>
                     </div>
                 </div>
             </div>
@@ -47,9 +54,9 @@
     <div class="row mb-4">
 
         <!-- Daily Activity Section and Table -->
-        <div class="row mb-3 align-items-center">
-            <div class="col-md-4 col-sm-6 d-flex justify-content-start flex-wrap">
-                <button class="btn btn-primary" (click)="addDailyActivity()">Add Daily Activity</button>
+        <div class="row mb-3">
+            <div class="d-flex justify-content-end flex-wrap">
+                <button class="btn btn-primary" (click)="openDailyActivityModal(false)">Add Daily Activity</button>
             </div>
         </div>
 
@@ -90,7 +97,7 @@
                         </td>
                         <td>{{ activity.comment }}</td>
                         <td class="text-center align-middle text-nowrap">
-                            <button class="btn btn-warning btn-sm me-1" (click)="editActivity(activity)">
+                            <button class="btn btn-warning btn-sm me-1" (click)="openDailyActivityModal(true,activity)">
                                 <i class="bi bi-pencil"></i>
                             </button>
                             <button class="btn btn-danger btn-sm" (click)="deleteActivity(activity)">
@@ -114,41 +121,66 @@
                 </div>
                 <div class="modal-body">
                     <form [formGroup]="editForm">
-                        <div class="row">
+                        <div class="row mb-3">
+                            <!-- Height -->
                             <div class="col-md-6">
                                 <mat-form-field appearance="outline" class="w-100">
-                                    <mat-label>Height</mat-label>
-                                    <input matInput formControlName="height" maxlength="25" required />
+                                    <mat-label>Height (in cm)</mat-label>
+                                    <input matInput type="number" formControlName="height" required min="50" max="300"
+                                        placeholder="Enter height in cm" />
                                     <mat-error *ngIf="editForm.get('height')?.hasError('required')">
                                         Height is required.
                                     </mat-error>
+                                    <mat-error *ngIf="editForm.get('height')?.hasError('min')">
+                                        Height must be at least 50 cm.
+                                    </mat-error>
+                                    <mat-error *ngIf="editForm.get('height')?.hasError('max')">
+                                        Height cannot exceed 300 cm.
+                                    </mat-error>
                                 </mat-form-field>
                             </div>
+
+                            <!-- Weight -->
                             <div class="col-md-6">
                                 <mat-form-field appearance="outline" class="w-100">
-                                    <mat-label>Weight</mat-label>
-                                    <input matInput formControlName="weight" maxlength="25" required />
+                                    <mat-label>Weight (in kg)</mat-label>
+                                    <input matInput type="number" formControlName="weight" required min="20" max="300"
+                                        placeholder="Enter weight in kg" />
                                     <mat-error *ngIf="editForm.get('weight')?.hasError('required')">
                                         Weight is required.
+                                    </mat-error>
+                                    <mat-error *ngIf="editForm.get('weight')?.hasError('min')">
+                                        Weight must be at least 20 kg.
+                                    </mat-error>
+                                    <mat-error *ngIf="editForm.get('weight')?.hasError('max')">
+                                        Weight cannot exceed 300 kg.
                                     </mat-error>
                                 </mat-form-field>
                             </div>
                         </div>
-                        <div class="row">
+
+                        <div class="row mb-3">
+                            <!-- Age (Disabled) -->
                             <div class="col-md-6">
                                 <mat-form-field appearance="outline" class="w-100">
                                     <mat-label>Age</mat-label>
-                                    <input matInput formControlName="age" maxlength="25" required />
+                                    <input matInput formControlName="age"
+                                        placeholder="Age is auto-calculated" />
                                 </mat-form-field>
                             </div>
+
+                            <!-- Gender (Disabled) -->
                             <div class="col-md-6">
                                 <mat-form-field appearance="outline" class="w-100">
                                     <mat-label>Gender</mat-label>
-                                    <input matInput formControlName="gender" maxlength="25" required />
+                                    <input matInput formControlName="gender"
+                                        placeholder="Gender is auto-detected" />
                                 </mat-form-field>
                             </div>
                         </div>
-                        <div class="row">
+
+                        <div class="row mb-3">
+                            <!-- Lifestyle -->
                             <div class="col-md-6">
                                 <mat-form-field appearance="outline" class="w-100">
                                     <mat-label>Lifestyle</mat-label>
@@ -156,6 +188,9 @@
                                         <mat-option value="Sedentary">Sedentary</mat-option>
                                         <mat-option value="Non-Sedentary">Non-Sedentary</mat-option>
                                     </mat-select>
+                                    <mat-error *ngIf="editForm.get('lifestyle')?.hasError('required')">
+                                        Lifestyle selection is required.
+                                    </mat-error>
                                 </mat-form-field>
                             </div>
                         </div>
@@ -163,11 +198,14 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" (click)="saveDetails()">Save Changes</button>
+                    <button type="button" class="btn btn-primary" [disabled]="editForm.invalid" (click)="saveDetail()">
+                        Save Changes
+                    </button>
                 </div>
             </div>
         </div>
     </div>
+
 
     <!-- Activity Modal -->
     <div class="modal fade" id="activityModal" tabindex="-1" aria-labelledby="activityModalLabel" aria-hidden="true"
@@ -175,21 +213,14 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="activityModalLabel">{{ isEditMode ? 'Edit Meal/Physical Activity' : 'Add
-                        Meal/Physical Activity' }}</h5>
+                    <h5 class="modal-title" id="activityModalLabel">
+                        {{ isEditMode ? 'Edit Meal/Physical Activity' : 'Add Meal/Physical Activity' }}
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form [formGroup]="activityForm">
-                        <div class="mb-3">
-                            <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Date</mat-label>
-                                <input matInput [matDatepicker]="activityDatePicker" formControlName="date">
-                                <mat-datepicker-toggle matSuffix [for]="activityDatePicker"></mat-datepicker-toggle>
-                                <mat-datepicker #activityDatePicker></mat-datepicker>
-                            </mat-form-field>
-                        </div>
-
+                        <!-- Date Section -->
                         <div class="col-md-6">
                             <mat-form-field appearance="outline" class="w-100">
                                 <mat-label>Date</mat-label>
@@ -204,43 +235,57 @@
                                 </mat-error>
                             </mat-form-field>
                         </div>
+
                         <!-- Calories Consumed Section -->
                         <div class="mb-3">
                             <h5>Calories Consumed</h5>
-                            <div *ngFor="let meal of meals; let i = index">
-                                <div class="row mb-2">
+                            <div formArrayName="meals">
+                                <div *ngFor="let meal of mealsArray.controls; let i = index" [formGroupName]="i"
+                                    class="row mb-2">
                                     <div class="col-md-3">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Meal Type</mat-label>
-                                            <mat-select [formControlName]="'mealType' + i">
+                                            <mat-select formControlName="type" required>
                                                 <mat-option value="Breakfast">Breakfast</mat-option>
                                                 <mat-option value="Lunch">Lunch</mat-option>
                                                 <mat-option value="Dinner">Dinner</mat-option>
                                                 <mat-option value="Other">Other</mat-option>
                                             </mat-select>
+                                            <mat-error *ngIf="meal.get('type')?.hasError('required')">
+                                                Meal Type is required.
+                                            </mat-error>
                                         </mat-form-field>
                                     </div>
                                     <div class="col-md-4">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Food Item</mat-label>
-                                            <mat-select [formControlName]="'food' + i">
+                                            <mat-select formControlName="food" required>
                                                 <mat-option *ngFor="let food of foodItems" [value]="food.name">
                                                     {{ food.name }}
                                                 </mat-option>
                                             </mat-select>
+                                            <mat-error *ngIf="meal.get('food')?.hasError('required')">
+                                                Food Item is required.
+                                            </mat-error>
                                         </mat-form-field>
                                     </div>
                                     <div class="col-md-2">
                                         <mat-form-field appearance="outline" class="w-100">
-                                            <mat-label>Quantity (g)</mat-label>
-                                            <input matInput type="number" [formControlName]="'quantity' + i"
-                                                (change)="calculateCaloriesConsumed()">
+                                            <mat-label>Quantity (grams)</mat-label>
+                                            <input matInput type="number" formControlName="quantity"
+                                                (input)="calculateCaloriesConsumed()" required>
+                                            <mat-error *ngIf="meal.get('quantity')?.hasError('required')">
+                                                Quantity is required.
+                                            </mat-error>
+                                            <mat-error *ngIf="meal.get('quantity')?.hasError('min')">
+                                                Quantity must be greater than 0.
+                                            </mat-error>
                                         </mat-form-field>
                                     </div>
                                     <div class="col-md-2">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Calories</mat-label>
-                                            <input matInput type="text" [value]="calculateFoodCalories(i)" readonly>
+                                            <input matInput formControlName="calories" readonly>
                                         </mat-form-field>
                                     </div>
                                     <div class="col-md-1 d-flex align-items-end">
@@ -255,41 +300,54 @@
                         <!-- Activity Section -->
                         <div class="mb-3">
                             <h5>Activity</h5>
-                            <div *ngFor="let exercise of exercises; let j = index">
-                                <div class="row mb-2">
+                            <div formArrayName="exercises">
+                                <div *ngFor="let exercise of exercisesArray.controls; let j = index" [formGroupName]="j"
+                                    class="row mb-2">
                                     <div class="col-md-3">
                                         <mat-form-field appearance="outline" class="w-100">
-                                            <mat-label>Time of Day</mat-label>
-                                            <mat-select [formControlName]="'timeOfDay' + j">
+                                            <mat-label>Activity Type</mat-label>
+                                            <mat-select formControlName="type" required>
                                                 <mat-option value="Morning">Morning</mat-option>
                                                 <mat-option value="Afternoon">Afternoon</mat-option>
                                                 <mat-option value="Evening">Evening</mat-option>
                                                 <mat-option value="Other">Other</mat-option>
                                             </mat-select>
+                                            <mat-error *ngIf="exercise.get('type')?.hasError('required')">
+                                                Activity Type is required.
+                                            </mat-error>
                                         </mat-form-field>
                                     </div>
                                     <div class="col-md-4">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Exercise</mat-label>
-                                            <mat-select [formControlName]="'exercise' + j">
-                                                <mat-option *ngFor="let exercise of exerciseItems"
-                                                    [value]="exercise.name">
-                                                    {{ exercise.name }}
+                                            <mat-select formControlName="exercise" required
+                                                (selectionChange)="calculateCaloriesBurnt()">
+                                                <mat-option *ngFor="let ex of exerciseItems" [value]="ex.name">
+                                                    {{ ex.name }}
                                                 </mat-option>
                                             </mat-select>
+                                            <mat-error *ngIf="exercise.get('exercise')?.hasError('required')">
+                                                Exercise is required.
+                                            </mat-error>
                                         </mat-form-field>
                                     </div>
                                     <div class="col-md-2">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Duration (minutes)</mat-label>
-                                            <input matInput type="number" [formControlName]="'duration' + j"
-                                                (change)="calculateCaloriesBurnt()">
+                                            <input matInput type="number" formControlName="durationMinutes"
+                                                (input)="calculateCaloriesBurnt()" required>
+                                            <mat-error *ngIf="exercise.get('durationMinutes')?.hasError('required')">
+                                                Duration is required.
+                                            </mat-error>
+                                            <mat-error *ngIf="exercise.get('durationMinutes')?.hasError('min')">
+                                                Duration must be greater than 0.
+                                            </mat-error>
                                         </mat-form-field>
                                     </div>
                                     <div class="col-md-2">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Calories Burnt</mat-label>
-                                            <input matInput type="text" [value]="calculateExerciseCalories(j)" readonly>
+                                            <input matInput formControlName="caloriesBurnt" readonly>
                                         </mat-form-field>
                                     </div>
                                     <div class="col-md-1 d-flex align-items-end">
@@ -305,8 +363,9 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" (click)="saveActivity()">{{ isEditMode ? 'Save
-                        Changes' : 'Add Activity' }}</button>
+                    <button type="button" class="btn btn-primary" (click)="saveActivity()">
+                        {{ isEditMode ? 'Save Changes' : 'Add Activity' }}
+                    </button>
                 </div>
             </div>
         </div>

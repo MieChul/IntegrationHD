@@ -223,7 +223,7 @@ public class AccountService : IAccountService
         if (userEntity == null) throw new KeyNotFoundException("User not found");
 
         if (userEntity.Roles.Any(r => r.Role.ToString().ToLower() == role && r.Status == "Approved"))
-            return new { role = role, username = userEntity.Username, id = userEntity.Id, profImage = userEntity.ProfImage, status = "Approved", canswitch = userEntity.CanSwitch, dependentId = userEntity.DependentId, dependentName = userEntity.DependentName, hasDependent = userEntity.HasDependent };
+            return new { role = role, username = userEntity.Username, id = userEntity.Id, profImage = userEntity.ProfImage, status = "Approved", canswitch = userEntity.CanSwitch, dependentId = userEntity.DependentId, dependentName = userEntity.DependentName, hasDependent = userEntity.HasDependent, isMainApproved = true, dateOfBirth = userEntity.BirthDate, gender = userEntity.Gender };
         else if (CanSwitch(role, userEntity.Roles))
         {
             if (!userEntity.Roles.Any(r => r.Role.ToString().ToLower() == role))
@@ -301,12 +301,12 @@ public class AccountService : IAccountService
                         default:
                             throw new InvalidOperationException("Unsupported role");
                     }
-                    userEntity.Roles.Add(new UserRole { Id = roleId, Role = (Role)Enum.Parse(typeof(Role), role, true), Status = "New" });
+                    userEntity.Roles.Add(new UserRole { Id = roleId, Role = (Role)Enum.Parse(typeof(Role), role, true), Status = "New", });
                 }
                 _userRepository.UpdateAsync(userEntity);
             }
 
-            return new { role = role, username = userEntity.Username, id = userEntity.Id, profImage = userEntity.ProfImage, status = "Confirm", canswitch = userEntity.CanSwitch, dependentId = userEntity.DependentId, dependentName = userEntity.DependentName, hasDependent = userEntity.HasDependent };
+            return new { role = role, username = userEntity.Username, id = userEntity.Id, profImage = userEntity.ProfImage, status = "Confirm", canswitch = userEntity.CanSwitch, dependentId = userEntity.DependentId, dependentName = userEntity.DependentName, hasDependent = userEntity.HasDependent, isMainApproved = false, dateOfBirth = userEntity.BirthDate, gender = userEntity.Gender };
         }
 
         else
@@ -388,6 +388,10 @@ public class AccountService : IAccountService
             userDto.DependentId = userEntity.DependentId;
             userDto.DependentName = userEntity.DependentName;
             userDto.HasDependent = userEntity.HasDependent;
+            userDto.IsMainApproved = userEntity.DependentId == null && userEntity.Roles.Any(r => r.Status == "Approved");
+            userDto.DateOfBirth = userEntity.BirthDate;
+            userDto.Gender = userEntity.Gender;
+
         }
         else
             throw new KeyNotFoundException("Role not found");
@@ -421,7 +425,10 @@ public class AccountService : IAccountService
                 CanSwitch = existingDependent.CanSwitch,
                 DependentId = existingDependent.DependentId,
                 DependentName = existingDependent.DependentName,
-                HasDependent = existingDependent.HasDependent
+                HasDependent = existingDependent.HasDependent,
+                IsMainApproved = false,
+                DateOfBirth = existingDependent.BirthDate,
+                Gender = existingDependent.Gender
             };
         }
 

@@ -50,8 +50,8 @@
                                 <td>{{user.name}}</td>
                                 <td>{{user.contact}}</td>
                                 <td>{{user.city}}</td>
-                                <td>{{user.role | titlecase}}</td>
-                                <td>{{(user.role === 'Patient' ? user.dependentName : '') | titlecase}}</td>
+                                <td>{{ user.role | titlecase}}</td>
+                                <td>{{(user.dependentName) | titlecase}}</td>
                                 <td><span class="listStatus"
                                         [ngClass]="[user.status=='Submitted' ? 'bg-warning' : user.status=='Approved' ? 'bg-success' : user.status=='Rejected' ? 'bg-danger' : '']">{{user.status}}</span>
                                 </td>

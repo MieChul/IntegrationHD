@@ -32,6 +32,8 @@ export class DatabaseService {
     Colleges: string[];
     Brands: string[];
     SelfRecords: string[];
+    Foods: string[]; // Changed to object array
+    Exercises: string[]; // Changed to object array
   } = {
       Drugs: [],
       Strengths: [],
@@ -47,7 +49,9 @@ export class DatabaseService {
       Assessments: [],
       Colleges: [],
       Brands: [],
-      SelfRecords: []
+      SelfRecords: [],
+      Foods: [],
+      Exercises: []
     };
 
   private drugData: DrugEntry[] = [];
@@ -96,7 +100,7 @@ export class DatabaseService {
             this.database.Drugs = Array.from(
               new Set(entries.map((entry) => entry.name))
             ).filter(Boolean);
-          } 
+          }
           else if (sheetName === 'SelfRecords') {
             // Load SelfRecords data
             const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
@@ -109,7 +113,21 @@ export class DatabaseService {
 
             this.selfRecordData = entries;
             this.database.SelfRecords = Array.from(new Set(entries.map((entry) => entry.recordType))).filter(Boolean);
-          } 
+          }
+          else if (sheetName === 'Foods') {
+            const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            // Assuming Column 0: Food name, Column 1: Calories
+            this.database.Foods = data
+              .map((row: any) => `${row[0]}: ${parseInt(row[1], 10)}`)
+              .filter(entry => entry && !entry.includes('NaN'));
+          }
+          else if (sheetName === 'Exercises') {
+            const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            // Assuming Column 0: Exercise name, Column 1: Calories burnt per minute
+            this.database.Exercises = data
+              .map((row: any) => `${row[0]}: ${parseInt(row[1], 10)}`)
+              .filter(entry => entry && !entry.includes('NaN'));
+          }
           else {
             const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
             const columnA = data.map((row: any) => row[0] as string); // Skip header row
@@ -215,11 +233,31 @@ export class DatabaseService {
     return record ? record.unit : null;
   }
 
-  getUnits(){
+  getUnits() {
     return this.database.Strengths;
   }
 
-  getDosageForms(){
+  getDosageForms() {
     return this.database.Forms;
+  }
+
+  getFoodItems(): { name: string; calories: number }[] {
+    return this.database.Foods.map((item: any) => {
+      const [name, calories] = item.split(':');
+      return {
+        name: name.trim(),
+        calories: Number(calories) || 0
+      };
+    });
+  }
+
+  getExercises(): { name: string; calories: number }[] {
+    return this.database.Exercises.map((item: any) => {
+      const [name, calories] = item.split(':');
+      return {
+        name: name.trim(),
+        calories: Number(calories) || 0
+      };
+    });
   }
 }
