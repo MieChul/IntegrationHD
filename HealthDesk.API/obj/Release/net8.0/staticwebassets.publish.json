@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "XKpSkwysUvx5hutJqb9GF6mpREQ9VuqvWPWPVNmAlD0=",
+  "Source": "HealthDesk.API",
+  "BasePath": "_content/HealthDesk.API",
+  "Mode": "Default",
+  "ManifestType": "Publish",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

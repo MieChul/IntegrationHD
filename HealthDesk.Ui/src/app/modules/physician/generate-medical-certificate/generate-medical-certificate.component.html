@@ -57,6 +57,9 @@
               <mat-error *ngIf="medicalForm.get('treatmentFrom')?.hasError('required')">
                 Treatment From is required
               </mat-error>
+              <mat-error *ngIf="medicalForm.get('treatmentFrom')?.hasError('futureDate')">
+                Date cannot be in the future.
+            </mat-error>
             </mat-form-field>
           </div>
           <div class="col-md-6">
@@ -76,15 +79,6 @@
         </div>
         <div class="row mb-3">
           <div class="col-md-6">
-            <mat-form-field appearance="outline" class="small-field">
-              <mat-label>Days Rest</mat-label>
-              <input matInput type="number" formControlName="daysRest">
-              <mat-error *ngIf="medicalForm.get('daysRest')?.hasError('min')">
-                Days Rest cannot be negative
-              </mat-error>
-            </mat-form-field>
-          </div>
-          <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
               <mat-label>Rest From</mat-label>
               <mat-datepicker-toggle matSuffix [for]="pickerRest"></mat-datepicker-toggle>
@@ -94,21 +88,21 @@
                 Rest From Date is required
               </mat-error>
               <mat-error *ngIf="medicalForm.get('restFromDate')?.hasError('dateRange')">
-                Rest From cannot be before Treatment To
+                Rest From cannot be before Treatment from
+              </mat-error>
+            </mat-form-field>
+          </div>
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="small-field">
+              <mat-label>Number of rest days</mat-label>
+              <input matInput type="number" formControlName="daysRest">
+              <mat-error *ngIf="medicalForm.get('daysRest')?.hasError('min')">
+                Days Rest cannot be negative
               </mat-error>
             </mat-form-field>
           </div>
         </div>
         <div class="row mb-3">
-          <div class="col-md-6">
-            <mat-form-field appearance="outline" class="small-field">
-              <mat-label>Another Days</mat-label>
-              <input matInput type="number" formControlName="anotherDays">
-              <mat-error *ngIf="medicalForm.get('anotherDays')?.hasError('required')">
-                Another Days is required
-              </mat-error>
-            </mat-form-field>
-          </div>
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
               <mat-label>Fit to Resume From</mat-label>
@@ -121,6 +115,9 @@
               <mat-error *ngIf="medicalForm.get('fitToResumeFrom')?.hasError('dateRange')">
                 Fit to Resume From cannot be before Rest From
               </mat-error>
+              <mat-error *ngIf="medicalForm.get('fitToResumeFrom')?.hasError('invalidResumeDate')">
+                Fit to Resume From cannot be before Rest From Date + Days Rest.
+              </mat-error>
             </mat-form-field>
           </div>
         </div>
@@ -131,19 +128,6 @@
               <textarea matInput formControlName="identificationMark" rows="3"></textarea>
               <mat-error *ngIf="medicalForm.get('identificationMark')?.hasError('maxlength')">
                 Identification Mark cannot exceed 100 characters
-              </mat-error>
-            </mat-form-field>
-          </div>
-        </div>
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Date</mat-label>
-              <mat-datepicker-toggle matSuffix [for]="pickerDate"></mat-datepicker-toggle>
-              <input matInput [matDatepicker]="pickerDate" formControlName="date">
-              <mat-datepicker #pickerDate></mat-datepicker>
-              <mat-error *ngIf="medicalForm.get('date')?.hasError('required')">
-                Date is required
               </mat-error>
             </mat-form-field>
           </div>

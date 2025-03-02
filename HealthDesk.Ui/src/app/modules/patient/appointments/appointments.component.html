@@ -118,7 +118,7 @@
   </div>
 
   <!-- Appointment Modal -->
-  <div class="modal fade animate__animated animate__fadeIn" data-bs-focus="false" id="appointmentModal" tabindex="-1"
+  <div class="modal fade animate__animated animate__fadeIn" data-bs-backdrop='static' data-bs-focus="false" id="appointmentModal" tabindex="-1"
     aria-labelledby="appointmentModalLabel" aria-hidden="true" #appointmentModal>
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content shadow-sm rounded">
@@ -264,7 +264,7 @@
   </div>
 
   <!-- Cancel Appointment Modal -->
-  <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true"
+  <div class="modal fade" id="cancelModal" tabindex="-1" data-bs-backdrop='static' aria-labelledby="cancelModalLabel" aria-hidden="true"
     #cancelModal>
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -289,7 +289,7 @@
     </div>
   </div>
 
-  <div class="modal fade" id="acceptModal" tabindex="-1" aria-labelledby="acceptModalLabel" aria-hidden="true"
+  <div class="modal fade" id="acceptModal" tabindex="-1" data-bs-backdrop='static' aria-labelledby="acceptModalLabel" aria-hidden="true"
   #acceptModal>
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -300,7 +300,7 @@
       <div class="modal-body">
         <p>Are you sure you want to accept the new proposed time?</p>
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer  d-flex justify-content-between">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         <button type="button" class="btn btn-success" (click)="acceptAppointment()">
           Confirm

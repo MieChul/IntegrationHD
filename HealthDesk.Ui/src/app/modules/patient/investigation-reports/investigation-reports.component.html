@@ -74,7 +74,7 @@
 </div>
 
 <!-- Add/Edit Investigation Report Modal -->
-<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true"
+<div class="modal fade" data-bs-backdrop='static' id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true"
     #reportModal>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -154,7 +154,7 @@
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer  d-flex justify-content-between">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary" (click)="saveReport()">{{ isEditMode ? 'Save Changes' :
                     'Add Report' }}</button>

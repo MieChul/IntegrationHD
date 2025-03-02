@@ -111,7 +111,7 @@
     </div>
 
     <!-- Edit User Details Popup -->
-    <div class="modal fade" id="editDetailsModal" tabindex="-1" aria-labelledby="editDetailsModalLabel"
+    <div class="modal fade" data-bs-backdrop='static' id="editDetailsModal" tabindex="-1" aria-labelledby="editDetailsModalLabel"
         aria-hidden="true" #editDetailsModal>
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -196,7 +196,7 @@
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer  d-flex justify-content-between">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary" [disabled]="editForm.invalid" (click)="saveDetail()">
                         Save Changes
@@ -208,7 +208,7 @@
 
 
     <!-- Activity Modal -->
-    <div class="modal fade" id="activityModal" tabindex="-1" aria-labelledby="activityModalLabel" aria-hidden="true"
+    <div class="modal fade" data-bs-backdrop='static' id="activityModal" tabindex="-1" aria-labelledby="activityModalLabel" aria-hidden="true"
         #activityModal>
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -361,7 +361,7 @@
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer  d-flex justify-content-between">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary" (click)="saveActivity()">
                         {{ isEditMode ? 'Save Changes' : 'Add Activity' }}

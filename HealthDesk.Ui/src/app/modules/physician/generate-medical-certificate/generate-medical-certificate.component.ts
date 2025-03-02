@@ -42,26 +42,58 @@ export class GenerateMedicalCertificateComponent implements OnInit {
   }
 
   initializeForm(): void {
+    const today = new Date().toISOString().split('T')[0];
     this.medicalForm = this.fb.group({
-      name: [this.patientRecord?.name || '', [Validators.required, Validators.maxLength(25)]],
+      name: [this.patientRecord?.firstName + ' ' + this.patientRecord?.middleName + ' ' + this.patientRecord?.lastName || '', [Validators.required, Validators.maxLength(25)]],
       age: [this.calculateAge(this.patientRecord?.dateOfBirth) || '0', [Validators.required]],
       diagnosis: ['', [Validators.required, Validators.maxLength(200)]],
-      treatmentFrom: ['', Validators.required],
+      treatmentFrom: ['', [this.futureDateValidator, Validators.required]],
       treatmentTo: ['', Validators.required],
       daysRest: [null, [Validators.min(0)]],
       restFromDate: ['', Validators.required],
-      anotherDays: [null, Validators.required],
       fitToResumeFrom: ['', Validators.required],
       identificationMark: ['', [Validators.maxLength(100)]],
-      date: ['', Validators.required]
+      date: [today, Validators.required]
     }, {
       validators: [
         this.dateRangeValidator('treatmentFrom', 'treatmentTo'),
-        this.dateRangeValidator('treatmentTo', 'restFromDate'),
-        this.dateRangeValidator('restFromDate', 'fitToResumeFrom')
+        this.dateRangeValidator('treatmentFrom', 'restFromDate'),
+        this.fitToResumeValidator('restFromDate', 'daysRest', 'fitToResumeFrom')
       ]
     });
   }
+
+  fitToResumeValidator(restFrom: string, daysRest: string, fitToResumeFrom: string) {
+    return (formGroup: FormGroup) => {
+      const restFromControl = formGroup.controls[restFrom];
+      const daysRestControl = formGroup.controls[daysRest];
+      const fitToResumeFromControl = formGroup.controls[fitToResumeFrom];
+
+      if (!restFromControl.value || !daysRestControl.value || !fitToResumeFromControl.value) {
+        return;
+      }
+
+      const restFromDate = new Date(restFromControl.value);
+      const totalRestDays = parseInt(daysRestControl.value, 10);
+      const expectedResumeDate = new Date(restFromDate);
+      expectedResumeDate.setDate(expectedResumeDate.getDate() + totalRestDays); // Add rest days
+
+      if (new Date(fitToResumeFromControl.value) < expectedResumeDate) {
+        fitToResumeFromControl.setErrors({ invalidResumeDate: true });
+      } else {
+        fitToResumeFromControl.setErrors(null);
+      }
+    };
+  }
+
+  futureDateValidator(control: any): { [key: string]: boolean } | null {
+    const currentDate = new Date();
+    if (new Date(control.value) > currentDate) {
+      return { futureDate: true };
+    }
+    return null;
+  }
+
 
   calculateAge(dateOfBirth: string): number {
     const dob = new Date(dateOfBirth);
@@ -95,14 +127,14 @@ export class GenerateMedicalCertificateComponent implements OnInit {
     if (this.medicalForm.invalid) {
       return;
     }
-  
+
     const doc = new jsPDF();
     const margin = 10; // Left and right margin
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const contentWidth = pageWidth - margin; // Available width for text
     let currentY = 30; // Initial Y position
-  
+
     // Format date to dd/mm/yyyy
     const formatDate = (date: string): string => {
       if (!date) return '';
@@ -112,13 +144,13 @@ export class GenerateMedicalCertificateComponent implements OnInit {
       const year = d.getFullYear();
       return `${day}/${month}/${year}`;
     };
-  
+
     // Wrap text and move to the next line if necessary
     const wrapText = (text: string, x: number, y: number): number => {
       const lines = doc.splitTextToSize(text, 150); // Split text within contentWidth
       doc.setFont('helvetica', 'bold'); // Set bold font
-    
-      lines.forEach((line:string) => {
+
+      lines.forEach((line: string) => {
         // Render each line and underline it
         doc.text(line, x, y);
         const textWidth = doc.getTextWidth(line); // Calculate line width
@@ -126,11 +158,11 @@ export class GenerateMedicalCertificateComponent implements OnInit {
         doc.line(x, y + lineHeight, x + textWidth, y + lineHeight); // Underline
         y += 6; // Increment Y position (line height = 6)
       });
-    
+
       doc.setFont('helvetica', 'normal'); // Reset to normal font after rendering
       return y; // Return updated Y position
     };
-  
+
     // Underline and bold specific text
     const underlineBoldText = (text: string, x: number, y: number): void => {
       doc.setFont('helvetica', 'bold');
@@ -140,34 +172,34 @@ export class GenerateMedicalCertificateComponent implements OnInit {
       doc.line(x, y + lineHeight, x + textWidth, y + lineHeight);
       doc.setFont('helvetica', 'normal'); // Reset to normal font
     };
-  
+
     doc.setFontSize(12);
-  
+
     // Title
     doc.setFont('helvetica', 'bold');
     doc.text('MEDICAL CERTIFICATE', pageWidth / 2, currentY, { align: 'center' });
     doc.setFont('helvetica', 'normal');
     currentY += 10;
-  
+
     // Date
     const formattedDate = formatDate(this.medicalForm.value.date);
     doc.text(`Date:`, margin, currentY);
     underlineBoldText(formattedDate, margin + 20, currentY);
     currentY += 10;
-  
+
     // Patient Details
     doc.text(`Patient:`, margin, currentY);
     underlineBoldText(this.medicalForm.value.name, margin + 20, currentY);
     currentY += 10;
-  
+
     // Age and Diagnosis
     doc.text(`Age:`, margin, currentY);
     underlineBoldText(`${this.medicalForm.value.age} Yrs.`, margin + 20, currentY);
     currentY += 10;
-  
+
     doc.text(`Diagnosis:`, margin, currentY);
     currentY = wrapText(this.medicalForm.value.diagnosis, margin + 20, currentY);
-  
+
     // Treatment Period
     currentY += 10;
     const treatmentFrom = formatDate(this.medicalForm.value.treatmentFrom);
@@ -175,29 +207,29 @@ export class GenerateMedicalCertificateComponent implements OnInit {
     doc.text(`Was treated as an O.P.D. Patient from:`, margin, currentY);
     underlineBoldText(`${treatmentFrom} To: ${treatmentTo}.`, margin + 75, currentY);
     currentY += 10;
-  
+
     // Rest Period
     const restFromDate = formatDate(this.medicalForm.value.restFromDate);
     doc.text(`He/She has been advised`, margin, currentY);
     underlineBoldText(`${this.medicalForm.value.daysRest} days rest from ${restFromDate}.`, margin + 50, currentY);
     currentY += 10;
-  
+
     // Fit to Resume
     const fitToResumeFrom = formatDate(this.medicalForm.value.fitToResumeFrom);
     doc.text(`He/She is fit to resume normal duties / light work from:`, margin, currentY);
     underlineBoldText(fitToResumeFrom, margin + 105, currentY);
     currentY += 10;
-  
+
     // Identification Mark
     doc.text(`Identification Mark:`, margin, currentY);
     currentY = wrapText(this.medicalForm.value.identificationMark, margin + 37, currentY);
-  
+
     // Check if there's enough space for signature boxes
     if (currentY + 40 > pageHeight) {
       doc.addPage();
       currentY = margin; // Reset Y position for new page
     }
-  
+
     // Signature and stamp boxes
     const boxHeight = 30;
     doc.setLineWidth(0.5);
@@ -205,7 +237,7 @@ export class GenerateMedicalCertificateComponent implements OnInit {
     doc.rect(pageWidth / 2 + margin / 2, currentY + 10, contentWidth / 2 - margin / 2, boxHeight); // Doctor's Signature Box
     doc.text(`Patient's Signature`, margin + 2, currentY + 20);
     doc.text(`Doctor's Signature`, pageWidth / 2 + margin + 2, currentY + 20);
-  
+
     // Add header image
     try {
       if (this.headerImg) {
@@ -214,7 +246,7 @@ export class GenerateMedicalCertificateComponent implements OnInit {
     } catch (error) {
       console.error('Error adding header image:', error);
     }
-  
+
     // Add footer image
     try {
       if (this.footerImg) {
@@ -230,13 +262,13 @@ export class GenerateMedicalCertificateComponent implements OnInit {
     } catch (error) {
       console.error('Error adding footer image:', error);
     }
-  
+
     // Open the PDF in a new window
     const pdfUrl = doc.output('bloburl');
     window.open(pdfUrl, '_blank');
   }
-  
-  
+
+
 
   fetchImageAsBase64(imageUrl: string): Promise<string> {
     return firstValueFrom(
@@ -251,8 +283,8 @@ export class GenerateMedicalCertificateComponent implements OnInit {
     });
   }
 
-    goBack() {
-      // Navigate back to the design prescription page
-      this.router.navigate(['/physician/patient-record']);
-    }
+  goBack() {
+    // Navigate back to the design prescription page
+    this.router.navigate(['/physician/patient-record']);
+  }
 }

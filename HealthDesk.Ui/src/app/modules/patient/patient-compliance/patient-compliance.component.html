@@ -63,7 +63,7 @@
 </div>
 
 <!-- Set Reminder Modal -->
-<div class="modal fade" id="reminderModal" tabindex="-1" aria-labelledby="reminderModalLabel" aria-hidden="true"
+<div class="modal fade" data-bs-backdrop='static' id="reminderModal" tabindex="-1" aria-labelledby="reminderModalLabel" aria-hidden="true"
     #reminderModal>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -122,7 +122,7 @@
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer  d-flex justify-content-between">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary" (click)="saveReminder()">Save Reminder</button>
             </div>
@@ -131,7 +131,7 @@
 </div>
 
 <!-- Medicine Info Modal -->
-<div class="modal fade" id="medicineInfoModal" tabindex="-1" aria-labelledby="medicineInfoModalLabel" aria-hidden="true"
+<div class="modal fade" data-bs-backdrop='static' id="medicineInfoModal" tabindex="-1" aria-labelledby="medicineInfoModalLabel" aria-hidden="true"
     #medicineInfoModal>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -166,7 +166,7 @@
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer  d-flex justify-content-between">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary" (click)="saveMedicineInfo()">Save Info</button>
             </div>
@@ -175,7 +175,7 @@
 </div>
 
 <!-- View Compliance Report Modal -->
-<div class="modal fade" id="complianceReportModal" tabindex="-1" aria-labelledby="complianceReportModalLabel"
+<div class="modal fade" data-bs-backdrop='static' id="complianceReportModal" tabindex="-1" aria-labelledby="complianceReportModalLabel"
     aria-hidden="true" #complianceReportModal>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -206,7 +206,7 @@
                     <p>No compliance records available.</p>
                 </ng-template>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer  d-flex justify-content-between">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
@@ -214,7 +214,7 @@
 </div>
 
 <!-- Pill Reminder Popup Modal -->
-<div class="modal fade" id="pillReminderPopupModal" tabindex="-1" aria-labelledby="pillReminderPopupModalLabel"
+<div class="modal fade" data-bs-backdrop='static' id="pillReminderPopupModal" tabindex="-1" aria-labelledby="pillReminderPopupModalLabel"
     aria-hidden="true" #pillReminderPopupModal>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -235,7 +235,7 @@
 </div>
 
 <!-- Reminder Confirmation Popup Modal -->
-<div class="modal fade" id="reminderPopupModal" tabindex="-1" aria-labelledby="reminderPopupModalLabel" aria-hidden="true" #reminderPopupModal>
+<div class="modal fade" data-bs-backdrop='static' id="reminderPopupModal" tabindex="-1" aria-labelledby="reminderPopupModalLabel" aria-hidden="true" #reminderPopupModal>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">

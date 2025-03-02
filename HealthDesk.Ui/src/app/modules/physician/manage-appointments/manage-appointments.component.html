@@ -173,7 +173,7 @@
           </div>
         </form>
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer  d-flex justify-content-between">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         <button type="button" class="btn btn-primary" *ngIf="!isMultipleAction" (click)="saveProposedTime()">Save changes</button>
         <button type="button" class="btn btn-primary" *ngIf="isMultipleAction" (click)="confirmProposeNewTime()">Save changes</button>
@@ -199,7 +199,7 @@
           </mat-form-field>
         </form>
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer  d-flex justify-content-between">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         <button type="button" *ngIf="!isMultipleAction" class="btn btn-danger" (click)="confirmReject()">Reject</button>
         <button type="button" *ngIf="isMultipleAction" class="btn btn-danger" (click)="confirmRejectMultiple()">Reject</button>

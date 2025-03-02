@@ -132,7 +132,7 @@
 </div>
 
 <!-- Add/Edit Physician Modal -->
-<div class="modal fade" id="physicianModal" tabindex="-1" aria-labelledby="physicianModalLabel" aria-hidden="true">
+<div class="modal fade" data-bs-backdrop='static' id="physicianModal" tabindex="-1" aria-labelledby="physicianModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -190,7 +190,7 @@
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer  d-flex justify-content-between">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="savePhysician()">
                     {{ isEditPhysician ? 'Save Changes' : 'Add Physician' }}
@@ -201,7 +201,7 @@
 </div>
 <!-- Add/Edit Service Modal -->
 
-<div class="modal fade" id="serviceModal" tabindex="-1" aria-labelledby="serviceModalLabel" aria-hidden="true">
+<div class="modal fade" data-bs-backdrop='static' id="serviceModal" tabindex="-1" aria-labelledby="serviceModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">

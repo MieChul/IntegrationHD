@@ -76,7 +76,7 @@
 </div>
 
 <!-- Add/Edit Self Record Modal -->
-<div class="modal fade" id="selfRecordModal" data-bs-focus="false" tabindex="-1" aria-labelledby="selfRecordModalLabel" aria-hidden="true"
+<div class="modal fade" data-bs-backdrop='static' id="selfRecordModal" data-bs-focus="false" tabindex="-1" aria-labelledby="selfRecordModalLabel" aria-hidden="true"
   #selfRecordModal>
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -145,7 +145,7 @@
         </div>
         </form>
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer  d-flex justify-content-between">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         <button type="button" class="btn btn-primary" (click)="saveSelfRecord()">{{ isEditMode ? 'Save Changes' : 'Add
           Record' }}</button>

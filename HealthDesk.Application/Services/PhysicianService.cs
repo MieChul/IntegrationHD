@@ -195,7 +195,7 @@ public class PhysicianService : IPhysicianService
     public async Task DeletePatientAsync(string physicianId, string patientId)
     {
         var physician = await _physicianRepository.GetByIdAsync(physicianId);
-        physician.Patients.RemoveAll(p => p.Id == patientId);
+        RemoveIfNotExpired(physician.Patients, r => r.Id == patientId);
         await _physicianRepository.UpdateAsync(physician);
     }
 
@@ -268,7 +268,7 @@ public class PhysicianService : IPhysicianService
     public async Task DeleteMedicalCaseAsync(string physicianId, string caseId)
     {
         var physician = await _physicianRepository.GetByIdAsync(physicianId);
-        physician.MedicalCases.RemoveAll(mc => mc.Id == caseId);
+        RemoveIfNotExpired(physician.MedicalCases, r => r.Id == caseId);
         await _physicianRepository.UpdateAsync(physician);
     }
 
@@ -416,35 +416,70 @@ public class PhysicianService : IPhysicianService
         }).ToList();
     }
 
-    public async Task SaveProfilesAsync(string physicianId, List<ProfileDTO> profileDtos)
+    public async Task SaveProfilesAsync(string physicianId, ProfileDTO profileDto)
     {
         var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
         if (physician == null)
             throw new ArgumentException("Physician not found.");
 
-        // Clear all existing profiles
-        physician.Profiles.Clear();
+        // Ensure physician's profiles are loaded
+        if (physician.Profiles == null)
+            physician.Profiles = new List<Profile>();
 
-        // Add all profiles from DTO as new
-        foreach (var dto in profileDtos)
+        // Try to find an existing profile by ID
+        var existingProfile = physician.Profiles.FirstOrDefault(p => p.Id == profileDto.Id);
+
+        if (existingProfile != null)
         {
+            // Update profile name
+            existingProfile.Name = profileDto.Name;
+
+            // Convert incoming investigations to a HashSet for quick lookup
+            var incomingInvestigationNames = new HashSet<string>(profileDto.Investigations.Select(i => i.Name));
+
+            // Remove investigations that are no longer in the new list
+            existingProfile.Investigations.RemoveAll(inv => !incomingInvestigationNames.Contains(inv.Name));
+
+            // Add new investigations that don't exist in the profile
+            foreach (var dtoInvestigation in profileDto.Investigations)
+            {
+                if (!existingProfile.Investigations.Any(inv => inv.Name == dtoInvestigation.Name))
+                {
+                    existingProfile.Investigations.Add(new ProfileInvestigation
+                    {
+                        Name = dtoInvestigation.Name,
+                        ProfileId = existingProfile.Id
+                    });
+                }
+            }
+        }
+        else
+        {
+            // Create a new profile if it doesn't exist
             var newProfile = new Profile
             {
-                Id = ObjectId.GenerateNewId().ToString(),
-                Name = dto.Name,
-                Investigations = dto.Investigations.Select(inv => new ProfileInvestigation
+                Name = profileDto.Name,
+                Investigations = profileDto.Investigations.Select(inv => new ProfileInvestigation
                 {
-                    Id = ObjectId.GenerateNewId().ToString(),
-                    Name = inv.Name,
-                    ProfileId = null
+                    Name = inv.Name
                 }).ToList()
             };
+
             physician.Profiles.Add(newProfile);
         }
 
-        // Save the physician entity with updated profiles
+        // Save updates
         await _physicianRepository.UpdateAsync(physician);
     }
+
+    public async Task DeleteProfileAsync(string physicianId, string profileId)
+    {
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
+        RemoveIfNotExpired(physician.Profiles, r => r.Id == profileId);
+        await _physicianRepository.UpdateAsync(physician);
+    }
+
+
 
     public async Task<int> GetPrescriptionCountAsync(string physicianId, string patientId)
     {
@@ -576,7 +611,7 @@ public class PhysicianService : IPhysicianService
         var patientEntity = await _patientRepository.GetByDynamicPropertyAsync("UserId", patientId);
         if (patientEntity == null)
         {
-          throw new ArgumentException("Patient not found.");
+            throw new ArgumentException("Patient not found.");
         }
 
         // Map each collection individually using the GenericMapper.
@@ -617,7 +652,8 @@ public class PhysicianService : IPhysicianService
             Symptoms = symptomsDto
         };
 
-        return historyDto ;
+        return historyDto;
 
     }
+
 }

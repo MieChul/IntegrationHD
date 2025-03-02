@@ -39,7 +39,7 @@ export class RegisterComponent implements OnInit {
       role: [{ value: this.selectedRole, disabled: true }],
       mobile: [{ value: this.prefilledMobile, disabled: true }],
       email: [{ value: this.prefilledEmail, disabled: true }],
-      username: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9.@]{5,15}$/)]],
+      username: ['', [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z0-9@_ .'’-]{3,25}$/)]],
       password: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9_@.$&*-]{6,}$/)]],
       confirmPassword: ['', Validators.required]
     });

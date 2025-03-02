@@ -337,13 +337,20 @@ namespace HealthDesk.API.Controllers
         }
 
         [HttpPost("{physicianId}/profiles")]
-        public async Task<IActionResult> SaveProfiles(string physicianId, [FromBody] List<ProfileDTO> profileDtos)
+        public async Task<IActionResult> SaveProfiles(string physicianId, [FromBody] ProfileDTO profileDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new { Success = false, Message = "Invalid data provided.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
 
-            await _physicianService.SaveProfilesAsync(physicianId, profileDtos);
+            await _physicianService.SaveProfilesAsync(physicianId, profileDto);
             return Ok(new { Success = true, Message = "Profiles saved successfully." });
+        }
+
+        [HttpDelete("{id}/profiles/{profileId}")]
+        public async Task<IActionResult> DeleteProfile(string id, string profileId)
+        {
+            await _physicianService.DeleteProfileAsync(id, profileId);
+            return Ok(new { Success = true, Message = "Profile deleted successfully." });
         }
 
         [HttpGet("{physicianId}/clinic-slots")]

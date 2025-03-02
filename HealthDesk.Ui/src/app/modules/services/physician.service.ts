@@ -100,6 +100,10 @@ export class PhysicianService {
     return this.http.post<any>(`${this.apiUrl}/${physicianId}/profiles`, profiles);
   }
 
+  deleteProfile(id: string, profileId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}/profiles/${profileId}`);
+  }
+
   uploadPrescription(data: { pdfBlob: Blob; patientId: string; illness: string; physicianId: string }): Observable<any> {
     // Convert Blob to Base64
     return new Observable((observer) => {

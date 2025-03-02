@@ -33,7 +33,7 @@
     </div>
   
     <!-- Share Modal -->
-    <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true" #shareModal>
+    <div class="modal fade" data-bs-backdrop='static' id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true" #shareModal>
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
@@ -44,7 +44,7 @@
             <p>Copy the link below to share this case:</p>
             <input type="text" class="form-control" [value]="shareLink" readonly>
           </div>
-          <div class="modal-footer">
+          <div class="modal-footer  d-flex justify-content-between">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
         </div>

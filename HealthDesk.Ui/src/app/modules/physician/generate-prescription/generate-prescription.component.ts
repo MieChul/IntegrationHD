@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { AccountService } from '../../services/account.service';
 import { PhysicianService } from '../../services/physician.service';
-import { catchError, firstValueFrom, from, of } from 'rxjs';
+import { catchError, firstValueFrom, from, map, Observable, of, startWith } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { DatabaseService } from '../../../shared/services/database.service';
 
@@ -26,18 +26,33 @@ export class GeneratePrescriptionComponent implements OnInit {
   customInvestigations: { name: string }[] = [];
   finalInvestigations!: FormArray;
   selectedProfilesControl = new FormControl([]);
-  dosageForms: string[] = [];
-  drugNames: string[] = [];
+
+  forms: string[] = [];
+  drugs: string[] = [];
   strengths: string[] = [];
-  times: string[] = [];
+  frequencies: string[] = [];
   durations: string[] = [];
-  systemsDd: string[] = [];
-  investigationdd: string[] = [];
+  bodySystems: string[] = [];
+  investigations: string[] = [];
+  filteredFroms!: Observable<string[]>;
+  filteredDrugs!: Observable<string[]>;
+  filteredStrengths!: Observable<string[]>;
+  filteredFrequencies!: Observable<string[]>;
+  filteredDurations!: Observable<string[]>;
+  filteredBodySystems!: Observable<string[]>;
+  filteredInvestigations!: Observable<string[]>;
+  fromFilterCtrl = new FormControl();
+  drugFilterCtrl = new FormControl();
+  strengthFilterCtrl = new FormControl();
+  frequencyFilterCtrl = new FormControl();
+  durationFilterCtrl = new FormControl();
+  systemFilterCtrl = new FormControl();
+  investigationFilterCtrl = new FormControl();
+
   signature: string | ArrayBuffer | null = null;
   stamp: string | ArrayBuffer | null = null;
   selectedProfile: string = '';
   profiles: any = [];
-  investigations: string[] = [];
   currentTabIndex = 0;
   prescriptionForm: FormGroup = new FormGroup({});
   patientRecord: any;
@@ -59,14 +74,12 @@ export class GeneratePrescriptionComponent implements OnInit {
           next: async (response: any) => {
             this.headerImg = await this.fetchImageAsBase64(response.data.header);
             this.footerImg = await this.fetchImageAsBase64(response.data.footer);
-            //this.dosageForms = await this.databaseService.getForms();
-            this.drugNames = await this.databaseService.getDrugs();
-            //this.strengths = await this.databaseService.getStrengths();
-            this.times = await this.databaseService.getFrequencies();
+            this.drugs = await this.databaseService.getDrugs();
+            this.frequencies = await this.databaseService.getFrequencies();
             this.durations = await this.databaseService.getDurations();
-            this.systemsDd = await this.databaseService.getSystems();
-            this.investigationdd = await this.databaseService.getInvestigations();
+            this.bodySystems = await this.databaseService.getSystems();
             await this.loadProfiles();
+            await this.initializeSearch();
           },
           error: (err) => console.error('Error fetching header/footer:', err),
         });
@@ -77,7 +90,7 @@ export class GeneratePrescriptionComponent implements OnInit {
 
   initializeForm(): void {
     this.prescriptionForm = this.fb.group({
-      name: [this.patientRecord?.name || ''],
+      name: [this.patientRecord?.firstName + ' ' + this.patientRecord?.middleName + ' ' + this.patientRecord?.lastName || ''],
       age: [this.calculateAge(this.patientRecord?.dateOfBirth) || '0'],
       gender: [this.patientRecord?.gender || ''],
       pastHistory: [''],
@@ -98,6 +111,51 @@ export class GeneratePrescriptionComponent implements OnInit {
       finalInvestigations: this.fb.array([])
     });
   }
+
+  initializeSearch(): void {
+    this.filteredBodySystems = this.systemFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.bodySystems))
+    );
+
+    this.filteredDrugs = this.drugFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.drugs))
+    );
+
+    this.filteredDurations = this.durationFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.durations))
+    );
+
+    this.filteredFroms = this.fromFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.forms))
+    );
+
+    this.filteredFrequencies = this.frequencyFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.frequencies))
+    );
+
+    this.filteredStrengths = this.strengthFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.strengths))
+    );
+
+    this.filteredInvestigations = this.investigationFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.profiles))
+    );
+
+  }
+
+  filterOptions(search: string, options: string[]): string[] {
+    const filterValue = search.toLowerCase();
+    return options.filter(option => option.toLowerCase().includes(filterValue));
+  }
+
+
 
   createComplaint(): FormGroup {
     return this.fb.group({
@@ -636,6 +694,22 @@ export class GeneratePrescriptionComponent implements OnInit {
       .map((control) => control.value.name)
       .filter((name) => !profileInvestigationNames.has(name))
       .map((name) => ({ name }));
+  }
+
+  async onDrugChange(selectedDrug: string, row: number) {
+    this.forms = [];
+    this.strengths = [];
+    if (selectedDrug) {
+      this.forms = await this.databaseService.getForms(selectedDrug);
+    }
+  }
+
+  async onDosageFormChange(selectedDrug: string, selectedDosageForm: string, row: number) {
+    // Fetch new strength units
+    this.strengths = [];
+    if (selectedDrug && selectedDosageForm) {
+      this.strengths = await this.databaseService.getStrengths(selectedDrug, selectedDosageForm);
+    }
   }
 
 }

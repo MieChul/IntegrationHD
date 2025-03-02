@@ -76,7 +76,7 @@
 </div>
 
 <!-- Add/Edit Immunization Modal -->
-<div class="modal fade" data-bs-focus="false" id="immunizationModal" tabindex="-1"
+<div class="modal fade" data-bs-backdrop='static' data-bs-focus="false" id="immunizationModal" tabindex="-1"
     aria-labelledby="immunizationModalLabel" aria-hidden="true" #immunizationModal>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -185,7 +185,7 @@
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer  d-flex justify-content-between">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary" (click)="saveImmunization()">{{ isEditMode ? 'Save
                     Changes' : 'Add Immunization' }}</button>

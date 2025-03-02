@@ -148,7 +148,7 @@
   </div>
 
   <!-- Review Modal -->
-  <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true"
+  <div class="modal fade" data-bs-backdrop='static' id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true"
     #reviewModal>
     <div class="modal-dialog">
       <div class="modal-content">
@@ -201,7 +201,7 @@
             </div>
           </form>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer  d-flex justify-content-between">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="submitReview()">Submit
             Review</button>

@@ -75,7 +75,7 @@
 </div>
 
 <!-- Add/Edit Lab Data Modal -->
-<div class="modal fade" data-bs-focus="false" id="labDataModal" tabindex="-1" aria-labelledby="labDataModalLabel"
+<div class="modal fade" data-bs-backdrop='static' data-bs-focus="false" id="labDataModal" tabindex="-1" aria-labelledby="labDataModalLabel"
     aria-hidden="true" #labDataModal>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -184,7 +184,7 @@
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer  d-flex justify-content-between">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary" (click)="saveLabData()">{{ isEditMode ? 'Save Changes' :
                     'Add Lab Data' }}</button>

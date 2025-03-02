@@ -100,7 +100,7 @@ export class CustomizePrescriptionComponent implements OnInit {
       clinicName: [''],
       clinicNameFontType: ['Arial'],
       clinicNameFontSize: ['medium'],
-      clinicNameFontColor:[new Color(0, 0, 0)],
+      clinicNameFontColor: [new Color(0, 0, 0)],
       clinicAddress: [
         '',
         [Validators.required, Validators.maxLength(100)],
@@ -160,7 +160,7 @@ export class CustomizePrescriptionComponent implements OnInit {
   populateForm(prescription: any): void {
     if (!prescription) return;
 
-    this.logoPreviewUrl= prescription.logoUrl;
+    this.logoPreviewUrl = prescription.logoUrl;
     this.prescriptionForm.patchValue({
       id: prescription.id,
       templateId: prescription.templateId,
@@ -221,7 +221,7 @@ export class CustomizePrescriptionComponent implements OnInit {
 
     this.prescriptionForm.patchValue({
       clinicAddress: `${clinic.flatNumber}, ${clinic.building}, ${clinic.area}, ${clinic.city}, ${clinic.state}, ${clinic.pinCode}`,
-      clinicTimings: `${clinic.fromTiming} - ${clinic.toTiming} (${clinic.days.join(', ')})`,
+      clinicTimings: `${clinic.clinicSlots.map((slot:any) => `${slot.name}: ${slot.timingFrom} to ${slot.timingTo}`).join(', ')} | Days: ${clinic.days.join(', ')}`
     });
   }
 
@@ -244,7 +244,7 @@ export class CustomizePrescriptionComponent implements OnInit {
     }
 
     if (errors.length > 0) {
- 
+
       return;
     }
 

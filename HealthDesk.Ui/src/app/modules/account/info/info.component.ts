@@ -306,7 +306,7 @@ export class InfoComponent {
     const nameValidator = Validators.pattern(/^[a-zA-Z][a-zA-Z .'’-]{1,25}$/);
     // Define control and validation map
     const validationMap: { [key: string]: any } = {
-      username: isPatientOrPhysician ? [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z0-9@_ .'’-]{1,25}$/)] : [],
+      username: isPatientOrPhysician ? [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z0-9@_ .'’-]{3,25}$/)] : [],
       displayName: isPatientOrPhysician ? [Validators.required, nameValidator] : [],
       firstName: isPatientOrPhysician ? [Validators.required, nameValidator, Validators.minLength(2)] : [],
       lastName: isPatientOrPhysician ? [Validators.required, nameValidator] : [],

@@ -34,9 +34,10 @@ public interface IPhysicianService
     Task<dynamic> GetPatientByMobileAsync(string id, string mobile);
     Task<dynamic> GetDefaultPrescriptionHeaderFooter(string physicianId);
     Task<List<ProfileDTO>> GetProfilesAsync(string physicianId);
-    Task SaveProfilesAsync(string physicianId, List<ProfileDTO> profileDtos);
+    Task SaveProfilesAsync(string physicianId, ProfileDTO profileDto);
     Task<int> GetPrescriptionCountAsync(string physicianId, string patientId);
     Task<string> GetLatestPrescriptionAsync(string physicianId, string patientId);
     Task<dynamic> GetClinicSlotsAsync(string physicianId, string clinicId, DateTime date);
     Task SaveMultipleAppointment(string status, DateTime? date, string? time, string? reason, List<AppointmentDto> dtos);
+    Task DeleteProfileAsync(string physicianId, string profileId);
 }

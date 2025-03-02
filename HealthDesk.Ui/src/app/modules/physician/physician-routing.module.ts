@@ -21,6 +21,7 @@ import { SelectTemplateComponent } from './select-template/select-template.compo
 import { ManageClinicComponent } from './manage-clinic/manage-clinic.component';
 import { ViewPatientPrescriptionsComponent } from './view-patient-prescriptions/view-patient-prescriptions.component';
 import { ViewPatientHistoryComponent } from './view-patient-history/view-patient-history.component';
+import { LabProfileComponent } from './lab-profile/lab-profile.component';
 
 const routes: Routes = [{
   path: '', component: PhysicianComponent,
@@ -44,7 +45,8 @@ const routes: Routes = [{
     { path: 'select-template', component: SelectTemplateComponent },
     { path: 'manage-clinic', component: ManageClinicComponent },
     { path: 'view-patient-history/:patientId', component: ViewPatientHistoryComponent },
-    { path: 'view-patient-prescription/:physicianId/:patientId', component: ViewPatientPrescriptionsComponent }
+    { path: 'view-patient-prescription/:physicianId/:patientId', component: ViewPatientPrescriptionsComponent },
+    { path: 'lab-profile', component: LabProfileComponent },
   ]
 }
 ];

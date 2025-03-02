@@ -69,7 +69,7 @@ export class VerifyForgotPasswordComponent implements OnInit, OnDestroy {
         this.userService.getUsername(contactInfo).pipe(
           switchMap((response) => {
             // The first API call succeeded, proceed with the second call
-            return this.otpService.sendOtp(contactInfo, isEmail);
+            return this.otpService.sendOtpMessage(contactInfo, isEmail);
           })
         ).subscribe({
           next: (otpResponse) => {

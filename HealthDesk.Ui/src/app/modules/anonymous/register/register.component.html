@@ -29,7 +29,7 @@
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Username</mat-label>
           <input matInput formControlName="username" placeholder="Enter username" (keydown.enter)="onEnterKey()">
-          <button mat-icon-button matSuffix matTooltip="A lphanumeric bweteen 5 to 15 characters long and symbols (. @) allowed. ">
+          <button mat-icon-button matSuffix matTooltip="Alphanumeric bweteen 3 to 25 characters long and symbols (@_ .'’-) and space allowed. ">
             <mat-icon>info</mat-icon>
           </button>
           <mat-error *ngIf="getControl('username')?.invalid && getControl('username')?.touched">
