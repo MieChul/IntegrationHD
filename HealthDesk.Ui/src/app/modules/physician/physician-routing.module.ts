@@ -19,6 +19,8 @@ import { AddProfileComponent } from './add-profile/add-profile.component';
 import { CustomizePrescriptionComponent } from './customize-prescription/customize-prescription.component';
 import { SelectTemplateComponent } from './select-template/select-template.component';
 import { ManageClinicComponent } from './manage-clinic/manage-clinic.component';
+import { ViewPatientPrescriptionsComponent } from './view-patient-prescriptions/view-patient-prescriptions.component';
+import { ViewPatientHistoryComponent } from './view-patient-history/view-patient-history.component';
 
 const routes: Routes = [{
   path: '', component: PhysicianComponent,
@@ -40,7 +42,9 @@ const routes: Routes = [{
     { path: 'add-profile', component: AddProfileComponent },
     { path: 'customize-prescription', component: CustomizePrescriptionComponent },
     { path: 'select-template', component: SelectTemplateComponent },
-    { path: 'manage-clinic', component: ManageClinicComponent }
+    { path: 'manage-clinic', component: ManageClinicComponent },
+    { path: 'view-patient-history/:patientId', component: ViewPatientHistoryComponent },
+    { path: 'view-patient-prescription/:physicianId/:patientId', component: ViewPatientPrescriptionsComponent }
   ]
 }
 ];

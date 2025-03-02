@@ -64,12 +64,12 @@ export class PhysicianService {
     return this.http.get<any[]>(`${this.apiUrl}/${id}/header-footer`);
   }
 
-  getPrescriptions(physicianId: string, patientId: string, getAll: boolean): Observable<any[]> {
+  getPrescriptions(physicianId: string, patientId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${physicianId}/prescriptions/${patientId}`);
   }
 
-  getLatestPrescription(physicianId: string, patientId: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${physicianId}/latest-prescription/${patientId}`);
+  getPatientHistory(patientId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/history/${patientId}`);
   }
 
   addPrescription(physicianId: string, prescription: any): Observable<any> {

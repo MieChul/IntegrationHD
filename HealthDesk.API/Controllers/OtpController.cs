@@ -39,6 +39,26 @@ public class OtpController : ControllerBase
         return Ok(new { OtpToken = otpToken });
     }
 
+    [HttpPost("sendOtp")]
+
+    public async Task<IActionResult> SendOtpMessage([FromBody] SendOtpRequest request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var prop = request.IsEmail ? "email" : "mobile";
+        var otp = _otpService.GenerateOtp();
+        var otpToken = _otpService.GenerateOtpToken(otp, request.Contact);
+
+        // Send OTP via messaging service
+        _otpService.SendNotification(request.Contact, $"Your OTP is {otp}. It will expire in 5 minutes.", "Your OTP Code");
+
+        return Ok(new { OtpToken = otpToken });
+    }
+
+
     [HttpPost("verify")]
     public IActionResult VerifyOtp([FromBody] VerifyOtpRequest request)
     {

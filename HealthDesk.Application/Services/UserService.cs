@@ -60,6 +60,16 @@ public class UserService : IUserService
         GenericMapper.Map<UserRegistrationDto, User>(userDto, user);
         user.Roles = new List<UserRole>();
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userDto.Password);
+        if (!string.IsNullOrEmpty(userDto.FirstName))
+            user.FirstName = userDto.FirstName;
+        if (!string.IsNullOrEmpty(userDto.LastName))
+            user.LastName = userDto.LastName;
+        if (!string.IsNullOrEmpty(userDto.MiddleName))
+            user.MiddleName = userDto.MiddleName;
+        if (!string.IsNullOrEmpty(userDto.Gender))
+            user.Gender = userDto.Gender;
+        if (!string.IsNullOrEmpty(userDto.FirstName))
+            user.BirthDate = Convert.ToString(userDto.DOB);
 
         // Step 2: Create a role-specific entry
         var role = (Role)userDto.RoleId;

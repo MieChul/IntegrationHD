@@ -18,14 +18,17 @@ public class PhysicianService : IPhysicianService
     private readonly IUserService _userService;
     private readonly IPatientService _patientService;
 
+    private readonly IPatientRepository _patientRepository;
+
     private readonly Random _random = new Random();
-    public PhysicianService(IPhysicianRepository physicianRepository, IMessageService messageService, IUserRepository userRepository, IUserService userService, IPatientService patientService)
+    public PhysicianService(IPhysicianRepository physicianRepository, IMessageService messageService, IUserRepository userRepository, IUserService userService, IPatientService patientService, IPatientRepository patientRepository)
     {
         _physicianRepository = physicianRepository;
         _messageService = messageService;
         _userRepository = userRepository;
         _userService = userService;
         _patientService = patientService;
+        _patientRepository = patientRepository;
     }
 
     public async Task AddOrUpdateClinicAsync(string physicianId, PhysicianClinicDto clinicDto)
@@ -150,12 +153,18 @@ public class PhysicianService : IPhysicianService
         var existingUser = await GetPatientByMobileAsync(physicianId, dto.Mobile);
         if (existingUser == null)
         {
+            var patients = await _patientRepository.GetAllAsync();
             var user = new UserRegistrationDto
             {
-                Username = dto.Name,
+                Username = dto.FirstName + '_' + dto.LastName + '_' + (patients.Count() + 1),
                 RoleId = 2,
                 Password = GenerateRandomString(),
-                Mobile = dto.Mobile
+                Mobile = dto.Mobile,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                MiddleName = dto.MiddleName,
+                Gender = dto.Gender,
+                DOB = dto.DateOfBirth
             };
             var id = await _userService.Register(user);
             dto.UserId = id;
@@ -190,11 +199,22 @@ public class PhysicianService : IPhysicianService
         await _physicianRepository.UpdateAsync(physician);
     }
 
-    public async Task<IEnumerable<PrescriptionDto>> GetPrescriptionsAsync(string physicianId, string patientId)
+    public async Task<IEnumerable<PrescriptionDto>> GetPrescriptionsAsync(string? physicianId, string patientId, bool getAll = false)
     {
-        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
-        var patient = physician.Patients.FirstOrDefault(p => p.UserId == patientId);
-        return patient?.Prescriptions.Select(p => GenericMapper.Map<Prescription, PrescriptionDto>(p));
+        if (getAll)
+        {
+            var physician = await _physicianRepository.GetAllAsync();
+            var patients = physician.SelectMany(p => p.Patients).Where(x => x.UserId == patientId);
+            var prescriptions = patients.SelectMany(pt => pt.Prescriptions);
+            return prescriptions.Select(p => GenericMapper.Map<Prescription, PrescriptionDto>(p));
+        }
+        else
+        {
+            var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
+            var patient = physician.Patients.FirstOrDefault(p => p.UserId == patientId);
+            return patient?.Prescriptions.Select(p => GenericMapper.Map<Prescription, PrescriptionDto>(p));
+
+        }
     }
 
     public async Task<string> GetLatestPrescriptionAsync(string physicianId, string patientId)
@@ -343,7 +363,9 @@ public class PhysicianService : IPhysicianService
             return new
             {
                 UserId = user.Id,
-                Name = $"{user.FirstName} {user.LastName}",
+                FirstName = user.FirstName,
+                MiddleName = user.MiddleName,
+                LastName = user.LastName,
                 Gender = user.Gender,
                 DateOfBirth = user.BirthDate
             };
@@ -546,5 +568,56 @@ public class PhysicianService : IPhysicianService
         {
             throw new InvalidOperationException("Cannot remove item(s) as they were created more than 1 hour ago. Please contact admin.");
         }
+    }
+
+    public async Task<PatientHistoryDto> GetPatientHistoryAsync(string patientId)
+    {
+        // Retrieve the patient entity using patientId as the user id.
+        var patientEntity = await _patientRepository.GetByDynamicPropertyAsync("UserId", patientId);
+        if (patientEntity == null)
+        {
+          throw new ArgumentException("Patient not found.");
+        }
+
+        // Map each collection individually using the GenericMapper.
+        // (Assuming the patient entity has a property 'Prescriptions' matching PrescriptionDto.)
+        var prescriptions = await GetPrescriptionsAsync(null, patientId, true);
+        var prescriptionsDto = (prescriptions?
+                    .Select(p => GenericMapper.Map(p, new PrescriptionDto()))
+                    .ToList()) ?? new List<PrescriptionDto>();
+
+        var selfRecordsDto = patientEntity.SelfRecords?
+            .Select(sr => GenericMapper.Map(sr, new SelfRecordDto()))
+            .ToList() ?? new List<SelfRecordDto>();
+
+        var labInvestigationsDto = patientEntity.LabInvestigations?
+            .Select(li => GenericMapper.Map(li, new LabInvestigationDto()))
+            .ToList() ?? new List<LabInvestigationDto>();
+
+        var reportsDto = patientEntity.Reports?
+            .Select(r => GenericMapper.Map(r, new ReportDto()))
+            .ToList() ?? new List<ReportDto>();
+
+        var immunizationsDto = patientEntity.Immunizations?
+            .Select(i => GenericMapper.Map(i, new ImmunizationDto()))
+            .ToList() ?? new List<ImmunizationDto>();
+
+        var symptomsDto = patientEntity.Symptoms?
+            .Select(s => GenericMapper.Map(s, new SymptomDto()))
+            .ToList() ?? new List<SymptomDto>();
+
+        // Create the history DTO using the mapped collections.
+        var historyDto = new PatientHistoryDto
+        {
+            Prescriptions = prescriptionsDto,
+            SelfRecords = selfRecordsDto,
+            LabInvestigations = labInvestigationsDto,
+            Reports = reportsDto,
+            Immunizations = immunizationsDto,
+            Symptoms = symptomsDto
+        };
+
+        return historyDto ;
+
     }
 }

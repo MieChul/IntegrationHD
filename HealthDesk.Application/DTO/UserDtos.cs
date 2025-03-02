@@ -42,6 +42,11 @@ public class UserRegistrationDto
     public string? Email { get; set; } = string.Empty;
     public string Mobile { get; set; }
     public int RoleId { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string MiddleName { get; set; }
+    public DateTime DOB { get; set; }
+    public string Gender { get; set; }
 }
 
 public class UpdateRequestDto

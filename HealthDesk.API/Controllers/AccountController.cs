@@ -56,21 +56,10 @@ public class AccountController : ControllerBase
         // Use environment to determine the correct folder path
         string folderPath;
 
+
         // For production deployment
-      if (true)
-        {
-            // For local development
-            folderPath = Path.Combine(
-                @"D:\IntegrationHD\HealthDesk.Ui\src\assets",
-                "documents",
-                id
-            );
-        }
-        else
-        {
-            // For production deployment
-            folderPath = Path.Combine(_env.WebRootPath, "assets", "documents", id);
-        }
+        folderPath = Path.Combine(_env.WebRootPath, "assets", "documents", id);
+
 
         try
         {
@@ -114,7 +103,7 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> RefreshUserDetails(string id, [FromQuery] string role)
     {
         var user = await _accountService.RefreshUserDetails(id, role);
-        return Ok(new { role = role, username = user.Username, id = user.Id, profImage = user.ProfImage, status = user.Status, canswitch = user.CanSwitch, dependentId = user.DependentId, dependentName = user.DependentName, hasDependent = user.HasDependent, isMainApproved = user.IsMainApproved,  dateOfBirth = user.DateOfBirth, gender = user.Gender });
+        return Ok(new { role = role, username = user.Username, id = user.Id, profImage = user.ProfImage, status = user.Status, canswitch = user.CanSwitch, dependentId = user.DependentId, dependentName = user.DependentName, hasDependent = user.HasDependent, isMainApproved = user.IsMainApproved, dateOfBirth = user.DateOfBirth, gender = user.Gender });
     }
 
     [HttpPost("addDependent/{id}")]

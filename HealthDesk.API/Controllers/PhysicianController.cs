@@ -73,21 +73,8 @@ namespace HealthDesk.API.Controllers
                 var directoryPath = string.Empty;
 
                 // For production deployment
-                if (_env.IsDevelopment())
-                {
-                    // For local development
-                    directoryPath = Path.Combine(
-                        @"D:\IntegrationHD\HealthDesk.Ui\src\assets",
-                        "documents",
-                        id,
-                        "prescription"
-                    );
-                }
-                else
-                {
-                    // For production deployment
-                    directoryPath = Path.Combine(_env.WebRootPath, "assets", "documents", id, "prescription");
-                }
+                directoryPath = Path.Combine(_env.WebRootPath, "assets", "documents", id, "prescription");
+
 
 
                 Directory.CreateDirectory(directoryPath);
@@ -211,12 +198,13 @@ namespace HealthDesk.API.Controllers
             return Ok(new { Success = true, Message = "Prescriptions retrieved successfully.", Data = prescriptions });
         }
 
-        [HttpGet("{physicianId}/latest-prescription/{patientId}")]
-        public async Task<IActionResult> GetLatestPrescriptions(string physicianId, string patientId)
+        [HttpGet("history/{patientId}")]
+        public async Task<IActionResult> GetPatientHistory(string patientId)
         {
-            var prescription = await _physicianService.GetLatestPrescriptionAsync(physicianId, patientId);
-            return Ok(new { Success = true, Message = "Prescriptions retrieved successfully.", Data = prescription });
+            var prescriptions = await _physicianService.GetPatientHistoryAsync(patientId);
+            return Ok(new { Success = true, Message = "Prescriptions retrieved successfully.", Data = prescriptions });
         }
+
 
 
         [HttpPost("{physicianId}/prescriptions")]
@@ -240,22 +228,10 @@ namespace HealthDesk.API.Controllers
                 // Define the directory path
                 var directoryPath = string.Empty;
 
+
                 // For production deployment
-                if (_env.IsDevelopment())
-                {
-                    // For local development
-                    directoryPath = Path.Combine(
-                        @"D:\IntegrationHD\HealthDesk.Ui\src\assets",
-                        "documents",
-                        dto.PatientId,
-                        "prescription"
-                    );
-                }
-                else
-                {
-                    // For production deployment
-                    directoryPath = Path.Combine(_env.WebRootPath, "assets", "documents", dto.PatientId, "prescription");
-                }
+                directoryPath = Path.Combine(_env.WebRootPath, "assets", "documents", dto.PatientId, "prescription");
+
 
                 Directory.CreateDirectory(directoryPath);
 

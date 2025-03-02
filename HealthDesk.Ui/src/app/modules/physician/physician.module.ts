@@ -24,6 +24,8 @@ import { CustomizePrescriptionComponent } from './customize-prescription/customi
 import { SharedModule } from '../../shared/shared.module';
 import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
 import { ManageClinicComponent } from './manage-clinic/manage-clinic.component';
+import { ViewPatientHistoryComponent } from './view-patient-history/view-patient-history.component';
+import { ViewPatientPrescriptionsComponent } from './view-patient-prescriptions/view-patient-prescriptions.component';
 
 
 @NgModule({
@@ -47,7 +49,9 @@ import { ManageClinicComponent } from './manage-clinic/manage-clinic.component';
     ViewMedicalCaseComponent,
     ViewMedicalJournalComponent,
     ViewSurveyComponent,
-    ManageClinicComponent
+    ManageClinicComponent,
+    ViewPatientHistoryComponent,
+    ViewPatientPrescriptionsComponent
   ],
   imports: [
     SharedModule,

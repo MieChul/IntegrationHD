@@ -193,8 +193,12 @@ public class PatientRecord : BaseEntity
 {
     [BsonElement("user_id")]
     public string UserId { get; set; }
-    [BsonElement("name")]
-    public string Name { get; set; }
+    [BsonElement("first_name")]
+    public string FirstName { get; set; }
+    [BsonElement("last_name")]
+    public string LastName { get; set; }
+    [BsonElement("fmiddle_name")]
+    public string MiddleName { get; set; }
 
     [BsonElement("gender")]
     public string Gender { get; set; }

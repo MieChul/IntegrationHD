@@ -150,9 +150,25 @@ public class PatientRecordDto
 {
     public string? Id { get; set; }
     public string? UserId { get; set; }
-    public string Name { get; set; }
+
+    [Required(ErrorMessage = "First Name is required.")]
+    [StringLength(25, ErrorMessage = "First Name cannot exceed 25 characters.")]
+    public string FirstName { get; set; }
+
+    [StringLength(25, ErrorMessage = "Last Name cannot exceed 25 characters.")]
+    public string? MiddleName { get; set; }
+
+    [Required(ErrorMessage = "First Name is required.")]
+    [StringLength(25, ErrorMessage = "Middle Name cannot exceed 25 characters.")]
+    public string LastName { get; set; }
+
+    [Required(ErrorMessage = "Gender is required.")]
     public string Gender { get; set; }
+
+    [Required(ErrorMessage = "DOB is required.")]
     public DateTime DateOfBirth { get; set; }
+
+    [Required(ErrorMessage = "Mobile is required.")]
     public string Mobile { get; set; }
     public string? ABHAID { get; set; } = string.Empty;
     public string? SecondaryId { get; set; } = string.Empty;
@@ -167,6 +183,18 @@ public class PrescriptionDto
     public string? Illness { get; set; } = string.Empty;
     public string? PdfBase64 { get; set; } = string.Empty;
     public DateTime? DateOfDiagnosis { get; set; } = DateTime.Now;
+}
+
+
+public class PatientHistoryDto
+{
+    public List<PrescriptionDto> Prescriptions { get; set; }
+    public List<SelfRecordDto> SelfRecords { get; set; }
+    public List<LabInvestigationDto> LabInvestigations { get; set; }
+    public List<ReportDto> Reports { get; set; }
+    public List<ImmunizationDto> Immunizations { get; set; }
+    public List<SymptomDto> Symptoms { get; set; }
+
 }
 
 public class MedicalCaseDto

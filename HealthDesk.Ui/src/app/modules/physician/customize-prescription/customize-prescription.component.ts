@@ -9,6 +9,8 @@ import { AccountService } from '../../services/account.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { switchMap, tap, catchError, map } from 'rxjs/operators';
+import { Color } from '@angular-material-components/color-picker';
+
 
 @Component({
   selector: 'app-customize-prescription',
@@ -22,7 +24,9 @@ export class CustomizePrescriptionComponent implements OnInit {
   clinics: any[] = [];
   logoPreviewUrl: string | null = null;
   fonts = ['Arial', 'Courier New', 'Georgia', 'Times New Roman', 'Verdana'];
+  selectedColor: string = '#ffffff'; // Default color
   userData: any;
+  clinicPhoneFontColor: string = '#000000';
   constructor(private route: ActivatedRoute, private router: Router, private physicianService: PhysicianService, private accountService: AccountService,
     private fb: FormBuilder) { }
 
@@ -30,6 +34,11 @@ export class CustomizePrescriptionComponent implements OnInit {
     this.initializeForm();
     this.loadDataSequentially();
 
+  }
+
+  onColorChange(color: string): void {
+    this.selectedColor = color;
+    console.log('Selected Color:', color);
   }
 
   loadDataSequentially(): void {
@@ -91,21 +100,21 @@ export class CustomizePrescriptionComponent implements OnInit {
       clinicName: [''],
       clinicNameFontType: ['Arial'],
       clinicNameFontSize: ['medium'],
-      clinicNameFontColor: ['#000000'],
+      clinicNameFontColor:[new Color(0, 0, 0)],
       clinicAddress: [
         '',
         [Validators.required, Validators.maxLength(100)],
       ],
       clinicAddressFontType: ['Arial'],
       clinicAddressFontSize: ['medium'],
-      clinicAddressFontColor: ['#000000'],
+      clinicAddressFontColor: [new Color(0, 0, 0)],
       clinicPhone: [
         '',
         [Validators.required, Validators.pattern('^[6-9][0-9]{9}$')],
       ],
       clinicPhoneFontType: ['Arial'],
       clinicPhoneFontSize: ['medium'],
-      clinicPhoneFontColor: ['#000000'],
+      clinicPhoneFontColor: [new Color(0, 0, 0)],
       physicianName: [
         '',
         [
@@ -115,18 +124,18 @@ export class CustomizePrescriptionComponent implements OnInit {
       ],
       physicianNameFontType: ['Arial'],
       physicianNameFontSize: ['medium'],
-      physicianNameFontColor: ['#000000'],
+      physicianNameFontColor: [new Color(0, 0, 0)],
       clinicTimings: [
         '',
         [Validators.required, Validators.maxLength(50)],
       ],
       clinicTimingsFontType: ['Arial'],
       clinicTimingsFontSize: ['medium'],
-      clinicTimingsFontColor: ['#000000'],
+      clinicTimingsFontColor: [new Color(0, 0, 0)],
       mrcNumber: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9]+$/)]],
       mrcNumberFontType: ['Arial'],
       mrcNumberFontSize: ['medium'],
-      mrcNumberFontColor: ['#000000'],
+      mrcNumberFontColor: [new Color(0, 0, 0)],
       qualification: [
         '',
         [
@@ -136,11 +145,11 @@ export class CustomizePrescriptionComponent implements OnInit {
       ],
       qualificationFontType: ['Arial'],
       qualificationFontSize: ['medium'],
-      qualificationFontColor: ['#000000'],
+      qualificationFontColor: [new Color(0, 0, 0)],
       footerText: ['', [Validators.maxLength(200)]],
       footerTextFontType: ['Arial'],
       footerTextFontSize: ['medium'],
-      footerTextFontColor: ['#000000'],
+      footerTextFontColor: [new Color(0, 0, 0)],
       isDefault: [false],
       logoImage: [''],
       headerImage: [''],

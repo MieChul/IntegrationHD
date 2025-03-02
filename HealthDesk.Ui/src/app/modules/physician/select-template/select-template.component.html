@@ -7,8 +7,8 @@
         <button class="btn btn-secondary" (click)="goBack()" data-bs-toggle="tooltip" data-bs-placement="right" title="Back"><i class="bi bi-arrow-left"></i></button>
       </div>
     </div>
-    <div class="row mb-2" *ngFor="let template of templates">
-      <div class="col">
+    <div class="row mb-2">
+      <div class="col-md-6" *ngFor="let template of templates">
         <div class="template-card card pointer-cursor" (click)="selectTemplate(template.id)">
           <img [src]="template.imageUrl" class="card-img-top" alt="{{ template.name }}">
           <div class="card-body text-center">

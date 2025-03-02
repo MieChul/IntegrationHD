@@ -1,5 +1,5 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import * as bootstrap from 'bootstrap';
 import { Router } from '@angular/router';
 import { PhysicianService } from '../../services/physician.service';
@@ -15,9 +15,7 @@ import { OtpService } from '../../services/otp.service';
 export class ManagePatientComponent implements OnInit {
   patients: any[] = [];
   filteredPatients: any[] = [];
-  filteredPatientsHistory: any[] = [];
   patientForm!: FormGroup;
-  showHistory = false;
   showModel = false;
   searchValue = '';
   searchValueDate: any;
@@ -26,14 +24,12 @@ export class ManagePatientComponent implements OnInit {
   currentPatient: any;
   patientHistory: any[] = [];
   userData: any;
-  isOtpPopupVisible = false;
   isOtpSent = false;
   contactNumber: string = '';
   otpToken: string = '';
-  verifyOtpForm = this.fb.group({
-    otp: this.fb.array(new Array(6).fill('').map(() => this.fb.control('', Validators.required))),
-  });
+  verifyOtpForm !: FormGroup;
   patientForView: any;
+  isEditMode = false;
 
   constructor(
     private fb: FormBuilder,
@@ -46,7 +42,7 @@ export class ManagePatientComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForm();
-
+    this.initOtpForm();
 
     this.accountService.getUserData().subscribe({
       next: (data) => {
@@ -54,6 +50,13 @@ export class ManagePatientComponent implements OnInit {
         this.loadPatients();
       },
       error: (err) => console.error('Error fetching user data:', err)
+    });
+  }
+
+  initOtpForm(): void {
+    this.verifyOtpForm = this.fb.group({
+      contact: [{ value: '', disabled: true }], // Prefilled and disabled
+      otp: this.fb.array(new Array(6).fill('').map(() => new FormControl('', Validators.required)))
     });
   }
 
@@ -66,53 +69,17 @@ export class ManagePatientComponent implements OnInit {
     otpModal.show();
   }
 
-  sendOtp(): void {
-    if (!this.contactNumber) {
-      this.notificationService.showError('Please enter a valid mobile number.');
-      return;
-    }
-
-    this.otpService.sendOtp(this.contactNumber, false).subscribe({
-      next: (response) => {
-        this.notificationService.showSuccess('OTP Sent successfully.');
-        this.otpToken = response.otpToken; // Assuming the token is returned by the API
-        this.isOtpSent = true;
-      },
-      error: () => {
-        this.notificationService.showError('Failed to send OTP.');
-      },
-    });
-  }
-
-  resendOtp(): void {
-    this.sendOtp();
-  }
-
-  verifyOtp(): void {
-    const otp = this.otpControls.value.join('');
-    this.otpService.verifyOtp(this.contactNumber, otp, this.otpToken).subscribe({
-      next: (response) => {
-        if (response.valid) {
-          this.isOtpPopupVisible = false; // Close OTP modal
-          this.viewHistory(this.patientForView, true); // Fetch full history
-        } else {
-          this.notificationService.showError('Invalid OTP.');
-        }
-      },
-      error: () => {
-        this.notificationService.showError('OTP verification failed.');
-      },
-    });
-  }
 
   initForm(): void {
     this.patientForm = this.fb.group({
       id: [''],
       userId: [''],
       mobile: ['', [Validators.required, Validators.pattern(/^[789]\d{9}$/)]],
-      name: [{ value: '', disabled: true }, Validators.required],
+      firstName: [{ value: '', disabled: true }, [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z .'’-]{1,25}$/), Validators.minLength(2)]],
+      middleName: [{ value: '', disabled: true }, [Validators.pattern(/^[a-zA-Z][a-zA-Z .'’-]{1,25}$/)],],
+      lastName: [{ value: '', disabled: true }, [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z .'’-]{1,25}$/)]],
       gender: [{ value: '', disabled: true }, Validators.required],
-      dateOfBirth: [{ value: '', disabled: true }, Validators.required],
+      dateOfBirth: [Validators.required, (control: AbstractControl) => this.validateAge(control)],
       abhaid: ['', Validators.pattern(/^[a-zA-Z0-9]*$/)], // Optional with pattern validation
       secondaryId: ['', Validators.pattern(/^[a-zA-Z0-9]*$/)], // Optional with pattern validation
     });
@@ -143,19 +110,6 @@ export class ManagePatientComponent implements OnInit {
     });
   }
 
-  searchPatientHistory(): void {
-
-    const searchDate = this.searchValueDate ? new Date(this.searchValueDate).toDateString() : null;
-
-    this.filteredPatientsHistory = this.patientHistory.filter((patient) => {
-
-      const patientDate = patient.dateOfDiagnosis ? new Date(patient.dateOfDiagnosis).toDateString() : null;
-      const matchesDate = searchDate ? patientDate === searchDate : true;
-
-      return matchesDate;
-    });
-  }
-
   sortTable(key: string): void {
     this.sortKey = key;
     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -179,17 +133,23 @@ export class ManagePatientComponent implements OnInit {
         const patient = response.data;
         this.patientForm.patchValue({
           userId: patient.userId,
-          name: patient.name,
+          firstName: patient.firstName,
+          middleName: patient.middleName,
+          lastName: patient.lastName,
           gender: patient.gender,
           dateOfBirth: patient.dateOfBirth,
         });
-        this.patientForm.get('name')?.disable();
+        this.patientForm.get('firstName')?.disable();
+        this.patientForm.get('lastName')?.disable();
+        this.patientForm.get('middleName')?.disable();
         this.patientForm.get('gender')?.disable();
         this.patientForm.get('dateOfBirth')?.disable();
       } else {
         this.patientForm.reset({ mobile });
         this.patientForm.get('mobile')?.disable();
-        this.patientForm.get('name')?.enable();
+        this.patientForm.get('firstName')?.enable();
+        this.patientForm.get('middleName')?.enable();
+        this.patientForm.get('lastName')?.enable();
         this.patientForm.get('gender')?.enable();
         this.patientForm.get('dateOfBirth')?.enable();
       }
@@ -197,9 +157,14 @@ export class ManagePatientComponent implements OnInit {
   }
 
   openAddPatientPopup(): void {
+    this.isEditMode = false;
     this.patientForm.reset();
     this.patientForm.get('mobile')?.enable();
-    this.patientForm.get('name')?.disable();
+    this.patientForm.get('firstName')?.disable();
+    this.patientForm.get('middleName')?.disable();
+    this.patientForm.get('lastName')?.disable();
+    this.patientForm.get('gender')?.disable();
+    this.patientForm.get('dateOfBirth')?.disable();
     this.patientForm.get('gender')?.disable();
     this.patientForm.get('dateOfBirth')?.disable();
     this.showModel = true;
@@ -207,43 +172,6 @@ export class ManagePatientComponent implements OnInit {
     addPatientModal.show();
   }
 
-  moveToNext(event: KeyboardEvent, index: number): void {
-    const target = event.target as HTMLInputElement;
-
-    // Handle number input and move to the next box
-    if (event.key >= '0' && event.key <= '9') {
-      const nextInput = target.nextElementSibling as HTMLInputElement;
-      if (nextInput) {
-        nextInput.focus();
-      }
-    }
-
-    if (event.key === 'Backspace') {
-      const prevInput = target.previousElementSibling as HTMLInputElement;
-      if (prevInput) {
-        prevInput.focus();
-        prevInput.value = ''; // Clear the previous input field
-      }
-    }
-  }
-
-  areAllOtpFilled(): boolean {
-    return this.otpControls.controls.every(control => control.value.trim() !== '');
-  }
-
-  onEnterKey(): void {
-    if (this.areAllOtpFilled()) {
-      this.verifyOtp();
-    } else {
-      const firstEmptyField = this.otpControls.controls.findIndex(control => control.value.trim() === '');
-      if (firstEmptyField !== -1) {
-        const otpInput = document.querySelectorAll('.otp-input')[firstEmptyField] as HTMLInputElement;
-        if (otpInput) {
-          otpInput.focus();
-        }
-      }
-    }
-  }
 
   savePatient(): void {
     if (this.patientForm.invalid) {
@@ -267,21 +195,29 @@ export class ManagePatientComponent implements OnInit {
   }
 
   editPatient(patient: any): void {
-    this.patientForm.patchValue(patient);
-    this.patientForm.get('name')?.enable();
-    this.patientForm.get('gender')?.enable();
-    this.patientForm.get('dateOfBirth')?.enable();
+    this.isEditMode = true;
+    this.patientForm.patchValue({
+      id: patient.id,
+      userId: patient.userId,
+      firstName: patient.firstName || patient.name,
+      middleName: patient.middleName || '',
+      lastName: patient.lastName || '',
+      gender: patient.gender,
+      dateOfBirth: patient.dateOfBirth,
+      abhaid: patient.abhaid,
+      secondaryId: patient.secondaryId,
+      mobile: patient.mobile
+    });
+    this.patientForm.get('firstName')?.disable();
+    this.patientForm.get('middleName')?.disable();
+    this.patientForm.get('lastName')?.disable();
+    this.patientForm.get('gender')?.disable();
+    this.patientForm.get('dateOfBirth')?.disable();
+    this.patientForm.get('mobile')?.disable();
     this.showModel = true;
     const addPatientModal = new bootstrap.Modal(document.getElementById('addPatientModal')!);
     addPatientModal.show();
   }
-
-
-  backToMain(): void {
-    this.showHistory = false;
-    this.currentPatient = null;
-  }
-
 
 
   createPrescription(patient: any): void {
@@ -292,52 +228,133 @@ export class ManagePatientComponent implements OnInit {
     this.router.navigate(['physician/generate-certificate'], { state: { patient } });
   }
 
-  viewHistory(patient: any, getAll: boolean = false): void {
-    this.patientForView = patient;
-    this.showHistory = true;
+
+
+
+  validateAge(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) return null; // Allow empty values (handled by required validator)
+
+    const birthDate = new Date(control.value); // Directly parse the date
+    const today = new Date(); // Get today's date
+
+    let age = today.getFullYear() - birthDate.getFullYear();
+
+    // Check if the birthday has passed in the current year
+    const isBirthdayPassed =
+      today.getMonth() > birthDate.getMonth() ||
+      (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
+
+    if (!isBirthdayPassed) {
+      age--; // Adjust if birthday hasn't occurred yet this year
+    }
+
+    // Validate if the user must be at least 18 years old (only if dependentId is NOT present)
+    if (!this.userData?.dependentId && age < 18) {
+      return { minAge: true }; // Validation fails
+    }
+
+    return null; // Validation passes
+  }
+
+
+  viewPrescriptions(patient: any): void {
+    this.router.navigate(['physician/view-patient-prescription', this.userData.id, patient.userId]);
+  }
+
+  openOtpPopup(patient: any): void {
     this.currentPatient = patient;
 
-    const physicianId = this.userData.id;
-    const patientId = patient.userId;
+    if (!this.verifyOtpForm) {
+      this.initOtpForm(); // Ensure form is initialized
+    }
 
-    this.physicianService.getPrescriptions(physicianId, patientId, getAll).subscribe({
-      next: (prescriptions: any) => {
-        this.patientHistory = prescriptions?.data.map((patient: any) => ({
-          ...patient
-        }));
-        this.filteredPatientsHistory = [...this.patientHistory];
+    console.log('Opening OTP popup for:', patient);
+
+    if (patient?.mobile) {
+      this.verifyOtpForm.patchValue({ contact: patient.mobile }); // ✅ Prefill Mobile
+    } else {
+      console.warn('Patient mobile is missing:', patient);
+    }
+
+    // Reset OTP fields
+    this.otpControls.controls.forEach(control => control.setValue(''));
+
+    // Send OTP automatically after UI updates
+    setTimeout(() => this.sendOtp());
+
+    // Open Bootstrap modal
+    const otpModal = new bootstrap.Modal(document.getElementById('otpModal')!);
+    otpModal.show();
+  }
+
+
+
+  sendOtp(): void {
+    if (!this.currentPatient?.mobile) {
+      this.notificationService.showError('Invalid mobile number.');
+      return;
+    }
+
+    this.otpService.sendOtpMessage(this.currentPatient.mobile, false).subscribe({
+      next: (response) => {
+        this.notificationService.showSuccess('OTP Sent successfully.');
+        this.otpToken = response.otpToken;
+        this.isOtpSent = true;
       },
-      error: (err) => {
-        console.error('Error fetching history:', err);
+      error: () => {
+        this.notificationService.showError('Failed to send OTP.');
       },
     });
   }
 
-  viewPatient(patient: any): void {
-    if (patient.prescriptionUrl) {
-      window.open('/assets/documents/67a0c8044e1d8c7c78aaeec8/prescription/p_1.pdf', '_blank');
-    } else {
-      console.warn('No prescription available for this patient.');
+  areAllOtpFilled(): boolean {
+    return this.otpControls.controls.every(control => control.value.trim() !== '');
+  }
+
+  onEnterKey(): void {
+    if (this.areAllOtpFilled()) {
+      this.verifyOtp();
     }
   }
 
-  viewPrescription(patient: any): void {
-    const physicianId = this.userData.id;
-    const patientId = patient.userId;
+  verifyOtp(): void {
+    const otp = this.otpControls.value.join(''); // Combine OTP values
 
-    this.physicianService.getLatestPrescription(physicianId, patientId).subscribe({
-      next: (prescriptions: any) => {
-        const latestPrescription = prescriptions.data;
+    this.otpService.verifyOtp(this.currentPatient.mobile, otp, this.otpToken).subscribe({
+      next: (response) => {
+        if (response.valid) {
+          const otpModal = bootstrap.Modal.getInstance(document.getElementById('otpModal')!);
+          otpModal?.hide();
 
-        if (latestPrescription) {
-          window.open('/assets/documents/67a0c8044e1d8c7c78aaeec8/prescription/p_1.pdf', '_blank');
+          // Navigate to patient history after successful verification
+          this.router.navigate(['physician/view-patient-history', this.currentPatient.userId]);
         } else {
-          console.warn('No prescription available for this patient.');
+          this.notificationService.showError('Invalid OTP.');
         }
       },
-      error: (err) => {
-        console.error('Error fetching latest prescription:', err);
+      error: () => {
+        this.notificationService.showError('OTP verification failed.');
       },
     });
+  }
+
+  moveToNext(event: KeyboardEvent, index: number): void {
+    const target = event.target as HTMLInputElement;
+
+    // Handle number input and move to the next box
+    if (event.key >= '0' && event.key <= '9') {
+      const nextInput = target.nextElementSibling as HTMLInputElement;
+      if (nextInput) {
+        nextInput.focus();
+      }
+    }
+
+    if (event.key === 'Backspace') {
+      const prevInput = target.previousElementSibling as HTMLInputElement;
+      if (prevInput) {
+        prevInput.focus();
+        prevInput.value = ''; // Clear the previous input field
+      }
+    }
   }
 }

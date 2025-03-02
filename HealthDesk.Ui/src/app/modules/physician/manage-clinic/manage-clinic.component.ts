@@ -61,7 +61,7 @@ export class ManageClinicComponent implements OnInit {
 
     this.clinicForm = this.fb.group({
       id: [''],
-      name: ['', [Validators.required, Validators.maxLength(25),Validators.pattern(/^[a-zA-Z0-9@ ,\/\\'.-]+$/)]],
+      name: ['', [Validators.required, Validators.maxLength(25), Validators.pattern(/^[a-zA-Z0-9@ ,\/\\'.-]+$/)]],
       flatNumber: ['', [Validators.maxLength(50), Validators.pattern(/^[a-zA-Z0-9@ ,\/\\'.-]+$/)]],
       building: ['', [Validators.maxLength(50), Validators.pattern(/^[a-zA-Z0-9@ ,\/\\'.-]+$/)]],
       area: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/^[a-zA-Z0-9@ ,\/\\'.-]+$/)]],
@@ -252,6 +252,8 @@ export class ManageClinicComponent implements OnInit {
     // Reset the days FormGroup explicitly
     const daysGroup = this.clinicForm.get('days') as FormGroup;
     this.days.forEach((day) => daysGroup.get(day)?.setValue(false));
+
+    this.clinicSlots.clear();
     this.addSlot();
     // Open the modal
     const modal = new bootstrap.Modal(document.getElementById('clinicModal')!);

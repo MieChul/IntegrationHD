@@ -58,10 +58,10 @@ var app = builder.Build();
 app.UseStaticFiles();
 app.UseHttpsRedirection();
 app.UseMiddleware<ErrorHandlingMiddleware>();
-app.UseMiddleware<SecurityHeadersMiddleware>();
+// app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseCors(allowedOrigins);
 app.UseMiddleware<TokenRefreshMiddleware>();
-app.UseMiddleware<AntiMaliciousDataMiddleware>();
+// app.UseMiddleware<AntiMaliciousDataMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 

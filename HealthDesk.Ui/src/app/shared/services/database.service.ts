@@ -63,7 +63,7 @@ export class DatabaseService {
     if (this.isLoaded) return;
 
     // Check for cached data
-    const cachedData = localStorage.getItem(this.CACHE_KEY);
+    const cachedData = sessionStorage.getItem(this.CACHE_KEY);
     if (cachedData) {
       const parsedData = JSON.parse(cachedData);
       this.database = parsedData.database;
@@ -139,7 +139,7 @@ export class DatabaseService {
       }
 
       // Cache the database for future use
-      localStorage.setItem(this.CACHE_KEY, JSON.stringify({
+      sessionStorage.setItem(this.CACHE_KEY, JSON.stringify({
         database: this.database,
         drugData: this.drugData,
         selfRecordData: this.selfRecordData
@@ -152,7 +152,7 @@ export class DatabaseService {
   }
 
   clearCache(): void {
-    localStorage.removeItem(this.CACHE_KEY);
+    sessionStorage.removeItem(this.CACHE_KEY);
     this.isLoaded = false;
   }
 

@@ -16,7 +16,8 @@ public interface IPhysicianService
     Task SavePatientAsync(string physicianId, PatientRecordDto dto);
     Task DeletePatientAsync(string physicianId, string patientId);
 
-    Task<IEnumerable<PrescriptionDto>> GetPrescriptionsAsync(string physicianId, string patientId);
+    Task<IEnumerable<PrescriptionDto>> GetPrescriptionsAsync(string? physicianId, string patientId, bool getAll = false);
+    Task<PatientHistoryDto> GetPatientHistoryAsync(string patientId);
 
     Task<string> AddPrescriptionAsync(PrescriptionDto dto);
 
