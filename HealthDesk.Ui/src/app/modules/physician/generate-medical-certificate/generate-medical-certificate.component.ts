@@ -44,6 +44,7 @@ export class GenerateMedicalCertificateComponent implements OnInit {
   initializeForm(): void {
     const today = new Date().toISOString().split('T')[0];
     this.medicalForm = this.fb.group({
+      useHeader:[true],
       name: [this.patientRecord?.firstName + ' ' + this.patientRecord?.middleName + ' ' + this.patientRecord?.lastName || '', [Validators.required, Validators.maxLength(25)]],
       age: [this.calculateAge(this.patientRecord?.dateOfBirth) || '0', [Validators.required]],
       diagnosis: ['', [Validators.required, Validators.maxLength(200)]],
@@ -240,7 +241,7 @@ export class GenerateMedicalCertificateComponent implements OnInit {
 
     // Add header image
     try {
-      if (this.headerImg) {
+      if (this.headerImg && this.medicalForm.value.useHeader) {
         doc.addImage(this.headerImg, 'PNG', margin, 10, contentWidth, 20);
       }
     } catch (error) {
@@ -249,7 +250,7 @@ export class GenerateMedicalCertificateComponent implements OnInit {
 
     // Add footer image
     try {
-      if (this.footerImg) {
+      if (this.footerImg && this.medicalForm.value.useHeader) {
         doc.addImage(
           this.footerImg,
           'PNG',

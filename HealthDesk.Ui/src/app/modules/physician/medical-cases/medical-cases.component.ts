@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { Modal } from 'bootstrap';
+import { Modal, Tooltip } from 'bootstrap';
 
 interface MedicalCase {
   id: number;
@@ -11,6 +11,7 @@ interface MedicalCase {
   likeCount: number;
   shareCount: number;
   shortDescription: string;
+  thumbnail:string;
 }
 
 @Component({
@@ -19,65 +20,141 @@ interface MedicalCase {
   styleUrls: ['./medical-cases.component.scss']
 })
 export class MedicalCasesComponent implements OnInit {
-  @ViewChild('commentsModal') commentsModal!: ElementRef;
-  @ViewChild('shareModal') shareModal!: ElementRef;
+ ngAfterViewInit(): void {
+     const tooltipTriggerList = Array.from(
+       document.querySelectorAll('[data-bs-toggle="tooltip"]')
+     );
+     tooltipTriggerList.forEach((tooltipTriggerEl) => {
+       new Tooltip(tooltipTriggerEl);
+     });
+   }
+   
+   @ViewChild('commentsModal') commentsModal!: ElementRef;
+   @ViewChild('shareModal') shareModal!: ElementRef;
+ 
+   shareLink: string = '';
+   searchValue: string = '';
+   comments: string[] = [];
+   newComment: { [key: number]: string } = {};
+   newPreference: string = '';
+   preferences: string[] = [];
+ 
+   recommendedMedicalCases: MedicalCase[] = [];
+   latestMedicalCases: MedicalCase[] = [];
+   trendingMedicalCases: MedicalCase[] = [];
 
-  shareLink: string = '';
-  comments: string[] = [];
-  newComment: { [key: number]: string } = {};
-  otherCases: MedicalCase[] = [
-    { id: 1, submittedBy: 'Dr. Smith', speciality: 'Cardiology', comments: ['Great case!'], likeCount: 10, shareCount: 5, shortDescription: 'A detailed case study on cardiology' },
-    { id: 2, submittedBy: 'Dr. Johnson', speciality: 'Neurology', comments: [], likeCount: 7, shareCount: 2, shortDescription: 'An intriguing neurology case' },
-    { id: 3, submittedBy: 'Dr. Lee', speciality: 'Orthopedics', comments: [], likeCount: 15, shareCount: 3, shortDescription: 'Orthopedics case study and analysis' },
-    { id: 4, submittedBy: 'Dr. Brown', speciality: 'Dermatology', comments: [], likeCount: 8, shareCount: 4, shortDescription: 'Dermatology case with treatment details' },
-    { id: 5, submittedBy: 'Dr. Taylor', speciality: 'Pediatrics', comments: [], likeCount: 12, shareCount: 6, shortDescription: 'A pediatric case involving rare symptoms' },
-  ];
+   otherMedicalCases: MedicalCase[] = [
+     { id: 1, submittedBy: ' Smith', speciality: 'Cardiology', comments: ['Great case!'], likeCount: 10, shareCount: 5, shortDescription: 'A detailed case study on cardiology', thumbnail: 'assets/remedies/3.jpg' },
+     { id: 2, submittedBy: ' Johnson', speciality: 'Neurology', comments: [], likeCount: 7, shareCount: 2, shortDescription: 'An intriguing neurology case', thumbnail: 'assets/remedies/7.jpg' },
+     { id: 3, submittedBy: ' Lee', speciality: 'Orthopedics', comments: [], likeCount: 15, shareCount: 3, shortDescription: 'Orthopedics case study and analysis', thumbnail: 'assets/remedies/2.jpg' },
+     { id: 4, submittedBy: ' Brown', speciality: 'Dermatology', comments: [], likeCount: 8, shareCount: 4, shortDescription: 'Dermatology case with treatment details', thumbnail: 'assets/remedies/8.jpg' },
+     { id: 5, submittedBy: ' Taylor', speciality: 'Pediatrics', comments: [], likeCount: 12, shareCount: 6, shortDescription: 'A pediatric case involving rare symptoms', thumbnail: 'assets/remedies/5.jpg' },
+     { id: 6, submittedBy: ' Adams', speciality: 'Oncology', comments: [], likeCount: 9, shareCount: 3, shortDescription: 'Case study on oncology treatment', thumbnail: 'assets/remedies/4.jpg' },
+     { id: 7, submittedBy: ' Clark', speciality: 'Gastroenterology', comments: [], likeCount: 11, shareCount: 4, shortDescription: 'Digestive health case analysis', thumbnail: 'assets/remedies/10.jpg' },
+     { id: 8, submittedBy: ' Evans', speciality: 'Urology', comments: [], likeCount: 6, shareCount: 2, shortDescription: 'Urological case study', thumbnail: 'assets/remedies/9.jpg' },
+     { id: 9, submittedBy: ' Foster', speciality: 'Endocrinology', comments: [], likeCount: 14, shareCount: 5, shortDescription: 'Endocrine system analysis', thumbnail: 'assets/remedies/1.jpg' },
+     { id: 10, submittedBy: ' Green', speciality: 'Rheumatology', comments: [], likeCount: 5, shareCount: 1, shortDescription: 'Rheumatology case report', thumbnail: 'assets/remedies/6.jpg' },
+     { id: 11, submittedBy: ' Harris', speciality: 'Nephrology', comments: [], likeCount: 13, shareCount: 4, shortDescription: 'Kidney disease case study', thumbnail: 'assets/remedies/11.jpg' },
+     { id: 12, submittedBy: ' Irving', speciality: 'Ophthalmology', comments: [], likeCount: 7, shareCount: 3, shortDescription: 'Eye condition and treatment', thumbnail: 'assets/remedies/12.jpg' },
+     { id: 13, submittedBy: ' Jones', speciality: 'ENT', comments: [], likeCount: 8, shareCount: 2, shortDescription: 'ENT examination report', thumbnail: 'assets/remedies/2.jpg' },
+     { id: 14, submittedBy: ' King', speciality: 'Psychiatry', comments: [], likeCount: 10, shareCount: 3, shortDescription: 'Psychiatric case discussion', thumbnail: 'assets/remedies/4.jpg' },
+     { id: 15, submittedBy: ' Lewis', speciality: 'Immunology', comments: [], likeCount: 9, shareCount: 2, shortDescription: 'Immunology and allergies case', thumbnail: 'assets/remedies/7.jpg' }
+   ];
+   
+   yourMedicalCases: MedicalCase[] = [
+     { id: 1, submittedBy: 'You', speciality: 'Cardiology', comments: [], likeCount: 0, shareCount: 0, shortDescription: 'Your own case study on cardiology', thumbnail: 'assets/remedies/3.jpg' },
+     { id: 2, submittedBy: 'You', speciality: 'Neurology', comments: [], likeCount: 0, shareCount: 0, shortDescription: 'Your own case study on neurology', thumbnail: 'assets/remedies/9.jpg' },
+     { id: 3, submittedBy: 'You', speciality: 'Orthopedics', comments: [], likeCount: 0, shareCount: 0, shortDescription: 'Your own case study on orthopedics', thumbnail: 'assets/remedies/5.jpg' }
+   ];
+ 
+   constructor(private router: Router, private modalService: NgbModal) {}
+ 
+   ngOnInit(): void {
+     this.filterMedicalCases();
+   }
+ 
+   createNewCase(): void {
+     this.router.navigate(['/patient/new-medical-case']);
+   }
+ 
+   addComment(caseId: number): void {
+     const index = this.otherMedicalCases.findIndex(c => c.id === caseId);
+     if (index !== -1 && this.newComment[caseId]) {
+       this.otherMedicalCases[index].comments.push(this.newComment[caseId]);
+       this.newComment[caseId] = '';
+     }
+   }
+ 
+   likeCase(caseId: number): void {
+     const index = this.otherMedicalCases.findIndex(c => c.id === caseId);
+     if (index !== -1) {
+       this.otherMedicalCases[index].likeCount++;
+       this.filterMedicalCases();
+     }
+   }
+ 
+   viewComments(caseId: number): void {
+     const index = this.otherMedicalCases.findIndex(c => c.id === caseId);
+     if (index !== -1) {
+       this.comments = this.otherMedicalCases[index].comments;
+       const modalInstance = new Modal(this.commentsModal.nativeElement);
+       modalInstance.show();
+     }
+   }
+ 
+   shareCase(caseId: number): void {
+     this.shareLink = `https://HealthDesk.com/physician/view-medical/${caseId}`;
+     const modalInstance = new Modal(this.shareModal.nativeElement);
+     modalInstance.show();
+   }
+ 
+   // Filtering based on search term and preference tags.
+   searchMedicalCases(): void {
+     this.filterMedicalCases();
+   }
+ 
+   addPreference(): void {
+     if (this.newPreference.trim()) {
+       this.preferences.push(this.newPreference.trim());
+       this.newPreference = '';
+       this.filterMedicalCases();
+     }
+   }
+ 
+   viewCase(caseId: number): void {
+     this.router.navigate(['/patient/view-medical-case', caseId]);
+   }
 
-  yourCases: MedicalCase[] = [
-    { id: 1, submittedBy: 'You', speciality: 'Cardiology', comments: [], likeCount: 0, shareCount: 0, shortDescription: 'Your own case study on cardiology' },
-    { id: 2, submittedBy: 'You', speciality: 'Neurology', comments: [], likeCount: 0, shareCount: 0, shortDescription: 'Your own case study on neurology' },
-    { id: 3, submittedBy: 'You', speciality: 'Orthopedics', comments: [], likeCount: 0, shareCount: 0, shortDescription: 'Your own case study on orthopedics' },
-  ];
+   filterMedicalCases(): void {
+    const searchTerm = this.searchValue.toLowerCase();
 
-  constructor(private router: Router, private modalService: NgbModal) {}
-
-  ngOnInit(): void {}
-
-  viewCase(caseId: number) {
-    this.router.navigate(['/physician/view-medical-case', caseId]);
-  }
-
-  createNewCase() {
-    this.router.navigate(['/physician/new-medical-case']);
-  }
-
-  addComment(caseId: number) {
-    const caseIndex = this.otherCases.findIndex(c => c.id === caseId);
-    if (caseIndex !== -1 && this.newComment[caseId]) {
-      this.otherCases[caseIndex].comments.push(this.newComment[caseId]);
-      this.newComment[caseId] = '';
+    if (!this.searchValue.trim() && this.preferences.length === 0) {
+      this.recommendedMedicalCases = [];
+    } else {
+      this.recommendedMedicalCases = this.otherMedicalCases.filter(c => {
+        const matchesSearch = this.searchValue.trim()
+          ? (c.speciality.toLowerCase().includes(searchTerm) ||
+             c.submittedBy.toLowerCase().includes(searchTerm))
+          : true;
+        const matchesPreference = this.preferences.length
+          ? this.preferences.some(pref =>
+              c.speciality.toLowerCase().includes(pref.toLowerCase())
+            )
+          : true;
+        return matchesSearch && matchesPreference;
+      });
     }
+
+    // Latest: top 6 sorted by descending id.
+    this.latestMedicalCases = [...this.otherMedicalCases]
+      .sort((a, b) => b.id - a.id)
+      .slice(0, 6);
+
+    // Trending: top 6 sorted by descending likeCount.
+    this.trendingMedicalCases = [...this.otherMedicalCases]
+      .sort((a, b) => b.likeCount - a.likeCount)
+      .slice(0, 6);
   }
 
-  likeCase(caseId: number) {
-    const caseIndex = this.otherCases.findIndex(c => c.id === caseId);
-    if (caseIndex !== -1) {
-      this.otherCases[caseIndex].likeCount++;
-    }
-  }
-
-  viewComments(caseId: number) {
-    const caseIndex = this.otherCases.findIndex(c => c.id === caseId);
-    if (caseIndex !== -1) {
-      this.comments = this.otherCases[caseIndex].comments;
-      const commentsModalInstance = new Modal(this.commentsModal.nativeElement);
-      commentsModalInstance.show();
-    }
-  }
-
-  shareCase(caseId: number) {
-    this.shareLink = `https://HealthDesk.com/physician/view-medical/${caseId}`;
-    const shareModalInstance = new Modal(this.shareModal.nativeElement);
-    shareModalInstance.show();
-  }
-}
+ }
+ 

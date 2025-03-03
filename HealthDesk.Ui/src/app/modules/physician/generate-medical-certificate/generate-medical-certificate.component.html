@@ -14,6 +14,11 @@
     <div class="card-body">
       <form [formGroup]="medicalForm" (ngSubmit)="generatePdf()">
         <div class="row mb-3">
+          <mat-slide-toggle formControlName="useHeader" class="m-2">
+            <b>Use Saved Template Header and Footer?</b>
+          </mat-slide-toggle>
+        </div>
+        <div class="row mb-3">
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
               <mat-label>Patient Name</mat-label>

@@ -47,10 +47,10 @@
       <div class="row mt-3">
         <!-- Recommended (Left Column) -->
         <div class="col-md-4" style="border-right: 1px solid #ccc;">
-          <h4>All</h4>
+          <h4>Latest</h4>
           <div *ngIf="otherRemedies.length > 0; else noRecommended">
             <div class="row row-cols-2 g-2">
-              <div class="col" *ngFor="let remedy of otherRemedies">
+              <div class="col" *ngFor="let remedy of latestRemedies">
                 <div class="card h-100">
                   <img [src]="remedy.thumbnail" class="card-img-top" alt="Thumbnail"
                     style="height: 120px; object-fit: cover" />
@@ -266,7 +266,7 @@
       <div class="modal-body">
         <div class="input-group">
           <input type="text" class="form-control" [(ngModel)]="newPreference" placeholder="Enter a tag" />
-          <button class="btn btn-primary" (click)="addPreference()">
+          <button class="btn btn-primary" data-bs-dismiss="modal" (click)="addPreference()">
             Add
           </button>
         </div>

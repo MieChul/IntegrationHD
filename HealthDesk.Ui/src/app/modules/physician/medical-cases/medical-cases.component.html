@@ -1,143 +1,279 @@
-<div class="container">
-    <h2 class="animated-heading">
-      <i class="bi bi-journal-medical me-2"></i>Medical Cases
-    </h2>
-    <ul class="nav nav-tabs" id="medicalCasesTabs" role="tablist">
-      <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="other-cases-tab" data-bs-toggle="tab" data-bs-target="#other-cases" type="button" role="tab" aria-controls="other-cases" aria-selected="true">
-          Cases
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="your-cases-tab" data-bs-toggle="tab" data-bs-target="#your-cases" type="button" role="tab" aria-controls="your-cases" aria-selected="false">
-          Your Cases
-        </button>
-      </li>
-    </ul>
-    <div class="tab-content" id="medicalCasesTabsContent">
-      <!-- Other Cases Tab -->
-      <div class="tab-pane fade show active" id="other-cases" role="tabpanel" aria-labelledby="other-cases-tab">
-        <div class="row mb-3">
-          <div class="col">
-            <div class="form-floating mb-3">
-              <input type="text" class="form-control" id="speciality" placeholder="Speciality">
-              <label for="speciality">Speciality</label>
+<div class="container my-4">
+  <h2 class="animated-heading mb-4">
+    <i class="bi bi-journal-medical me-2"></i>Medical Cases
+  </h2>
+
+ 
+  <div class="row mb-3 align-items-center">
+    <div class="col-md-8">
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>Search by Specialty/Doctor Name</mat-label>
+        <input matInput placeholder="Search by Specialty/Doctor Name" [(ngModel)]="searchValue"
+          (input)="searchMedicalCases()" />
+      </mat-form-field>
+    </div>
+    <div class="col-md-4 text-end">
+      <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#preferencesModal">
+        Set Preferences
+      </button>
+    </div>
+  </div>
+
+  <!-- Display Selected Preferences -->
+  <div id="preferencesTags" class="mb-4">
+    <span *ngFor="let tag of preferences" class="badge bg-primary me-2">
+      {{ tag }}
+    </span>
+  </div>
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs" id="medicalCasesTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="others-tab" data-bs-toggle="tab" data-bs-target="#others" type="button"
+        role="tab" aria-controls="others" aria-selected="true">
+        Medical Cases
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="yours-tab" data-bs-toggle="tab" data-bs-target="#yours" type="button" role="tab"
+        aria-controls="yours" aria-selected="false">
+        My Medical Cases
+      </button>
+    </li>
+  </ul>
+  <div class="tab-content" id="medicalCasesTabsContent">
+    <div class="tab-pane fade show active" id="others" role="tabpanel" aria-labelledby="others-tab">
+      <div class="row mt-3">
+        <!-- Recommended (Left Column) -->
+        <div class="col-md-4" style="border-right: 1px solid #ccc;">
+          <h4>Latest</h4>
+          <div *ngIf="latestMedicalCases.length > 0; else noRecommended">
+            <div class="row row-cols-2 g-2">
+              <div class="col" *ngFor="let case of latestMedicalCases">
+                <div class="card h-100">
+                  <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
+                    style="height: 120px; object-fit: cover" />
+                  <div class="card-body p-2">
+                    <h6 class="card-title text-truncate">
+                      Case {{ case.id }}
+                    </h6>
+                    <p class="card-text text-truncate">
+                      {{ case.shortDescription }}
+                    </p>
+                    <p class="card-text">
+                      <small>Submitted by: {{ case.submittedBy }}</small>
+                    </p>
+                    <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
+                      View
+                    </button>
+                    <!-- Icon-only action buttons with counts -->
+                    <div>
+                      <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
+                        data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
+                        <i class="bi bi-hand-thumbs-up"></i>
+                        <span class="ms-1">{{ case.likeCount }}</span>
+                      </button>
+                      <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
+                        data-bs-placement="top" title="Comment" (click)="viewComments(case.id)">
+                        <i class="bi bi-chat"></i>
+                        <span class="ms-1">{{ case.comments.length }}</span>
+                      </button>
+                      <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="Share" (click)="shareCase(case.id)">
+                        <i class="bi bi-share"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="col">
-            <div class="form-floating mb-3">
-              <input type="text" class="form-control" id="diagnosis" placeholder="Diagnosis">
-              <label for="diagnosis">Diagnosis</label>
-            </div>
-          </div>
-          <div class="col">
-            <div class="form-floating mb-3">
-              <input type="number" class="form-control" id="ageGroup" placeholder="Age Group">
-              <label for="ageGroup">Age Group</label>
-            </div>
-          </div>
-          <div class="col">
-            <div class="form-floating mb-3">
-              <input type="datetime-local" class="form-control" id="uploadDate" placeholder="Upload Date">
-              <label for="uploadDate">Upload Date</label>
-            </div>
-          </div>
-          <div class="col">
-            <button type="button" class="btn btn-primary w-100">Search</button>
-          </div>
+          <ng-template #noRecommended>
+            <p class="text-muted">No medical cases available.</p>
+          </ng-template>
         </div>
-        <div class="row">
-          <div class="col-md-4" *ngFor="let case of otherCases">
-            <div class="card mb-3 small">
-              <img src="https://via.placeholder.com/400x200" class="card-img-top" alt="Case Image">
-              <div class="card-body">
-                <h5 class="card-title">Case {{ case.id }}</h5>
-                <p class="card-text">{{ case.shortDescription }}...</p>
-                <p class="card-text">Submitted by: {{ case.submittedBy }}</p>
-                <p class="card-text">Speciality: {{ case.speciality }}</p>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <button class="btn btn-primary btn-sm" (click)="viewCase(case.id)">View</button>
-                  <div class="d-flex gap-2">
-                    <button class="btn btn-outline-secondary btn-sm" (click)="likeCase(case.id)">
-                      <i class="bi bi-hand-thumbs-up"></i> Like <span>{{ case.likeCount }}</span>
+
+        <!-- Latest (Center Column) -->
+        <div class="col-md-4" style="border-right: 1px solid #ccc;">
+          <h4>Trending</h4>
+          <div *ngIf="trendingMedicalCases.length > 0; else noLatest">
+            <div class="row row-cols-2 g-2">
+              <div class="col" *ngFor="let case of trendingMedicalCases">
+                <div class="card h-100">
+                  <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
+                    style="height: 120px; object-fit: cover" />
+                  <div class="card-body p-2">
+                    <h6 class="card-title text-truncate">
+                      Case {{ case.id }}
+                    </h6>
+                    <p class="card-text text-truncate">
+                      {{ case.shortDescription }}
+                    </p>
+                    <p class="card-text">
+                      <small>Submitted by: {{ case.submittedBy }}</small>
+                    </p>
+                    <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
+                      View
                     </button>
-                    <button class="btn btn-outline-secondary btn-sm" (click)="viewComments(case.id)">
-                      <i class="bi bi-chat-dots"></i> Comments <span>{{ case.comments.length }}</span>
-                    </button>
-                    <button class="btn btn-outline-secondary btn-sm" (click)="shareCase(case.id)">
-                      <i class="bi bi-share"></i> Share
-                    </button>
+                    <!-- Icon-only action buttons with counts -->
+                    <div>
+                      <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
+                        data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
+                        <i class="bi bi-hand-thumbs-up"></i>
+                        <span class="ms-1">{{ case.likeCount }}</span>
+                      </button>
+                      <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
+                        data-bs-placement="top" title="Comment" (click)="viewComments(case.id)">
+                        <i class="bi bi-chat"></i>
+                        <span class="ms-1">{{ case.comments.length }}</span>
+                      </button>
+                      <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="Share" (click)="shareCase(case.id)">
+                        <i class="bi bi-share"></i>
+                      </button>
+                    </div>
                   </div>
-                </div>               
-                <div class="comments mt-3">
-                  <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Write a comment..." [(ngModel)]="newComment[case.id]">
-                    <button class="btn btn-primary" (click)="addComment(case.id)">Send</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ng-template #noLatest>
+            <p class="text-muted">No trending medical cases.</p>
+          </ng-template>
+        </div>
+
+        <!-- Trending (Right Column) -->
+        <div class="col-md-4">
+          <h4>My Choice</h4>
+          <div *ngIf="recommendedMedicalCases.length > 0; else noTrending">
+            <div class="row row-cols-2 g-2">
+              <div class="col" *ngFor="let case of recommendedMedicalCases">
+                <div class="card h-100">
+                  <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
+                    style="height: 120px; object-fit: cover" />
+                  <div class="card-body p-2">
+                    <h6 class="card-title text-truncate">
+                      Case {{ case.id }}
+                    </h6>
+                    <p class="card-text text-truncate">
+                      {{ case.shortDescription }}
+                    </p>
+                    <p class="card-text">
+                      <small>Submitted by: {{ case.submittedBy }}</small>
+                    </p>
+                    <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
+                      View
+                    </button>
+                    <!-- Icon-only action buttons with counts -->
+                    <div>
+                      <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
+                        data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
+                        <i class="bi bi-hand-thumbs-up"></i>
+                        <span class="ms-1">{{ case.likeCount }}</span>
+                      </button>
+                      <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
+                        data-bs-placement="top" title="Comment" (click)="viewComments(case.id)">
+                        <i class="bi bi-chat"></i>
+                        <span class="ms-1">{{ case.comments.length }}</span>
+                      </button>
+                      <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="Share" (click)="shareCase(case.id)">
+                        <i class="bi bi-share"></i>
+                      </button>
+                    </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ng-template #noTrending>
+            <p class="text-muted">No cases available.</p>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="yours" role="tabpanel" aria-labelledby="yours-tab">
+      <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
+        <h4>My Home MedicalCases</h4>
+        <button class="btn btn-success" (click)="createNewCase()">
+          Add New Medical Case
+        </button>
+      </div>
+      <div *ngIf="yourMedicalCases.length > 0; else noYourMedicalCases">
+        <div class="row g-3">
+          <div class="col-md-4" *ngFor="let case of yourMedicalCases">
+            <div class="card h-100 shadow-sm">
+              <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
+                style="height: 160px; object-fit: cover" />
+              <div class="card-body p-3">
+                <h6 class="card-title text-truncate">
+                  Case {{ case.id }}
+                </h6>
+                <p class="card-text text-truncate">
+                  {{ case.shortDescription }}
+                </p>
+                <p class="card-text">
+                  <small>Submitted by: {{ case.submittedBy }}</small>
+                </p>
+                <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
+                  View
+                </button>
+                <!-- Icon-only action buttons with counts -->
+                <div class="d-flex justify-content-start">
+                  <button class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="tooltip" data-bs-placement="top"
+                    title="Like" (click)="likeCase(case.id)">
+                    <i class="bi bi-hand-thumbs-up"></i>
+                    <span class="ms-1">{{ case.likeCount }}</span>
+                  </button>
+                  <button class="btn btn-outline-secondary btn-sm me-2" data-bs-toggle="tooltip" data-bs-placement="top"
+                    title="Comment" (click)="viewComments(case.id)">
+                    <i class="bi bi-chat"></i>
+                    <span class="ms-1">{{ case.comments.length }}</span>
+                  </button>
+                  <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
+                    title="Share" (click)="shareCase(case.id)">
+                    <i class="bi bi-share"></i>
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <!-- Your Cases Tab -->
-      <div class="tab-pane fade" id="your-cases" role="tabpanel" aria-labelledby="your-cases-tab">
-        <button type="button" class="btn btn-primary mb-3" (click)="createNewCase()">New Case</button>
-        <div class="row">
-          <div class="col-md-4" *ngFor="let case of yourCases">
-            <div class="card mb-3 small">
-              <img src="https://via.placeholder.com/400x200" class="card-img-top" alt="Case Image">
-              <div class="card-body">
-                <h5 class="card-title">Case {{ case.id }}</h5>
-                <p class="card-text">{{ case.shortDescription }}...</p>
-                <p class="card-text">Speciality: {{ case.speciality }}</p>
-                <div class="d-flex justify-content-between">
-                  <button class="btn btn-primary" (click)="viewCase(case.id)">View</button>
-                </div>
-              </div>
-            </div>
-          </div>
+      <ng-template #noYourMedicalCases>
+        <p class="text-muted">
+          No cases added yet. Click "Add New Case" to get started.
+        </p>
+      </ng-template>
+    </div>
+
+  </div>
+</div>
+
+<!-- Preferences Modal -->
+<div class="modal fade" data-bs-backdrop='static' id="preferencesModal" tabindex="-1" aria-labelledby="preferencesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="preferencesModalLabel">
+          Set Preferences
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <input type="text" class="form-control" [(ngModel)]="newPreference" placeholder="Enter a tag" />
+          <button class="btn btn-primary" data-bs-dismiss="modal" (click)="addPreference()">
+            Add
+          </button>
         </div>
       </div>
-    </div>
-  
-    <!-- Comments Modal -->
-    <div class="modal fade" data-bs-backdrop='static' id="commentsModal" tabindex="-1" aria-labelledby="commentsModalLabel" aria-hidden="true" #commentsModal>
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="commentsModalLabel">Comments</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <ul>
-              <li *ngFor="let comment of comments">{{ comment }}</li>
-            </ul>
-          </div>
-          <div class="modal-footer  d-flex justify-content-between">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  
-    <!-- Share Modal -->
-    <div class="modal fade" data-bs-backdrop='static' id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true" #shareModal>
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="shareModalLabel">Share Medical Case</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <p>Copy the link below to share this case:</p>
-            <input type="text" class="form-control" [value]="shareLink" readonly>
-          </div>
-          <div class="modal-footer  d-flex justify-content-between">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          </div>
-        </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Close
+        </button>
       </div>
     </div>
   </div>
-  
+</div>
