@@ -13,10 +13,10 @@ public class PhysicianClinicDto
     public string Name { get; set; }
 
     [StringLength(50, ErrorMessage = "House Number cannot exceed 50 characters.")]
-    public string FlatNumber { get; set; }
+    public string? FlatNumber { get; set; }
 
     [StringLength(50, ErrorMessage = "Building cannot exceed 50 characters.")]
-    public string Building { get; set; }
+    public string? Building { get; set; }
 
     [Required(ErrorMessage = "Area is required.")]
     [StringLength(100, ErrorMessage = "Area cannot exceed 100 characters.")]

@@ -17,11 +17,7 @@ interface Survey {
   styleUrls: ['./survey.component.scss']
 })
 export class SurveyComponent implements OnInit {
-  surveys: Survey[] = [
-    { id: 1, name: 'Survey 1', number: '001', creator: 'Dr. Smith', company: 'HealthCorp', expiryDate: new Date('2024-12-31'), isTaken: false },
-    { id: 2, name: 'Survey 2', number: '002', creator: 'Dr. Johnson', company: 'Wellness Inc', expiryDate: new Date('2024-11-30'), isTaken: true },
-    // Add more surveys as needed
-  ];
+  surveys: Survey[] = [];
   filteredSurveys: Survey[] = [];
   searchTerm: string = '';
   sortField: keyof Survey = 'id';

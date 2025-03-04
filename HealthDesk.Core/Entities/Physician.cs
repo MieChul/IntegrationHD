@@ -35,10 +35,10 @@ public class Clinic : BaseEntity
     public string Name { get; set; }
 
     [BsonElement("flat_number")]
-    public string FlatNumber { get; set; }
+    public string? FlatNumber { get; set; }
 
     [BsonElement("building")]
-    public string Building { get; set; }
+    public string? Building { get; set; }
 
     [BsonElement("area")]
     public string Area { get; set; }

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { OrganizationService } from '../../services/organization.service';
 
@@ -7,7 +7,7 @@ import { OrganizationService } from '../../services/organization.service';
   templateUrl: './design-survey.component.html',
   styleUrls: ['./design-survey.component.scss']
 })
-export class DesignSurveyComponent {
+export class DesignSurveyComponent implements OnInit {
   // Initialize surveyForm with correct structure
   surveyForm: Survey = {
     name: '',
@@ -26,15 +26,51 @@ export class DesignSurveyComponent {
   formAutherError: boolean = false;
   formQuestionError: boolean = false;
 
-  constructor(private router: Router, private organizationService: OrganizationService) { }
+  constructor(
+    private router: Router,
+    private organizationService: OrganizationService
+  ) {}
 
-  ngOnInit() {
-    const navigation = this.router.getCurrentNavigation();
-    if (navigation?.extras.state) {
-      const surveyData = navigation.extras.state['survey'];
-      if (surveyData) {
-        this.surveyForm = surveyData;
+  async ngOnInit() {
+    // Check if a surveyId was passed in history.state
+    const surveyId = history.state.surveyId;
+    if (surveyId) {
+      try {
+        const survey = await this.organizationService.getSurveyById(surveyId);
+        await this.initializeForm(survey);
+      } catch (error) {
+        console.error('Error fetching survey data:', error);
+        // If there's an error, initialize a blank form
+        await this.initializeForm();
       }
+    } else {
+      // If no surveyId exists, keep the form blank
+      await this.initializeForm();
+    }
+  }
+
+  /**
+   * Initializes or patches the survey form.
+   * If a survey is provided, its values are used to patch the form.
+   * Otherwise, the form is reset to a blank state.
+   */
+  async initializeForm(survey?: Survey): Promise<void> {
+    if (survey) {
+      // Patch the form with the survey data
+      this.surveyForm = { ...survey };
+    } else {
+      // Reset to default blank state
+      this.surveyForm = {
+        name: '',
+        title: '',
+        description: '',
+        questions: [],
+        image: null,
+        is_active: true,
+        date: '',
+        author: '',
+        responses: []
+      };
     }
   }
 
@@ -87,22 +123,14 @@ export class DesignSurveyComponent {
   }
 
   validateSurvey() {
-    if (!this.surveyForm.name)
-      this.formNameError = true;
-    else
-      this.formNameError = false;
-    if (!this.surveyForm.author)
-      this.formAutherError = true;
-    else
-    this.formAutherError = false;
-    if (!(this.surveyForm.questions.length > 0))
-      this.formQuestionError = true;
-    else
-    this.formQuestionError = false;
+    this.formNameError = !this.surveyForm.name;
+    this.formAutherError = !this.surveyForm.author;
+    this.formQuestionError = !(this.surveyForm.questions.length > 0);
 
-    if(this.formQuestionError || this.formAutherError || this.formNameError)
-      return;
-    
+    if (this.formNameError || this.formAutherError || this.formQuestionError) {
+      return false;
+    }
+
     this.questionErrors = [];
     this.surveyForm.questions.forEach((question, i) => {
       this.questionErrors[i] = {};
@@ -119,7 +147,8 @@ export class DesignSurveyComponent {
 
   saveSurvey() {
     if (this.validateSurvey()) {
-      this.surveyForm.date = new Date().toISOString();  // Store current date
+      // Update the survey date to current timestamp
+      this.surveyForm.date = new Date().toISOString();
       this.organizationService.saveSurvey(this.surveyForm).then(() => {
         // Clear the form after saving
         this.surveyForm = {
@@ -148,8 +177,8 @@ export interface Survey {
   questions: Question[];
   image?: string | null;
   is_active: boolean;
-  date: string;  // New field for the current date
-  author: '',
+  date: string;
+  author: string;
   responses: any[];
 }
 

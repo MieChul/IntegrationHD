@@ -127,12 +127,12 @@ export class CustomizePrescriptionComponent implements OnInit {
       physicianNameFontColor: [new Color(0, 0, 0)],
       clinicTimings: [
         '',
-        [Validators.required, Validators.maxLength(50)],
+        [Validators.required],
       ],
       clinicTimingsFontType: ['Arial'],
       clinicTimingsFontSize: ['medium'],
       clinicTimingsFontColor: [new Color(0, 0, 0)],
-      mrcNumber: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9]+$/)]],
+      mrcNumber: ['', [Validators.required,  Validators.pattern(/^[a-zA-Z0-9\s.\-\/\\]{2,50}$/)]],
       mrcNumberFontType: ['Arial'],
       mrcNumberFontSize: ['medium'],
       mrcNumberFontColor: [new Color(0, 0, 0)],
@@ -218,12 +218,25 @@ export class CustomizePrescriptionComponent implements OnInit {
 
   onClinicChange(clinic: any): void {
     if (!clinic) return;
-
+  
     this.prescriptionForm.patchValue({
-      clinicAddress: `${clinic.flatNumber}, ${clinic.building}, ${clinic.area}, ${clinic.city}, ${clinic.state}, ${clinic.pinCode}`,
-      clinicTimings: `${clinic.clinicSlots.map((slot:any) => `${slot.name}: ${slot.timingFrom} to ${slot.timingTo}`).join(', ')} | Days: ${clinic.days.join(', ')}`
+      clinicAddress: [
+        clinic.flatNumber,
+        clinic.building,
+        clinic.area,
+        clinic.city,
+        clinic.state,
+        clinic.pinCode
+      ].filter(value => value).join(', '),  // Remove null/undefined and join with comma
+  
+      clinicTimings: clinic.clinicSlots?.length 
+        ? `${clinic.clinicSlots
+            .map((slot: any) => `${slot.name}: ${slot.timingFrom} to ${slot.timingTo}`)
+            .join(', ')} | Days: ${clinic.days?.filter((day:any) => day).join(', ')}`
+        : '' // If no slots, set empty string
     });
   }
+  
 
   onFileChange(event: any, type: string): void {
     const file = event.target.files[0];

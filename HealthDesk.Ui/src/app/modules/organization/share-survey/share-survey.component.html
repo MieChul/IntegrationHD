@@ -13,23 +13,27 @@
     <!-- Search Bar -->
     <div class="col">
       <div class="mb-2 me-3">
-        <label for="doctorSearch" class="form-label label-modern shadow">Search by Physician</label>
-        <input type="text" id="doctorSearch" class="form-control" [(ngModel)]="searchValue"
-          (ngModelChange)="filterDoctors()" />
+        <mat-form-field appearance="outline" class="w-100" class="w-100">
+          <mat-label>Search by Physician</mat-label>
+          <input matInput placeholder="Search by Physician" [(ngModel)]="searchValue" (input)="applyFilters()" />
+        </mat-form-field>
       </div>
     </div>
     <div class="col">
       <div class="mb-2 me-3">
-        <label for="specialitySearch" class="form-label label-modern shadow">Search by Speciality</label>
-        <input type="text" id="specialitySearch" class="form-control" [(ngModel)]="specialitySearchText"
-          (ngModelChange)="filterDoctors()" />
+        <mat-form-field appearance="outline" class="w-100" class="w-100">
+          <mat-label>Search by Speciality</mat-label>
+          <input matInput placeholder="Search by Speciality" [(ngModel)]="specialitySearchText"
+            (input)="applyFilters()" />
+        </mat-form-field>
       </div>
     </div>
     <div class="col">
       <div class="mb-2 me-3">
-        <label for="opdSearch" class="form-label label-modern shadow">Search by City</label>
-        <input type="text" id="opdSearch" class="form-control" [(ngModel)]="citySearchText"
-          (ngModelChange)="filterDoctors()" />
+        <mat-form-field appearance="outline" class="w-100" class="w-100">
+          <mat-label>Search by Location</mat-label>
+          <input matInput placeholder="Search by Location" [(ngModel)]="citySearchText" (input)="applyFilters()" />
+        </mat-form-field>
       </div>
     </div>
   </div>
@@ -49,13 +53,16 @@
         <tr *ngFor="let doctor of filteredDoctors">
           <td>{{ doctor.name }}</td>
           <td>{{ doctor.speciality }}</td>
-          <td>{{ doctor.city }}</td>
+          <td>{{ doctor.location }}</td>
           <td>
-            <input type="checkbox" [(ngModel)]="doctor.selected" [checked]="doctor.selected" />
+            <mat-checkbox [(ngModel)]="doctor.selected">Select</mat-checkbox>
           </td>
         </tr>
       </tbody>
     </table>
+    <div *ngIf="filteredDoctors?.length === 0" class="alert alert-info">
+      No physicians found.
+  </div>
   </div>
 
   <!-- Send Button -->

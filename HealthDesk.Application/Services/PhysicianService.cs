@@ -290,7 +290,7 @@ public class PhysicianService : IPhysicianService
         var userDetails = new
         {
             PhoneNumber = user.Mobile,
-            FullName = $"{user.FirstName}, {user.LastName}",
+            FullName = $"{user.FirstName} {user.LastName}",
             MrcNumber = user.MedicalRegistration.CertificateNumber
         };
 

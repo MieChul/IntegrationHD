@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { PatientService } from '../../services/patient.service';
+import { FilteringService } from '../../../shared/services/filter.service';
 
 @Component({
   selector: 'app-share-survey',
@@ -18,7 +20,7 @@ export class ShareSurveyComponent implements OnInit {
   doctors: any[] = []; // All doctors list
   filteredDoctors: any[] = []; // Filtered list for display
 
-  constructor(private route: ActivatedRoute, private router: Router) { }
+  constructor(private route: ActivatedRoute, private router: Router, private patientService: PatientService,private filteringService: FilteringService) { }
 
   ngOnInit(): void {
     // Get survey ID from route and mock survey details
@@ -26,13 +28,24 @@ export class ShareSurveyComponent implements OnInit {
     this.surveyTitle = `Survey ${this.surveyId}`; // Mock survey title
     this.surveyShareLink = `https://your-survey-platform.com/survey/${this.surveyId}`;
 
-    // Mock doctors data
-    this.doctors = [
-      { name: 'Dr. Kapil Bhanushali', speciality: 'Cardiologist', city: 'Mumbai', selected: false },
-      { name: 'Dr. Raghuvendra Iyer', speciality: 'Dermatologist', city: 'Hyderabad', selected: false },
-      { name: 'Dr. Sonali Langde', speciality: 'Neurologist', city: 'Bengaluru', selected: false },
-    ];
-    this.filteredDoctors = [...this.doctors];
+    this.patientService.getEntities().subscribe({
+      next: (data: any) => {
+        this.doctors = data
+        .filter((entity: any) => entity.entityType === "physician") // Filter only physicians
+        .map((entity: any) => ({
+          ...entity,
+          reviews: entity.reviews || [] // Ensure reviews field is always an array
+        }));
+      
+      this.filteredDoctors = [...this.doctors]; // Copy to filteredDoctors
+      
+      },
+      error: (error) => {
+        console.error('Error loading entities:', error);
+      }
+    });
+
+
   }
 
   // Copy survey link to clipboard
@@ -82,5 +95,17 @@ export class ShareSurveyComponent implements OnInit {
   }
   hasSelectedDoctors(): boolean {
     return this.filteredDoctors.some(d => d.selected);
+  }
+
+  applyFilters(): void {
+    this.filteredDoctors = this.filteringService.filter(
+      this.doctors,
+      {
+        name: this.searchValue,
+        speciality:this.specialitySearchText,
+        location:this.citySearchText
+      },
+      []
+    );
   }
 }

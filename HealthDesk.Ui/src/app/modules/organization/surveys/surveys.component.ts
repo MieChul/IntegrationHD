@@ -1,51 +1,64 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { Router } from '@angular/router';
-import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { Modal } from 'bootstrap';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import * as bootstrap from 'bootstrap';
+import { AccountService } from '../../services/account.service';
+import { DatabaseService } from '../../../shared/services/database.service';
+import { SortingService } from '../../../shared/services/sorting.service';
+import { FilteringService } from '../../../shared/services/filter.service';
+import { count, map, Observable, startWith } from 'rxjs';
 import { OrganizationService } from '../../services/organization.service';
+import { Router } from '@angular/router';
+import { PatientService } from '../../services/patient.service';
+import { PhysicianService } from '../../services/physician.service';
 
-interface Survey {
-  id: string;
-  name: string;
-  author: string;
-  date: string;
-  is_active: string;
-  responses: any[];
-}
+
 @Component({
   selector: 'app-surveys',
   templateUrl: './surveys.component.html',
   styleUrls: ['./surveys.component.scss']
 })
 export class SurveysComponent implements OnInit {
-  surveys: Survey[] = [];
-  doctors:any = ['Dr. Smith', 'Dr. Johnson', 'Dr. Williams', 'Dr. Brown', 'Dr. Jones'];
-  selectedDoctors: string[] = []; 
+  surveys: any = [];
+  doctors: any = [];
+  selectedDoctors: string[] = [];
   filteredSurveys: any[] = [];
   surveySearchText: string = '';
-  @ViewChild('shareSurveyModal') shareSurveyModal!: any;
   surveyShareLink: string = '';
   isLinkCopied: boolean = false;
-  constructor(private organizationService: OrganizationService,
-    private router: Router) { }
+  userData: any;
+  sortDirection: { [key: string]: 'asc' | 'desc' } = {};
+  constructor(
+    private organizationService: OrganizationService,
+    private router: Router,
+    private fb: FormBuilder,
+    private accountService: AccountService,
+    private databaseService: DatabaseService,
+    private patientService: PhysicianService,
+    private sortingService: SortingService,
+    private filteringService: FilteringService) { }
 
   ngOnInit(): void {
-    this.loadSurveys();
-  }
-
-  ngAfterViewInit(): void {
-    this.filterSurveys();
+    this.accountService.getUserData().subscribe({
+      next: async (data) => {
+        this.userData = data;
+        await this.loadSurveys();
+      },
+      error: (err) => console.error('Error fetching user data:', err)
+    });
   }
 
   loadSurveys() {
     this.organizationService.getSurveys().then((surveys) => {
-      this.surveys = surveys;
+      this.surveys = surveys?.map((records: any) => ({
+        ...records
+      })).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      this.filteredSurveys = [...this.surveys];
     });
   }
 
   editSurvey(survey: any) {
-    this.router.navigate(['/organization/pharma/design-survey'], { 
-      state: { survey: survey }  // Passing survey object as state
+    this.router.navigate(['/organization/pharma/design-survey'], {
+      state: { surveyId: survey.id }
     });
   }
 
@@ -63,46 +76,12 @@ export class SurveysComponent implements OnInit {
     return `http://localhost:4200/organization/pharma/survey/${survey.id}`;
   }
 
-  copyLink() {
-    const inputElement = document.createElement('textarea');
-    inputElement.value = this.surveyShareLink;
-    document.body.appendChild(inputElement);
-    inputElement.select();
-    document.execCommand('copy');
-    document.body.removeChild(inputElement);
 
-    this.isLinkCopied = true;
-  }
-
-  sortSurveyTable(column: keyof Survey, count: boolean = false): void {
-    //Implement sorting logic for products
-    if (!count)
-      this.filteredSurveys.sort((a, b) =>
-        a[column] > b[column] ? 1 : -1
-      );
-    else
-      this.filteredSurveys.sort((a, b) =>
-        a[column].length > b[column].length ? 1 : -1
-      );
-  }
-
-  filterSurveys(): void {
-    if (this.surveySearchText) {
-      this.filteredSurveys = this.surveys.filter(p =>
-        p.name
-          .toLowerCase()
-          .includes(this.surveySearchText.toLowerCase())
-      );
-    } else {
-      this.filteredSurveys = [...this.surveys];
-    }
-  }
-
-  openCreateSurvey():void{
+  openCreateSurvey(): void {
     this.router.navigate(['/organization/pharma/design-survey']);
   }
 
-  viewResponses(survey: Survey): void {
+  viewResponses(survey: any): void {
     this.router.navigate(['/organization/pharma/view-survey-response', survey.id]);  // Redirect to the view-survey-response component with the survey id as a parameter
   }
 
@@ -112,5 +91,24 @@ export class SurveysComponent implements OnInit {
     } else {
       alert('Please select at least one doctor to send the survey.');
     }
+  }
+
+  sortTable(column: string): void {
+    // Toggle the sort direction
+    this.sortDirection[column] = this.sortDirection[column] === 'asc' ? 'desc' : 'asc';
+    const direction = this.sortDirection[column];
+
+    // Use the sorting service to sort the data
+    this.filteredSurveys = this.sortingService.sort(this.filteredSurveys, column, direction);
+  }
+
+  applyFilters(): void {
+    this.filteredSurveys = this.filteringService.filter(
+      this.surveys,
+      {
+        name: this.surveySearchText
+      },
+      []
+    );
   }
 }

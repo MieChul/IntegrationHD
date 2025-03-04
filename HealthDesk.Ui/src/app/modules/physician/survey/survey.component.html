@@ -2,8 +2,15 @@
     <h2 class="animated-heading">
       <i class="bi bi-clipboard me-2"></i>Surveys
     </h2>
-    <div class="mb-3">
-      <input type="text" class="form-control" placeholder="Search by Survey Name" [(ngModel)]="searchTerm" (input)="filterSurveys()">
+    <div class="row mb-3 align-items-center">
+      <div class="col-md-6 d-flex justify-content-start flex-wrap">
+        <div class="mb-2 me-3">
+          <mat-form-field appearance="outline" class="w-100" class="w-100">
+            <mat-label>Search Surveys</mat-label>
+            <input matInput placeholder="Search by Name" [(ngModel)]="searchTerm" (input)="filterSurveys()" />
+          </mat-form-field>
+        </div>
+      </div>
     </div>
     <div class="table-responsive">
       <table class="table table-hover table-modern">
@@ -37,6 +44,9 @@
           </tr>
         </tbody>
       </table>
+      <div *ngIf="filteredSurveys?.length === 0" class="alert alert-info">
+        No surveys found.
+    </div>
     </div>
   </div>
   
