@@ -3,11 +3,10 @@
     <i class="bi bi-journal-medical me-2"></i>Medical Cases
   </h2>
 
- 
   <div class="row mb-3 align-items-center">
     <div class="col-md-8">
       <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Search by Specialty/Doctor Name</mat-label>
+        <mat-label>Search</mat-label>
         <input matInput placeholder="Search by Specialty/Doctor Name" [(ngModel)]="searchValue"
           (input)="searchMedicalCases()" />
       </mat-form-field>
@@ -19,14 +18,7 @@
     </div>
   </div>
 
-  <!-- Display Selected Preferences -->
-  <div id="preferencesTags" class="mb-4">
-    <span *ngFor="let tag of preferences" class="badge bg-primary me-2">
-      {{ tag }}
-    </span>
-  </div>
-
-  <!-- Tabs -->
+  <!-- Main Tabs -->
   <ul class="nav nav-tabs" id="medicalCasesTabs" role="tablist">
     <li class="nav-item" role="presentation">
       <button class="nav-link active" id="others-tab" data-bs-toggle="tab" data-bs-target="#others" type="button"
@@ -42,157 +34,289 @@
     </li>
   </ul>
   <div class="tab-content" id="medicalCasesTabsContent">
+    <!-- Medical Cases Main Tab with Sub Tabs -->
     <div class="tab-pane fade show active" id="others" role="tabpanel" aria-labelledby="others-tab">
-      <div class="row mt-3">
-        <!-- Recommended (Left Column) -->
-        <div class="col-md-4" style="border-right: 1px solid #ccc;">
-          <h4>Latest</h4>
-          <div *ngIf="latestMedicalCases.length > 0; else noRecommended">
-            <div class="row row-cols-2 g-2">
-              <div class="col" *ngFor="let case of latestMedicalCases">
-                <div class="card h-100">
-                  <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
-                    style="height: 120px; object-fit: cover" />
-                  <div class="card-body p-2">
-                    <h6 class="card-title text-truncate">
-                      Case {{ case.id }}
-                    </h6>
-                    <p class="card-text text-truncate">
-                      {{ case.shortDescription }}
-                    </p>
-                    <p class="card-text">
-                      <small>Submitted by: {{ case.submittedBy }}</small>
-                    </p>
-                    <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
-                      View
-                    </button>
-                    <!-- Icon-only action buttons with counts -->
-                    <div>
-                      <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
-                        data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
-                        <i class="bi bi-hand-thumbs-up"></i>
-                        <span class="ms-1">{{ case.likeCount }}</span>
-                      </button>
-                      <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
-                        data-bs-placement="top" title="Comment" (click)="viewComments(case.id)">
-                        <i class="bi bi-chat"></i>
-                        <span class="ms-1">{{ case.comments.length }}</span>
-                      </button>
-                      <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
-                        title="Share" (click)="shareCase(case.id)">
-                        <i class="bi bi-share"></i>
-                      </button>
+      <!-- Sub Tabs for Medical Cases -->
+      <ul class="nav nav-tabs mt-3" id="medicalCasesSubTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="home-sub-tab" data-bs-toggle="tab" data-bs-target="#homeSub" type="button" role="tab" aria-controls="homeSub" aria-selected="true" (click)="setActiveSubTab('home')">Home</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="trending-sub-tab" data-bs-toggle="tab" data-bs-target="#trendingSub" type="button" role="tab" aria-controls="trendingSub" aria-selected="false" (click)="setActiveSubTab('trending')">Trending</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="latest-sub-tab" data-bs-toggle="tab" data-bs-target="#latestSub" type="button" role="tab" aria-controls="latestSub" aria-selected="false" (click)="setActiveSubTab('latest')">Latest</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="mychoice-sub-tab" data-bs-toggle="tab" data-bs-target="#mychoiceSub" type="button" role="tab" aria-controls="mychoiceSub" aria-selected="false" (click)="setActiveSubTab('mychoice')">My Choice</button>
+        </li>
+      </ul>
+      <div class="tab-content mt-3" id="medicalCasesSubTabsContent">
+        <!-- Home Sub Tab: Shows Latest, Trending and My Choice in three columns -->
+        <div class="tab-pane fade show active" id="homeSub" role="tabpanel" aria-labelledby="home-sub-tab">
+          <div class="row">
+            <!-- Latest Column -->
+            <div class="col-md-4" style="border-right: 1px solid #ccc;">
+              <h4>Latest</h4>
+              <div *ngIf="latestMedicalCases.length > 0; else noLatestHome">
+                <div class="row row-cols-1 g-2">
+                  <div class="col" *ngFor="let case of latestMedicalCases">
+                    <div class="card h-100">
+                      <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
+                        style="height: 120px; object-fit: cover" />
+                      <div class="card-body p-2">
+                        <h6 class="card-title text-truncate">Case {{ case.id }}</h6>
+                        <p class="card-text text-truncate">{{ case.shortDescription }}</p>
+                        <p class="card-text">
+                          <small>Submitted by: {{ case.submittedBy }}</small>
+                        </p>
+                        <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
+                          View
+                        </button>
+                        <div>
+                          <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
+                            <i class="bi bi-hand-thumbs-up"></i>
+                            <span class="ms-1">{{ case.likeCount }}</span>
+                          </button>
+                          <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Comment" (click)="viewComments(case.id)">
+                            <i class="bi bi-chat"></i>
+                            <span class="ms-1">{{ case.comments.length }}</span>
+                          </button>
+                          <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
+                            title="Share" (click)="shareCase(case.id)">
+                            <i class="bi bi-share"></i>
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+              <ng-template #noLatestHome>
+                <p class="text-muted">No latest medical cases available.</p>
+              </ng-template>
+            </div>
+            <!-- Trending Column -->
+            <div class="col-md-4" style="border-right: 1px solid #ccc;">
+              <h4>Trending</h4>
+              <div *ngIf="trendingMedicalCases.length > 0; else noTrendingHome">
+                <div class="row row-cols-1 g-2">
+                  <div class="col" *ngFor="let case of trendingMedicalCases">
+                    <div class="card h-100">
+                      <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
+                        style="height: 120px; object-fit: cover" />
+                      <div class="card-body p-2">
+                        <h6 class="card-title text-truncate">Case {{ case.id }}</h6>
+                        <p class="card-text text-truncate">{{ case.shortDescription }}</p>
+                        <p class="card-text">
+                          <small>Submitted by: {{ case.submittedBy }}</small>
+                        </p>
+                        <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
+                          View
+                        </button>
+                        <div>
+                          <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
+                            <i class="bi bi-hand-thumbs-up"></i>
+                            <span class="ms-1">{{ case.likeCount }}</span>
+                          </button>
+                          <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Comment" (click)="viewComments(case.id)">
+                            <i class="bi bi-chat"></i>
+                            <span class="ms-1">{{ case.comments.length }}</span>
+                          </button>
+                          <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
+                            title="Share" (click)="shareCase(case.id)">
+                            <i class="bi bi-share"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <ng-template #noTrendingHome>
+                <p class="text-muted">No trending medical cases available.</p>
+              </ng-template>
+            </div>
+            <!-- My Choice Column -->
+            <div class="col-md-4">
+              <h4>My Choice</h4>
+              <div class="preferences-container mb-4 p-3" style="box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                <h5>Your Preferences</h5>
+                <div id="preferencesTags">
+                  <span *ngFor="let tag of preferences" class="badge bg-primary me-2">
+                    {{ tag }}
+                  </span>
+                </div>
+              </div>
+              <div *ngIf="recommendedMedicalCases.length > 0; else noMyChoiceHome">
+                <div class="row row-cols-1 g-2">
+                  <div class="col" *ngFor="let case of recommendedMedicalCases">
+                    <div class="card h-100">
+                      <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
+                        style="height: 120px; object-fit: cover" />
+                      <div class="card-body p-2">
+                        <h6 class="card-title text-truncate">Case {{ case.id }}</h6>
+                        <p class="card-text text-truncate">{{ case.shortDescription }}</p>
+                        <p class="card-text">
+                          <small>Submitted by: {{ case.submittedBy }}</small>
+                        </p>
+                        <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
+                          View
+                        </button>
+                        <div>
+                          <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
+                            <i class="bi bi-hand-thumbs-up"></i>
+                            <span class="ms-1">{{ case.likeCount }}</span>
+                          </button>
+                          <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Comment" (click)="viewComments(case.id)">
+                            <i class="bi bi-chat"></i>
+                            <span class="ms-1">{{ case.comments.length }}</span>
+                          </button>
+                          <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
+                            title="Share" (click)="shareCase(case.id)">
+                            <i class="bi bi-share"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <ng-template #noMyChoiceHome>
+                <p class="text-muted">No cases available.</p>
+              </ng-template>
             </div>
           </div>
-          <ng-template #noRecommended>
-            <p class="text-muted">No medical cases available.</p>
-          </ng-template>
         </div>
-
-        <!-- Latest (Center Column) -->
-        <div class="col-md-4" style="border-right: 1px solid #ccc;">
-          <h4>Trending</h4>
-          <div *ngIf="trendingMedicalCases.length > 0; else noLatest">
-            <div class="row row-cols-2 g-2">
-              <div class="col" *ngFor="let case of trendingMedicalCases">
-                <div class="card h-100">
-                  <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
-                    style="height: 120px; object-fit: cover" />
-                  <div class="card-body p-2">
-                    <h6 class="card-title text-truncate">
-                      Case {{ case.id }}
-                    </h6>
-                    <p class="card-text text-truncate">
-                      {{ case.shortDescription }}
-                    </p>
-                    <p class="card-text">
-                      <small>Submitted by: {{ case.submittedBy }}</small>
-                    </p>
-                    <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
-                      View
+        <!-- Trending Sub Tab: Only trending cases (3 per row) -->
+        <div class="tab-pane fade" id="trendingSub" role="tabpanel" aria-labelledby="trending-sub-tab">
+          <div class="row">
+            <div class="col-md-4 mb-3" *ngFor="let case of trendingMedicalCases">
+              <div class="card h-100">
+                <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
+                  style="height: 120px; object-fit: cover" />
+                <div class="card-body p-2">
+                  <h6 class="card-title text-truncate">Case {{ case.id }}</h6>
+                  <p class="card-text text-truncate">{{ case.shortDescription }}</p>
+                  <p class="card-text">
+                    <small>Submitted by: {{ case.submittedBy }}</small>
+                  </p>
+                  <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
+                    View
+                  </button>
+                  <div>
+                    <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
+                      data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
+                      <i class="bi bi-hand-thumbs-up"></i>
+                      <span class="ms-1">{{ case.likeCount }}</span>
                     </button>
-                    <!-- Icon-only action buttons with counts -->
-                    <div>
-                      <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
-                        data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
-                        <i class="bi bi-hand-thumbs-up"></i>
-                        <span class="ms-1">{{ case.likeCount }}</span>
-                      </button>
-                      <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
-                        data-bs-placement="top" title="Comment" (click)="viewComments(case.id)">
-                        <i class="bi bi-chat"></i>
-                        <span class="ms-1">{{ case.comments.length }}</span>
-                      </button>
-                      <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
-                        title="Share" (click)="shareCase(case.id)">
-                        <i class="bi bi-share"></i>
-                      </button>
-                    </div>
+                    <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
+                      data-bs-placement="top" title="Comment" (click)="viewComments(case.id)">
+                      <i class="bi bi-chat"></i>
+                      <span class="ms-1">{{ case.comments.length }}</span>
+                    </button>
+                    <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
+                      title="Share" (click)="shareCase(case.id)">
+                      <i class="bi bi-share"></i>
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <ng-template #noLatest>
-            <p class="text-muted">No trending medical cases.</p>
-          </ng-template>
         </div>
-
-        <!-- Trending (Right Column) -->
-        <div class="col-md-4">
-          <h4>My Choice</h4>
-          <div *ngIf="recommendedMedicalCases.length > 0; else noTrending">
-            <div class="row row-cols-2 g-2">
-              <div class="col" *ngFor="let case of recommendedMedicalCases">
-                <div class="card h-100">
-                  <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
-                    style="height: 120px; object-fit: cover" />
-                  <div class="card-body p-2">
-                    <h6 class="card-title text-truncate">
-                      Case {{ case.id }}
-                    </h6>
-                    <p class="card-text text-truncate">
-                      {{ case.shortDescription }}
-                    </p>
-                    <p class="card-text">
-                      <small>Submitted by: {{ case.submittedBy }}</small>
-                    </p>
-                    <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
-                      View
+        <!-- Latest Sub Tab: Only latest cases (3 per row) -->
+        <div class="tab-pane fade" id="latestSub" role="tabpanel" aria-labelledby="latest-sub-tab">
+          <div class="row">
+            <div class="col-md-4 mb-3" *ngFor="let case of latestMedicalCases">
+              <div class="card h-100">
+                <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
+                  style="height: 120px; object-fit: cover" />
+                <div class="card-body p-2">
+                  <h6 class="card-title text-truncate">Case {{ case.id }}</h6>
+                  <p class="card-text text-truncate">{{ case.shortDescription }}</p>
+                  <p class="card-text">
+                    <small>Submitted by: {{ case.submittedBy }}</small>
+                  </p>
+                  <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
+                    View
+                  </button>
+                  <div>
+                    <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
+                      data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
+                      <i class="bi bi-hand-thumbs-up"></i>
+                      <span class="ms-1">{{ case.likeCount }}</span>
                     </button>
-                    <!-- Icon-only action buttons with counts -->
-                    <div>
-                      <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
-                        data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
-                        <i class="bi bi-hand-thumbs-up"></i>
-                        <span class="ms-1">{{ case.likeCount }}</span>
-                      </button>
-                      <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
-                        data-bs-placement="top" title="Comment" (click)="viewComments(case.id)">
-                        <i class="bi bi-chat"></i>
-                        <span class="ms-1">{{ case.comments.length }}</span>
-                      </button>
-                      <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
-                        title="Share" (click)="shareCase(case.id)">
-                        <i class="bi bi-share"></i>
-                      </button>
-                    </div>
+                    <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
+                      data-bs-placement="top" title="Comment" (click)="viewComments(case.id)">
+                      <i class="bi bi-chat"></i>
+                      <span class="ms-1">{{ case.comments.length }}</span>
+                    </button>
+                    <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
+                      title="Share" (click)="shareCase(case.id)">
+                      <i class="bi bi-share"></i>
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <ng-template #noTrending>
-            <p class="text-muted">No cases available.</p>
-          </ng-template>
+        </div>
+        <!-- My Choice Sub Tab: Only my choices with preferences shown -->
+        <div class="tab-pane fade" id="mychoiceSub" role="tabpanel" aria-labelledby="mychoice-sub-tab">
+          <div class="preferences-container mb-4 p-3" style="box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <h5>Your Preferences</h5>
+            <div id="preferencesTags">
+              <span *ngFor="let tag of preferences" class="badge bg-primary me-2">
+                {{ tag }}
+              </span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4 mb-3" *ngFor="let case of recommendedMedicalCases">
+              <div class="card h-100">
+                <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
+                  style="height: 120px; object-fit: cover" />
+                <div class="card-body p-2">
+                  <h6 class="card-title text-truncate">Case {{ case.id }}</h6>
+                  <p class="card-text text-truncate">{{ case.shortDescription }}</p>
+                  <p class="card-text">
+                    <small>Submitted by: {{ case.submittedBy }}</small>
+                  </p>
+                  <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
+                    View
+                  </button>
+                  <div>
+                    <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
+                      data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
+                      <i class="bi bi-hand-thumbs-up"></i>
+                      <span class="ms-1">{{ case.likeCount }}</span>
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
+                      data-bs-placement="top" title="Comment" (click)="viewComments(case.id)">
+                      <i class="bi bi-chat"></i>
+                      <span class="ms-1">{{ case.comments.length }}</span>
+                    </button>
+                    <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
+                      title="Share" (click)="shareCase(case.id)">
+                      <i class="bi bi-share"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- My Medical Cases Tab (unchanged) -->
     <div class="tab-pane fade" id="yours" role="tabpanel" aria-labelledby="yours-tab">
       <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
         <h4>My Home MedicalCases</h4>
@@ -207,19 +331,14 @@
               <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
                 style="height: 160px; object-fit: cover" />
               <div class="card-body p-3">
-                <h6 class="card-title text-truncate">
-                  Case {{ case.id }}
-                </h6>
-                <p class="card-text text-truncate">
-                  {{ case.shortDescription }}
-                </p>
+                <h6 class="card-title text-truncate">Case {{ case.id }}</h6>
+                <p class="card-text text-truncate">{{ case.shortDescription }}</p>
                 <p class="card-text">
                   <small>Submitted by: {{ case.submittedBy }}</small>
                 </p>
                 <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
                   View
                 </button>
-                <!-- Icon-only action buttons with counts -->
                 <div class="d-flex justify-content-start">
                   <button class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="tooltip" data-bs-placement="top"
                     title="Like" (click)="likeCase(case.id)">
@@ -252,7 +371,7 @@
 </div>
 
 <!-- Preferences Modal -->
-<div class="modal fade" data-bs-backdrop='static' id="preferencesModal" tabindex="-1" aria-labelledby="preferencesModalLabel" aria-hidden="true">
+<div class="modal fade" data-bs-backdrop="static" id="preferencesModal" tabindex="-1" aria-labelledby="preferencesModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">

@@ -4,9 +4,13 @@
   </h1>
   <form [formGroup]="prescriptionForm">
     <div class="header mb-3" *ngIf="currentTabIndex === 3">
-      <button class="btn btn-primary generate pointer-cursor" (click)="generatePDF()"
+      <button class="btn btn-primary generate pointer-cursor m-2" (click)="generatePDF()"
         [disabled]="currentTabIndex !== 3">
-        <i class="bi bi-file-earmark-text me-2"></i>Generate Prescription
+        <i class="bi bi-file-earmark-text me-2"></i>Preview
+      </button>
+      <button class="btn btn-primary generate pointer-cursor" (click)="openConfirmModal()"
+        [disabled]="currentTabIndex !== 3">
+        <i class="bi bi-file-earmark-text me-2"></i>Generate
       </button>
       <mat-slide-toggle formControlName="useHeader" class="m-2">
         <b>Use Saved Template Header and Footer?</b>
@@ -194,14 +198,15 @@
                     <mat-form-field appearance="outline" class="w-100">
                       <mat-label>Body System</mat-label>
                       <mat-select formControlName="name">
-                          <mat-option>
-                              <ngx-mat-select-search [formControl]="systemFilterCtrl" placeholderLabel="Search System"></ngx-mat-select-search>
-                          </mat-option>
-                          <mat-option *ngFor="let record of bodySystems" [value]="record">
-                              {{ record }}
-                          </mat-option>
+                        <mat-option>
+                          <ngx-mat-select-search [formControl]="systemFilterCtrl"
+                            placeholderLabel="Search System"></ngx-mat-select-search>
+                        </mat-option>
+                        <mat-option *ngFor="let record of bodySystems" [value]="record">
+                          {{ record }}
+                        </mat-option>
                       </mat-select>
-                  </mat-form-field>
+                    </mat-form-field>
                   </td>
                   <td>
                     <mat-form-field appearance="outline" class="w-100">
@@ -238,9 +243,6 @@
           <!-- Top Actions: Add Profile & Custom Profile -->
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h3>Final Investigation</h3>
-            <button class="btn btn-primary" (click)="navigateToAddProfile()">
-              <i class="bi bi-plus-circle"></i> Add Profile
-            </button>
           </div>
 
           <!-- Select Profiles: Material Multiselect Dropdown -->
@@ -248,12 +250,12 @@
             <div class="col">
               <mat-form-field appearance="outline" class="w-100">
                 <mat-label>Select Profiles</mat-label>
-                <mat-select formControlName="selectedProfilesControl" multiple>
-                  <ngx-mat-select-search [formControl]="investigationFilterCtrl"
-                    placeholderLabel="Search Profile">
+                <mat-select formControlName="selectedProfilesControl" multiple
+                  (selectionChange)="onProfileSelectionChange($event.value)">
+                  <ngx-mat-select-search [formControl]="profileDatasFilterCtrl" placeholderLabel="Search Profile">
                   </ngx-mat-select-search>
-                  <mat-option *ngFor="let investigation of filteredInvestigations | async" [value]="profiles">
-                    {{ investigation }}
+                  <mat-option *ngFor="let profile of filteredProfileDatas | async" [value]="profile">
+                    {{ profile }}
                   </mat-option>
                 </mat-select>
               </mat-form-field>
@@ -278,7 +280,18 @@
                 <tr *ngFor="let investigation of finalInvestigationsFormArray.controls; let i = index"
                   [formGroupName]="i">
                   <td>
-                    <input type="text" class="form-control" formControlName="name" placeholder="Investigation Name" />
+                    <mat-form-field appearance="outline" class="w-100">
+                      <mat-label>Investigation</mat-label>
+                      <mat-select formControlName="name">
+                        <ngx-mat-select-search [formControl]="investigationFilterCtrl"
+                          placeholderLabel="Search Investigation">
+                        </ngx-mat-select-search>
+                        <mat-option *ngFor="let investigation of filteredInvestigations | async"
+                          [value]="investigation">
+                          {{ investigation }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
                   </td>
                   <td>
                     <button class="btn btn-danger btn-sm" (click)="removeInvestigation(i)">
@@ -321,6 +334,9 @@
                   <input matInput [matDatepicker]="picker" formControlName="nextFollowUp">
                   <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                   <mat-datepicker #picker></mat-datepicker>
+                  <mat-error *ngIf="prescriptionForm.get('nextFollowUp')?.hasError('pastDate')">
+                    Date cannot be in the past.
+                  </mat-error>
                 </mat-form-field>
               </div>
             </div>
@@ -331,113 +347,132 @@
             <button class="btn btn-success add-button pointer-cursor" (click)="addRx()" title="Add Rx">
               <i class="bi bi-plus-lg"></i>
             </button>
-            <table class="table table-hover table-modern">
-              <thead class="table-light">
-                <tr>
-                  <th>Dosage Form</th>
-                  <th>Drug Name</th>
-                  <th>Strength</th>
-                  <th>Times</th>
-                  <th>Duration</th>
-                  <th>Instruction</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody formArrayName="rx">
-                <tr *ngFor="let rxControl of rx.controls; let i = index" [formGroupName]="i">
-                  <td>
-                    <mat-form-field appearance="outline" class="w-50">
-                      <mat-label>Drug</mat-label>
-                      <mat-select formControlName="drugName" (selectionChange)="onDrugChange($event.value,1)" required>
-                          <mat-option>
-                              <ngx-mat-select-search [formControl]="drugFilterCtrl"
-                                  placeholderLabel="Search treatment drug"></ngx-mat-select-search>
-                          </mat-option>
+
+            <!-- Make table responsive and enable horizontal scroll -->
+            <div class="table-responsive" style="overflow-x: auto; max-width: 100%;">
+              <table class="table table-hover table-modern">
+                <thead class="table-light">
+                  <tr>
+                    <th style="min-width: 150px;">Drug</th>
+                    <th style="min-width: 120px;">Form</th>
+                    <th style="min-width: 100px;">Strength</th>
+                    <th style="min-width: 100px;">Times</th>
+                    <th style="min-width: 100px;">Duration</th>
+                    <th style="min-width: 200px;">Instruction</th>
+                    <th style="min-width: 80px;">Action</th>
+                  </tr>
+                </thead>
+                <tbody formArrayName="rx">
+                  <tr *ngFor="let rxControl of rx.controls; let i = index" [formGroupName]="i">
+                    <td>
+                      <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Drug</mat-label>
+                        <mat-select formControlName="drugName" (selectionChange)="onDrugChange($event.value,1)">
+                          <ngx-mat-select-search [formControl]="drugFilterCtrl"
+                            placeholderLabel="Search treatment drug">
+                          </ngx-mat-select-search>
                           <mat-option *ngFor="let drug of filteredDrugs | async" [value]="drug">
-                              {{ drug }}
+                            {{ drug }}
                           </mat-option>
-                      </mat-select>
-                  </mat-form-field>
-                  </td>
-                  <td>
-                    <mat-form-field appearance="outline" class="w-50">
-                      <mat-label>Form</mat-label>
-                      <mat-select formControlName="dosageForm" (selectionChange)="onDosageFormChange('','',1)">
-                          <mat-option>
-                              <ngx-mat-select-search [formControl]="fromFilterCtrl"
-                                  placeholderLabel="Search dosage form"></ngx-mat-select-search>
-                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </td>
+                    <td>
+                      <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Form</mat-label>
+                        <mat-select formControlName="dosageForm" (selectionChange)="onDosageFormChange('','',1)">
+                          <ngx-mat-select-search [formControl]="fromFilterCtrl" placeholderLabel="Search dosage form">
+                          </ngx-mat-select-search>
                           <mat-option *ngFor="let form of filteredFroms | async" [value]="form">
-                              {{ form }}
+                            {{ form }}
                           </mat-option>
-                      </mat-select>
-                  </mat-form-field>
-                  </td>
-                  <td>
-                    <mat-form-field appearance="outline" class="w-50">
-                      <mat-label>Strength</mat-label>
-                      <mat-select formControlName="strength">
-                          <mat-option>
-                              <ngx-mat-select-search [formControl]="strengthFilterCtrl"
-                                  placeholderLabel="Search strength unit"></ngx-mat-select-search>
-                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </td>
+                    <td>
+                      <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Strength</mat-label>
+                        <mat-select formControlName="strength">
+                          <ngx-mat-select-search [formControl]="strengthFilterCtrl"
+                            placeholderLabel="Search strength unit">
+                          </ngx-mat-select-search>
                           <mat-option *ngFor="let unit of filteredStrengths | async" [value]="unit">
-                              {{ unit }}
+                            {{ unit }}
                           </mat-option>
-                      </mat-select>
-                  </mat-form-field>
-                  </td>
-                  <td>
-                    <mat-form-field appearance="outline" class="w-50">
-                      <mat-label>Frequency</mat-label>
-                      <mat-select formControlName="times">
-                          <mat-option>
-                              <ngx-mat-select-search [formControl]="frequencyFilterCtrl"
-                                  placeholderLabel="Search frequency"></ngx-mat-select-search>
-                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </td>
+                    <td>
+                      <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Frequency</mat-label>
+                        <mat-select formControlName="times">
+                          <ngx-mat-select-search [formControl]="frequencyFilterCtrl"
+                            placeholderLabel="Search frequency">
+                          </ngx-mat-select-search>
                           <mat-option *ngFor="let unit of filteredFrequencies | async" [value]="unit">
-                              {{ unit }}
+                            {{ unit }}
                           </mat-option>
-                      </mat-select>
-                  </mat-form-field>
-                  </td>
-                  <td>
-                    <mat-form-field appearance="outline" class="w-50">
-                      <mat-label>Duration</mat-label>
-                      <mat-select formControlName="duration">
-                          <mat-option>
-                              <ngx-mat-select-search [formControl]="durationFilterCtrl"
-                                  placeholderLabel="Search duration"></ngx-mat-select-search>
-                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </td>
+                    <td>
+                      <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Duration</mat-label>
+                        <mat-select formControlName="duration">
+                          <ngx-mat-select-search [formControl]="durationFilterCtrl" placeholderLabel="Search duration">
+                          </ngx-mat-select-search>
                           <mat-option *ngFor="let unit of filteredDurations | async" [value]="unit">
-                              {{ unit }}
+                            {{ unit }}
                           </mat-option>
-                      </mat-select>
-                  </mat-form-field>
-                  </td>
-                  <td>
-                    <mat-form-field appearance="outline" class="w-50">
-                      <mat-label>Instructions</mat-label>
-                      <input matInput formControlName="instruction" />
-                    </mat-form-field>
-                  </td>
-                  <td>
-                    <button class="btn btn-danger pointer-cursor" (click)="removeRx(i)" data-bs-toggle="tooltip"
-                      title="Delete Rx">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                        </mat-select>
+                      </mat-form-field>
+                    </td>
+                    <td>
+                      <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Instructions</mat-label>
+                        <input matInput formControlName="instruction" />
+                      </mat-form-field>
+                    </td>
+                    <td>
+                      <button class="btn btn-danger pointer-cursor" (click)="removeRx(i)" data-bs-toggle="tooltip"
+                        title="Delete Rx">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
+
         </div>
         <div class="d-flex justify-content-between mt-4">
           <button class="btn btn-secondary" (click)="previousTab()">
             <i class="bi bi-arrow-left"></i> Back
           </button>
+          <button class="btn btn-primary" (click)="gotToHome()">
+            Go to Patient Management
+          </button>
         </div>
       </div>
     </div>
   </form>
+</div>
+<div class="modal fade" data-bs-backdrop='static' id="confirmSaveModal" tabindex="-1" aria-labelledby="confirmSaveLabel"
+  aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmSaveLabel">Confirm Save</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Have you previewed the prescription? No changes will be allowed after saving.</p>
+      </div>
+      <div class="modal-footer  d-flex justify-content-between">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="savePDF()">Save</button>
+      </div>
+    </div>
+  </div>
 </div>

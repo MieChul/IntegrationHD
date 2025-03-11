@@ -368,7 +368,6 @@ export class CustomizePrescriptionComponent implements OnInit {
             break;
 
           case 4:
-            await this.drawLogo(ctx, 0, true);
             this.drawClinicDetails(ctx, 10, true);
             this.drawPhysicianDetails(ctx, 500, true);
             break;
@@ -456,13 +455,21 @@ export class CustomizePrescriptionComponent implements OnInit {
     const maxHeight = 250; // Total height available for the header canvas
     const propertySpacing = 10; // Space between properties
 
-    let currentY = isType4 ? 100 : 40; // Initial Y position
+    let currentY = isType4 ? 100 : 40;
+    // Initial Y position
+    if (!isType4) {
+      ctx.font = `${this.getFontSize(this.prescriptionForm.get('clinicNameFontSize')?.value)}px ${this.prescriptionForm.get('clinicNameFontType')?.value}`;
+      ctx.fillStyle = this.prescriptionForm.get('clinicNameFontColor')?.value;
+      currentY = this.wrapText(ctx, this.prescriptionForm.get('clinicName')?.value || '', startX, currentY, maxWidth, lineHeight, maxHeight);
+    }
+    else {
+      ctx.font = `${this.getFontSize(this.prescriptionForm.get('clinicNameFontSize')?.value)}px ${this.prescriptionForm.get('clinicNameFontType')?.value}`;
+      ctx.fillStyle = this.prescriptionForm.get('clinicNameFontColor')?.value;
+      this.wrapText(ctx, this.prescriptionForm.get('clinicName')?.value || '', 350, 20, maxWidth, lineHeight, maxHeight);
+    }
 
-    ctx.font = `${this.getFontSize(this.prescriptionForm.get('clinicNameFontSize')?.value)}px ${this.prescriptionForm.get('clinicNameFontType')?.value}`;
-    ctx.fillStyle = this.prescriptionForm.get('clinicNameFontColor')?.value;
-    currentY = this.wrapText(ctx, this.prescriptionForm.get('clinicName')?.value || '', startX, currentY, maxWidth, lineHeight, maxHeight);
-
-    currentY += propertySpacing; // Add space before the next property
+    if (!isType4)
+      currentY += propertySpacing; // Add space before the next property
     if (currentY < maxHeight) {
       ctx.font = `${this.getFontSize(this.prescriptionForm.get('clinicAddressFontSize')?.value)}px ${this.prescriptionForm.get('clinicAddressFontType')?.value}`;
       ctx.fillStyle = this.prescriptionForm.get('clinicAddressFontColor')?.value;
@@ -906,4 +913,5 @@ export class CustomizePrescriptionComponent implements OnInit {
         console.error('Error loading image:', error);
       });
   }
+
 }

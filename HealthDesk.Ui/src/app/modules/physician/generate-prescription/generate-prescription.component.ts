@@ -2,12 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Router } from '@angular/router';
-import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { AccountService } from '../../services/account.service';
 import { PhysicianService } from '../../services/physician.service';
 import { catchError, firstValueFrom, from, map, Observable, of, startWith } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { DatabaseService } from '../../../shared/services/database.service';
+import * as bootstrap from 'bootstrap';
 
 @Component({
   selector: 'app-generate-prescription',
@@ -34,20 +35,23 @@ export class GeneratePrescriptionComponent implements OnInit {
   durations: string[] = [];
   bodySystems: string[] = [];
   investigations: string[] = [];
+  filteredInvestigations!: Observable<string[]>;
+  investigationFilterCtrl = new FormControl();
+  profileDatas: string[] = [];
   filteredFroms!: Observable<string[]>;
   filteredDrugs!: Observable<string[]>;
   filteredStrengths!: Observable<string[]>;
   filteredFrequencies!: Observable<string[]>;
   filteredDurations!: Observable<string[]>;
   filteredBodySystems!: Observable<string[]>;
-  filteredInvestigations!: Observable<string[]>;
+  filteredProfileDatas!: Observable<string[]>;
   fromFilterCtrl = new FormControl();
   drugFilterCtrl = new FormControl();
   strengthFilterCtrl = new FormControl();
   frequencyFilterCtrl = new FormControl();
   durationFilterCtrl = new FormControl();
   systemFilterCtrl = new FormControl();
-  investigationFilterCtrl = new FormControl();
+  profileDatasFilterCtrl = new FormControl();
 
   signature: string | ArrayBuffer | null = null;
   stamp: string | ArrayBuffer | null = null;
@@ -72,12 +76,13 @@ export class GeneratePrescriptionComponent implements OnInit {
         this.userData = data;
         this.physicianService.getDefaultPrescriptionHeaderFooter(this.userData.id).subscribe({
           next: async (response: any) => {
-            this.headerImg = await this.fetchImageAsBase64(response.data.header);
-            this.footerImg = await this.fetchImageAsBase64(response.data.footer);
+            // this.headerImg = await this.fetchImageAsBase64(response.data.header);
+            // this.footerImg = await this.fetchImageAsBase64(response.data.footer);
             this.drugs = await this.databaseService.getDrugs();
             this.frequencies = await this.databaseService.getFrequencies();
             this.durations = await this.databaseService.getDurations();
             this.bodySystems = await this.databaseService.getSystems();
+            this.investigations = await this.databaseService.getInvestigations();
             await this.loadProfiles();
             await this.initializeSearch();
           },
@@ -106,7 +111,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       date: [''],
       opd: [''],
       otherInstructions: [''],
-      nextFollowUp: [''],
+      nextFollowUp: ['', [this.futureDateValidator]],
       useHeader: [true],
       finalInvestigations: this.fb.array([])
     });
@@ -143,11 +148,25 @@ export class GeneratePrescriptionComponent implements OnInit {
       map((search) => this.filterOptions(search, this.strengths))
     );
 
-    this.filteredInvestigations = this.investigationFilterCtrl.valueChanges.pipe(
+    this.filteredProfileDatas = this.profileDatasFilterCtrl.valueChanges.pipe(
       startWith(''),
-      map((search) => this.filterOptions(search, this.profiles))
+      map((search) => this.filterOptions(search, this.profileDatas))
     );
 
+    this.filteredInvestigations = this.investigationFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.investigations))
+    );
+  }
+
+  futureDateValidator(control: AbstractControl): { [key: string]: boolean } | null {
+    if (!control.value) return null; // Allow empty values
+
+    const selectedDate = new Date(control.value);
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // Normalize to start of the day
+
+    return selectedDate < currentDate ? { pastDate: true } : null;
   }
 
   filterOptions(search: string, options: string[]): string[] {
@@ -192,6 +211,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       )
       .subscribe((profiles: any) => {
         this.profiles = profiles.data || [];
+        this.profileDatas = this.profiles.map((p: any) => p.name);
       });
   }
 
@@ -268,7 +288,9 @@ export class GeneratePrescriptionComponent implements OnInit {
     }
   }
 
-  async generatePDF() {
+  async generatePDF(): Promise<Blob> {
+    this.prescriptionForm.markAllAsTouched();
+    if (this.prescriptionForm.invalid) return Promise.reject('Form is invalid');
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageHeight = doc.internal.pageSize.height;
     const pageWidth = doc.internal.pageSize.width;
@@ -585,25 +607,41 @@ export class GeneratePrescriptionComponent implements OnInit {
 
 
     const pdfBlob = doc.output('blob');
-    const physicianId = this.userData.id;
-    const patientId = this.patientRecord.userId;
     const illness = complaintsArray.controls
       .map(control => control.value.text) // Extract the `text` value from each FormGroup
       .join(', ');
-
-    from(this.physicianService.uploadPrescription({ pdfBlob, physicianId, patientId, illness }))
-      .subscribe({
-        next: (response: any) => {
-          const pdfUrl = URL.createObjectURL(pdfBlob);
-          // API returns the generated PDF URL
-          window.open(pdfUrl, '_blank'); // Open the PDF in a new tab
-          console.log('Prescription generated and opened.');
-        },
-        error: (error) => {
-          console.error('Error uploading prescription:', error);
-        },
-      });;
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, '_blank'); // ✅ Open the PDF in a new tab
+    return pdfBlob;
   };
+
+  openConfirmModal() {
+    const modalRef = new bootstrap.Modal(document.getElementById('confirmSaveModal')!);
+    modalRef.show();
+  }
+
+  async savePDF() {
+    try {
+      const pdfBlob = await this.generatePDF(); // ✅ Call generatePDF first
+
+      const physicianId = this.userData.id;
+      const patientId = this.patientRecord.userId;
+      const complaintsArray = this.prescriptionForm.get('complaints') as FormArray;
+      const illness = complaintsArray.controls.map(control => control.value.text).join(', ');
+
+      from(this.physicianService.uploadPrescription({ pdfBlob, physicianId, patientId, illness }))
+        .subscribe({
+          next: (response: any) => {
+            this.gotToHome();
+          },
+          error: (error) => {
+            console.error('Error uploading prescription:', error);
+          },
+        });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    }
+  }
 
 
   // Trigger on investigation value change
@@ -612,10 +650,7 @@ export class GeneratePrescriptionComponent implements OnInit {
   }
 
 
-  navigateToAddProfile() {
-    // Store the current prescription in state
-    this.router.navigate(['/physician/add-profile'], { state: { prescription: this.prescriptionForm.value, patient: this.patientRecord } });
-  }
+
 
   addInvestigation(name: string = ''): void {
     this.finalInvestigationsFormArray.push(
@@ -646,31 +681,43 @@ export class GeneratePrescriptionComponent implements OnInit {
     }
   }
 
-  onProfileSelectionChange(selectedProfiles: any[]): void {
+  onProfileSelectionChange(selectedProfiles: string[]): void {
     this.selectedProfiles = selectedProfiles;
 
     // Clear current investigations in the FormArray
     this.finalInvestigationsFormArray.clear();
 
-    // Add investigations from selected profiles
-    for (const profile of this.selectedProfiles) {
-      for (const investigation of profile.investigations) {
-        this.finalInvestigationsFormArray.push(
-          this.fb.group({
-            name: [investigation.name, Validators.required], // Add validation as needed
-          })
-        );
-      }
-    }
+    // Find selected profiles from this.profiles
+    const selectedProfileObjects = this.profiles.filter((profile: any) => this.selectedProfiles.includes(profile.name));
+
+    // Extract investigations from the selected profiles
+    let selectedInvestigations: any[] = [];
+    selectedProfileObjects.forEach((profile: any) => {
+      selectedInvestigations = [...selectedInvestigations, ...profile.investigations];
+    });
+
+    // Remove duplicate investigations by name
+    const uniqueInvestigations = selectedInvestigations.filter(
+      (inv, index, self) => index === self.findIndex(t => t.name === inv.name)
+    );
+
+    // Add investigations to the FormArray
+    uniqueInvestigations.forEach(investigation => {
+      this.finalInvestigationsFormArray.push(
+        this.fb.group({
+          name: [investigation.name, Validators.required], // Add validation as needed
+        })
+      );
+    });
 
     // Add custom investigations to the FormArray
-    for (const customInv of this.customInvestigations) {
+    this.customInvestigations.forEach(customInv => {
       this.finalInvestigationsFormArray.push(
         this.fb.group({
           name: [customInv.name, Validators.required], // Add validation as needed
         })
       );
-    }
+    });
   }
 
   addCustomInvestigation(): void {
@@ -712,4 +759,7 @@ export class GeneratePrescriptionComponent implements OnInit {
     }
   }
 
+  gotToHome() {
+    this.router.navigate(['/physician/patient-record']);
+  }
 }

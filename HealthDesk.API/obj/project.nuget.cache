@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "vt8kAcpfbEU=",
+  "dgSpecHash": "XpMEt2GrlcE=",
   "success": true,
-  "projectFilePath": "d:\\IntegrationHD\\HealthDesk.API\\HealthDesk.API.csproj",
+  "projectFilePath": "D:\\IntegrationHD\\HealthDesk.Api\\HealthDesk.API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Admin\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\Admin\\.nuget\\packages\\dnsclient\\1.6.1\\dnsclient.1.6.1.nupkg.sha512",
