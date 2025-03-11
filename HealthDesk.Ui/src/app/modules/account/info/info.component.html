@@ -382,6 +382,27 @@
                     <div *ngIf="tab =='q_info'">
                         <div class="card mb-4">
                             <div class="card-body">
+                                <div class="row col-sm-4">   
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>Speciality</mat-label>
+                                        <mat-select formControlName="speciality" required
+                                            [ngClass]="{ 'is-invalid': submitted && f['speciality'].errors }"
+                                            required>
+                                            <mat-option>
+                                                <ngx-mat-select-search [formControl]="specialityFilterCtrl"
+                                                    placeholderLabel="Search Speciality"></ngx-mat-select-search>
+                                            </mat-option>
+                                            <mat-option *ngFor="let speciality of filteredSpecialities | async"
+                                                [value]="speciality">
+                                                {{ speciality }}
+                                            </mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+                                    <div *ngIf="submitted && f['speciality'].errors" class="invalid-feedback d-flex">
+                                        <div>Speciality is required</div>
+                                    </div>
+                                </div>
+                                <hr>
                                 <p class="mb-4"><span class="text-primary font-italic me-1">Medical Registration</span>
                                 </p>
                                 <div class="row" formGroupName="medicalRegistration">
@@ -452,7 +473,25 @@
                                 </mat-checkbox>
                                 <div class="row mb-1" formGroupName="graduation">
                                     <span class="text-success font-italic mb-2">Graduation<i class="danger">*</i></span>
-                                    <div class="form-floating mb-3 col-sm-4">
+                                    <div class="mb-3 col">  
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Qualification</mat-label>
+                                            <mat-select formControlName="name">
+                                                <mat-option>
+                                                    <ngx-mat-select-search [formControl]="graduationFilterCtrl"
+                                                        placeholderLabel="Search Graduation"></ngx-mat-select-search>
+                                                </mat-option>
+                                                <mat-option *ngFor="let graduation of filteredGraduations | async"
+                                                    [value]="graduation">
+                                                    {{ graduation }}
+                                                </mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
+                                        <div *ngIf="submitted && gNameError" class="invalid-feedback d-flex">
+                                            <div>Qualification is required</div>
+                                        </div>
+                                    </div>
+                                    <div class="form-floating mb-3 col">
                                         <select class="form-select" id="year" formControlName="year"
                                             [ngClass]="{ 'is-invalid': submitted && (gYearError || f['graduation'].get('year')?.errors) }">
                                             <option value="" disabled selected>Select Year</option>
@@ -464,7 +503,7 @@
                                         <label for="year" class="form-label-floating">Year Of passing</label>
                                     </div>
 
-                                    <div class="form-floating mb-3 col-sm-4">
+                                    <div class="form-floating mb-3 col">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Institute Name</mat-label>
                                             <mat-select formControlName="institute"
@@ -483,7 +522,7 @@
                                             <div>Institute is required</div>
                                         </div>
                                     </div>
-                                    <div class="form-floating mb-3 col-sm-4">
+                                    <div class="form-floating mb-3 col">
                                         <div class="row">
                                             <div class="col-sm-9">
                                                 <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
@@ -504,14 +543,29 @@
                                 <hr>
                                 <div class="row" formGroupName="postGraduation">
                                     <span class="text-success font-italic mb-2">Post Graduation</span>
-                                    <div class="form-floating col-sm-4">
+                                    <div class="mb-3 col">  
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Qualification</mat-label>
+                                            <mat-select formControlName="name">
+                                                <mat-option>
+                                                    <ngx-mat-select-search [formControl]="postGraduationFilterCtrl"
+                                                        placeholderLabel="Search Post Graduation"></ngx-mat-select-search>
+                                                </mat-option>
+                                                <mat-option *ngFor="let graduation of filteredPostGraduations | async"
+                                                    [value]="graduation">
+                                                    {{ graduation }}
+                                                </mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
+                                    </div>
+                                    <div class="form-floating col">
                                         <select class="form-select" id="year" formControlName="year">
                                             <option value="" disabled selected>Select Year</option>
                                             <option *ngFor="let year of yearsList" [value]="year">{{ year }}</option>
                                         </select>
                                     </div>
 
-                                    <div class="form-floating col-sm-4">
+                                    <div class="form-floating col">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Institute Name</mat-label>
                                             <mat-select formControlName="institute">
@@ -526,7 +580,7 @@
                                             </mat-select>
                                         </mat-form-field>
                                     </div>
-                                    <div class="form-floating mb-3 col-sm-4">
+                                    <div class="form-floating mb-3 col">
                                         <div class="row">
                                             <div class="col-sm-9">
                                                 <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
@@ -544,14 +598,29 @@
                                 <hr>
                                 <div class="row" formGroupName="superSpecialization">
                                     <span class="text-success font-italic mb-2">Super Specialization</span>
-                                    <div class="form-floating col-sm-4">
+                                    <div class="mb-3 col">  
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Qualification</mat-label>
+                                            <mat-select formControlName="name">
+                                                <mat-option>
+                                                    <ngx-mat-select-search [formControl]="superSpecializationFilterCtrl"
+                                                        placeholderLabel="Search Super Specialization"></ngx-mat-select-search>
+                                                </mat-option>
+                                                <mat-option *ngFor="let graduation of filteredSuperSpecializaion | async"
+                                                    [value]="graduation">
+                                                    {{ graduation }}
+                                                </mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
+                                    </div>
+                                    <div class="form-floating col">
                                         <select class="form-select" id="year" formControlName="year">
                                             <option value="" disabled selected>Select Year</option>
                                             <option *ngFor="let year of yearsList" [value]="year">{{ year }}</option>
                                         </select>
                                     </div>
 
-                                    <div class="form-floating col-sm-4">
+                                    <div class="form-floating col">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Institute Name</mat-label>
                                             <mat-select formControlName="institute">
@@ -566,7 +635,7 @@
                                             </mat-select>
                                         </mat-form-field>
                                     </div>
-                                    <div class="form-floating mb-3 col-sm-4">
+                                    <div class="form-floating mb-3 col">
                                         <div class="row">
                                             <div class="col-sm-9">
                                                 <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
@@ -583,7 +652,12 @@
                                 <hr>
                                 <div class="row" formGroupName="additionalQualification">
                                     <span class="text-success font-italic mb-2">Additional Qualifications</span>
-                                    <div class="form-floating col-sm-4">
+                                    <div class="form-floating col">
+                                        <input type="text" class="form-control" id="institute" placeholder="Institute"
+                                            autocomplete="off" formControlName="name">
+                                        <label for="institute" class="form-label-floating">Qualification</label>
+                                    </div>
+                                    <div class="form-floating col">
                                         <select class="form-select" id="year" formControlName="year">
                                             <option value="" disabled selected>Select Year</option>
                                             <option *ngFor="let year of yearsList" [value]="year">{{ year }}</option>
@@ -591,12 +665,12 @@
                                     </div>
 
                                     
-                                    <div class="form-floating col-sm-4">
+                                    <div class="form-floating col">
                                         <input type="text" class="form-control" id="institute" placeholder="Institute"
                                             autocomplete="off" formControlName="institute">
                                         <label for="institute" class="form-label-floating">Name Of Institute</label>
                                     </div>
-                                    <div class="form-floating mb-3 col-sm-4">
+                                    <div class="form-floating mb-3 col">
                                         <div class="row">
                                             <div class="col-sm-9">
                                                 <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
@@ -610,7 +684,6 @@
                                         </div>
                                     </div>
                                 </div>
-
                                 <hr>
                             </div>
                         </div>

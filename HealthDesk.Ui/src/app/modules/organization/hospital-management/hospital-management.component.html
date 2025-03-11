@@ -2,7 +2,6 @@
     <h1 class="animated-heading">
         <i class="bi bi-hospital me-2"></i>Hospital
     </h1>
-
     <!-- Tabs -->
     <ul class="nav nav-tabs mb-3">
         <li class="nav-item">
@@ -20,44 +19,37 @@
         <!-- Physician List Tab -->
         <div *ngIf="selectedTab === 'physicianList'">
             <div class="row mb-3 align-items-center">
-                <div class="col">
-                    <div class="mb-2 me-3">
-                        <label for="physicianSearch" class="form-label label-modern shadow">Search by Physician</label>
-                        <input type="text" id="physicianSearch" class="form-control" [(ngModel)]="physicianSearchText"
-                            (ngModelChange)="filterPhysicians()" />
-                    </div>
+                <div class="col-md-4">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Search by Physician</mat-label>
+                        <input matInput placeholder="Physician" [(ngModel)]="searchValue"
+                            (ngModelChange)="applyPhysicianFilters()">
+                    </mat-form-field>
                 </div>
-                <div class="col">
-                    <div class="mb-2 me-3">
-                        <label for="specialitySearch" class="form-label label-modern shadow">Search by
-                            Speciality</label>
-                        <input type="text" id="specialitySearch" class="form-control" [(ngModel)]="specialitySearchText"
-                            (ngModelChange)="filterPhysicians()" />
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="mb-2 me-3">
-                        <label for="opdSearch" class="form-label label-modern shadow">Search by OPD Time</label>
-                        <input type="text" id="opdSearch" class="form-control" [(ngModel)]="opdSearchText"
-                            (ngModelChange)="filterPhysicians()" />
-                    </div>
+                <div class="col-md-4">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Search by Speciality</mat-label>
+                        <input matInput placeholder="Speciality" [(ngModel)]="specialitySearchText"
+                            (ngModelChange)="applyPhysicianFilters()">
+                    </mat-form-field>
                 </div>
                 <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
                     <button class="btn btn-primary me-2" (click)="openPhysicianDialog()">Add Physician</button>
                     <button class="btn btn-success" (click)="exportToExcel()">Export to Excel</button>
                 </div>
+
             </div>
 
             <div class="table-responsive">
                 <table class="table table-hover table-modern">
                     <thead>
                         <tr>
-                            <th (click)="sortPhysicianTable('firstName')">First Name</th>
-                            <th (click)="sortPhysicianTable('middleName')">Middle Name</th>
-                            <th (click)="sortPhysicianTable('lastName')">Last Name</th>
-                            <th (click)="sortPhysicianTable('qualification')">Qualification</th>
-                            <th (click)="sortPhysicianTable('speciality')">Speciality</th>
-                            <th (click)="sortPhysicianTable('opdTiming')">OPD Days & Time</th>
+                            <th (click)="sortPhysicians('firstName')">First Name</th>
+                            <th (click)="sortPhysicians('middleName')">Middle Name</th>
+                            <th (click)="sortPhysicians('lastName')">Last Name</th>
+                            <th (click)="sortPhysicians('qualification')">Qualification</th>
+                            <th (click)="sortPhysicians('speciality')">Speciality</th>
+                            <th (click)="sortPhysicians('opdTiming')">OPD Days & Time</th>
                             <th>Comment</th>
                             <th>Action</th>
                         </tr>
@@ -89,10 +81,12 @@
         <div *ngIf="selectedTab === 'services'">
             <div class="row mb-3 align-items-center">
                 <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
-                    <div class="mb-2 me-3">
-                        <label for="serviceSearch" class="form-label label-modern shadow">Search by Service</label>
-                        <input type="text" id="serviceSearch" class="form-control" [(ngModel)]="serviceSearchText"
-                            (ngModelChange)="filterServices()" />
+                    <div class="col-md-4">
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-label>Search by Speciality</mat-label>
+                            <input matInput placeholder="Speciality" [(ngModel)]="serviceSearchText"
+                                (ngModelChange)="applyServicesFilters()">
+                        </mat-form-field>
                     </div>
                 </div>
                 <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
@@ -104,8 +98,8 @@
                 <table class="table table-hover table-modern">
                     <thead>
                         <tr>
-                            <th (click)="sortServiceTable('name')">Facility/Service</th>
-                            <th (click)="sortServiceTable('specification')">Specification</th>
+                            <th (click)="sortServices('service')">Facility/Service</th>
+                            <th (click)="sortServices('speficication')">Specification</th>
                             <th>Comment</th>
                             <th>Action</th>
                         </tr>
@@ -132,76 +126,254 @@
 </div>
 
 <!-- Add/Edit Physician Modal -->
-<div class="modal fade" data-bs-backdrop='static' id="physicianModal" tabindex="-1" aria-labelledby="physicianModalLabel" aria-hidden="true">
+<div class="modal fade" data-bs-backdrop='static' id="physicianModal" tabindex="-1"
+    aria-labelledby="addPhysicianModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="physicianModalLabel">{{ isEditPhysician ? 'Edit Physician' : 'Add Physician'
-                    }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">Add/Edit Physician</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form [formGroup]="physicianForm">
-                    <div class="mb-3" *ngIf="!manualEntryEnabled">
-                        <label for="selectPhysician" class="form-label label-modern shadow">Select Physician</label>
-                        <select id="selectPhysician" class="form-control" formControlName="physicianSelect"
-                            (change)="onPhysicianSelect($event)">
-                            <option value="">-- Select Physician --</option>
-                            <option value="manual">Add Manually</option>
-                            <option *ngFor="let physician of registeredPhysicians" [value]="physician.id">
-                                {{ physician.firstName }} {{ physician.lastName }}
-                            </option>
-                        </select>
+                    <div class="row">
+                        <!-- Mobile -->
+                        <div class="col-md-6 mb-3">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Mobile</mat-label>
+                                <input matInput formControlName="mobile" placeholder="Enter Mobile Number"
+                                    (input)="onMobileInputChange()" />
+                                <mat-error *ngIf="physicianForm.get('mobile')?.hasError('required')">
+                                    Mobile number is required.
+                                </mat-error>
+                                <mat-error *ngIf="physicianForm.get('mobile')?.hasError('pattern')">
+                                    Enter a valid 10-digit Indian mobile number.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Name -->
+                        <div class="col-md-6 mb-3">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>First Name</mat-label>
+                                <input matInput formControlName="firstName" placeholder="Enter First Name" />
+                                <mat-error *ngIf="physicianForm.get('firstName')?.hasError('required')">
+                                    First Name is required.
+                                </mat-error>
+                                <mat-error *ngIf="physicianForm.get('firstName')?.hasError('pattern')">Please enter a
+                                    valid first
+                                    name.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
                     </div>
 
-                    <!-- Physician Details -->
-                    <div *ngIf="manualEntryEnabled">
-                        <div class="mb-3">
-                            <label for="firstName" class="form-label label-modern shadow">First Name</label>
-                            <input type="text" id="firstName" formControlName="firstName" class="form-control" />
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Middle Name</mat-label>
+                                <input matInput formControlName="middleName" placeholder="Enter Middle Name" />
+                                <mat-error *ngIf="physicianForm.get('middleName')?.hasError('pattern')">Please enter a
+                                    valid middle
+                                    name.
+                                </mat-error>
+                            </mat-form-field>
                         </div>
-                        <div class="mb-3">
-                            <label for="middleName" class="form-label label-modern shadow">Middle Name
-                                (Optional)</label>
-                            <input type="text" id="middleName" formControlName="middleName" class="form-control" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="lastName" class="form-label label-modern shadow">Last Name</label>
-                            <input type="text" id="lastName" formControlName="lastName" class="form-control" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="qualification" class="form-label label-modern shadow">Qualification</label>
-                            <input type="text" id="qualification" formControlName="qualification"
-                                class="form-control" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="speciality" class="form-label label-modern shadow">Speciality</label>
-                            <input type="text" id="speciality" formControlName="speciality" class="form-control" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="opdTiming" class="form-label label-modern shadow">OPD Days & Time</label>
-                            <input type="text" id="opdTiming" formControlName="opdTiming" class="form-control"
-                                placeholder="e.g., Mon-Fri 9 AM - 5 PM" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="comment" class="form-label label-modern shadow">Comment</label>
-                            <textarea id="comment" formControlName="comment" class="form-control"></textarea>
+                        <div class="col-md-6 mb-3">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Last Name</mat-label>
+                                <input matInput formControlName="lastName" placeholder="Enter Name" />
+                                <mat-error *ngIf="physicianForm.get('lastName')?.hasError('required')">
+                                    Last Name is required.
+                                </mat-error>
+                                <mat-error *ngIf="physicianForm.get('lastName')?.hasError('pattern')">Please enter a
+                                    valid last
+                                    name.
+                                </mat-error>
+                            </mat-form-field>
                         </div>
                     </div>
+
+                    <div class="row">
+                        <!-- Gender -->
+                        <div class="col-md-6 mb-3">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Gender</mat-label>
+                                <mat-select formControlName="gender">
+                                    <mat-option value="Male">Male</mat-option>
+                                    <mat-option value="Female">Female</mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="physicianForm.get('gender')?.hasError('required')">
+                                    Gender is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Date of Birth -->
+                        <div class="col-md-6 mb-3">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Date of Birth</mat-label>
+                                <input matInput [matDatepicker]="dobPicker" formControlName="dateOfBirth"
+                                    placeholder="Enter Date of Birth" />
+                                <mat-datepicker-toggle matSuffix [for]="dobPicker"></mat-datepicker-toggle>
+                                <mat-datepicker #dobPicker></mat-datepicker>
+                                <mat-error *ngIf="physicianForm.get('dateOfBirth')?.hasError('required')">
+                                    Date of Birth is required.
+                                </mat-error>
+                                <mat-error *ngIf="physicianForm.get('dateOfBirth')?.hasError('minAge')">
+                                    Must be 18+ years
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Speciality</mat-label>
+                                <mat-select formControlName="speciality" required
+                                    [ngClass]="{ 'is-invalid': physicianForm.get('speciality')?.hasError('required') }"
+                                    required>
+                                    <mat-option>
+                                        <ngx-mat-select-search [formControl]="specialityFilterCtrl"
+                                            placeholderLabel="Search Speciality"></ngx-mat-select-search>
+                                    </mat-option>
+                                    <mat-option *ngFor="let speciality of filteredSpecialities | async"
+                                        [value]="speciality">
+                                        {{ speciality }}
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="physicianForm.get('speciality')?.hasError('required')">
+                                    Speciality Is Required
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Graduation</mat-label>
+                                <mat-select formControlName="graduation" required>
+                                    <mat-option>
+                                        <ngx-mat-select-search [formControl]="graduationFilterCtrl"
+                                            placeholderLabel="Search Graduation"></ngx-mat-select-search>
+                                    </mat-option>
+                                    <mat-option *ngFor="let graduation of filteredGraduations | async"
+                                        [value]="graduation">
+                                        {{ graduation }}
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="physicianForm.get('graduation')?.hasError('required')">
+                                    Graduation is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Post Graduation</mat-label>
+                                <mat-select formControlName="postGraduation" required>
+                                    <mat-option>
+                                        <ngx-mat-select-search [formControl]="postGraduationFilterCtrl"
+                                            placeholderLabel="Search Post Graduation"></ngx-mat-select-search>
+                                    </mat-option>
+                                    <mat-option *ngFor="let postGraduation of filteredPostGraduations | async"
+                                        [value]="postGraduation">
+                                        {{ postGraduation }}
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="physicianForm.get('postGraduation')?.hasError('required')">
+                                    Post Graduation is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Super Specialization</mat-label>
+                                <mat-select formControlName="superSpecialization" required>
+                                    <mat-option>
+                                        <ngx-mat-select-search [formControl]="superSpecializationFilterCtrl"
+                                            placeholderLabel="Search Super Specialization"></ngx-mat-select-search>
+                                    </mat-option>
+                                    <mat-option *ngFor="let superSpecialization of filteredSuperSpecializations | async"
+                                        [value]="superSpecialization">
+                                        {{ superSpecialization }}
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="physicianForm.get('superSpecialization')?.hasError('required')">
+                                    Super Specialization is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Additional Qualification</mat-label>
+                                <input matInput formControlName="additionalQualification"
+                                    placeholder="Enter Additional Qualification" />
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <label>Days</label>
+                            <div>
+                                <mat-checkbox *ngFor="let day of days" [formControl]="getDayControl(day)">
+                                    {{ day }}
+                                </mat-checkbox>
+                                <mat-error *ngIf="physicianForm.get('days')?.hasError('daysRequired')">
+                                    At least one day must be selected
+                                </mat-error>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>From</mat-label>
+                                <input matInput [ngxMatTimepicker]="timePickerFrom" formControlName="from"
+                                    placeholder="From (HH:mm)" />
+                                <ngx-mat-timepicker-toggle [for]="timePickerFrom" matSuffix></ngx-mat-timepicker-toggle>
+                                <ngx-mat-timepicker #timePickerFrom></ngx-mat-timepicker>
+                                <mat-error *ngIf=" physicianForm.get('from')?.hasError('required')">Start time
+                                    is
+                                    required</mat-error>
+                            </mat-form-field>
+                        </div>
+                        <!-- Timing To -->
+                        <div class="col-md-4">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>To</mat-label>
+                                <input matInput [ngxMatTimepicker]="timePickerTo" formControlName="to"
+                                    placeholder="To (HH:mm)" />
+                                <ngx-mat-timepicker-toggle [for]="timePickerTo" matSuffix></ngx-mat-timepicker-toggle>
+                                <ngx-mat-timepicker #timePickerTo></ngx-mat-timepicker>
+                                <mat-error *ngIf="physicianForm.get('to')?.hasError('required')">End time is
+                                    required</mat-error>
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-4">
+                            <mat-slide-toggle formControlName="isActive" color="primary">
+                                Is Active
+                            </mat-slide-toggle>
+                        </div>
+                    </div>
+                    <!-- Save Button -->
+                    <div class="modal-footer d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" (click)="savePhysician()">
+                            {{ isEditPhysician ? 'Save Changes' : 'Add Physician' }}
+                        </button>
+                    </div>
                 </form>
-            </div>
-            <div class="modal-footer  d-flex justify-content-between">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="savePhysician()">
-                    {{ isEditPhysician ? 'Save Changes' : 'Add Physician' }}
-                </button>
             </div>
         </div>
     </div>
 </div>
 <!-- Add/Edit Service Modal -->
 
-<div class="modal fade" data-bs-backdrop='static' id="serviceModal" tabindex="-1" aria-labelledby="serviceModalLabel" aria-hidden="true">
+<div class="modal fade" data-bs-backdrop='static' id="serviceModal" tabindex="-1" aria-labelledby="serviceModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -209,55 +381,35 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-
                 <form [formGroup]="serviceForm">
-
                     <div class="mb-3">
-
-                        <label for="name" class="form-label label-modern shadow">Facility/Service</label>
-
-                        <input type="text" id="name" formControlName="name" class="form-control" />
-
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-label>Service Name</mat-label>
+                            <input matInput formControlName="name" placeholder="Enter Name" />
+                        </mat-form-field>
                     </div>
-
                     <div class="mb-3">
-
-                        <label for="specification" class="form-label label-modern shadow">Specification</label>
-
-                        <input type="text" id="specification" formControlName="specification" class="form-control" />
-
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-label>Specification</mat-label>
+                            <input matInput formControlName="specification" placeholder="Enter Specification" />
+                        </mat-form-field>
                     </div>
-
                     <div class="mb-3">
-
-                        <label for="comment" class="form-label label-modern shadow">Comment</label>
-
-                        <textarea id="comment" formControlName="comment" class="form-control"></textarea>
-
+                        <mat-form-field appearance="outline" class="w-100">
+                            <mat-label>Comment</mat-label>
+                            <textarea matInput formControlName="comment" placeholder="Enter Comment"></textarea>
+                        </mat-form-field>
                     </div>
-
                 </form>
-
             </div>
-
             <div class="modal-footer">
-
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-
                     Close
-
                 </button>
-
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="saveService()">
-
                     {{ isEditService ? 'Save Changes' : 'Add Service' }}
-
                 </button>
-
             </div>
-
         </div>
-
     </div>
-
 </div>

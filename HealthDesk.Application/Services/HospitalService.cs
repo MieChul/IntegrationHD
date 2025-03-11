@@ -45,14 +45,14 @@ public class HospitalService : IHospitalService
     }
 
     // 4. Get all services for a hospital
-    public async Task<IEnumerable<HospitalServiceDto>> GetAllServicesAsync(string id)
+    public async Task<IEnumerable<ServiceDto>> GetAllServicesAsync(string id)
     {
         var hospital = await GetHospitalByIdAsync(id);
-        return hospital.Services.Select(service => GenericMapper.Map<Service, HospitalServiceDto>(service));
+        return hospital.Services.Select(service => GenericMapper.Map<Service, ServiceDto>(service));
     }
 
     // 5. Save or update a service
-    public async Task SaveServiceAsync(string id, HospitalServiceDto dto)
+    public async Task SaveServiceAsync(string id, ServiceDto dto)
     {
         var hospital = await GetHospitalByIdAsync(id);
 
@@ -98,5 +98,10 @@ public class HospitalService : IHospitalService
             throw new ArgumentException("Hospital not found.");
 
         return hospital;
+    }
+
+    Task<IEnumerable<ServiceDto>> IHospitalService.GetAllServicesAsync(string id)
+    {
+        throw new NotImplementedException();
     }
 }

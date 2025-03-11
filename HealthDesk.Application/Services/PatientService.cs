@@ -813,7 +813,7 @@ public class PatientService : IPatientService
                                 name = $"Dr. {user.FirstName} {user.LastName}",
                                 clinicName = clinic.Name,
                                 location = $"{clinic.Area}, {clinic.City}, {clinic.State}",
-                                speciality = "",
+                                speciality = user.Speciality,
                                 timing = timings != null ? string.Join(", ", timings) : "",
                                 rating = averageRating,
                                 reviews = physician.Reviews.Select(r => new

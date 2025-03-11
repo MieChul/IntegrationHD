@@ -6,7 +6,7 @@ public interface IHospitalService
     Task AddPhysicianAsync(string id, string physicianId);
     Task DeletePhysicianAsync(string id, string physicianId);
 
-    Task<IEnumerable<HospitalServiceDto>> GetAllServicesAsync(string id);
-    Task SaveServiceAsync(string id, HospitalServiceDto dto);
+    Task<IEnumerable<ServiceDto>> GetAllServicesAsync(string id);
+    Task SaveServiceAsync(string id, ServiceDto dto);
     Task DeleteServiceAsync(string id, string serviceId);
 }

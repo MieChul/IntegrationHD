@@ -88,7 +88,7 @@ public class DesignPrescriptionDto : BaseEntity
     public string? FooterUrl { get; set; } = string.Empty; // Mapped URL
     public bool IsDefault { get; set; } = false;
 
-    [RegularExpression(@"^[a-zA-Z0-9.,' ]+$", ErrorMessage = "Physician Name can only contain alphanumeric characters, dots, commas, and apostrophes.")]
+    [RegularExpression(@"^[a-zA-Z][a-zA-Z .'’-]{1,25}$", ErrorMessage = "Physician Name can only contain alphabets, spaces, dots, apostrophes, and hyphens.")]
     [StringLength(25, ErrorMessage = "Physician Name cannot exceed 25 characters.")]
     public string? PhysicianName { get; set; } = string.Empty;
 
@@ -128,8 +128,10 @@ public class DesignPrescriptionDto : BaseEntity
     public string? ClinicTimingsFontType { get; set; } = string.Empty;
     public string? ClinicTimingsFontSize { get; set; } = string.Empty;
     public string? ClinicTimingsFontColor { get; set; } = string.Empty;
+
     [Required(ErrorMessage = "MRC Number is required.")]
-    [RegularExpression(@"^[a-zA-Z0-9]+$", ErrorMessage = "MRC Number can only contain alphanumeric characters.")]
+    [RegularExpression(@"^[a-zA-Z0-9\s.\-\/\\]{2,50}$", ErrorMessage = "MRC Number can only contain alphanumeric characters, spaces, dots, hyphens, slashes, and backslashes.")]
+    [StringLength(50, MinimumLength = 2, ErrorMessage = "MRC Number must be between 2 and 50 characters.")]
     public string? MrcNumber { get; set; } = string.Empty;
     public string? MrcNumberFontType { get; set; } = string.Empty;
     public string? MrcNumberFontSize { get; set; } = string.Empty;

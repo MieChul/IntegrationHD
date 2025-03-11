@@ -32,6 +32,7 @@ public interface IPhysicianService
     Task<DesignPrescriptionDto> LoadPrescriptionAsync(string physicianId, string prescriptionId);
     Task<int> GetDesignPrescriptionCountAsync(string physicianId);
     Task<dynamic> GetPatientByMobileAsync(string id, string mobile);
+    Task<dynamic> GetPhysicianByMobileAsync(string mobile);
     Task<dynamic> GetDefaultPrescriptionHeaderFooter(string physicianId);
     Task<List<ProfileDTO>> GetProfilesAsync(string physicianId);
     Task SaveProfilesAsync(string physicianId, ProfileDTO profileDto);

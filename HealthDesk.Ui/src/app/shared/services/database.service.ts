@@ -33,7 +33,11 @@ export class DatabaseService {
     Brands: string[];
     SelfRecords: string[];
     Foods: string[]; // Changed to object array
-    Exercises: string[]; // Changed to object array
+    Exercises: string[];
+    Specializations: string[];
+    Specialities: string[];
+    Graduations: string[];
+    PostGraduations: string[]; // Changed to object array
   } = {
       Drugs: [],
       Strengths: [],
@@ -51,7 +55,11 @@ export class DatabaseService {
       Brands: [],
       SelfRecords: [],
       Foods: [],
-      Exercises: []
+      Exercises: [],
+      Specializations: [],
+      Specialities: [],
+      Graduations: [],
+      PostGraduations: []
     };
 
   private drugData: DrugEntry[] = [];
@@ -259,5 +267,19 @@ export class DatabaseService {
         calories: Number(calories) || 0
       };
     });
+  }
+
+  getSpecializations // Assuming Column 0: Exercise name, Column 1: Calories burnt per minute
+    () {
+    return this.database.Specializations;
+  }
+  getPostGraduations() {
+    return this.database.PostGraduations;
+  }
+  getGraduations() {
+    return this.database.Graduations;
+  }
+  getSpecialities() {
+    return this.database.Specialities;
   }
 }

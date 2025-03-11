@@ -74,6 +74,7 @@ public class AccountService : IAccountService
             user.LandLine = model.LandLine;
             user.AuthMob = model.AuthMob;
             user.AuthEmail = model.AuthEmail;
+            user.Speciality = model.Speciality;
             user.Roles.ForEach(r =>
  {
      if (r.Role.ToString().ToLower() == model.Role)
@@ -120,6 +121,7 @@ public class AccountService : IAccountService
             {
                 user.Graduation = new G
                 {
+                    Name = model.Graduation.Name,
                     Year = model.Graduation.Year,
                     Institute = model.Graduation.Institute,
                     Document = model.Graduation.Document
@@ -130,6 +132,7 @@ public class AccountService : IAccountService
             {
                 user.PostGraduation = new G
                 {
+                    Name = model.PostGraduation.Name,
                     Year = model.PostGraduation.Year,
                     Institute = model.PostGraduation.Institute,
                     Document = model.PostGraduation.Document
@@ -140,6 +143,7 @@ public class AccountService : IAccountService
             {
                 user.AdditionalQualification = new G
                 {
+                    Name = model.AdditionalQualification.Name,
                     Year = model.AdditionalQualification.Year,
                     Institute = model.AdditionalQualification.Institute,
                     Document = model.AdditionalQualification.Document
@@ -150,6 +154,7 @@ public class AccountService : IAccountService
             {
                 user.SuperSpecialization = new G
                 {
+                    Name = model.SuperSpecialization.Name,
                     Year = model.SuperSpecialization.Year,
                     Institute = model.SuperSpecialization.Institute,
                     Document = model.SuperSpecialization.Document

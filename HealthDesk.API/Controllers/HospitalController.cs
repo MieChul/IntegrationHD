@@ -28,6 +28,18 @@ namespace HealthDesk.API.Controllers
             return Ok(new { Success = true, Message = "Physicians retrieved successfully.", Data = physicians });
         }
 
+         [HttpGet("{id}/patients/by-mobile/{mobile}")]
+        public async Task<IActionResult> GetPhysicianByMobile(string id, string mobile)
+        {
+            var patient = await _physicianService.GetPatientByMobileAsync(id, mobile);
+            if (patient == null)
+            {
+                return Ok(new { Success = false, Message = "Patient not found." });
+            }
+            return Ok(new { Success = true, Data = patient });
+        }
+
+
         // 2. Add a physician to a hospital
         [HttpPost("{userId}/physicians")]
         public async Task<IActionResult> AddPhysician(string userId, [FromBody] PhysicianDto dto)
@@ -60,7 +72,7 @@ namespace HealthDesk.API.Controllers
 
         // 5. Add or update a service
         [HttpPost("{userId}/services")]
-        public async Task<IActionResult> SaveService(string userId, [FromBody] HospitalServiceDto dto)
+        public async Task<IActionResult> SaveService(string userId, [FromBody] ServiceDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new { Success = false, Message = "Invalid input.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });

@@ -5,7 +5,7 @@ export enum Role {
     Hospital = 4,
     Laboratory = 5,
     Pharmaceutical = 6,
-    Nutraceutical = 7
+    Pharmacy = 7
   }
 
   export function getRoleId(roleName: string): number | undefined {

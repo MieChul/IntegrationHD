@@ -1,305 +1,338 @@
-import {
-  Component,
-  OnInit,
-  ViewChild,
-  AfterViewInit
-} from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { Modal } from 'bootstrap';
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { AbstractControl, AbstractControlOptions, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import * as bootstrap from 'bootstrap';
-import { AccountService } from '../../services/account.service';
 import { Router } from '@angular/router';
-
-interface Physician {
-  id: string;
-  firstName: string;
-  middleName?: string;
-  lastName: string;
-  qualification: string;
-  speciality: string;
-  opdTiming: string;
-  comment: string;
-}
-
-interface Service {
-  name: string;
-  specification: string;
-  comment: string;
-}
+import { PhysicianService } from '../../services/physician.service';
+import { AccountService } from '../../services/account.service';
+import { NotificationService } from '../../../shared/services/notification.service';
+import { OrganizationService } from '../../services/organization.service';
+import { SortingService } from '../../../shared/services/sorting.service';
+import { FilteringService } from '../../../shared/services/filter.service';
+import { map, Observable, startWith } from 'rxjs';
+import { DatabaseService } from '../../../shared/services/database.service';
 
 @Component({
   selector: 'app-hospital-management',
   templateUrl: './hospital-management.component.html',
   styleUrl: './hospital-management.component.scss'
 })
-export class HospitalManagementComponent implements OnInit, AfterViewInit {
-  @ViewChild('physicianModal') physicianModal!: any;
-  @ViewChild('serviceModal') serviceModal!: any;
-
-  selectedTab: string = 'physicianList';
-
-  // Data arrays
-  physicians: Physician[] = [];
-  services: Service[] = [];
-  selectedPhysicianId: string = '';
-  registeredPhysicians: Physician[] = [
-    {
-      id: '1',
-      firstName: 'Dr. John',
-      middleName: 'A',
-      lastName: 'Doe',
-      qualification: 'MBBS, MD',
-      speciality: 'Cardiology',
-      opdTiming: 'Mon-Fri 10 AM - 2 PM',
-      comment: 'Expert in heart diseases'
-    },
-    {
-      id: '2',
-      firstName: 'Dr. Jane',
-      middleName: 'B',
-      lastName: 'Smith',
-      qualification: 'MBBS',
-      speciality: 'Pediatrics',
-      opdTiming: 'Mon-Wed 9 AM - 12 PM',
-      comment: 'Child specialist'
-    }
-  ];
-
-
-
-  // Filtered arrays for display
-  filteredPhysicians: Physician[] = [];
-  filteredServices: Service[] = [];
-
-  // Search texts
-  physicianSearchText: string = '';
-  serviceSearchText: string = '';
-  specialitySearchText: string = '';
-  opdSearchText: string = '';
-
-  // Forms
+export class HospitalManagementComponent implements OnInit {
+  physicians: any[] = [];
+  services: any[] = [];
+  filteredPhysicians: any[] = [];
+  filteredServices: any[] = [];
   physicianForm!: FormGroup;
   serviceForm!: FormGroup;
-
-  // Modal references
-  physicianModalRef!: NgbModalRef;
-  serviceModalRef!: NgbModalRef;
-
-  // Flags
-  manualEntryEnabled: boolean = false;
+  userData: any;
   isEditPhysician: boolean = false;
   isEditService: boolean = false;
-  userData: any;
-  constructor(private router: Router, private fb: FormBuilder, private modalService: NgbModal, private accountService: AccountService) { }
+  selectedTab: string = 'physicianList';
+  sortDirection: { [key: string]: 'asc' | 'desc' } = {};
+
+  // Search texts
+  serviceSearchText: string = '';
+  specialitySearchText: string = '';
+  searchValue = '';
+
+  specialities: any[] = [];
+  graduations: any[] = [];
+  postGraduations: any[] = [];
+  superSpecializations: any[] = [];
+
+  specialityFilterCtrl = new FormControl();
+  graduationFilterCtrl = new FormControl();
+  postGraduationFilterCtrl = new FormControl();
+  superSpecializationFilterCtrl = new FormControl();
+
+  filteredSpecialities!: Observable<string[]>;
+  filteredGraduations!: Observable<string[]>;
+  filteredPostGraduations!: Observable<string[]>;
+  filteredSuperSpecializations!: Observable<string[]>;
+
+  days = ['Su', 'M', 'T', 'W', 'Th', 'F', 'S'];
+
+  constructor(private fb: FormBuilder,
+    private physicianService: PhysicianService,
+    private router: Router,
+    private accountService: AccountService,
+    private organizationService: OrganizationService,
+    private notificationService: NotificationService,
+    private sortingService: SortingService,
+    private filteringService: FilteringService,
+    private databaseService: DatabaseService) { }
 
   ngOnInit(): void {
+    this.initForms();
     this.accountService.getUserData().subscribe({
-      next: (data) => {
+      next: async (data) => {
         this.userData = data;
         if (this.userData.status == 'Approved') {
-          this.initForms();
-          this.loadDummyData();
+          this.specialities = await this.databaseService.getSpecialities();
+          this.graduations = await this.databaseService.getGraduations();
+          this.postGraduations = await this.databaseService.getPostGraduations();
+          this.superSpecializations = await this.databaseService.getSpecializations();
+          this.loadData();
+          this.initializeSearch();
         }
         else
           this.router.navigate(['/account']);
       }
     });
-
   }
 
-  ngAfterViewInit(): void {
-    this.filterPhysicians();
-    this.filterServices();
+  initForms(): void {
+    const daysGroup: { [key: string]: FormControl } = {};
+    this.days.forEach((day) => {
+      daysGroup[day] = new FormControl(false);
+    });
+
+    this.physicianForm = this.fb.group({
+      id: [''],
+      userId: [''],
+      mobile: ['', [Validators.required, Validators.pattern(/^[789]\d{9}$/)]],
+      firstName: ['', [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,49}$/)]],
+      middleName: ['', [Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,49}$/)]], // Optional
+      lastName: ['', [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,49}$/)]],
+      gender: [{ value: '', disabled: true }, Validators.required],
+      dateOfBirth: [Validators.required, (control: AbstractControl) => this.validateAge(control)],
+      qualification: [''],
+      speciality: [''],
+      graduation: ['', [Validators.required]],
+      postgraduation: [''],
+      superSpecialization: [''],
+      additionalQualification: [''],
+      days: this.fb.group(daysGroup, { validators: this.validateDaysRequired } as AbstractControlOptions),
+      from: ['', [Validators.required]],
+      to: ['', [Validators.required]]
+    });
+
+    this.serviceForm = this.fb.group({
+      name: ['', [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,49}$/)]],
+      specification: ['', [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,49}$/)]],
+      comment: ['']
+    });
+  }
+
+  initializeSearch(): void {
+    this.filteredSpecialities = this.specialityFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.specialities))
+    );
+
+    this.filteredGraduations = this.graduationFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.graduations))
+    );
+
+    this.filteredPostGraduations = this.postGraduationFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.postGraduations))
+    );
+
+    this.filteredSuperSpecializations = this.superSpecializationFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.superSpecializations))
+    );
+  }
+
+  filterOptions(search: string, options: string[]): string[] {
+    const filterValue = search.toLowerCase();
+    return options.filter(option => option.toLowerCase().includes(filterValue));
+  }
+
+  loadData(): void {
+    this.organizationService.getAllPhysicians(this.userData.id).subscribe({
+      next: (physiciansData: any) => {
+        this.physicians = physiciansData?.data.map((physician: any) => ({
+          ...physician
+        }));
+        this.filteredPhysicians = [...this.physicians];
+
+        // Fetch services after physicians are loaded
+        this.organizationService.getAllServices(this.userData.id).subscribe({
+          next: (servicesData: any) => {
+            this.services = servicesData?.data.map((service: any) => ({
+              ...service
+            }));
+            this.filteredServices = [...this.services];
+          },
+          error: (error) => {
+            console.error('Error loading services:', error);
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Error loading physicians:', error);
+      }
+    });
   }
 
   selectTab(tab: string): void {
     this.selectedTab = tab;
   }
 
-  initForms(): void {
-    this.physicianForm = this.fb.group({
-      physicianSelect: [''],
-      firstName: ['', [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,49}$/)]],
-      middleName: ['', [Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,49}$/)]], // Optional
-      lastName: ['', [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,49}$/)]],
-      qualification: [''],
-      speciality: [''],
-      opdTiming: [''],
-      comment: ['']
-    });
 
-    this.serviceForm = this.fb.group({
-      name: [''],
-      specification: [''],
-      comment: ['']
+
+  validateDaysRequired(daysGroup: FormGroup): { [key: string]: boolean } | null {
+    const selected = Object.values(daysGroup.controls).some((control) => control.value === true);
+    return selected ? null : { daysRequired: true };
+  }
+
+  getDayControl(day: string): FormControl {
+    return this.physicianForm.get('days')?.get(day) as FormControl;
+  }
+
+  onMobileInputChange(): void {
+    const mobile = this.physicianForm.get('mobile')?.value;
+    if (mobile.length === 10) {
+      this.checkPhysicianExists(mobile);
+    }
+  }
+
+  checkPhysicianExists(mobile: string): void {
+    this.physicianService.getPhysicianByMobile(mobile).subscribe((response: any) => {
+      if (response.success && response.data) {
+        const physician = response.data;
+        this.physicianForm.patchValue({
+          userId: physician.userId,
+          firstName: physician.firstName,
+          middleName: physician.middleName,
+          lastName: physician.lastName,
+          speciality: physician.speciality,
+          gender: physician.gender,
+          dateOfBirth: physician.dateOfBirth,
+          graduation: physician.graduation,
+          postgraduation: physician.postgraduation,
+          superSpecialization: physician.superSpecialization,
+          additionalQualification: physician.additionalQualification
+        });
+        this.physicianForm.get('firstName')?.disable();
+        this.physicianForm.get('lastName')?.disable();
+        this.physicianForm.get('middleName')?.disable();
+        this.physicianForm.get('speciality')?.disable();
+        this.physicianForm.get('gender')?.disable();
+        this.physicianForm.get('dateOfBirth')?.disable();
+        this.physicianForm.get('graduation')?.disable();
+        this.physicianForm.get('postgraduation')?.disable();
+        this.physicianForm.get('superSpecialization')?.disable();
+        this.physicianForm.get('additionalQualification')?.disable();
+      } else {
+        this.physicianForm.reset({ mobile });
+        this.physicianForm.get('mobile')?.disable();
+        this.physicianForm.get('firstName')?.enable();
+        this.physicianForm.get('middleName')?.enable();
+        this.physicianForm.get('lastName')?.enable();
+        this.physicianForm.get('speciality')?.disable();
+        this.physicianForm.get('gender')?.enable();
+        this.physicianForm.get('dateOfBirth')?.enable();
+        this.physicianForm.get('graduation')?.enable();
+        this.physicianForm.get('postgraduation')?.enable();
+        this.physicianForm.get('superSpecialization')?.enable();
+        this.physicianForm.get('additionalQualification')?.enable();
+      }
     });
   }
 
-  loadDummyData(): void {
-    this.physicians = [
-      {
-        id: '3',
-        firstName: 'Arjun',
-        middleName: 'Kumar',
-        lastName: 'Sharma',
-        qualification: 'MBBS, MD',
-        speciality: 'Cardiology',
-        opdTiming: 'Mon-Fri 10 AM - 2 PM',
-        comment: 'Expert in heart diseases'
-      },
-      {
-        id: '4',
-        firstName: 'Sanjay',
-        middleName: '',
-        lastName: 'Gupta',
-        qualification: 'MBBS, MS',
-        speciality: 'Orthopedics',
-        opdTiming: 'Mon-Sat 9 AM - 1 PM',
-        comment: 'Specializes in bone surgery'
-      }
-    ];
+  validateAge(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) return null; // Allow empty values (handled by required validator)
 
-    this.services = [
-      {
-        name: 'Emergency Services',
-        specification: '24/7 Emergency Care',
-        comment: 'Immediate care for critical patients'
-      },
-      {
-        name: 'Radiology',
-        specification: 'X-Ray, MRI, CT Scan',
-        comment: 'Advanced imaging services'
-      }
-    ];
+    const birthDate = new Date(control.value); // Directly parse the date
+    const today = new Date(); // Get today's date
 
-    this.filterPhysicians();
-    this.filterServices();
+    let age = today.getFullYear() - birthDate.getFullYear();
+
+    // Check if the birthday has passed in the current year
+    const isBirthdayPassed =
+      today.getMonth() > birthDate.getMonth() ||
+      (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
+
+    if (!isBirthdayPassed) {
+      age--; // Adjust if birthday hasn't occurred yet this year
+    }
+
+    // Validate if the user must be at least 18 years old (only if dependentId is NOT present)
+    if (!this.userData?.dependentId && age < 18) {
+      return { minAge: true }; // Validation fails
+    }
+
+    return null; // Validation passes
   }
 
-  // Physician Methods
-
-  openPhysicianDialog(physician?: Physician): void {
+  openPhysicianDialog(physician?: any): void {
     this.isEditPhysician = !!physician;
-    this.physicianForm.reset();
-
     if (physician) {
-      this.physicianForm.patchValue(physician);
+      this.physicianForm.patchValue({
+        id: physician.id,
+        userId: physician.userId,
+        firstName: physician.firstName,
+        middleName: physician.middleName || '',
+        lastName: physician.lastName || '',
+        gender: physician.gender,
+        dateOfBirth: physician.dateOfBirth,
+        mobile: physician.mobile,
+        speciality: physician.speciality,
+        graduation: physician.graduation,
+        postgraduation: physician.postgraduation,
+        superSpecialization: physician.superSpecialization,
+        additionalQualification: physician.additionalQualification,
+        from: physician.from,
+        to: physician.to,
+        days: physician.days,
+        isActive: physician.isActive
+      });
+      this.physicianForm.get('firstName')?.disable();
+      this.physicianForm.get('middleName')?.disable();
+      this.physicianForm.get('lastName')?.disable();
+      this.physicianForm.get('gender')?.disable();
+      this.physicianForm.get('dateOfBirth')?.disable();
+      this.physicianForm.get('mobile')?.disable();
+      this.physicianForm.get('speciality')?.disable();
+      this.physicianForm.get('graduation')?.disable();
+      this.physicianForm.get('postgraduation')?.disable();
+      this.physicianForm.get('superSpecialization')?.disable();
+      this.physicianForm.get('additionalQualification')?.disable();
+    }
+    else {
+      this.physicianForm.reset();
+      this.physicianForm.get('mobile')?.enable();
+      this.physicianForm.get('firstName')?.disable();
+      this.physicianForm.get('middleName')?.disable();
+      this.physicianForm.get('lastName')?.disable();
+      this.physicianForm.get('gender')?.disable();
+      this.physicianForm.get('dateOfBirth')?.disable();
+      this.physicianForm.get('speciality')?.disable();
+      this.physicianForm.get('graduation')?.disable();
+      this.physicianForm.get('postgraduation')?.disable();
+      this.physicianForm.get('superSpecialization')?.disable();
+      this.physicianForm.get('additionalQualification')?.disable();
     }
 
     const modal = new bootstrap.Modal(document.getElementById('physicianModal')!);
     modal.show();
   }
 
-  closePhysicianDialog(): void {
-    const modal = new Modal(this.physicianModal.nativeElement);
-    modal.hide();
-  }
-
   savePhysician(): void {
-    const formValues = this.physicianForm.value;
+    this.physicianForm.markAllAsTouched();
+    if (this.physicianForm.invalid) return;
 
-    const physician: Physician = {
-      id: formValues.id,
-      firstName: formValues.firstName,
-      middleName: formValues.middleName || '', // Optional
-      lastName: formValues.lastName,
-      qualification: formValues.qualification,
-      speciality: formValues.speciality,
-      opdTiming: formValues.opdTiming,
-      comment: formValues.comment
-    };
+    const data = this.physicianForm.value;
 
-    if (this.isEditPhysician) {
-      const index = this.physicians.findIndex(
-        p => p.firstName === physician.firstName && p.lastName === physician.lastName
-      );
-      if (index !== -1) {
-        this.physicians[index] = physician;
-      }
-    } else {
-      this.physicians.push(physician);
-    }
+    this.organizationService
+      .savePhysician(this.userData.id, data)
+      .subscribe({
+        next: (response) => {
+          this.loadData();
+        },
+        error: (error) => {
+          console.error('Error updating  record:', error);
+        },
+      });
 
-    this.filterPhysicians();
-    this.manualEntryEnabled = false;
+    bootstrap.Modal.getInstance(document.getElementById('physicianModal')!)?.hide();
   }
 
-  deletePhysician(physician: Physician): void {
-    if (confirm('Are you sure you want to delete this physician?')) {
-      this.physicians = this.physicians.filter(p => p !== physician);
-      this.filterPhysicians();
-    }
-  }
 
-  filterPhysicians(): void {
-    this.filteredPhysicians = this.physicians.filter(physician => {
-      const matchesName = this.physicianSearchText
-        ? physician.firstName.toLowerCase().includes(this.physicianSearchText.toLowerCase()) ||
-        physician.lastName.toLowerCase().includes(this.physicianSearchText.toLowerCase())
-        : true;
-
-      const matchesSpeciality = this.specialitySearchText
-        ? physician.speciality.toLowerCase().includes(this.specialitySearchText.toLowerCase())
-        : true;
-
-      const matchesOpdTiming = this.opdSearchText
-        ? physician.opdTiming.toLowerCase().includes(this.opdSearchText.toLowerCase())
-        : true;
-
-      return matchesName && matchesSpeciality && matchesOpdTiming;
-    });
-  }
-
-  sortPhysicianTable(column: keyof Physician): void {
-    this.filteredPhysicians.sort((a, b) =>
-      (a[column] || '').toLowerCase() > (b[column] || '').toLowerCase() ? 1 : -1
-    );
-  }
-
-  exportToExcel(): void {
-    // Define the headers matching the HTML table
-    const headers = [
-      'First Name',
-      'Middle Name',
-      'Last Name',
-      'Qualification',
-      'Speciality',
-      'OPD Days & Time',
-      'Comment'
-    ];
-
-    // Map the data to include headers
-    const dataToExport = this.filteredPhysicians.map(physician => ({
-      'First Name': physician.firstName,
-      'Middle Name': physician.middleName || '-', // Use '-' if middle name is missing
-      'Last Name': physician.lastName,
-      'Qualification': physician.qualification,
-      'Speciality': physician.speciality,
-      'OPD Days & Time': physician.opdTiming,
-      'Comment': physician.comment
-    }));
-
-    // Add headers as the first row
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport, { header: headers });
-
-    // Create a new workbook and append the worksheet
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Physicians');
-
-    // Write workbook to an Excel file
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-
-    // Save the file
-    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-    saveAs(blob, `Physicians_${new Date().toISOString()}.xlsx`);
-  }
-
-  // Service Methods
-
-  openServiceDialog(service?: Service): void {
+  openServiceDialog(service?: any): void {
     this.isEditService = !!service;
     this.serviceForm.reset();
 
@@ -311,72 +344,79 @@ export class HospitalManagementComponent implements OnInit, AfterViewInit {
     modal.show();
   }
 
-  closeServiceDialog(): void {
-    const modal = new Modal(this.serviceModal.nativeElement);
-    modal.hide();
-  }
 
   saveService(): void {
-    const formValues = this.serviceForm.value;
+    this.serviceForm.markAllAsTouched();
+    if (this.serviceForm.invalid) return;
 
-    const service: Service = {
-      name: formValues.name,
-      specification: formValues.specification,
-      comment: formValues.comment
-    };
+    const data = this.serviceForm.value;
 
-    if (this.isEditService) {
-      const index = this.services.findIndex(s => s.name === service.name);
-      if (index !== -1) {
-        this.services[index] = service;
-      }
-    } else {
-      this.services.push(service);
-    }
+    this.organizationService
+      .saveService(this.userData.id, data)
+      .subscribe({
+        next: (response) => {
+          this.loadData();
+        },
+        error: (error) => {
+          console.error('Error updating  record:', error);
+        },
+      });
 
-    this.filterServices();
-    this.closeServiceDialog();
+
+    bootstrap.Modal.getInstance(document.getElementById('serviceModal')!)?.hide();
   }
 
-  deleteService(service: Service): void {
-    if (confirm('Are you sure you want to delete this service?')) {
-      this.services = this.services.filter(s => s !== service);
-      this.filterServices();
-    }
+  sortPhysicians(column: string): void {
+    // Toggle the sort direction
+    this.sortDirection[column] = this.sortDirection[column] === 'asc' ? 'desc' : 'asc';
+    const direction = this.sortDirection[column];
+
+    // Use the sorting service to sort the data
+    this.filteredPhysicians = this.sortingService.sort(this.filteredPhysicians, column, direction);
   }
 
-  filterServices(): void {
-    if (this.serviceSearchText) {
-      this.filteredServices = this.services.filter(s =>
-        s.name.toLowerCase().includes(this.serviceSearchText.toLowerCase())
-      );
-    } else {
-      this.filteredServices = [...this.services];
-    }
-  }
-
-  sortServiceTable(column: keyof Service): void {
-    this.filteredServices.sort((a, b) =>
-      (a[column] || '').toLowerCase() > (b[column] || '').toLowerCase() ? 1 : -1
+  applyPhysicianFilters(): void {
+    this.filteredPhysicians = this.filteringService.filter(
+      this.physicians,
+      {
+        firstName: this.searchValue,
+        lastName: this.searchValue,
+        speciality: this.specialitySearchText
+      },
+      []
     );
   }
 
-  onPhysicianSelect(event: Event): void {
-    const target = event.target as HTMLSelectElement; // Cast to HTMLSelectElement
-    const value = target.value;
+  sortServices(column: string): void {
+    // Toggle the sort direction
+    this.sortDirection[column] = this.sortDirection[column] === 'asc' ? 'desc' : 'asc';
+    const direction = this.sortDirection[column];
 
-    if (value === 'manual') {
-      this.manualEntryEnabled = true;
-      this.physicianForm.reset(); // Reset the form for manual entry
-    } else if (value) {
-      this.manualEntryEnabled = false;
-      const selectedPhysician = this.registeredPhysicians.find(p => p.id === value);
-      if (selectedPhysician) {
-        this.physicianForm.patchValue(selectedPhysician); // Autofill the form
-      }
-    } else {
-      this.manualEntryEnabled = false;
-      this.physicianForm.reset(); // Reset if no selection
-    }
+    // Use the sorting service to sort the data
+    this.filteredServices = this.sortingService.sort(this.filteredServices, column, direction);
+  }
+
+  applyServicesFilters(): void {
+    this.filteredServices = this.filteringService.filter(
+      this.services,
+      {
+        service: this.serviceSearchText,
+
+      },
+      []
+    );
+  }
+
+  deleteService(service: any): void {
+
+  }
+
+  deletePhysician(physician: any): void {
+
+  }
+
+
+  exportToExcel(): void {
+
   }
 }

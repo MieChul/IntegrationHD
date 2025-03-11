@@ -10,6 +10,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { switchMap, tap, catchError, map } from 'rxjs/operators';
 import { Color } from '@angular-material-components/color-picker';
+import { NotificationService } from '../../../shared/services/notification.service';
+import { ValidationService } from '../../../shared/services/validator.service';
 
 
 @Component({
@@ -28,7 +30,7 @@ export class CustomizePrescriptionComponent implements OnInit {
   userData: any;
   clinicPhoneFontColor: string = '#000000';
   constructor(private route: ActivatedRoute, private router: Router, private physicianService: PhysicianService, private accountService: AccountService,
-    private fb: FormBuilder) { }
+    private fb: FormBuilder, private notificationService: NotificationService, private validationService: ValidationService) { }
 
   ngOnInit() {
     this.initializeForm();
@@ -132,7 +134,7 @@ export class CustomizePrescriptionComponent implements OnInit {
       clinicTimingsFontType: ['Arial'],
       clinicTimingsFontSize: ['medium'],
       clinicTimingsFontColor: [new Color(0, 0, 0)],
-      mrcNumber: ['', [Validators.required,  Validators.pattern(/^[a-zA-Z0-9\s.\-\/\\]{2,50}$/)]],
+      mrcNumber: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9\s.\-\/\\]{2,50}$/)]],
       mrcNumberFontType: ['Arial'],
       mrcNumberFontSize: ['medium'],
       mrcNumberFontColor: [new Color(0, 0, 0)],
@@ -218,7 +220,7 @@ export class CustomizePrescriptionComponent implements OnInit {
 
   onClinicChange(clinic: any): void {
     if (!clinic) return;
-  
+
     this.prescriptionForm.patchValue({
       clinicAddress: [
         clinic.flatNumber,
@@ -228,37 +230,23 @@ export class CustomizePrescriptionComponent implements OnInit {
         clinic.state,
         clinic.pinCode
       ].filter(value => value).join(', '),  // Remove null/undefined and join with comma
-  
-      clinicTimings: clinic.clinicSlots?.length 
+
+      clinicTimings: clinic.clinicSlots?.length
         ? `${clinic.clinicSlots
-            .map((slot: any) => `${slot.name}: ${slot.timingFrom} to ${slot.timingTo}`)
-            .join(', ')} | Days: ${clinic.days?.filter((day:any) => day).join(', ')}`
+          .map((slot: any) => `${slot.name}: ${slot.timingFrom} to ${slot.timingTo}`)
+          .join(', ')} | Days: ${clinic.days?.filter((day: any) => day).join(', ')}`
         : '' // If no slots, set empty string
     });
   }
-  
+
 
   onFileChange(event: any, type: string): void {
     const file = event.target.files[0];
 
     if (!file) return;
 
-    const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
-    const errors: string[] = [];
-
-    // Validate file type
-    if (!validTypes.includes(file.type)) {
-      errors.push('Only image files (PNG, JPEG) are allowed.');
-    }
-
-    // Validate file size
-    if (file.size > 1048576) {
-      errors.push('File size must be less than 1 MB.');
-    }
-
-    if (errors.length > 0) {
-
-      return;
+    if (!this.validationService.validateImage(file)) {
+      return
     }
 
     const reader = new FileReader();

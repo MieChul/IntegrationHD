@@ -34,6 +34,7 @@ export class InfoComponent {
   gDoc: any;
   gYearError: any = false;
   gInstituteError: any = false;
+  gNameError: any = false;
   gDocError: any = false;
   certificateNumberError: any = false;
   councilError: any = false;
@@ -47,7 +48,15 @@ export class InfoComponent {
   clinicCities: any[] = [];
   councils: any[] = [];
   colleges: any[] = [];
+  specialities: any[] = [];
+  graduationQualifications: any[] = [];
+  postGraduationQialifications: any[] = [];
+  superSpecializations: any[] = [];
 
+  specialityFilterCtrl = new FormControl();
+  graduationFilterCtrl = new FormControl();
+  postGraduationFilterCtrl = new FormControl();
+  superSpecializationFilterCtrl = new FormControl();
   councilFilterCtrl = new FormControl();
   collegeFilterCtrl = new FormControl();
   stateFilterCtrl = new FormControl();
@@ -60,7 +69,12 @@ export class InfoComponent {
   filteredClinicCities = new BehaviorSubject<any[]>([]);
   filteredCouncils!: Observable<string[]>;
   filteredColleges!: Observable<string[]>;
+  filteredSpecialities!: Observable<string[]>;
+  filteredGraduations!: Observable<string[]>;
+  filteredPostGraduations!: Observable<string[]>;
+  filteredSuperSpecializaion!: Observable<string[]>;
   yearsList: number[] = [];
+
 
   private modalService = inject(NgbModal);
   constructor(
@@ -92,6 +106,11 @@ export class InfoComponent {
         this.filteredClinicStates.next(this.clinicstates);
         this.councils = await this.databaseService.getCouncils();
         this.colleges = await this.databaseService.getMedicalColleges();
+        this.specialities = await this.databaseService.getSpecialities();
+        this.graduationQualifications = await this.databaseService.getGraduations();
+        this.postGraduationQialifications = await this.databaseService.getPostGraduations();
+        this.superSpecializations = await this.databaseService.getSpecializations();
+
         this.stateFilterCtrl.valueChanges
           .pipe(
             debounceTime(200),
@@ -152,6 +171,24 @@ export class InfoComponent {
     this.filteredColleges = this.collegeFilterCtrl.valueChanges.pipe(
       startWith(''),
       map((search) => this.filterOptions(search, this.colleges))
+    );
+
+    this.filteredSpecialities = this.specialityFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.specialities))
+    );
+
+    this.filteredGraduations = this.graduationFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.graduationQualifications))
+    );
+    this.filteredPostGraduations = this.postGraduationFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.postGraduationQialifications))
+    );
+    this.filteredSuperSpecializaion = this.superSpecializationFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.superSpecializations))
     );
 
   }
@@ -235,21 +272,25 @@ export class InfoComponent {
       pincode: [this.user.pincode],
       noDocConsentProvided: [this.user.noDocConsentProvided],
       graduation: new FormGroup({
+        name: new FormControl(this.user.graduation?.name),
         year: new FormControl(this.user.graduation?.year),
         institute: new FormControl(this.user.graduation?.institute),
         document: new FormControl(this.user.graduation?.document)
       }),
       postGraduation: new FormGroup({
+        name: new FormControl(this.user.postGraduation?.name),
         year: new FormControl(this.user.postGraduation?.year),
         institute: new FormControl(this.user.postGraduation?.institute),
         document: new FormControl(this.user.postGraduation?.document)
       }),
       superSpecialization: new FormGroup({
+        name: new FormControl(this.user.superSpecialization?.name),
         year: new FormControl(this.user.superSpecialization?.year),
         institute: new FormControl(this.user.superSpecialization?.institute),
         document: new FormControl(this.user.superSpecialization?.document)
       }),
       additionalQualification: new FormGroup({
+        name: new FormControl(this.user.additionalQualification?.name),
         year: new FormControl(this.user.additionalQualification?.year),
         institute: new FormControl(this.user.additionalQualification?.institute),
         document: new FormControl(this.user.additionalQualification?.document)
@@ -284,7 +325,8 @@ export class InfoComponent {
       relationId: [this.user.relationId],
       isSave: [],
       profImage: [this.user.profImage || '/assets/defaultProfile.jpg'],
-      clinicImage: [this.user.clinicImage || '/assets/defaultProfile.jpg']
+      clinicImage: [this.user.clinicImage || '/assets/defaultProfile.jpg'],
+      speciality: [this.user.speciality]
     });
 
     this.onStateChange(null);
@@ -318,7 +360,8 @@ export class InfoComponent {
       area: isPatientOrPhysician ? [Validators.required] : [],
       pincode: isPatientOrPhysician ? [Validators.required, Validators.pattern(/^[1-9][0-9]{5}$/)] : [],
 
-      clinicName: isPhysician ? [Validators.required,  Validators.pattern(/^[a-zA-Z][a-zA-Z0-9@_ .'’-]{1,25}$/)] : [],
+      speciality: isPhysician ? [Validators.required] : [],
+      clinicName: isPhysician ? [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z0-9@_ .'’-]{1,25}$/)] : [],
       clinicArea: isNonPatient ? [Validators.required] : [],
       clinicCity: isNonPatient ? [Validators.required] : [],
       clinicState: isNonPatient ? [Validators.required] : [],
@@ -455,7 +498,7 @@ export class InfoComponent {
     this.errorsFound = false;
     this.updateErrors = false;
     this.submitted = true;
-    if(this.userData.status === 'Submitted' || this.userData.status === 'Approved'){
+    if (this.userData.status === 'Submitted' || this.userData.status === 'Approved') {
       if (this.form.invalid) {
         this.errorsFound = true;
 
@@ -465,12 +508,12 @@ export class InfoComponent {
         this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
         return;
       }
-  
+
       if (this.user.role == 'physician') {
         if (this.getDocError())
           return;
       }
-  
+
       if (!this.form.value.noDocConsentProvided && this.user.role === 'physician') {
         if (!this.form.value.graduation.document) {
           this.gDocError = true;
@@ -480,7 +523,7 @@ export class InfoComponent {
         else
           this.gDocError = false;
       }
-  
+
       if (this.user.role === 'physician' || this.user.role === 'patient') {
         if (this.form.value.mobile1 === this.form.value.mobile2) {
           this.mobileSameError = true;
@@ -489,7 +532,7 @@ export class InfoComponent {
         }
         else
           this.mobileSameError = false;
-  
+
         if (this.form.value.email1 && this.form.value.email1 === this.form.value.email2) {
           this.emailSameError = true;
           this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
@@ -643,6 +686,15 @@ export class InfoComponent {
 
   getDocError() {
     var has_error = false;
+
+    if (!this.form.value.noDocConsentProvided && !this.form.value.graduation.name) {
+      this.gNameError = true;
+      this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
+      has_error = true;
+    }
+    else
+      this.gNameError = false;
+
 
     if (!this.form.value.noDocConsentProvided && !this.form.value.graduation.year) {
       this.gYearError = true;

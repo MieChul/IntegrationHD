@@ -291,7 +291,8 @@ public class PhysicianService : IPhysicianService
         {
             PhoneNumber = user.Mobile,
             FullName = $"{user.FirstName} {user.LastName}",
-            MrcNumber = user.MedicalRegistration.CertificateNumber
+            MrcNumber = user.MedicalRegistration.CertificateNumber,
+            Qualifications = string.Join(", ", new[] { user.Graduation?.Name, user.PostGraduation?.Name, user.SuperSpecialization?.Name, user.AdditionalQualification?.Name }.Where(x => !string.IsNullOrWhiteSpace(x)))
         };
 
         return userDetails;
@@ -368,6 +369,30 @@ public class PhysicianService : IPhysicianService
                 LastName = user.LastName,
                 Gender = user.Gender,
                 DateOfBirth = user.BirthDate
+            };
+        }
+
+        // Return null if user does not exist or does not have the Patient role
+        return null;
+    }
+
+    public async Task<dynamic> GetPhysicianByMobileAsync(string mobile)
+    {
+        // Retrieve user based on the mobile number
+        var user = await _userRepository.GetByDynamicPropertyAsync("Mobile", mobile);
+
+        // Check if the user has a Patient role
+        if (user != null && user.Roles.Any(r => r.Role == Role.Physician))
+        {
+            // Return patient details if found
+            return new
+            {
+                UserId = user.Id,
+                FirstName = user.FirstName,
+                MiddleName = user.MiddleName,
+                LastName = user.LastName,
+                Speciality = user.Speciality,
+
             };
         }
 

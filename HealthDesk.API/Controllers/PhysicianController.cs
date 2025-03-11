@@ -329,6 +329,17 @@ namespace HealthDesk.API.Controllers
             return Ok(new { Success = true, Data = patient });
         }
 
+        [HttpGet("physicians/by-mobile/{mobile}")]
+        public async Task<IActionResult> GetPhysicianByMobile(string id, string mobile)
+        {
+            var patient = await _physicianService.GetPhysicianByMobileAsync(mobile);
+            if (patient == null)
+            {
+                return Ok(new { Success = false, Message = "Patient not found." });
+            }
+            return Ok(new { Success = true, Data = patient });
+        }
+
         [HttpGet("{physicianId}/profiles")]
         public async Task<IActionResult> GetProfiles(string physicianId)
         {

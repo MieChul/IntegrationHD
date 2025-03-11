@@ -185,6 +185,9 @@ public class User : BaseEntity
     public bool HasDependent { get; set; }
     [BsonElement("clinic_image")]
     public string ClinicImage { get; set; }
+
+    [BsonElement("speciality")]
+    public string? Speciality { get; set; }
 }
 
 public class DOBEntity
@@ -200,6 +203,9 @@ public class DOBEntity
 
 public class G
 {
+    [BsonElement("name")]
+    public string? Name { get; set; } = string.Empty;
+
     [BsonElement("year")]
     public string? Year { get; set; } = string.Empty;
     [BsonElement("institute")]
@@ -365,7 +371,7 @@ public class UserRole
 {
     [BsonElement("id")]
     public string Id { get; set; }
-    
+
     [BsonElement("role")]
 
     public Role Role { get; set; }

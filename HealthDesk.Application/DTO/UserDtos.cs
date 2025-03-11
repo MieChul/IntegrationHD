@@ -120,6 +120,8 @@ public class UpdateUserInfoRequestDto
     public bool NoDocConsentProvided { get; set; } = false;
     public string ClinicImage { get; set; }
     public string Username { get; set; }
+
+    public string? Speciality { get; set; }
 }
 
 public class DOB
@@ -131,6 +133,7 @@ public class DOB
 
 public class Graduation
 {
+    public string? Name { get; set; }
     public string? Year { get; set; } = string.Empty;
     public string? Institute { get; set; } = string.Empty;
     public string? Document { get; set; } = string.Empty;

@@ -67,6 +67,11 @@ export class OrganizationService {
     return this.http.post(`${this.apiUrl}/${id}/services`, service);
   }
 
+  savePhysician(id: string, physician: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${id}/physicians`, physician);
+  }
+
+
   deleteService(id: string, serviceId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}/services/${serviceId}`);
   }
