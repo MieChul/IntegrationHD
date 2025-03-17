@@ -109,103 +109,305 @@
       </mat-form-field>
     </div>
   </div>
-
-
-  <!-- Entity Cards -->
-  <div class="row">
-    <div *ngFor="let entity of filteredEntities" class="col-md-4 mb-4">
-      <div class="card modern-card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">{{ entity.name }}</h5>
-          <p *ngIf="entity.location" class="card-text"><strong>Location:</strong> {{ entity.location }}</p>
-          <p *ngIf="entity.speciality" class="card-text"><strong>Speciality:</strong> {{ entity.speciality }}</p>
-          <p *ngIf="entity.timing" class="card-text"><strong>Timing:</strong> {{ entity.timing }}</p>
-          <div *ngIf="entity.services" class="card-text">
-            <strong>Services:</strong>
-            <ul>
-              <li *ngFor="let service of entity.services">{{ service }}</li>
-            </ul>
+  <div class="row" *ngIf="currentTab === 'physician'">
+    <div *ngFor="let entity of filteredPhysicians" class="col-md-4 mb-4">
+      <div class="card modern-card shadow-sm border-0">
+        <div class="card-body p-4">
+          <!-- Header with star badge and name -->
+          <div class="d-flex align-items-center mb-3">
+            <div class="rating-badge me-3">
+              <i class="bi bi-star-fill"></i>
+              <span class="rating-number">{{ entity.rating.toFixed(1) }}</span>
+            </div>
+            <h5 class="card-title mb-0">{{ entity.name }}</h5>
           </div>
-          <div *ngIf="entity.physicians" class="card-text">
-            <strong>Physicians:</strong>
-            <ul>
-              <li *ngFor="let physician of entity.physicians">
-                {{ physician.name }} ({{ physician.speciality }})
-              </li>
-            </ul>
+
+          <!-- Clinic Name -->
+          <p class="card-text mb-1">
+            <i class="bi bi-building me-1 icon-building"></i>
+            <span>{{ entity.clinicName }}</span>
+          </p>
+          <!-- Location -->
+          <p class="card-text mb-1">
+            <i class="bi bi-geo-alt me-1 icon-location"></i>
+            <span>{{ entity.location }}</span>
+          </p>
+          <!-- Speciality -->
+          <p class="card-text mb-1">
+            <i class="bi bi-bag-plus-fill me-1 icon-speciality"></i>
+            <span>{{ entity.speciality }}</span>
+          </p>
+          <!-- Timing -->
+          <p class="card-text mb-3">
+            <i class="bi bi-clock me-1 icon-timing"></i>
+            <span>{{ entity.timing }}</span>
+          </p>
+
+          <!-- Buttons -->
+          <div class="d-flex">
+            <button class="btn btn-primary btn-rounded me-2" (click)="openReviewModal(entity)">
+              View & Rate
+            </button>
+            <button class="btn btn-secondary btn-rounded" *ngIf="currentTab === 'physician'"
+              (click)="bookAppointment(entity.userId, entity.clinicName)">
+              Book Appointment
+            </button>
           </div>
-          <p *ngIf="entity.testName" class="card-text"><strong>Test Name:</strong> {{ entity.testName }}</p>
-          <p *ngIf="entity.drugName" class="card-text"><strong>Drug Name:</strong> {{ entity.drugName }}</p>
-          <p class="card-text"><strong>Rating:</strong> {{ entity.rating.toFixed(1) }}</p>
-          <button class="btn btn-primary mt-2" (click)="openReviewModal(entity)">View & Rate</button>
-          <button *ngIf="currentTab === 'physician'" class="btn btn-secondary mt-2 m-1"
-            (click)="bookAppointment(entity.userId, entity.clinicName)">
-            Book Appointment
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" *ngIf="currentTab === 'hospital'">
+    <div *ngFor="let entity of filteredHospitals" class="col-md-4 mb-4">
+      <div class="card modern-card shadow-sm border-0">
+        <div class="card-body p-4">
+          <!-- Header with rating badge and hospital name -->
+          <div class="d-flex align-items-center mb-3">
+            <div class="rating-badge me-3">
+              <i class="bi bi-star-fill"></i>
+              <span class="rating-number">{{ entity.rating.toFixed(1) }}</span>
+            </div>
+            <h5 class="card-title mb-0">{{ entity.name }}</h5>
+          </div>
+          <!-- Location -->
+          <p class="card-text mb-3">
+            <i class="bi bi-geo-alt me-1 icon-location"></i>
+            <span>{{ entity.location }}</span>
+          </p>
+          <!-- Details Buttons -->
+          <div class="d-flex flex-wrap mb-3">
+            <button class="btn btn-info btn-rounded me-2 mb-2" (click)="openDetailsModal(entity, 'services')">
+              View Services
+            </button>
+            <button class="btn btn-info btn-rounded mb-2" (click)="openDetailsModal(entity, 'physicians')">
+              View Physicians
+            </button>
+          </div>
+          <!-- Review Button -->
+          <button class="btn btn-primary btn-rounded" (click)="openReviewModal(entity)">
+            View & Rate
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Review Modal -->
-  <div class="modal fade" data-bs-backdrop='static' id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true"
-    #reviewModal>
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="reviewModalLabel">Reviews for {{ selectedEntity?.name }}</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <!-- Laboratory Cards -->
+  <div class="row" *ngIf="currentTab === 'laboratory'">
+    <div *ngFor="let entity of filteredLaboratories" class="col-md-4 mb-4">
+      <div class="card modern-card shadow-sm border-0">
+        <div class="card-body p-4">
+          <!-- Header with rating badge and laboratory name -->
+          <div class="d-flex align-items-center mb-3">
+            <div class="rating-badge me-3">
+              <i class="bi bi-star-fill"></i>
+              <span class="rating-number">{{ entity.rating.toFixed(1) }}</span>
+            </div>
+            <h5 class="card-title mb-0">{{ entity.name }}</h5>
+          </div>
+          <!-- Location -->
+          <p class="card-text mb-3">
+            <i class="bi bi-geo-alt me-1 icon-location"></i>
+            <span>{{ entity.location }}</span>
+          </p>
+          <!-- Details Button -->
+          <div class="d-flex flex-wrap mb-3">
+            <button class="btn btn-info btn-rounded" (click)="openDetailsModal(entity, 'labTests')">
+              View Lab Tests
+            </button>
+          </div>
+          <!-- Review Button -->
+          <button class="btn btn-primary btn-rounded" (click)="openReviewModal(entity)">
+            View & Rate
+          </button>
         </div>
-        <div class="modal-body">
+      </div>
+    </div>
+  </div>
 
-          <!-- Your Review (Single) -->
-          <h6>Your Review</h6>
-          <div *ngIf="userReview">
+  <!-- Pharmacy Cards -->
+  <div class="row" *ngIf="currentTab === 'pharmacy'">
+    <div *ngFor="let entity of filteredPharmacies" class="col-md-4 mb-4">
+      <div class="card modern-card shadow-sm border-0">
+        <div class="card-body p-4">
+          <!-- Header with rating badge and pharmacy name -->
+          <div class="d-flex align-items-center mb-3">
+            <div class="rating-badge me-3">
+              <i class="bi bi-star-fill"></i>
+              <span class="rating-number">{{ entity.rating.toFixed(1) }}</span>
+            </div>
+            <h5 class="card-title mb-0">{{ entity.name }}</h5>
+          </div>
+          <!-- Location -->
+          <p class="card-text mb-3">
+            <i class="bi bi-geo-alt me-1 icon-location"></i>
+            <span>{{ entity.location }}</span>
+          </p>
+          <!-- Details Button -->
+          <div class="d-flex flex-wrap mb-3">
+            <button class="btn btn-info btn-rounded" (click)="openDetailsModal(entity, 'medicines')">
+              View Medicines
+            </button>
+          </div>
+          <!-- Review Button -->
+          <button class="btn btn-primary btn-rounded" (click)="openReviewModal(entity)">
+            View & Rate
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Review Modal -->
+<div class="modal fade" data-bs-backdrop='static' id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel"
+  aria-hidden="true" #reviewModal>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="reviewModalLabel">Reviews for {{ selectedEntity?.name }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Your Review (Single) -->
+        <h6>Your Review</h6>
+        <div *ngIf="userReview">
+          <p>
+            <strong>You</strong>: {{ userReview.comment }}
+            <span class="text-warning">({{ userReview.rating }}/5)</span>
+          </p>
+        </div>
+        <div *ngIf="!userReview">
+          <p>No review submitted yet. Be the first to review!</p>
+        </div>
+        <hr />
+
+        <!-- Other Reviews -->
+        <h6>Other Reviews</h6>
+        <ng-container *ngFor="let review of selectedEntity?.reviews">
+          <ng-container *ngIf="review.userId !== userData.id">
             <p>
-              <strong>You</strong>: {{ userReview.comment }}
-              <span class="text-warning">({{ userReview.rating }}/5)</span>
+              <strong>Anonymous</strong>: {{ review.comment }}
+              <span class="text-warning">({{ review.rating }}/5)</span>
             </p>
-          </div>
-          <div *ngIf="!userReview">
-            <p>No review submitted yet. Be the first to review!</p>
-          </div>
-          <hr />
-
-          <!-- Other Reviews -->
-          <h6>Other Reviews</h6>
-          <ng-container *ngFor="let review of selectedEntity?.reviews">
-            <ng-container *ngIf="review.userId !== userData.id">
-              <p>
-                <strong>Anonymous</strong>: {{ review.comment }}
-                <span class="text-warning">({{ review.rating }}/5)</span>
-              </p>
-            </ng-container>
           </ng-container>
+        </ng-container>
 
-          <hr>
+        <hr>
 
-          <!-- Add/Update Review -->
-          <h6>Add/Update Your Review:</h6>
-          <form [formGroup]="reviewForm">
-            <div class="mb-3">
-              <label for="rating" class="form-label">Rating</label>
-              <div class="star-rating">
-                <i *ngFor="let star of [1, 2, 3, 4, 5]" class="bi"
-                  [ngClass]="{'bi-star-fill': star <= reviewForm.get('rating')?.value, 'bi-star': star > reviewForm.get('rating')?.value}"
-                  (click)="setRating(star)"></i>
-              </div>
+        <!-- Add/Update Review -->
+        <h6>Add/Update Your Review:</h6>
+        <form [formGroup]="reviewForm">
+          <div class="mb-3">
+            <label for="rating" class="form-label">Rating</label>
+            <div class="star-rating">
+              <i *ngFor="let star of [1, 2, 3, 4, 5]" class="bi"
+                [ngClass]="{'bi-star-fill': star <= reviewForm.get('rating')?.value, 'bi-star': star > reviewForm.get('rating')?.value}"
+                (click)="setRating(star)"></i>
             </div>
-            <div class="mb-3">
-              <label for="comment" class="form-label">Comment</label>
-              <textarea formControlName="comment" class="form-control"></textarea>
-            </div>
-          </form>
+          </div>
+          <div class="mb-3">
+            <label for="comment" class="form-label">Comment</label>
+            <textarea formControlName="comment" class="form-control"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer  d-flex justify-content-between">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="submitReview()">Submit
+          Review</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" data-bs-backdrop="static" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel"
+  aria-hidden="true" #detailsModal>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="detailsModalLabel">
+          <span *ngIf="detailsType === 'services'">Services</span>
+          <span *ngIf="detailsType === 'physicians'">Physicians</span>
+          <span *ngIf="detailsType === 'labTests'">Lab Tests</span>
+          <span *ngIf="detailsType === 'medicines'">Medicines</span>
+          for {{ selectedDetails?.name }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Services Table -->
+        <div *ngIf="detailsType === 'services'">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Specification</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let service of selectedDetails.services">
+                <td>{{ service.name }}</td>
+                <td>{{ service.specification }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div class="modal-footer  d-flex justify-content-between">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="submitReview()">Submit
-            Review</button>
+        <!-- Physicians Table -->
+        <div *ngIf="detailsType === 'physicians'">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Speciality</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let phy of selectedDetails.physicians">
+                <td>{{ phy.firstName }} {{ phy.lastName }}</td>
+                <td>{{ phy.speciality }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+        <!-- Lab Tests Table -->
+        <div *ngIf="detailsType === 'labTests'">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let test of selectedDetails.testname">
+                <td>{{ test.name }}</td>
+                <td>{{ test.amount | currency }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Medicines Table -->
+        <div *ngIf="detailsType === 'medicines'">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let med of selectedDetails.drugName">
+                <td>{{ med.brandName }}</td>
+                <td>{{ med.price | currency }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>

@@ -49,20 +49,26 @@
                             <th (click)="sortPhysicians('lastName')">Last Name</th>
                             <th (click)="sortPhysicians('qualification')">Qualification</th>
                             <th (click)="sortPhysicians('speciality')">Speciality</th>
-                            <th (click)="sortPhysicians('opdTiming')">OPD Days & Time</th>
-                            <th>Comment</th>
+                            <th (click)="sortPhysicians('opdTiming')">OPD Time</th>
+                            <th>Days</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr *ngFor="let physician of filteredPhysicians">
                             <td>{{ physician.firstName }}</td>
-                            <td>{{ physician.middleName || '-' }}</td>
+                            <td>{{ physician.middleName || '' }}</td>
                             <td>{{ physician.lastName }}</td>
-                            <td>{{ physician.qualification }}</td>
+                            <td> {{ physician.graduation }}
+                                <span *ngIf="physician.graduation && (physician.postGraduation || physician.superSpecialization || physician.additionalQualification)">, </span>
+                                {{ physician.postGraduation }}
+                                <span *ngIf="physician.postGraduation && (physician.superSpecialization || physician.additionalQualification)">, </span>
+                                {{ physician.superSpecialization }}
+                                <span *ngIf="physician.superSpecialization && physician.additionalQualification">, </span>
+                                {{ physician.additionalQualification }}</td>
                             <td>{{ physician.speciality }}</td>
-                            <td>{{ physician.opdTiming }}</td>
-                            <td>{{ physician.comment }}</td>
+                            <td>{{ physician.from }} - {{ physician.to }}</td>
+                            <td>{{ physician.days?.join(', ') }}</td>
                             <td>
                                 <button class="btn btn-warning btn-sm me-1" (click)="openPhysicianDialog(physician)">
                                     <i class="bi bi-pencil"></i>

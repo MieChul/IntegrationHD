@@ -58,21 +58,35 @@ public class PharmacyService : IPharmacyService
     public async Task DeleteMedicineAsync(string id, string medicineId)
     {
         var pharmacy = await GetPharmacyByUserIdAsync(id);
-        var medicineToRemove = pharmacy.Medicines.FirstOrDefault(m => m.BrandName == medicineId);
-
-        if (medicineToRemove == null)
-            throw new ArgumentException("Medicine not found.");
-
-        pharmacy.Medicines.Remove(medicineToRemove);
+        RemoveIfNotExpired(pharmacy.Medicines, h => h.Id == medicineId);
         await _pharmacyRepository.UpdateAsync(pharmacy);
     }
 
     private async Task<Pharmacy> GetPharmacyByUserIdAsync(string id)
     {
-        var pharmacy = await _pharmacyRepository.GetByIdAsync(id);
+        var pharmacy = await _pharmacyRepository.GetByDynamicPropertyAsync("UserId", id);
         if (pharmacy == null)
             throw new ArgumentException("Pharmacy not found.");
 
         return pharmacy;
+    }
+
+    private void RemoveIfNotExpired<T>(List<T> items, Func<T, bool> predicate) where T : class
+    {
+        var currentTime = DateTime.UtcNow;
+        var toRemove = items
+            .Where(item => predicate(item) &&
+                           (item.GetType().GetProperty("CreateDate")?.GetValue(item) is DateTime createDate) &&
+                           (currentTime - createDate).TotalHours <= 1)
+            .ToList();
+
+        if (toRemove.Any())
+        {
+            items.RemoveAll(i => toRemove.Contains(i));
+        }
+        else
+        {
+            throw new InvalidOperationException("Upon confirmation, data can be deleted only by Admin.");
+        }
     }
 }

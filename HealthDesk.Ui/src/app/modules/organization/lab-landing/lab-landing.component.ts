@@ -1,239 +1,144 @@
-import {
-  Component,
-  OnInit,
-  ViewChild,
-  AfterViewInit
-} from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { Modal } from 'bootstrap';
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
-import { Router } from '@angular/router';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import * as bootstrap from 'bootstrap';
+import { FilteringService } from '../../../shared/services/filter.service';
+import { PatientService } from '../../services/patient.service';
 import { AccountService } from '../../services/account.service';
-
-interface LaboratoryTest {
-  name: string;
-  specimenRequirement: string;
-  precaution: string;
-  reportingTime: string;
-  amount: number;
-  comment: string;
-}
+import { DatabaseService } from '../../../shared/services/database.service';
+import { SortingService } from '../../../shared/services/sorting.service';
+import { map, Observable, startWith } from 'rxjs';
+import { OrganizationService } from '../../services/organization.service';
 
 @Component({
   selector: 'app-lab-landing',
   templateUrl: './lab-landing.component.html',
   styleUrls: ['./lab-landing.component.scss']
 })
-export class LabLandingComponent implements OnInit, AfterViewInit {
-  @ViewChild('testModal') testModal!: any;
-
-  // Data arrays
-  tests: LaboratoryTest[] = [];
-
-  // Filtered array for display
-  filteredTests: LaboratoryTest[] = [];
-
-  // Search text
+export class LabLandingComponent implements OnInit {
+  @ViewChild('testModal') testModal!: ElementRef;
+  tests: any[] = [];
+  filteredTests: any[] = [];
   testSearchText: string = '';
-
-  // Form
   testForm!: FormGroup;
-
-  // Modal reference
-  testModalRef!: NgbModalRef;
-
-  // Flags
   isEditTest: boolean = false;
-  userData:any;
-  constructor(private router: Router, private fb: FormBuilder, private modalService: NgbModal, private accountService: AccountService) {}
+  selectedTest: any;
+  userData: any;
+  sortDirection: { [key: string]: 'asc' | 'desc' } = {};
+  constructor(
+    private fb: FormBuilder,
+    private sortingService: SortingService,
+    private filteringService: FilteringService,
+    private organizationService: OrganizationService,
+    private accountService: AccountService,
+    private databaseService: DatabaseService
+  ) { }
 
   ngOnInit(): void {
+    this.initializeForms();
+
     this.accountService.getUserData().subscribe({
-      next: (data) => {
+      next: async (data) => {
         this.userData = data;
-        if (this.userData.status == 'Approved') {
-          this.initForm();
-          this.loadDummyData();
-        }
-        else
-          this.router.navigate(['/account']);
-      }
+        await this.loadData();
+      },
+      error: (err) => console.error('Error fetching user data:', err)
     });
   }
 
-  ngAfterViewInit(): void {
-    this.filterTests();
-  }
-
-  initForm(): void {
+  initializeForms(): void {
     this.testForm = this.fb.group({
-      name: [''],
-      specimenRequirement: [''],
-      precaution: [''],
-      reportingTime: [''],
-      amount: [''],
+      id:[],
+      name: ['', Validators.required],
+      specimenRequirement: ['', Validators.required],
+      precaution: ['', Validators.required],
+      reportingTime: ['', Validators.required],
+      amount: ['', Validators.required],
       comment: ['']
     });
   }
 
-  loadDummyData(): void {
-    // Dummy data for laboratory tests
-    this.tests = [
-      {
-        name: 'Complete Blood Count',
-        specimenRequirement: 'Blood sample (EDTA tube)',
-        precaution: 'Fasting not required',
-        reportingTime: '4 hours',
-        amount: 300,
-        comment: 'Routine blood test'
-      },
-      {
-        name: 'Fasting Blood Sugar',
-        specimenRequirement: 'Blood sample (Fluoride tube)',
-        precaution: '8-12 hours fasting',
-        reportingTime: '2 hours',
-        amount: 200,
-        comment: 'Diabetes screening'
-      },
-      {
-        name: 'Lipid Profile',
-        specimenRequirement: 'Blood sample (Serum separator tube)',
-        precaution: '12 hours fasting',
-        reportingTime: '6 hours',
-        amount: 800,
-        comment: 'Cholesterol levels'
-      },
-      {
-        name: 'Urine Routine Examination',
-        specimenRequirement: 'Midstream urine sample',
-        precaution: 'Clean catch sample',
-        reportingTime: '3 hours',
-        amount: 150,
-        comment: 'Urinary tract infection screening'
-      },
-      {
-        name: 'Thyroid Function Test',
-        specimenRequirement: 'Blood sample (Serum separator tube)',
-        precaution: 'No special preparation',
-        reportingTime: '8 hours',
-        amount: 600,
-        comment: 'Thyroid hormone levels'
-      },
-      {
-        name: 'Liver Function Test',
-        specimenRequirement: 'Blood sample (Serum separator tube)',
-        precaution: 'No alcohol 24 hours prior',
-        reportingTime: '5 hours',
-        amount: 700,
-        comment: 'Assess liver health'
-      }
-    ];
-
-    this.filterTests();
-  }
-
-  // Laboratory Test Methods
-
-  openTestDialog(test?: LaboratoryTest): void {
-    this.isEditTest = !!test;
-    this.testForm.reset();
-
-    if (test) {
-      this.testForm.patchValue(test);
+  loadData(): void {
+    if (!this.userData?.id) {
+      console.error('User ID is missing');
+      return;
     }
 
-    const modal = new Modal(this.testModal.nativeElement);
+    this.organizationService.getAllLabTests(this.userData.id).subscribe({
+      next: (data: any) => {
+        this.tests = data?.data.map((test: any) => ({
+          ...test
+        }));
+        this.filteredTests = [...this.tests];
+      },
+      error: (error) => {
+        console.error('Error loading history:', error);
+      }
+    });
+  }
+
+
+  openTestDialog(isEditMode: boolean, test: any = null): void {
+    this.isEditTest = isEditMode;
+
+
+    if (isEditMode && test) {
+      this.selectedTest = test;
+      this.testForm.patchValue(test);
+    }
+    else {
+      this.selectedTest = null;
+      this.testForm.reset();
+    }
+
+    const modal = new bootstrap.Modal(this.testModal.nativeElement);
     modal.show();
   }
 
-  closeTestDialog(): void {
-    const modal = Modal.getInstance(this.testModal.nativeElement);
-    if (modal) {
-      modal.hide();
-    }
-  }
-
   saveTest(): void {
-    const formValues = this.testForm.value;
+    this.testForm.markAllAsTouched();
+    if (this.testForm.invalid || !this.userData.id) return;
 
-    const test: LaboratoryTest = {
-      name: formValues.name,
-      specimenRequirement: formValues.specimenRequirement,
-      precaution: formValues.precaution,
-      reportingTime: formValues.reportingTime,
-      amount: formValues.amount,
-      comment: formValues.comment
-    };
+    this.organizationService.saveLabTest(this.userData.id, this.testForm.value).subscribe({
+      next: (response) => {
+        this.loadData();
+      },
+      error: (error) => {
+        console.error('Error updating medical treatments:', error);
+      },
+    });
 
-    if (this.isEditTest) {
-      const index = this.tests.findIndex(t => t.name === test.name);
-      if (index !== -1) {
-        this.tests[index] = test;
+  }
+
+  deleteTest(test: any): void {
+
+    if (!this.userData.id || !test.id) return;
+    this.organizationService.deleteLabTest(this.userData.id, test.id).subscribe({
+      next: (response) => {
+        console.log(response.message); // Success message from API
+        this.loadData(); // Reload the list after successful deletion
+      },
+      error: (error) => {
+        console.error('Error deleting treatments:', error); // Handle errors
       }
-    } else {
-      this.tests.push(test);
-    }
-
-    this.filterTests();
-    this.closeTestDialog();
+    });
   }
 
-  deleteTest(test: LaboratoryTest): void {
-    if (confirm('Are you sure you want to delete this laboratory test?')) {
-      this.tests = this.tests.filter(t => t !== test);
-      this.filterTests();
-    }
+  applyFilters(): void {
+    this.filteredTests = this.filteringService.filter(
+      this.tests,
+      {
+        name: this.testSearchText
+      },
+      []
+    );
   }
 
-  filterTests(): void {
-    if (this.testSearchText) {
-      this.filteredTests = this.tests.filter(t =>
-        t.name.toLowerCase().includes(this.testSearchText.toLowerCase())
-      );
-    } else {
-      this.filteredTests = [...this.tests];
-    }
-  }
+  sortTable(column: string): void {
+    // Toggle the sort direction
+    this.sortDirection[column] = this.sortDirection[column] === 'asc' ? 'desc' : 'asc';
+    const direction = this.sortDirection[column];
 
-  sortTestTable(column: keyof LaboratoryTest): void {
-    this.filteredTests.sort((a, b) => (a[column] > b[column] ? 1 : -1));
-  }
-
-  exportToExcel(): void {
-    // Define the headers matching the HTML table
-    const headers = [
-      'Laboratory Test Name',
-      'Specimen Requirement',
-      'Precaution',
-      'Reporting Time',
-      'Amount',
-      'Comment'
-    ];
-  
-    // Map the data to include headers
-    const dataToExport = this.filteredTests.map(test => ({
-      'Laboratory Test Name': test.name,
-      'Specimen Requirement': test.specimenRequirement,
-      'Precaution': test.precaution,
-      'Reporting Time': test.reportingTime,
-      'Amount': test.amount,
-      'Comment': test.comment
-    }));
-  
-    // Add headers as the first row
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport, { header: headers });
-  
-    // Create a new workbook and append the worksheet
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Laboratory Tests');
-  
-    // Write workbook to an Excel file
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-  
-    // Save the file
-    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-    saveAs(blob, `Laboratory_Tests_${new Date().toISOString()}.xlsx`);
+    // Use the sorting service to sort the data
+    this.filteredTests = this.sortingService.sort(this.filteredTests, column, direction);
   }
 }

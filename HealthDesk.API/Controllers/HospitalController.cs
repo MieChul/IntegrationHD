@@ -28,10 +28,10 @@ namespace HealthDesk.API.Controllers
             return Ok(new { Success = true, Message = "Physicians retrieved successfully.", Data = physicians });
         }
 
-         [HttpGet("{id}/patients/by-mobile/{mobile}")]
-        public async Task<IActionResult> GetPhysicianByMobile(string id, string mobile)
+        [HttpGet("{mobile}/get-by-mobile")]
+        public async Task<IActionResult> GetPhysicianByMobile(string mobile)
         {
-            var patient = await _physicianService.GetPatientByMobileAsync(id, mobile);
+            var patient = await _hospitalService.GetPhysicanByMobileAsync(mobile);
             if (patient == null)
             {
                 return Ok(new { Success = false, Message = "Patient not found." });
@@ -42,15 +42,12 @@ namespace HealthDesk.API.Controllers
 
         // 2. Add a physician to a hospital
         [HttpPost("{userId}/physicians")]
-        public async Task<IActionResult> AddPhysician(string userId, [FromBody] PhysicianDto dto)
+        public async Task<IActionResult> SavePhysician(string userId, [FromBody] PhysicianRecordDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new { Success = false, Message = "Invalid input.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
 
-            if (string.IsNullOrEmpty(dto.Id))
-                return BadRequest(new { Success = false, Message = "Physician ID is required." });
-
-            await _hospitalService.AddPhysicianAsync(userId, dto.Id);
+            await _hospitalService.SavePhysicianAsync(userId, dto);
             return Ok(new { Success = true, Message = "Physician added successfully." });
         }
 

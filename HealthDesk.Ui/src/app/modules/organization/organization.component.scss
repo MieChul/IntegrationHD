@@ -582,3 +582,7 @@ transition: transform 0.3s, background-color 0.3s;
 background-color: #d82c2c;
 transform: scale(1.05);
 }
+
+.cdk-overlay-container {
+  z-index: 9999;
+}

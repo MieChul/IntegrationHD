@@ -11,7 +11,7 @@ public class Hospital : BaseEntity
     public string UserId { get; set; }
 
     [BsonElement("physicians")]
-    public List<string> Physicians { get; set; } // References Physician IDs
+    public List<PhysicianRecord> Physicians { get; set; } // References Physician IDs
 
     [BsonElement("services")]
     public List<Service> Services { get; set; }
@@ -26,11 +26,29 @@ public class Hospital : BaseEntity
 public class Service : BaseEntity
 {
     [BsonElement("service_name")]
-    public string ServiceName { get; set; }
+    public string Name { get; set; }
 
     [BsonElement("specification")]
     public string Specification { get; set; }
 
     [BsonElement("comment")]
     public string Comment { get; set; }
+}
+
+public class PhysicianRecord : BaseEntity
+{
+    [BsonElement("user_id")]
+    public string? UserId { get; set; }
+
+    [BsonElement("days")]
+    public List<string> Days { get; set; }
+
+    [BsonElement("to")]
+    public string To { get; set; }
+
+    [BsonElement("from")]
+    public string From { get; set; }
+
+    [BsonElement("is_active")]
+    public bool IsActive { get; set; }
 }

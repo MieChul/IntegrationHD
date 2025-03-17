@@ -47,6 +47,15 @@ public class UserRegistrationDto
     public string MiddleName { get; set; } = string.Empty;
     public DateTime? DOB { get; set; } = null;
     public string? Gender { get; set; } = string.Empty;
+    public string? Speciality { get; set; } = string.Empty;
+    public string? Graduation { get; set; } = string.Empty;
+
+    public string? PostGraduation { get; set; } = string.Empty;
+
+    public string? SuperSpecialization { get; set; } = string.Empty;
+
+    public string? AdditionalQualification { get; set; } = string.Empty;
+
 }
 
 public class UpdateRequestDto

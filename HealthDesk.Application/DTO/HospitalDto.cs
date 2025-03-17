@@ -14,7 +14,7 @@ public class ServiceDto
     public string? Comment { get; set; }
 }
 
-public class PhysicianDto
+public class PhysicianRecordDto
 {
     public string? Id { get; set; }
     public string? UserId { get; set; }
@@ -38,18 +38,31 @@ public class PhysicianDto
     public string Gender { get; set; }
 
     [Required(ErrorMessage = "Date of birth is required.")]
-    public DateTime DateOfBirth { get; set; }
+    public string DateOfBirth { get; set; }
 
-    public string? Qualification { get; set; }
+    [Required(ErrorMessage = "Graduation is required.")]
+    public string? Graduation { get; set; }
+
+    public string? PostGraduation { get; set; }
+
+    public string? SuperSpecialization { get; set; }
+
+    public string? AdditionalQualification { get; set; }
+
+    [Required(ErrorMessage = "Speciality is required.")]
     public string? Speciality { get; set; }
 
     [Required(ErrorMessage = "At least one day must be selected.")]
     [MinLength(1, ErrorMessage = "At least one day must be selected.")]
     public List<string> Days { get; set; }
 
-    [Required(ErrorMessage = "At least one slot must be provided.")]
-    [MinLength(1, ErrorMessage = "At least one slot must be provided.")]
-    public List<ClinicSlotsDto> Slots { get; set; }
+    [Required(ErrorMessage = "To Timing is required.")]
+    public string To { get; set; }
 
-    public string? Comment { get; set; }
+    [Required(ErrorMessage = "From Timing is required.")]
+    public string From { get; set; }
+
+    [Required(ErrorMessage = "Is Active is required.")]
+    public bool IsActive { get; set; }
 }
+

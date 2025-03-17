@@ -23,6 +23,16 @@ export class RateComponent implements OnInit {
   reviewForm!: FormGroup;
   filterForm!: FormGroup;
   userData: any;
+  filteredPhysicians: any[] = [];
+  filteredHospitals: any[] = [];
+  filteredLaboratories: any[] = [];
+  filteredPharmacies: any[] = [];
+  physicians: any[] = [];
+  hospitals: any[] = [];
+  pharmacies: any[] = [];
+  laboratories: any[] = [];
+  selectedDetails: any = null;
+  detailsType: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -30,7 +40,7 @@ export class RateComponent implements OnInit {
     private patientService: PatientService,
     private filteringService: FilteringService,
     private router: Router
-  ) {}
+  ) { }
 
   async ngOnInit() {
     this.initializeForm();
@@ -62,7 +72,15 @@ export class RateComponent implements OnInit {
     });
 
     this.filterForm.valueChanges.subscribe(() => {
-      this.applyFilters();
+      if (this.currentTab === 'physician') {
+        this.applyFiltersPhysician();
+      } else if (this.currentTab === 'hospital') {
+        this.applyFiltersHospitals();
+      } else if (this.currentTab === 'laboratory') {
+        this.applyFiltersLaboratory();
+      } else if (this.currentTab === 'pharmacy') {
+        this.applyFiltersPharma();
+      }
     });
   }
 
@@ -89,7 +107,16 @@ export class RateComponent implements OnInit {
           reviews: entity.reviews || []
         })).sort((a: any, b: any) => b.rating - a.rating);
 
-        this.applyFilters();
+        this.physicians = this.entities.filter(e => e.entityType === 'physician');
+        this.hospitals = this.entities.filter(e => e.entityType === 'hospital');
+        this.laboratories = this.entities.filter(e => e.entityType === 'laboratory');
+        this.pharmacies = this.entities.filter(e => e.entityType === 'pharmacy');
+
+        // Assign filtered copies for display
+        this.filteredPhysicians = [...this.physicians];
+        this.filteredHospitals = [...this.hospitals];
+        this.filteredLaboratories = [...this.laboratories];
+        this.filteredPharmacies = [...this.pharmacies];
       },
       error: (error) => {
         console.error('Error loading entities:', error);
@@ -190,6 +217,56 @@ export class RateComponent implements OnInit {
     this.sortByRating();
   }
 
+  applyFiltersPhysician(): void {
+    this.filteredPhysicians = this.filteringService.filter(
+      this.physicians,
+      {
+        location: this.filterForm.value.location,
+        service: this.filterForm.value.service,
+        physician: this.filterForm.value.physician
+      },
+      []
+    );
+  }
+
+  applyFiltersHospitals(): void {
+    this.filteredHospitals = this.filteringService.filter(
+      this.hospitals,
+      {
+        location: this.filterForm.value.location,
+        speciality: this.filterForm.value.speciality,
+        timing: this.filterForm.value.timing
+      },
+      []
+    );
+  }
+
+
+
+  applyFiltersPharma(): void {
+    this.filteredPharmacies = this.filteringService.filter(
+      this.pharmacies,
+      {
+        location: this.filterForm.value.location,
+        pharmacy: this.filterForm.value.pharmacy,
+      },
+      []
+    );
+  }
+
+
+  applyFiltersLaboratory(): void {
+    this.filteredLaboratories = this.filteringService.filter(
+      this.laboratories,
+      {
+        location: this.filterForm.value.location,
+        testName: this.filterForm.value.testName
+      },
+      []
+    );
+  }
+
+
   /**
    * Sorts entities by rating in ascending or descending order
    */
@@ -208,5 +285,13 @@ export class RateComponent implements OnInit {
         clinicName: clinicName
       }
     });
+  }
+
+  openDetailsModal(entity: any, type: string): void {
+    this.selectedDetails = entity;
+    this.detailsType = type;
+    const modalEl = document.getElementById('detailsModal');
+    const modal = new bootstrap.Modal(modalEl!);
+    modal.show();
   }
 }

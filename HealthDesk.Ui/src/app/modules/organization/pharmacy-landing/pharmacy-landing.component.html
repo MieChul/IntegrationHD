@@ -1,198 +1,199 @@
 <div class="container">
-    <h1 class="animated-heading">
-        <i class="bi bi-box-seam me-2"></i>Pharmacy
-    </h1>
+  <h1 class="animated-heading">
+    <i class="bi bi-box-seam me-2"></i>Pharmacy
+  </h1>
 
-    <div>
-        <div class="row mb-3 align-items-center">
-            <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
-                <div class="mb-2 me-3">
-                    <label for="brandSearch" class="form-label label-modern shadow">Search by Brand Name</label>
-                    <input type="text" id="brandSearch" class="form-control" [(ngModel)]="brandSearchText"
-                        (ngModelChange)="filterBrands()" />
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
-              <button class="btn btn-primary m-1" (click)="openBrandDialog()">
-                Add Brand
-            </button>
-              <button class="btn btn-success m-1" (click)="exportToExcel()">Export to Excel</button>
-            </div>
+  <div>
+    <div class="row mb-3 align-items-center">
+      <div class="row mb-3 align-items-center">
+        <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
+          <div class="mb-2 me-3">
+            <mat-form-field appearance="outline" class="w-100" class="w-100">
+              <mat-label>Search by Brand</mat-label>
+              <input matInput placeholder="Search by Brand" [(ngModel)]="brandSearchText" (input)="applyFilter()" />
+            </mat-form-field>
+          </div>
         </div>
-
-        <div class="table-responsive">
-            <table class="table table-hover table-modern">
-                <thead>
-                    <tr>
-                        <th (click)="sortBrandTable('brandOwner')">Brand Owner</th>
-                        <th (click)="sortBrandTable('brandName')">Brand Name</th>
-                        <th (click)="sortBrandTable('genericName')">Generic Name</th>
-                        <th (click)="sortBrandTable('drugClass')">Drug Class</th>
-                        <th (click)="sortBrandTable('dosageForm')">Dosage Form</th>
-                        <th (click)="sortBrandTable('strength')">Strength</th>
-                        <th (click)="sortBrandTable('price')">Price</th>
-                        <th (click)="sortBrandTable('discount')">% Discount</th>
-                        <th>Comment</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let brand of filteredBrands">
-                        <td>{{ brand.brandOwner }}</td>
-                        <td>{{ brand.brandName }}</td>
-                        <td>{{ brand.genericName }}</td>
-                        <td>{{ brand.drugClass }}</td>
-                        <td>{{ brand.dosageForm }}</td>
-                        <td>{{ brand.strength }}</td>
-                        <td>{{ brand.price | currency: 'INR' }}</td>
-                        <td>{{ brand.discount }}%</td>
-                        <td>{{ brand.comment }}</td>
-                        <td>
-                            <button class="btn btn-warning btn-sm me-1" (click)="openBrandDialog(brand)">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-danger btn-sm" (click)="deleteBrand(brand)">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
+          <button class="btn btn-primary" (click)="openBrandDialog(false,null)">Add Brand</button>
+          <button class="btn btn-success m-1">Export to Excel</button>
         </div>
+      </div>
     </div>
-</div>
-
-<div
-class="modal fade"
-id="brandModal"
-data-bs-backdrop='static'
-tabindex="-1"
-aria-labelledby="brandModalLabel"
-aria-hidden="true"
-#brandModal
->
-<div class="modal-dialog modal-dialog-centered">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h5 class="modal-title" id="brandModalLabel">
-        {{ isEditBrand ? 'Edit Brand' : 'Add Brand' }}
-      </h5>
-      <button
-        type="button"
-        class="btn-close"
-        data-bs-dismiss="modal"
-        aria-label="Close"
-        (click)="closeBrandDialog()"
-      ></button>
-    </div>
-    <div class="modal-body">
-      <form [formGroup]="brandForm">
-        <div class="mb-3">
-          <label for="brandOwner" class="form-label label-modern shadow"
-            >Brand Owner</label
-          >
-          <select class="form-control" formControlName="brandOwner">
-            <option *ngFor="let owner of brandOwners" [value]="owner">{{
-              owner
-            }}</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label for="brandName" class="form-label label-modern shadow"
-            >Brand Name</label
-          >
-          <input
-            type="text"
-            id="brandName"
-            formControlName="brandName"
-            class="form-control"
-          />
-        </div>
-        <div class="mb-3">
-          <label for="genericName" class="form-label label-modern shadow"
-            >Generic Name</label
-          >
-          <input
-            type="text"
-            id="genericName"
-            formControlName="genericName"
-            class="form-control"
-          />
-        </div>
-        <div class="mb-3">
-          <label for="drugClass" class="form-label label-modern shadow"
-            >Drug Class</label
-          >
-          <select class="form-control" formControlName="drugClass">
-            <option *ngFor="let drug of drugClasses" [value]="drug">{{ drug }}</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label for="dosageForm" class="form-label label-modern shadow"
-            >Dosage Form</label
-          >
-          <select class="form-control" formControlName="dosageForm">
-            <option *ngFor="let dosage of dosageForms" [value]="dosage">{{ dosage }}</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label for="strength" class="form-label label-modern shadow"
-            >Strength</label
-          >
-          <input
-            type="text"
-            id="strength"
-            formControlName="strength"
-            class="form-control"
-          />
-        </div>
-        <div class="mb-3">
-          <label for="price" class="form-label label-modern shadow"
-            >Price</label
-          >
-          <input
-            type="number"
-            id="price"
-            formControlName="price"
-            class="form-control"
-          />
-        </div>
-        <div class="mb-3">
-          <label for="discount" class="form-label label-modern shadow"
-            >% Discount</label
-          >
-          <input
-            type="number"
-            id="discount"
-            formControlName="discount"
-            class="form-control"
-          />
-        </div>
-        <div class="mb-3">
-          <label for="comment" class="form-label label-modern shadow"
-            >Comment</label
-          >
-          <textarea
-            id="comment"
-            formControlName="comment"
-            class="form-control"
-          ></textarea>
-        </div>
-      </form>
-    </div>
-    <div class="modal-footer">
-      <button
-        type="button"
-        class="btn btn-secondary"
-        data-bs-dismiss="modal"
-        (click)="closeBrandDialog()"
-      >
-        Close
-      </button>
-      <button type="button"    data-bs-dismiss="modal" class="btn btn-primary" (click)="saveBrand();">
-        {{ isEditBrand ? 'Save Changes' : 'Add Brand' }}
-      </button>
+    <div class="table-responsive">
+      <table class="table table-hover table-modern">
+        <thead>
+          <tr>
+            <th (click)="sortTable('brandOwner')">Brand Owner</th>
+            <th (click)="sortTable('brandName')">Brand Name</th>
+            <th (click)="sortTable('genericName')">Generic Name</th>
+            <th (click)="sortTable('drugClass')">Drug Class</th>
+            <th (click)="sortTable('dosageForm')">Dosage Form</th>
+            <th (click)="sortTable('strength')">Strength</th>
+            <th (click)="sortTable('price')">Price</th>
+            <th (click)="sortTable('discount')">% Discount</th>
+            <th>Comment</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let brand of filteredBrands">
+            <td>{{ brand.brandOwner }}</td>
+            <td>{{ brand.brandName }}</td>
+            <td>{{ brand.genericName }}</td>
+            <td>{{ brand.drugClass }}</td>
+            <td>{{ brand.dosageForm }}</td>
+            <td>{{ brand.strength }}</td>
+            <td>{{ brand.price | currency: 'INR' }}</td>
+            <td>{{ brand.discount }}%</td>
+            <td>{{ brand.comment }}</td>
+            <td>
+              <button class="btn btn-warning btn-sm me-1" (click)="openBrandDialog(true,brand)">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn btn-danger btn-sm" (click)="deleteBrand(brand)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div *ngIf="filteredBrands.length === 0" class="alert alert-info">
+        No Brands created yet. Click "Add Brand" to get started.
+      </div>
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="brandModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="brandModalLabel" aria-hidden="true" #brandModal>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="brandModalLabel">
+          {{ isEditBrand ? 'Edit Brand' : 'Add Brand' }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="brandForm">
+          <!-- Row 1: Brand Owner & Brand Name -->
+          <div class="row">
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Brand Owner</mat-label>
+                <mat-select formControlName="brandOwner">
+                  <mat-option *ngFor="let owner of brandOwners" [value]="owner">
+                    {{ owner }}
+                  </mat-option>
+                </mat-select>
+                <!-- <mat-error *ngIf="brandForm.get('brandOwner')?.hasError('required')">
+                  Brand Owner is required.
+                </mat-error> -->
+              </mat-form-field>
+            </div>
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Brand Name</mat-label>
+                <input matInput type="text" formControlName="brandName" />
+                <mat-error *ngIf="brandForm.get('brandName')?.hasError('required')">
+                  Brand Name is required.
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+          <!-- Row 2: Generic Name & Drug Class -->
+          <div class="row">
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Generic Name</mat-label>
+                <input matInput type="text" formControlName="genericName" />
+                <mat-error *ngIf="brandForm.get('genericName')?.hasError('required')">
+                  Generic Name is required.
+                </mat-error>
+              </mat-form-field>
+            </div>
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Drug Class</mat-label>
+                <mat-select formControlName="drugClass">
+                  <mat-option *ngFor="let drug of drugClasses" [value]="drug">
+                    {{ drug }}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="brandForm.get('drugClass')?.hasError('required')">
+                  Drug Class is required.
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+          <!-- Row 3: Dosage Form & Strength -->
+          <div class="row">
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Dosage Form</mat-label>
+                <mat-select formControlName="dosageForm">
+                  <mat-option *ngFor="let dosage of dosageForms" [value]="dosage">
+                    {{ dosage }}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="brandForm.get('dosageForm')?.hasError('required')">
+                  Dosage Form is required.
+                </mat-error>
+              </mat-form-field>
+            </div>
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Strength</mat-label>
+                <input matInput type="text" formControlName="strength" />
+                <mat-error *ngIf="brandForm.get('strength')?.hasError('required')">
+                  Strength is required.
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+          <!-- Row 4: Price & Discount -->
+          <div class="row">
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Price</mat-label>
+                <input matInput type="number" formControlName="price" />
+                <mat-error *ngIf="brandForm.get('price')?.hasError('required')">
+                  Price is required.
+                </mat-error>
+              </mat-form-field>
+            </div>
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>% Discount</mat-label>
+                <input matInput type="number" formControlName="discount" />
+                <mat-error *ngIf="brandForm.get('discount')?.hasError('required')">
+                  Discount is required.
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+          <!-- Row 5: Comment (optional) -->
+          <div class="row">
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Comment</mat-label>
+                <textarea matInput formControlName="comment"></textarea>
+              </mat-form-field>
+            </div>
+            <div class="col-md-6">
+              <!-- Optionally add another field or leave empty -->
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Close
+        </button>
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="saveBrand()">
+          {{ isEditBrand ? 'Save Changes' : 'Add Brand' }}
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

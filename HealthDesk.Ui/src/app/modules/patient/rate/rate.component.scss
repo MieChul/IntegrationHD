@@ -1,22 +1,78 @@
 .star-rating {
-    font-size: 2rem; /* Adjust size as needed */
-    color: #fbc02d; /* Star color */
-    cursor: pointer;
-  
-    .bi-star {
-      color: #ddd; /* Empty star color */
-    }
-  
-    .bi-star-fill {
-      color: #fbc02d; /* Filled star color */
-    }
-  
-    i {
-      transition: color 0.2s ease-in-out;
-      margin-right: 0.1rem;
-    }
-  
-    i:hover, i:hover ~ i {
-      color: #ffca28; /* Hover effect color */
-    }
+  font-size: 2rem;
+  /* Adjust size as needed */
+  color: #fbc02d;
+  /* Star color */
+  cursor: pointer;
+
+  .bi-star {
+    color: #ddd;
+    /* Empty star color */
   }
+
+  .bi-star-fill {
+    color: #fbc02d;
+    /* Filled star color */
+  }
+
+  i {
+    transition: color 0.2s ease-in-out;
+    margin-right: 0.1rem;
+  }
+
+  i:hover,
+  i:hover~i {
+    color: #ffca28;
+    /* Hover effect color */
+  }
+}
+
+// Modern card styling
+.modern-card {
+  border-radius: 10px;
+  font-family: 'Roboto', sans-serif;
+}
+
+// Rating badge styles
+.rating-badge {
+  position: relative;
+  display: inline-block;
+  font-size: 2rem;
+  color: #FFC107;
+
+  .bi-star-fill {
+    font-size: 3rem;
+  }
+
+  .rating-number {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    color: #fff;
+    font-size: 1rem;
+  }
+}
+
+// Button with rounded corners
+.btn-rounded {
+  border-radius: 5px;
+}
+
+// Icon colors
+.icon-building {
+  color: #007bff;
+}
+
+.icon-location {
+  color: #28a745;
+}
+
+.icon-speciality {
+  color: #e83e8c;
+}
+
+.icon-timing {
+  color: #6c757d;
+}

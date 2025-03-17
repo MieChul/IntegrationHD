@@ -23,10 +23,10 @@ public class LabTest : BaseEntity
     public string Name { get; set; }
 
     [BsonElement("specimen")]
-    public string Specimen { get; set; }
+    public string SpecimenRequirement  { get; set; }
 
     [BsonElement("precautions")]
-    public string Precautions { get; set; }
+    public string Precaution { get; set; }
 
     [BsonElement("reporting_time")]
     public string ReportingTime { get; set; }
@@ -35,5 +35,5 @@ public class LabTest : BaseEntity
     public decimal Amount { get; set; }
 
     [BsonElement("comment")]
-    public string Comment { get; set; }
+    public string? Comment { get; set; }
 }

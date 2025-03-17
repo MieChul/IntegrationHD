@@ -52,7 +52,6 @@ export class HospitalManagementComponent implements OnInit {
   days = ['Su', 'M', 'T', 'W', 'Th', 'F', 'S'];
 
   constructor(private fb: FormBuilder,
-    private physicianService: PhysicianService,
     private router: Router,
     private accountService: AccountService,
     private organizationService: OrganizationService,
@@ -95,18 +94,19 @@ export class HospitalManagementComponent implements OnInit {
       lastName: ['', [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,49}$/)]],
       gender: [{ value: '', disabled: true }, Validators.required],
       dateOfBirth: [Validators.required, (control: AbstractControl) => this.validateAge(control)],
-      qualification: [''],
       speciality: [''],
       graduation: ['', [Validators.required]],
-      postgraduation: [''],
+      postGraduation: [''],
       superSpecialization: [''],
       additionalQualification: [''],
       days: this.fb.group(daysGroup, { validators: this.validateDaysRequired } as AbstractControlOptions),
       from: ['', [Validators.required]],
-      to: ['', [Validators.required]]
+      to: ['', [Validators.required]],
+      isActive: [true]
     });
 
     this.serviceForm = this.fb.group({
+      id:[],
       name: ['', [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,49}$/)]],
       specification: ['', [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,49}$/)]],
       comment: ['']
@@ -190,7 +190,7 @@ export class HospitalManagementComponent implements OnInit {
   }
 
   checkPhysicianExists(mobile: string): void {
-    this.physicianService.getPhysicianByMobile(mobile).subscribe((response: any) => {
+    this.organizationService.getPhysicianByMobile(mobile).subscribe((response: any) => {
       if (response.success && response.data) {
         const physician = response.data;
         this.physicianForm.patchValue({
@@ -202,9 +202,10 @@ export class HospitalManagementComponent implements OnInit {
           gender: physician.gender,
           dateOfBirth: physician.dateOfBirth,
           graduation: physician.graduation,
-          postgraduation: physician.postgraduation,
+          postGraduation: physician.postGraduation,
           superSpecialization: physician.superSpecialization,
-          additionalQualification: physician.additionalQualification
+          additionalQualification: physician.additionalQualification,
+          isActive: true
         });
         this.physicianForm.get('firstName')?.disable();
         this.physicianForm.get('lastName')?.disable();
@@ -213,7 +214,7 @@ export class HospitalManagementComponent implements OnInit {
         this.physicianForm.get('gender')?.disable();
         this.physicianForm.get('dateOfBirth')?.disable();
         this.physicianForm.get('graduation')?.disable();
-        this.physicianForm.get('postgraduation')?.disable();
+        this.physicianForm.get('postGraduation')?.disable();
         this.physicianForm.get('superSpecialization')?.disable();
         this.physicianForm.get('additionalQualification')?.disable();
       } else {
@@ -226,7 +227,7 @@ export class HospitalManagementComponent implements OnInit {
         this.physicianForm.get('gender')?.enable();
         this.physicianForm.get('dateOfBirth')?.enable();
         this.physicianForm.get('graduation')?.enable();
-        this.physicianForm.get('postgraduation')?.enable();
+        this.physicianForm.get('postGraduation')?.enable();
         this.physicianForm.get('superSpecialization')?.enable();
         this.physicianForm.get('additionalQualification')?.enable();
       }
@@ -272,7 +273,7 @@ export class HospitalManagementComponent implements OnInit {
         mobile: physician.mobile,
         speciality: physician.speciality,
         graduation: physician.graduation,
-        postgraduation: physician.postgraduation,
+        postGraduation: physician.postGraduation,
         superSpecialization: physician.superSpecialization,
         additionalQualification: physician.additionalQualification,
         from: physician.from,
@@ -288,7 +289,7 @@ export class HospitalManagementComponent implements OnInit {
       this.physicianForm.get('mobile')?.disable();
       this.physicianForm.get('speciality')?.disable();
       this.physicianForm.get('graduation')?.disable();
-      this.physicianForm.get('postgraduation')?.disable();
+      this.physicianForm.get('postGraduation')?.disable();
       this.physicianForm.get('superSpecialization')?.disable();
       this.physicianForm.get('additionalQualification')?.disable();
     }
@@ -302,7 +303,7 @@ export class HospitalManagementComponent implements OnInit {
       this.physicianForm.get('dateOfBirth')?.disable();
       this.physicianForm.get('speciality')?.disable();
       this.physicianForm.get('graduation')?.disable();
-      this.physicianForm.get('postgraduation')?.disable();
+      this.physicianForm.get('postGraduation')?.disable();
       this.physicianForm.get('superSpecialization')?.disable();
       this.physicianForm.get('additionalQualification')?.disable();
     }
@@ -315,7 +316,18 @@ export class HospitalManagementComponent implements OnInit {
     this.physicianForm.markAllAsTouched();
     if (this.physicianForm.invalid) return;
 
-    const data = this.physicianForm.value;
+    const formData = this.physicianForm.getRawValue();
+
+    const daysObject = formData.days;
+    const selectedDays = Object.entries(daysObject)
+      .filter(([key, value]) => value === true)
+      .map(([key]) => key);
+
+    // Replace the days property in your data with the selectedDays array
+    const data = {
+      ...formData,
+      days: selectedDays
+    };
 
     this.organizationService
       .savePhysician(this.userData.id, data)

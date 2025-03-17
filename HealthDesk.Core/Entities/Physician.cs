@@ -193,21 +193,6 @@ public class PatientRecord : BaseEntity
 {
     [BsonElement("user_id")]
     public string UserId { get; set; }
-    [BsonElement("first_name")]
-    public string FirstName { get; set; }
-    [BsonElement("last_name")]
-    public string LastName { get; set; }
-    [BsonElement("fmiddle_name")]
-    public string MiddleName { get; set; }
-
-    [BsonElement("gender")]
-    public string Gender { get; set; }
-
-    [BsonElement("dob")]
-    public DateTime DateOfBirth { get; set; }
-
-    [BsonElement("mobile")]
-    public string Mobile { get; set; }
 
     [BsonElement("abha_id")]
     public string? ABHAID { get; set; } = string.Empty;

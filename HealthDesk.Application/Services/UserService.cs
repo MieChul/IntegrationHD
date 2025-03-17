@@ -68,8 +68,24 @@ public class UserService : IUserService
             user.MiddleName = userDto.MiddleName;
         if (!string.IsNullOrEmpty(userDto.Gender))
             user.Gender = userDto.Gender;
-        if (!string.IsNullOrEmpty(userDto.FirstName))
-            user.BirthDate = Convert.ToString(userDto.DOB);
+        if (!string.IsNullOrEmpty(userDto.Speciality))
+            user.Speciality = Convert.ToString(userDto.Speciality);
+        if (!string.IsNullOrEmpty(userDto.Graduation))
+        {
+            user.Graduation = new G { Name = userDto.Graduation };
+        }
+        if (!string.IsNullOrEmpty(userDto.PostGraduation))
+        {
+            user.PostGraduation = new G { Name = userDto.PostGraduation };
+        }
+        if (!string.IsNullOrEmpty(userDto.SuperSpecialization))
+        {
+            user.SuperSpecialization = new G { Name = userDto.SuperSpecialization };
+        }
+        if (!string.IsNullOrEmpty(userDto.AdditionalQualification))
+        {
+            user.AdditionalQualification = new G { Name = userDto.AdditionalQualification };
+        }
 
         // Step 2: Create a role-specific entry
         var role = (Role)userDto.RoleId;
@@ -126,7 +142,7 @@ public class UserService : IUserService
                 var hospital = new Hospital
                 {
                     UserId = user.Id,
-                    Physicians = new List<string>(),
+                    Physicians = new List<PhysicianRecord>(),
                     Services = new List<Service>(),
                     MedicalCases = new List<MedicalCase>()
                 };

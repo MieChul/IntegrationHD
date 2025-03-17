@@ -275,7 +275,7 @@ public class AccountService : IAccountService
                             var hospital = new Hospital
                             {
                                 UserId = id,
-                                Physicians = new List<string>(),
+                                Physicians = new List<PhysicianRecord>(),
                                 Services = new List<Service>(),
                                 MedicalCases = new List<MedicalCase>()
                             };

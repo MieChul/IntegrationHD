@@ -1,9 +1,9 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Modal, Tooltip } from 'bootstrap';
 
-interface MedicalCase {
+interface Remedy {
   id: number;
   submittedBy: string;
   speciality: string;
@@ -11,16 +11,17 @@ interface MedicalCase {
   likeCount: number;
   shareCount: number;
   shortDescription: string;
-  thumbnail: string; 
+  thumbnail: string;
 }
 
 @Component({
-  selector: 'app-medical-cases',
+  selector: 'app-remedies',
   templateUrl: './remedies.component.html',
   styleUrls: ['./remedies.component.scss']
 })
-export class RemediesComponent implements OnInit {
+export class RemediesComponent implements OnInit, AfterViewInit {
 
+  // Initialize tooltips on view load
   ngAfterViewInit(): void {
     const tooltipTriggerList = Array.from(
       document.querySelectorAll('[data-bs-toggle="tooltip"]')
@@ -40,30 +41,38 @@ export class RemediesComponent implements OnInit {
   newPreference: string = '';
   preferences: string[] = [];
 
-  recommendedRemedies: MedicalCase[] = [];
-  latestRemedies: MedicalCase[] = [];
-  trendingRemedies: MedicalCase[] = [];
+  // Sub-tab control for the Others Remedies tab
+  activeSubTab: string = 'home';
+  setActiveSubTab(tab: string): void {
+    this.activeSubTab = tab;
+  }
 
-  // Base remedies plus 25 additional dummy cases
-  otherRemedies: MedicalCase[] = [
-    { id: 1, submittedBy: ' Smith', speciality: 'Cardiology', comments: ['Great case!'], likeCount: 10, shareCount: 5, shortDescription: 'A detailed case study on cardiology', thumbnail: 'assets/remedies/3.jpg' },
-    { id: 2, submittedBy: ' Johnson', speciality: 'Neurology', comments: [], likeCount: 7, shareCount: 2, shortDescription: 'An intriguing neurology case', thumbnail: 'assets/remedies/7.jpg' },
-    { id: 3, submittedBy: ' Lee', speciality: 'Orthopedics', comments: [], likeCount: 15, shareCount: 3, shortDescription: 'Orthopedics case study and analysis', thumbnail: 'assets/remedies/2.jpg' },
-    { id: 4, submittedBy: ' Brown', speciality: 'Dermatology', comments: [], likeCount: 8, shareCount: 4, shortDescription: 'Dermatology case with treatment details', thumbnail: 'assets/remedies/8.jpg' },
-    { id: 5, submittedBy: ' Taylor', speciality: 'Pediatrics', comments: [], likeCount: 12, shareCount: 6, shortDescription: 'A pediatric case involving rare symptoms', thumbnail: 'assets/remedies/5.jpg' },
-    { id: 6, submittedBy: ' Adams', speciality: 'Oncology', comments: [], likeCount: 9, shareCount: 3, shortDescription: 'Case study on oncology treatment', thumbnail: 'assets/remedies/4.jpg' },
-    { id: 7, submittedBy: ' Clark', speciality: 'Gastroenterology', comments: [], likeCount: 11, shareCount: 4, shortDescription: 'Digestive health case analysis', thumbnail: 'assets/remedies/10.jpg' },
-    { id: 8, submittedBy: ' Evans', speciality: 'Urology', comments: [], likeCount: 6, shareCount: 2, shortDescription: 'Urological case study', thumbnail: 'assets/remedies/9.jpg' },
-    { id: 9, submittedBy: ' Foster', speciality: 'Endocrinology', comments: [], likeCount: 14, shareCount: 5, shortDescription: 'Endocrine system analysis', thumbnail: 'assets/remedies/1.jpg' },
-    { id: 10, submittedBy: ' Green', speciality: 'Rheumatology', comments: [], likeCount: 5, shareCount: 1, shortDescription: 'Rheumatology case report', thumbnail: 'assets/remedies/6.jpg' },
-    { id: 11, submittedBy: ' Harris', speciality: 'Nephrology', comments: [], likeCount: 13, shareCount: 4, shortDescription: 'Kidney disease case study', thumbnail: 'assets/remedies/11.jpg' },
-    { id: 12, submittedBy: ' Irving', speciality: 'Ophthalmology', comments: [], likeCount: 7, shareCount: 3, shortDescription: 'Eye condition and treatment', thumbnail: 'assets/remedies/12.jpg' },
-    { id: 13, submittedBy: ' Jones', speciality: 'ENT', comments: [], likeCount: 8, shareCount: 2, shortDescription: 'ENT examination report', thumbnail: 'assets/remedies/2.jpg' },
-    { id: 14, submittedBy: ' King', speciality: 'Psychiatry', comments: [], likeCount: 10, shareCount: 3, shortDescription: 'Psychiatric case discussion', thumbnail: 'assets/remedies/4.jpg' },
-    { id: 15, submittedBy: ' Lewis', speciality: 'Immunology', comments: [], likeCount: 9, shareCount: 2, shortDescription: 'Immunology and allergies case', thumbnail: 'assets/remedies/7.jpg' }
+  // Arrays for filtered remedies
+  recommendedRemedies: Remedy[] = [];
+  latestRemedies: Remedy[] = [];
+  trendingRemedies: Remedy[] = [];
+
+  // Base remedies (dummy data)
+  otherRemedies: Remedy[] = [
+    { id: 1, submittedBy: 'Smith', speciality: 'Cardiology', comments: ['Great case!'], likeCount: 10, shareCount: 5, shortDescription: 'A detailed case study on cardiology', thumbnail: 'assets/remedies/3.jpg' },
+    { id: 2, submittedBy: 'Johnson', speciality: 'Neurology', comments: [], likeCount: 7, shareCount: 2, shortDescription: 'An intriguing neurology case', thumbnail: 'assets/remedies/7.jpg' },
+    { id: 3, submittedBy: 'Lee', speciality: 'Orthopedics', comments: [], likeCount: 15, shareCount: 3, shortDescription: 'Orthopedics case study and analysis', thumbnail: 'assets/remedies/2.jpg' },
+    { id: 4, submittedBy: 'Brown', speciality: 'Dermatology', comments: [], likeCount: 8, shareCount: 4, shortDescription: 'Dermatology case with treatment details', thumbnail: 'assets/remedies/8.jpg' },
+    { id: 5, submittedBy: 'Taylor', speciality: 'Pediatrics', comments: [], likeCount: 12, shareCount: 6, shortDescription: 'A pediatric case involving rare symptoms', thumbnail: 'assets/remedies/5.jpg' },
+    { id: 6, submittedBy: 'Adams', speciality: 'Oncology', comments: [], likeCount: 9, shareCount: 3, shortDescription: 'Case study on oncology treatment', thumbnail: 'assets/remedies/4.jpg' },
+    { id: 7, submittedBy: 'Clark', speciality: 'Gastroenterology', comments: [], likeCount: 11, shareCount: 4, shortDescription: 'Digestive health case analysis', thumbnail: 'assets/remedies/10.jpg' },
+    { id: 8, submittedBy: 'Evans', speciality: 'Urology', comments: [], likeCount: 6, shareCount: 2, shortDescription: 'Urological case study', thumbnail: 'assets/remedies/9.jpg' },
+    { id: 9, submittedBy: 'Foster', speciality: 'Endocrinology', comments: [], likeCount: 14, shareCount: 5, shortDescription: 'Endocrine system analysis', thumbnail: 'assets/remedies/1.jpg' },
+    { id: 10, submittedBy: 'Green', speciality: 'Rheumatology', comments: [], likeCount: 5, shareCount: 1, shortDescription: 'Rheumatology case report', thumbnail: 'assets/remedies/6.jpg' },
+    { id: 11, submittedBy: 'Harris', speciality: 'Nephrology', comments: [], likeCount: 13, shareCount: 4, shortDescription: 'Kidney disease case study', thumbnail: 'assets/remedies/11.jpg' },
+    { id: 12, submittedBy: 'Irving', speciality: 'Ophthalmology', comments: [], likeCount: 7, shareCount: 3, shortDescription: 'Eye condition and treatment', thumbnail: 'assets/remedies/12.jpg' },
+    { id: 13, submittedBy: 'Jones', speciality: 'ENT', comments: [], likeCount: 8, shareCount: 2, shortDescription: 'ENT examination report', thumbnail: 'assets/remedies/2.jpg' },
+    { id: 14, submittedBy: 'King', speciality: 'Psychiatry', comments: [], likeCount: 10, shareCount: 3, shortDescription: 'Psychiatric case discussion', thumbnail: 'assets/remedies/4.jpg' },
+    { id: 15, submittedBy: 'Lewis', speciality: 'Immunology', comments: [], likeCount: 9, shareCount: 2, shortDescription: 'Immunology and allergies case', thumbnail: 'assets/remedies/7.jpg' }
   ];
   
-  yourRemedies: MedicalCase[] = [
+  // Your remedies data
+  yourRemedies: Remedy[] = [
     { id: 1, submittedBy: 'You', speciality: 'Cardiology', comments: [], likeCount: 0, shareCount: 0, shortDescription: 'Your own case study on cardiology', thumbnail: 'assets/remedies/3.jpg' },
     { id: 2, submittedBy: 'You', speciality: 'Neurology', comments: [], likeCount: 0, shareCount: 0, shortDescription: 'Your own case study on neurology', thumbnail: 'assets/remedies/9.jpg' },
     { id: 3, submittedBy: 'You', speciality: 'Orthopedics', comments: [], likeCount: 0, shareCount: 0, shortDescription: 'Your own case study on orthopedics', thumbnail: 'assets/remedies/5.jpg' }
@@ -105,7 +114,7 @@ export class RemediesComponent implements OnInit {
   }
 
   shareCase(caseId: number): void {
-    this.shareLink = `https://HealthDesk.com/physician/view-medical/${caseId}`;
+    this.shareLink = `https://HealthDesk.com/physician/view-remedy/${caseId}`;
     const modalInstance = new Modal(this.shareModal.nativeElement);
     modalInstance.show();
   }

@@ -13,7 +13,7 @@ public class LaboratoryService : ILaboratoryService
         _laboratoryRepository = laboratoryRepository;
         _messageService = messageService;
     }
-        // 1. Get all lab tests for a specific laboratory
+    // 1. Get all lab tests for a specific laboratory
     public async Task<IEnumerable<LabTestDto>> GetAllLabTestsAsync(string id)
     {
         var laboratory = await GetLaboratoryByIdAsync(id);
@@ -62,22 +62,37 @@ public class LaboratoryService : ILaboratoryService
     public async Task DeleteLabTestAsync(string id, string labTestId)
     {
         var laboratory = await GetLaboratoryByIdAsync(id);
-
-        var labTestToRemove = laboratory.LabTests.FirstOrDefault(test => test.Id == labTestId);
-        if (labTestToRemove == null)
-            throw new ArgumentException("Lab test not found.");
-
-        laboratory.LabTests.Remove(labTestToRemove);
+        RemoveIfNotExpired(laboratory.LabTests, h => h.Id == labTestId);
         await _laboratoryRepository.UpdateAsync(laboratory);
     }
 
     // Helper method to get laboratory by UserId
     private async Task<Laboratory> GetLaboratoryByIdAsync(string id)
     {
-        var laboratory = await _laboratoryRepository.GetByIdAsync(id);
+        var laboratory = await _laboratoryRepository.GetByDynamicPropertyAsync("UserId", id);
         if (laboratory == null)
             throw new ArgumentException("Laboratory not found.");
 
         return laboratory;
     }
+
+    private void RemoveIfNotExpired<T>(List<T> items, Func<T, bool> predicate) where T : class
+    {
+        var currentTime = DateTime.UtcNow;
+        var toRemove = items
+            .Where(item => predicate(item) &&
+                           (item.GetType().GetProperty("CreateDate")?.GetValue(item) is DateTime createDate) &&
+                           (currentTime - createDate).TotalHours <= 1)
+            .ToList();
+
+        if (toRemove.Any())
+        {
+            items.RemoveAll(i => toRemove.Contains(i));
+        }
+        else
+        {
+            throw new InvalidOperationException("Upon confirmation, data can be deleted only by Admin.");
+        }
+    }
+
 }

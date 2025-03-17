@@ -548,7 +548,7 @@ public class PatientService : IPatientService
     public async Task AddOrUpdateActivityAsync(string patientId, ActivityDto dto)
     {
         // Fetch the patient by dynamic property
-        var patient = await GetPatientByIdAsync(patientId);;
+        var patient = await GetPatientByIdAsync(patientId); ;
         if (patient == null)
             throw new ArgumentException("Patient not found.");
 
@@ -807,6 +807,7 @@ public class PatientService : IPatientService
 
                             var physicianEntity = new
                             {
+                                role = (int)role.Role,
                                 entityType = "physician",
                                 entityId = physician.Id,
                                 userId = user.Id,
@@ -822,11 +823,12 @@ public class PatientService : IPatientService
                                     r.Rating,
                                     r.Comment
                                 }).ToList(),
-                                services = new List<string>(),
-                                physicians = new List<string>(),
-                                testname = string.Empty,
-                                drugName = string.Empty
-                            };
+                                services = new List<Service>(),
+                                physicians = new List<User>(),
+                                testname = new List<LabTest>(),
+                                drugName = new List<Medicine>()
+                            }
+                        ;
 
                             entitiesList.Add(physicianEntity);
                         }
@@ -839,10 +841,18 @@ public class PatientService : IPatientService
                             ? hospital.Reviews.Average(r => r.Rating)
                             : 0;
 
+                        var physicians = new List<User>();
+                        foreach (var phy in hospital.Physicians)
+                        {
+                            var p = await _userRepository.GetByIdAsync(phy.UserId);
+                            physicians.Add(p);
+                        }
+
                         var hospitalEntity = new
                         {
+                            role = (int)role.Role,
                             entityType = "hospital",
-                            name = user.ClinicName,
+                            name = user.OrgName,
                             userId = user.Id,
                             entityId = hospital.Id,
                             clinicName = user.ClinicName,
@@ -856,10 +866,10 @@ public class PatientService : IPatientService
                                 r.Rating,
                                 r.Comment
                             }).ToList(),
-                            services = new List<string>(),
-                            physicians = new List<string>(),
-                            testname = string.Empty,
-                            drugName = string.Empty
+                            services = hospital.Services,
+                            physicians = physicians,
+                            testname = new List<LabTest>(),
+                            drugName = new List<Medicine>()
                         };
 
                         entitiesList.Add(hospitalEntity);
@@ -874,6 +884,7 @@ public class PatientService : IPatientService
 
                         var pharmacyEntity = new
                         {
+                            role = (int)role.Role,
                             entityType = "pharmacy",
                             name = user.OrgName,
                             entityId = pharmacy.Id,
@@ -889,10 +900,10 @@ public class PatientService : IPatientService
                                 r.Rating,
                                 r.Comment
                             }).ToList(),
-                            services = new List<string>(),
-                            physicians = new List<string>(),
-                            testname = string.Empty,
-                            drugName = string.Empty
+                            services = new List<Service>(),
+                            physicians = new List<User>(),
+                            testname = new List<LabTest>(),
+                            drugName = pharmacy.Medicines
                         };
 
                         entitiesList.Add(pharmacyEntity);
@@ -907,6 +918,7 @@ public class PatientService : IPatientService
 
                         var laboratoryEntity = new
                         {
+                            role = (int)role.Role,
                             entityType = "laboratory",
                             name = user.OrgName,
                             entityId = laboratory.Id,
@@ -922,10 +934,10 @@ public class PatientService : IPatientService
                                 r.Rating,
                                 r.Comment
                             }).ToList(),
-                            services = new List<string>(),
-                            physicians = new List<string>(),
-                            testname = string.Empty,
-                            drugName = string.Empty
+                            services = new List<Service>(),
+                            physicians = new List<User>(),
+                            testname = laboratory.LabTests,
+                            drugName = new List<Medicine>()
                         };
 
                         entitiesList.Add(laboratoryEntity);
@@ -949,6 +961,12 @@ public class PatientService : IPatientService
                 var physician = await _physicianRepository.GetByIdAsync(entityId);
                 if (physician == null)
                     throw new Exception("Physician not found.");
+
+                var patient = await _patientRepository.GetByDynamicPropertyAsync("UserId", userId);
+                if (!patient.Appointments.Any(x => x.PhysicianId == physician.UserId))
+                {
+                    throw new InvalidOperationException("You haven't had an appointment with this physician.");
+                }
 
                 var existingPhysicianReview = physician.Reviews.FirstOrDefault(r => r.UserId == userId);
                 if (existingPhysicianReview != null)

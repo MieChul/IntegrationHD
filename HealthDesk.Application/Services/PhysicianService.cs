@@ -144,8 +144,27 @@ public class PhysicianService : IPhysicianService
     public async Task<IEnumerable<PatientRecordDto>> GetAllPatientsAsync(string physicianId)
     {
         var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
-        return physician.Patients.Select(p => GenericMapper.Map<PatientRecord, PatientRecordDto>(p));
+        var patients = new List<PatientRecordDto>();
+        foreach (var p in physician.Patients)
+        {
+            var user = await _userRepository.GetByIdAsync(p.UserId);
+            var patient = new PatientRecordDto()
+            {
+                Id = p.Id,
+                UserId = p.UserId,
+                FirstName = user.FirstName,
+                MiddleName = user.MiddleName,
+                LastName = user.LastName,
+                Gender = user.Gender,
+                Mobile = user.Mobile,
+                ABHAID = p.ABHAID,
+                SecondaryId = p.SecondaryId
+            };
+            patients.Add(patient);
+        };
+        return patients;
     }
+
 
     public async Task SavePatientAsync(string physicianId, PatientRecordDto dto)
     {
@@ -156,7 +175,7 @@ public class PhysicianService : IPhysicianService
             var patients = await _patientRepository.GetAllAsync();
             var user = new UserRegistrationDto
             {
-                Username = dto.FirstName + '_' + dto.LastName + '_' + (patients.Count() + 1),
+                Username = "pat_" + dto.FirstName + '_' + dto.LastName + '_' + (patients.Count() + 1),
                 RoleId = 2,
                 Password = GenerateRandomString(),
                 Mobile = dto.Mobile,
@@ -168,7 +187,7 @@ public class PhysicianService : IPhysicianService
             };
             var id = await _userService.Register(user);
             dto.UserId = id;
-            //_messageService.SendSms(dto.Mobile, "Hi, Welcome to HealthDesk. Your profile is created with Username: " + dto.Name + " and Password: " + user.Password);
+            _messageService.SendSms(dto.Mobile, "Hi, Welcome to HealthDesk. Your profile is created with Username: " + user.Username + " and Password: " + user.Password);
         }
         else if (string.IsNullOrEmpty(dto.Id))
         {

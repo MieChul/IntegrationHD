@@ -18,7 +18,7 @@ public class Pharmacy : BaseEntity
 
 }
 
-public class Medicine
+public class Medicine : BaseEntity
 {
     [BsonElement("brand_owner")]
     public string BrandOwner { get; set; }
@@ -45,7 +45,7 @@ public class Medicine
     public double Discount { get; set; }
 
     [BsonElement("comment")]
-    public string Comment { get; set; }
+    public string? Comment { get; set; }
 }
 
 public class Reviews : BaseEntity

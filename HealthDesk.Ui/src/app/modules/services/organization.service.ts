@@ -16,64 +16,64 @@ export class OrganizationService {
   }
 
   getAllLabTests(id: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${id}/lab-tests`);
+    return this.http.get<any[]>(`${this.apiUrl}/laboratory/${id}/lab-tests`);
   }
 
   getLabTestById(id: string, labTestId: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${id}/lab-tests/${labTestId}`);
+    return this.http.get<any>(`${this.apiUrl}/laboratory/${id}/lab-tests/${labTestId}`);
   }
 
   saveLabTest(id: string, labTest: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/lab-tests`, labTest);
+    return this.http.post<any>(`${this.apiUrl}/laboratory/${id}/lab-tests`, labTest);
   }
 
   deleteLabTest(id: string, labTestId: string): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/${id}/lab-tests/${labTestId}`);
+    return this.http.delete<any>(`${this.apiUrl}/laboratory/${id}/lab-tests/${labTestId}`);
   }
 
   getAllMedicines(id: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${id}/medicines`);
+    return this.http.get<any[]>(`${this.apiUrl}/pharmacy/${id}/medicines`);
   }
 
   getMedicineById(id: string, medicineId: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${id}/medicines/${medicineId}`);
+    return this.http.get<any>(`${this.apiUrl}/pharmacy/${id}/medicines/${medicineId}`);
   }
 
   saveMedicine(id: string, medicine: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/medicines`, medicine);
+    return this.http.post<any>(`${this.apiUrl}/pharmacy/${id}/medicines`, medicine);
   }
 
   deleteMedicine(id: string, medicineId: string): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/${id}/medicines/${medicineId}`);
+    return this.http.delete<any>(`${this.apiUrl}/pharmacy/${id}/medicines/${medicineId}`);
   }
 
   getAllPhysicians(id: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${id}/physicians`);
+    return this.http.get<any[]>(`${this.apiUrl}/hospital/${id}/physicians`);
   }
 
-  addPhysician(id: string, physicianId: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${id}/physicians`, { id: physicianId });
+  getPhysicianByMobile(mobile: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/hospital/${mobile}/get-by-mobile`);
   }
 
   deletePhysician(id: string, physicianId: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}/physicians/${physicianId}`);
+    return this.http.delete(`${this.apiUrl}/hospital/${id}/physicians/${physicianId}`);
   }
 
   getAllServices(id: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${id}/services`);
+    return this.http.get<any[]>(`${this.apiUrl}/hospital/${id}/services`);
   }
 
   saveService(id: string, service: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${id}/services`, service);
+    return this.http.post(`${this.apiUrl}/hospital/${id}/services`, service);
   }
 
   savePhysician(id: string, physician: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${id}/physicians`, physician);
+    return this.http.post(`${this.apiUrl}/hospital/${id}/physicians`, physician);
   }
 
 
   deleteService(id: string, serviceId: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}/services/${serviceId}`);
+    return this.http.delete(`${this.apiUrl}/${id}/hopital/services/${serviceId}`);
   }
 
   getAllBrandLibraries(pharmaceuticalId: string): Observable<any[]> {

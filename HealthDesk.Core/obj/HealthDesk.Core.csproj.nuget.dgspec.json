@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj": {}
+    "d:\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj": {}
   },
   "projects": {
-    "D:\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj": {
+    "d:\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj",
+        "projectUniqueName": "d:\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj",
         "projectName": "HealthDesk.Core",
-        "projectPath": "D:\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj",
+        "projectPath": "d:\\IntegrationHD\\HealthDesk.Core\\HealthDesk.Core.csproj",
         "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-        "outputPath": "D:\\IntegrationHD\\HealthDesk.Core\\obj\\",
+        "outputPath": "d:\\IntegrationHD\\HealthDesk.Core\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config"
