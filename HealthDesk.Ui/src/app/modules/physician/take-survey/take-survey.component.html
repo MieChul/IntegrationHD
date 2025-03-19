@@ -1,35 +1,92 @@
-<div class="container">
-    <h2 class="animated-heading">
-      <i class="bi bi-pencil-square me-2"></i>Take Survey
-    </h2>
-    <div class="card">
-      <div class="card-body">
-        <form [formGroup]="surveyForm" (ngSubmit)="submitSurvey()">
-          <div class="mb-3">
-            <label for="name" class="form-label">Survey Name</label>
-            <input type="text" id="name" formControlName="name" class="form-control" readonly />
+<form *ngIf="surveyForm" class="container" [formGroup]="surveyForm" (ngSubmit)="submitSurvey()">
+  <!-- Survey image at the top (if available) -->
+  <div class="text-center mb-4" *ngIf="survey?.image">
+    <img [src]="survey.image" class="img-fluid" alt="Survey Image" style="max-height:300px;">
+  </div>
+
+  <!-- Survey Title, Author, and Description -->
+  <div class="mb-4 text-center">
+    <h2>{{ survey?.title }}</h2>
+    <p class="text-muted">by {{ survey?.author }}</p>
+    <p>{{ survey?.description }}</p>
+  </div>
+
+  <!-- Dynamic Questions -->
+  <div formArrayName="responses">
+    <div *ngFor="let ctrl of responses.controls; let i = index" class="mb-4">
+      <ng-container [ngSwitch]="survey.questions[i].type">
+        <!-- Text Input -->
+        <div *ngSwitchCase="'text'">
+          <label class="form-label">{{ survey.questions[i].text }}</label>
+          <input type="text" [formControlName]="i" class="form-control" placeholder="Your answer" />
+          <div *ngIf="ctrl.invalid && ctrl.touched" class="text-danger">
+            This field is required.
           </div>
-          <div class="mb-3">
-            <label for="number" class="form-label">Survey Number</label>
-            <input type="text" id="number" formControlName="number" class="form-control" readonly />
+        </div>
+        <!-- Number Input -->
+        <div *ngSwitchCase="'number'">
+          <label class="form-label">{{ survey.questions[i].text }}</label>
+          <input type="number" [formControlName]="i" class="form-control" placeholder="Your answer" />
+          <div *ngIf="ctrl.invalid && ctrl.touched" class="text-danger">
+            This field is required.
           </div>
-          <div class="mb-3">
-            <label for="creator" class="form-label">Survey Creator</label>
-            <input type="text" id="creator" formControlName="creator" class="form-control" readonly />
+        </div>
+        <!-- Date Input -->
+        <div *ngSwitchCase="'date'">
+          <label class="form-label">{{ survey.questions[i].text }}</label>
+          <input type="date" [formControlName]="i" class="form-control" />
+          <div *ngIf="ctrl.invalid && ctrl.touched" class="text-danger">
+            This field is required.
           </div>
-          <div class="mb-3">
-            <label for="company" class="form-label">Survey Company</label>
-            <input type="text" id="company" formControlName="company" class="form-control" readonly />
-          </div>
-          <div formArrayName="questions">
-            <div *ngFor="let question of questions.controls; let i = index" [formGroupName]="i" class="mb-3">
-              <label [for]="'question' + i" class="form-label">{{ question.get('text')?.value }}</label>
-              <input type="text" [id]="'question' + i" formControlName="response" class="form-control" />
+        </div>
+        <!-- Radio Group -->
+        <div *ngSwitchCase="'radio'">
+          <label class="form-label">{{ survey.questions[i].text }}</label>
+          <div *ngFor="let option of survey.questions[i].options">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                [value]="option.text"
+                [formControl]="getRadioControl(i)"
+                [name]="'radio-' + i"
+              />
+              <label class="form-check-label">
+                {{ option.text }}
+              </label>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-      </div>
+          <div *ngIf="getRadioControl(i).invalid && getRadioControl(i).touched" class="text-danger">
+            This field is required.
+          </div>
+        </div>
+        <!-- Checkbox Group -->
+        <div *ngSwitchCase="'checkbox'">
+          <label class="form-label">{{ survey.questions[i].text }}</label>
+          <!-- For checkboxes, the control at responses[i] is a FormArray -->
+          <div [formArrayName]="i">
+            <div *ngFor="let chkCtrl of getCheckboxControls(i); let j = index" class="form-check">
+              <input type="checkbox" class="form-check-input" [formControlName]="j" />
+              <label class="form-check-label">
+                {{ survey.questions[i].options[j].text }}
+              </label>
+            </div>
+          </div>
+          <div *ngIf="responses.at(i).invalid && responses.at(i).touched" class="text-danger">
+            At least one option must be selected.
+          </div>
+        </div>
+        <!-- Fallback (default) -->
+        <div *ngSwitchDefault>
+          <label class="form-label">{{ survey.questions[i].text }}</label>
+          <input type="text" [formControlName]="i" class="form-control" placeholder="Your answer" />
+          <div *ngIf="ctrl.invalid && ctrl.touched" class="text-danger">
+            This field is required.
+          </div>
+        </div>
+      </ng-container>
     </div>
   </div>
-  
+
+  <button type="submit" class="btn btn-primary mt-3">Submit</button>
+</form>

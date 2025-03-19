@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PatientService } from '../../services/patient.service';
 import { FilteringService } from '../../../shared/services/filter.service';
+import { OrganizationService } from '../../services/organization.service';
 
 @Component({
   selector: 'app-share-survey',
@@ -20,7 +21,16 @@ export class ShareSurveyComponent implements OnInit {
   doctors: any[] = []; // All doctors list
   filteredDoctors: any[] = []; // Filtered list for display
 
-  constructor(private route: ActivatedRoute, private router: Router, private patientService: PatientService,private filteringService: FilteringService) { }
+  // Flag to disable checkboxes once survey is shared
+  isSurveyShared: boolean = false;
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private patientService: PatientService,
+    private filteringService: FilteringService,
+    private organizationService: OrganizationService
+  ) { }
 
   ngOnInit(): void {
     // Get survey ID from route and mock survey details
@@ -28,24 +38,33 @@ export class ShareSurveyComponent implements OnInit {
     this.surveyTitle = `Survey ${this.surveyId}`; // Mock survey title
     this.surveyShareLink = `https://your-survey-platform.com/survey/${this.surveyId}`;
 
+    // Check if survey is already shared
+    this.organizationService.getSurveyById(this.surveyId).then((survey) => {
+      if (survey && survey.sharedWith && survey.sharedWith.length > 0) {
+        this.isSurveyShared = true;
+      }
+    });
+
     this.patientService.getEntities().subscribe({
       next: (data: any) => {
         this.doctors = data
-        .filter((entity: any) => entity.entityType === "physician") // Filter only physicians
-        .map((entity: any) => ({
-          ...entity,
-          reviews: entity.reviews || [] // Ensure reviews field is always an array
-        }));
-      
-      this.filteredDoctors = [...this.doctors]; // Copy to filteredDoctors
-      
+          .filter((entity: any) => entity.entityType === "physician")
+          .map((entity: any) => ({
+            ...entity,
+            reviews: entity.reviews || []
+          }));
+
+        // Filter unique doctors based on userId:
+        this.doctors = Array.from(
+          new Map(this.doctors.map((doctor: any) => [doctor.userId, doctor])).values()
+        );
+
+        this.filteredDoctors = [...this.doctors]; // Copy to filteredDoctors
       },
       error: (error) => {
         console.error('Error loading entities:', error);
       }
     });
-
-
   }
 
   // Copy survey link to clipboard
@@ -55,7 +74,6 @@ export class ShareSurveyComponent implements OnInit {
       setTimeout(() => (this.isLinkCopied = false), 3000);
     });
   }
-
 
   filterDoctors(): void {
     this.filteredDoctors = this.doctors.filter(doc => {
@@ -71,28 +89,31 @@ export class ShareSurveyComponent implements OnInit {
         ? doc.city.toLowerCase().includes(this.citySearchText.toLowerCase())
         : true;
 
-      // Return true only if all non-empty conditions match
       return matchesName && matchesSpeciality && matchesOpdTiming;
     });
   }
 
   // Send survey to selected doctors
   sendSurvey(): void {
-    const selectedDoctors = this.filteredDoctors
+    // Use doctor ids (assuming each doctor has a 'userId' property)
+    const selectedDoctorIds = this.filteredDoctors
       .filter((doctor) => doctor.selected)
-      .map((doctor) => doctor.name);
+      .map((doctor) => doctor.userId);
 
-    if (selectedDoctors.length > 0) {
-      console.log(`Sending survey to: ${selectedDoctors.join(', ')}`);
-      // Clear selections after sending
-      this.filteredDoctors.forEach((doctor) => (doctor.selected = false));
-      alert('Survey sent successfully!');
+    if (selectedDoctorIds.length > 0) {
+      // Retrieve the survey record from IndexedDB, update it with sharedWith, and save
+      this.organizationService.getSurveyById(this.surveyId).then((survey) => {
+        survey.sharedWith = selectedDoctorIds;
+        this.organizationService.updateSurvey(this.surveyId, survey).then(() => {
+          alert('Survey shared successfully!');
+          this.isSurveyShared = true; // disable further changes
+        });
+      });
     } else {
       alert('No doctors selected!');
     }
-
-
   }
+
   hasSelectedDoctors(): boolean {
     return this.filteredDoctors.some(d => d.selected);
   }
@@ -102,8 +123,8 @@ export class ShareSurveyComponent implements OnInit {
       this.doctors,
       {
         name: this.searchValue,
-        speciality:this.specialitySearchText,
-        location:this.citySearchText
+        speciality: this.specialitySearchText,
+        location: this.citySearchText
       },
       []
     );

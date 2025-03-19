@@ -13,7 +13,7 @@
     <!-- Search Bar -->
     <div class="col">
       <div class="mb-2 me-3">
-        <mat-form-field appearance="outline" class="w-100" class="w-100">
+        <mat-form-field appearance="outline" class="w-100">
           <mat-label>Search by Physician</mat-label>
           <input matInput placeholder="Search by Physician" [(ngModel)]="searchValue" (input)="applyFilters()" />
         </mat-form-field>
@@ -21,16 +21,15 @@
     </div>
     <div class="col">
       <div class="mb-2 me-3">
-        <mat-form-field appearance="outline" class="w-100" class="w-100">
+        <mat-form-field appearance="outline" class="w-100">
           <mat-label>Search by Speciality</mat-label>
-          <input matInput placeholder="Search by Speciality" [(ngModel)]="specialitySearchText"
-            (input)="applyFilters()" />
+          <input matInput placeholder="Search by Speciality" [(ngModel)]="specialitySearchText" (input)="applyFilters()" />
         </mat-form-field>
       </div>
     </div>
     <div class="col">
       <div class="mb-2 me-3">
-        <mat-form-field appearance="outline" class="w-100" class="w-100">
+        <mat-form-field appearance="outline" class="w-100">
           <mat-label>Search by Location</mat-label>
           <input matInput placeholder="Search by Location" [(ngModel)]="citySearchText" (input)="applyFilters()" />
         </mat-form-field>
@@ -55,19 +54,20 @@
           <td>{{ doctor.speciality }}</td>
           <td>{{ doctor.location }}</td>
           <td>
-            <mat-checkbox [(ngModel)]="doctor.selected">Select</mat-checkbox>
+            <!-- Disable checkbox if survey is already shared -->
+            <mat-checkbox [(ngModel)]="doctor.selected" [disabled]="isSurveyShared">Select</mat-checkbox>
           </td>
         </tr>
       </tbody>
     </table>
     <div *ngIf="filteredDoctors?.length === 0" class="alert alert-info">
       No physicians found.
-  </div>
+    </div>
   </div>
 
   <!-- Send Button -->
   <div class="text-end mt-3">
-    <button class="btn btn-primary" [disabled]="!hasSelectedDoctors()" (click)="sendSurvey()">
+    <button class="btn btn-primary" [disabled]="!hasSelectedDoctors() || isSurveyShared" (click)="sendSurvey()">
       Send Survey
     </button>
   </div>

@@ -10,6 +10,7 @@ import { OrganizationService } from '../../services/organization.service';
 export class DesignSurveyComponent implements OnInit {
   // Initialize surveyForm with correct structure
   surveyForm: Survey = {
+    id:'',
     name: '',
     title: '',
     description: '',
@@ -18,7 +19,9 @@ export class DesignSurveyComponent implements OnInit {
     is_active: true,
     date: '',
     author: '',
-    responses: []
+    company: '',
+    responses: [],
+    isTaken:false
   };
 
   questionErrors: any = [];
@@ -29,7 +32,7 @@ export class DesignSurveyComponent implements OnInit {
   constructor(
     private router: Router,
     private organizationService: OrganizationService
-  ) {}
+  ) { }
 
   async ngOnInit() {
     // Check if a surveyId was passed in history.state
@@ -69,7 +72,10 @@ export class DesignSurveyComponent implements OnInit {
         is_active: true,
         date: '',
         author: '',
-        responses: []
+        company: '',
+        sharedWith: [],
+        responses: [],
+        isTaken: false
       };
     }
   }
@@ -160,7 +166,10 @@ export class DesignSurveyComponent implements OnInit {
           is_active: true,
           date: '',
           author: '',
-          responses: []
+          company: '',
+          sharedWith: [],
+          responses: [],
+          isTaken: false
         };
         this.questionErrors = [];
       });
@@ -179,7 +188,10 @@ export interface Survey {
   is_active: boolean;
   date: string;
   author: string;
+  sharedWith?: string[];
+  company: string;
   responses: any[];
+  isTaken: boolean;
 }
 
 export interface Question {
