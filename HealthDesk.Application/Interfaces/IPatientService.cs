@@ -60,4 +60,5 @@ public interface IPatientService
 
     Task<dynamic> GetEntities();
     Task AddOrUpdateReview(string userId, string entityId, Role entityType, int rating, string comment);
+    Task SaveCurrentTreatmentRxAsync(string patientId, List<CurrentTreatmentDto> dtos);
 }

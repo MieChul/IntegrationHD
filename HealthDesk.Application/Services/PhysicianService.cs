@@ -187,7 +187,7 @@ public class PhysicianService : IPhysicianService
             };
             var id = await _userService.Register(user);
             dto.UserId = id;
-            _messageService.SendSms(dto.Mobile, "Hi, Welcome to HealthDesk. Your profile is created with Username: " + user.Username + " and Password: " + user.Password);
+           // _messageService.SendSms(dto.Mobile, "Hi, Welcome to HealthDesk. Your profile is created with Username: " + user.Username + " and Password: " + user.Password);
         }
         else if (string.IsNullOrEmpty(dto.Id))
         {

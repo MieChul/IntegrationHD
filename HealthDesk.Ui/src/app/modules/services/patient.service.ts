@@ -33,6 +33,10 @@ export class PatientService {
     return this.http.post(`${this.apiUrl}/${patientId}/current-treatments`, treatment);
   }
 
+  saveCurrentTreatmentRx(patientId: string, treatment: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${patientId}/current-treatments-rx`, treatment);
+  }
+
   deleteCurrentTreatment(patientId: string, treatmentId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${patientId}/current-treatments/${treatmentId}`);
   }

@@ -9,6 +9,7 @@ import { catchError, firstValueFrom, from, map, Observable, of, startWith } from
 import { HttpClient } from '@angular/common/http';
 import { DatabaseService } from '../../../shared/services/database.service';
 import * as bootstrap from 'bootstrap';
+import { PatientService } from '../../services/patient.service';
 
 @Component({
   selector: 'app-generate-prescription',
@@ -35,6 +36,7 @@ export class GeneratePrescriptionComponent implements OnInit {
   durations: string[] = [];
   bodySystems: string[] = [];
   investigations: string[] = [];
+  brands: string[] = [];
   filteredInvestigations!: Observable<string[]>;
   investigationFilterCtrl = new FormControl();
   profileDatas: string[] = [];
@@ -52,6 +54,8 @@ export class GeneratePrescriptionComponent implements OnInit {
   durationFilterCtrl = new FormControl();
   systemFilterCtrl = new FormControl();
   profileDatasFilterCtrl = new FormControl();
+  brandFilterCtrl = new FormControl();
+  filteredBrands!: Observable<string[]>;
 
   signature: string | ArrayBuffer | null = null;
   stamp: string | ArrayBuffer | null = null;
@@ -64,7 +68,7 @@ export class GeneratePrescriptionComponent implements OnInit {
   footerImg: string = '';
   userData: any;
 
-  constructor(private router: Router, private accountService: AccountService, private physicianService: PhysicianService, private http: HttpClient, private fb: FormBuilder, private databaseService: DatabaseService) {
+  constructor(private router: Router, private accountService: AccountService, private physicianService: PhysicianService, private http: HttpClient, private fb: FormBuilder, private databaseService: DatabaseService, private patientService: PatientService) {
     const navigation = this.router.getCurrentNavigation();
     this.patientRecord = navigation?.extras.state?.['patient'] ?? '';
   }
@@ -83,6 +87,7 @@ export class GeneratePrescriptionComponent implements OnInit {
             this.durations = await this.databaseService.getDurations();
             this.bodySystems = await this.databaseService.getSystems();
             this.investigations = await this.databaseService.getInvestigations();
+            this.brands = await this.databaseService.getDrugBrands();
             await this.loadProfiles();
             await this.initializeSearch();
           },
@@ -157,6 +162,11 @@ export class GeneratePrescriptionComponent implements OnInit {
       startWith(''),
       map((search) => this.filterOptions(search, this.investigations))
     );
+
+    this.filteredBrands = this.brandFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.brands))
+    );
   }
 
   futureDateValidator(control: AbstractControl): { [key: string]: boolean } | null {
@@ -192,6 +202,7 @@ export class GeneratePrescriptionComponent implements OnInit {
 
   createRx(): FormGroup {
     return this.fb.group({
+      brand: [''],
       dosageForm: [''],
       drugName: [''],
       strength: [''],
@@ -632,7 +643,17 @@ export class GeneratePrescriptionComponent implements OnInit {
       from(this.physicianService.uploadPrescription({ pdfBlob, physicianId, patientId, illness }))
         .subscribe({
           next: (response: any) => {
-            this.gotToHome();
+            const treatmentData = this.prepareTreatmentData();
+            this.patientService
+              .saveCurrentTreatmentRx(this.patientRecord.userId, treatmentData)
+              .subscribe({
+                next: (response) => {
+                  this.gotToHome();
+                },
+                error: (error) => {
+                  console.error('Error adding medical treatments:', error);
+                },
+              });
           },
           error: (error) => {
             console.error('Error uploading prescription:', error);
@@ -641,6 +662,34 @@ export class GeneratePrescriptionComponent implements OnInit {
     } catch (error) {
       console.error('Error generating PDF:', error);
     }
+  }
+
+
+  prepareTreatmentData(): any[] {
+    const rxArray = this.prescriptionForm.get('rx') as FormArray;
+    // You can get start date from a control, but here we use the current date
+    const startDate = new Date();
+
+    return rxArray.controls.map((control: AbstractControl) => {
+      const group = control as FormGroup;
+      const rxValue = group.value;
+      // Optional: calculate EndDate based on duration if provided (assuming duration is in days)
+      let endDate: Date | null = null;
+      if (rxValue.duration) {
+        endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + Number(rxValue.duration));
+      }
+      return {
+        id: null, // or assign an id if available
+        brand: rxValue.brand,
+        treatmentDrug: rxValue.drugName,  // mapping your 'drugName' to TreatmentDrug
+        dosageForm: rxValue.dosageForm,
+        strengthUnit: rxValue.strength,
+        frequency: rxValue.times,
+        startDate: startDate,
+        comment: rxValue.instruction  // mapping 'instruction' to Comment
+      };
+    });
   }
 
 
@@ -743,21 +792,60 @@ export class GeneratePrescriptionComponent implements OnInit {
       .map((name) => ({ name }));
   }
 
-  async onDrugChange(selectedDrug: string, row: number) {
-    this.forms = [];
-    this.strengths = [];
+  async onRxDrugChange(index: number): Promise<void> {
+    const rxArray = this.prescriptionForm.get('rx') as FormArray;
+    const rxGroup = rxArray.at(index) as FormGroup;
+
+    // Disable dependent dropdowns while loading new data
+    rxGroup.get('dosageForm')?.disable();
+    rxGroup.get('strength')?.disable();
+
+    // Clear any previously loaded data if you are storing these locally
+    // For example: this.rxDosageForms[index] = [];
+    //              this.rxStrengths[index] = [];
+
+    // Get the selected drug from the rx group
+    const selectedDrug = rxGroup.get('drugName')?.value;
+
     if (selectedDrug) {
+      // Fetch new dosage forms for the selected drug
       this.forms = await this.databaseService.getForms(selectedDrug);
+    }
+
+    // Reset the dosageForm and strength values
+    rxGroup.patchValue({ dosageForm: '', strength: '' });
+
+    // Enable dosageForm dropdown if dosage forms are available
+    if (this.forms.length > 0) {
+      rxGroup.get('dosageForm')?.enable();
     }
   }
 
-  async onDosageFormChange(selectedDrug: string, selectedDosageForm: string, row: number) {
-    // Fetch new strength units
-    this.strengths = [];
+  // Called when the dosage form in a specific rx item changes
+  async onRxDosageFormChange(index: number): Promise<void> {
+    const rxArray = this.prescriptionForm.get('rx') as FormArray;
+    const rxGroup = rxArray.at(index) as FormGroup;
+
+    // Disable the strength control while fetching new data
+    rxGroup.get('strength')?.disable();
+
+    // Retrieve the selected drug and dosage form values
+    const selectedDrug = rxGroup.get('drugName')?.value;
+    const selectedDosageForm = rxGroup.get('dosageForm')?.value;
     if (selectedDrug && selectedDosageForm) {
+      // Fetch available strengths for the selected drug and dosage form
       this.strengths = await this.databaseService.getStrengths(selectedDrug, selectedDosageForm);
     }
+
+    // Reset the strength field
+    rxGroup.patchValue({ strength: '' });
+
+    // Enable strength dropdown if strengths are available
+    if (this.strengths.length > 0) {
+      rxGroup.get('strength')?.enable();
+    }
   }
+
 
   gotToHome() {
     this.router.navigate(['/physician/patient-record']);

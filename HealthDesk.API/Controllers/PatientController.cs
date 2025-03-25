@@ -57,6 +57,16 @@ namespace HealthDesk.API.Controllers
             return Ok(new { Success = true, Message = "Current treatment saved successfully." });
         }
 
+        [HttpPost("{patientId}/current-treatments-rx")]
+        public async Task<IActionResult> SaveCurrentTreatmentRx(string patientId, [FromBody] List<CurrentTreatmentDto> dtos)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { Success = false, Message = "Invalid input.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+
+            await _patientService.SaveCurrentTreatmentRxAsync(patientId, dtos);
+            return Ok(new { Success = true, Message = "Current treatment saved successfully." });
+        }
+
         [HttpDelete("{patientId}/current-treatments/{treatmentId}")]
         public async Task<IActionResult> DeleteCurrentTreatment(string patientId, string treatmentId)
         {

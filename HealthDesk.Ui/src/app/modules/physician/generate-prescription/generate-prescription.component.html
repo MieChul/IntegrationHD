@@ -252,8 +252,10 @@
                 <mat-label>Select Profiles</mat-label>
                 <mat-select formControlName="selectedProfilesControl" multiple
                   (selectionChange)="onProfileSelectionChange($event.value)">
-                  <ngx-mat-select-search [formControl]="profileDatasFilterCtrl" placeholderLabel="Search Profile">
-                  </ngx-mat-select-search>
+                  <mat-option>
+                    <ngx-mat-select-search [formControl]="profileDatasFilterCtrl" placeholderLabel="Search Profile">
+                    </ngx-mat-select-search>
+                  </mat-option>
                   <mat-option *ngFor="let profile of filteredProfileDatas | async" [value]="profile">
                     {{ profile }}
                   </mat-option>
@@ -353,6 +355,7 @@
               <table class="table table-hover table-modern">
                 <thead class="table-light">
                   <tr>
+                    <th style="min-width: 150px;">Brand</th>
                     <th style="min-width: 150px;">Drug</th>
                     <th style="min-width: 120px;">Form</th>
                     <th style="min-width: 100px;">Strength</th>
@@ -366,11 +369,27 @@
                   <tr *ngFor="let rxControl of rx.controls; let i = index" [formGroupName]="i">
                     <td>
                       <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Brand</mat-label>
+                        <mat-select formControlName="brand" required>
+                          <mat-option>
+                            <ngx-mat-select-search [formControl]="brandFilterCtrl"
+                              placeholderLabel="Search Brand"></ngx-mat-select-search>
+                          </mat-option>
+                          <mat-option *ngFor="let brand of filteredBrands | async" [value]="brand">
+                            {{ brand }}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </td>
+                    <td>
+                      <mat-form-field appearance="outline" class="w-100">
                         <mat-label>Drug</mat-label>
-                        <mat-select formControlName="drugName" (selectionChange)="onDrugChange($event.value,1)">
-                          <ngx-mat-select-search [formControl]="drugFilterCtrl"
-                            placeholderLabel="Search treatment drug">
-                          </ngx-mat-select-search>
+                        <mat-select formControlName="drugName" (selectionChange)="onRxDrugChange(i)">
+                          <mat-option>
+                            <ngx-mat-select-search [formControl]="drugFilterCtrl"
+                              placeholderLabel="Search treatment drug">
+                            </ngx-mat-select-search>
+                          </mat-option>
                           <mat-option *ngFor="let drug of filteredDrugs | async" [value]="drug">
                             {{ drug }}
                           </mat-option>
@@ -380,9 +399,11 @@
                     <td>
                       <mat-form-field appearance="outline" class="w-100">
                         <mat-label>Form</mat-label>
-                        <mat-select formControlName="dosageForm" (selectionChange)="onDosageFormChange('','',1)">
-                          <ngx-mat-select-search [formControl]="fromFilterCtrl" placeholderLabel="Search dosage form">
-                          </ngx-mat-select-search>
+                        <mat-select formControlName="dosageForm" (selectionChange)="onRxDosageFormChange(i)">
+                          <mat-option>
+                            <ngx-mat-select-search [formControl]="fromFilterCtrl" placeholderLabel="Search dosage form">
+                            </ngx-mat-select-search>
+                          </mat-option>
                           <mat-option *ngFor="let form of filteredFroms | async" [value]="form">
                             {{ form }}
                           </mat-option>
@@ -393,9 +414,11 @@
                       <mat-form-field appearance="outline" class="w-100">
                         <mat-label>Strength</mat-label>
                         <mat-select formControlName="strength">
-                          <ngx-mat-select-search [formControl]="strengthFilterCtrl"
-                            placeholderLabel="Search strength unit">
-                          </ngx-mat-select-search>
+                          <mat-option>
+                            <ngx-mat-select-search [formControl]="strengthFilterCtrl"
+                              placeholderLabel="Search strength unit">
+                            </ngx-mat-select-search>
+                          </mat-option>
                           <mat-option *ngFor="let unit of filteredStrengths | async" [value]="unit">
                             {{ unit }}
                           </mat-option>
@@ -406,9 +429,11 @@
                       <mat-form-field appearance="outline" class="w-100">
                         <mat-label>Frequency</mat-label>
                         <mat-select formControlName="times">
-                          <ngx-mat-select-search [formControl]="frequencyFilterCtrl"
-                            placeholderLabel="Search frequency">
-                          </ngx-mat-select-search>
+                          <mat-option>
+                            <ngx-mat-select-search [formControl]="frequencyFilterCtrl"
+                              placeholderLabel="Search frequency">
+                            </ngx-mat-select-search>
+                          </mat-option>
                           <mat-option *ngFor="let unit of filteredFrequencies | async" [value]="unit">
                             {{ unit }}
                           </mat-option>
@@ -419,8 +444,11 @@
                       <mat-form-field appearance="outline" class="w-100">
                         <mat-label>Duration</mat-label>
                         <mat-select formControlName="duration">
-                          <ngx-mat-select-search [formControl]="durationFilterCtrl" placeholderLabel="Search duration">
-                          </ngx-mat-select-search>
+                          <mat-option>
+                            <ngx-mat-select-search [formControl]="durationFilterCtrl"
+                              placeholderLabel="Search duration">
+                            </ngx-mat-select-search>
+                          </mat-option>
                           <mat-option *ngFor="let unit of filteredDurations | async" [value]="unit">
                             {{ unit }}
                           </mat-option>

@@ -88,6 +88,36 @@ public class PatientService : IPatientService
         await _patientRepository.UpdateAsync(patient);
     }
 
+    public async Task SaveCurrentTreatmentRxAsync(string patientId, List<CurrentTreatmentDto> dtos)
+    {
+        var patient = await GetPatientByIdAsync(patientId);
+        if (patient.CurrentTreatments == null)
+        {
+            patient.CurrentTreatments = new List<Treatment>();
+        }
+
+        foreach (var dto in dtos)
+        {
+            // Map each property from the DTO to the Treatment entity
+            var treatment = new Treatment
+            {
+                Brand = dto.Brand,
+                TreatmentDrug = dto.TreatmentDrug,
+                DosageForm = dto.DosageForm,
+                StrengthUnit = dto.StrengthUnit,
+                Frequency = dto.Frequency,
+                StartDate = dto.StartDate,
+                EndDate = dto.EndDate,
+                Comment = dto.Comment
+            };
+
+            // Add the treatment to the patient's collection
+            patient.CurrentTreatments.Add(treatment);
+        }
+
+        await _patientRepository.UpdateAsync(patient);
+    }
+
     public async Task DeleteCurrentTreatmentAsync(string patientId, string treatmentId)
     {
         var patient = await GetPatientByIdAsync(patientId);
