@@ -1,58 +1,113 @@
 <div class="container">
-    <button class="btn btn-secondary mb-3" (click)="goBack()">
-      <i class="bi bi-arrow-left"></i> Back
-    </button>
-    <h2 class="animated-heading">
-      <i class="bi bi-file-earmark-plus me-2"></i>New Medical Case
-    </h2>
-    <form (ngSubmit)="submitCase()">
-      <div class="mb-3">
-        <label>Upload Images (Max 3)</label>
-        <div *ngFor="let image of images; let i = index">
-          <div class="input-group mb-2">
-            <input type="file" class="form-control" (change)="onFileSelected($event, i)">
-            <button class="btn btn-danger" *ngIf="i > 0" (click)="removeImage(i)">-</button>
+  <button class="btn btn-secondary mb-3" (click)="goBack()">
+    <i class="bi bi-arrow-left"></i> Back
+  </button>
+  <h2 class="animated-heading">
+    <i class="bi bi-file-earmark-plus me-2"></i>New Medical Case
+  </h2>
+  <form (ngSubmit)="submitCase()">
+    <div class="mb-3">
+      <div class="row">
+        <!-- First Image Slot -->
+        <div class="col-sm-4">
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" [checked]="displayImageIndex === 0"
+              (change)="selectDisplayImage(0)" [disabled]="!imagePreviewUrls[0]" />
+            <label class="form-check-label ms-1">Display Image</label>
           </div>
+          <div class="upload-square" (click)="triggerFileInput('imageFile0')">
+            <div class="text-center">
+              <i class="bi bi-plus-circle fs-1 text-secondary"></i>
+              <div>Upload Image 1</div>
+            </div>
+            <img *ngIf="imagePreviewUrls[0]" [src]="imagePreviewUrls[0]" class="uploaded-logo" alt="Image Preview" />
+          </div>
+          <input type="file" id="imageFile0" (change)="onFileChange($event, 0)" accept="image/*" hidden />
         </div>
-        <button class="btn btn-primary" (click)="addImage()" *ngIf="images.length < 3">+</button>
+
+        <!-- Second Image Slot -->
+        <div class="col-sm-4">
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" [checked]="displayImageIndex === 1"
+              (change)="selectDisplayImage(1)" [disabled]="!imagePreviewUrls[1]" />
+            <label class="form-check-label ms-1">Display Image</label>
+          </div>
+          <div class="upload-square" (click)="triggerFileInput('imageFile1')">
+            <div class="text-center">
+              <i class="bi bi-plus-circle fs-1 text-secondary"></i>
+              <div>Upload Image 2</div>
+            </div>
+            <img *ngIf="imagePreviewUrls[1]" [src]="imagePreviewUrls[1]" class="uploaded-logo" alt="Image Preview" />
+          </div>
+          <input type="file" id="imageFile1" (change)="onFileChange($event, 1)" accept="image/*" hidden />
+        </div>
+
+        <!-- Third Image Slot -->
+        <div class="col-sm-4">
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" [checked]="displayImageIndex === 2"
+              (change)="selectDisplayImage(2)" [disabled]="!imagePreviewUrls[2]" />
+            <label class="form-check-label ms-1">Display Image</label>
+          </div>
+          <div class="upload-square" (click)="triggerFileInput('imageFile2')">
+            <div class="text-center">
+              <i class="bi bi-plus-circle fs-1 text-secondary"></i>
+              <div>Upload Image 3</div>
+            </div>
+            <img *ngIf="imagePreviewUrls[2]" [src]="imagePreviewUrls[2]" class="uploaded-logo" alt="Image Preview" />
+          </div>
+          <input type="file" id="imageFile2" (change)="onFileChange($event, 2)" accept="image/*" hidden />
+        </div>
       </div>
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <div class="form-floating mb-3">
-            <input type="text" class="form-control" id="speciality" placeholder="Speciality" [(ngModel)]="speciality" name="speciality" required>
-            <label for="speciality">Speciality</label>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="form-floating mb-3">
-            <input type="text" class="form-control" id="diagnosis" placeholder="Diagnosis" [(ngModel)]="diagnosis" name="diagnosis" required>
-            <label for="diagnosis">Diagnosis</label>
-          </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <div class="form-floating mb-3">
+          <input type="text" class="form-control" id="speciality" placeholder="Speciality" [(ngModel)]="speciality"
+            name="speciality" required>
+          <label for="speciality">Speciality</label>
         </div>
       </div>
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <div class="form-floating mb-3">
-            <input type="text" class="form-control" id="patientInitials" placeholder="Patient Initials" [(ngModel)]="patientInitials" name="patientInitials" required>
-            <label for="patientInitials">Patient Initials</label>
-            <span *ngIf="!validInitials" class="text-danger">Required, only 3 letters, no special characters except ('. ')</span>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="form-floating mb-3">
-            <input type="number" class="form-control" id="age" placeholder="Age (years)" [(ngModel)]="age" name="age" min="0" max="150" required>
-            <label for="age">Age (years)</label>
-            <span *ngIf="ageError" class="text-danger mt-1 mb-3">{{ ageError }}</span>
-          </div>
+      <div class="col-md-6">
+        <div class="form-floating mb-3">
+          <input type="text" class="form-control" id="diagnosis" placeholder="Diagnosis" [(ngModel)]="diagnosis"
+            name="diagnosis" required>
+          <label for="diagnosis">Diagnosis</label>
         </div>
       </div>
-      <div class="mb-3">
-        <label>Chief Complaints</label>
-        <table class="table">
-          <thead>
+    </div>
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <div class="form-floating mb-3">
+          <input type="text" class="form-control" id="patientInitials" placeholder="Patient Initials"
+            [(ngModel)]="patientInitials" name="patientInitials" required>
+          <label for="patientInitials">Patient Initials</label>
+          <span *ngIf="!validInitials" class="text-danger">Required, only 3 letters, no special characters except ('.
+            ')</span>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-floating mb-3">
+          <input type="number" class="form-control" id="age" placeholder="Age (years)" [(ngModel)]="age" name="age"
+            min="0" max="150" required>
+          <label for="age">Age (years)</label>
+          <span *ngIf="ageError" class="text-danger mt-1 mb-3">{{ ageError }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="right-section dynamic-scroll-container">
+      <h3>Chief Complaints</h3>
+      <button class="btn btn-success add-button pointer-cursor" (click)="addComplaint()" title="Add Complaint">
+        <i class="bi bi-plus-lg"></i>
+      </button>
+
+      <!-- Make table responsive and enable horizontal scroll -->
+      <div class="table-responsive" style="overflow-x: auto; max-width: 100%;">
+        <table class="table table-hover table-modern">
+          <thead class="table-light">
             <tr>
               <th>Complaint</th>
-              <th></th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -66,29 +121,33 @@
             </tr>
           </tbody>
         </table>
-        <button class="btn btn-primary" (click)="addComplaint()">Add Complaint</button>
       </div>
-      <div class="form-floating mb-3">
-        <textarea class="form-control" id="pastHistory" placeholder="Past History" [(ngModel)]="pastHistory" name="pastHistory" required></textarea>
-        <label for="pastHistory">Past History</label>
-      </div>
-      <div class="form-floating mb-3">
-        <textarea class="form-control" id="examination" placeholder="Examination" [(ngModel)]="examination" name="examination" required></textarea>
-        <label for="examination">Examination</label>
-      </div>
-      <div class="form-floating mb-3">
-        <textarea class="form-control" id="investigation" placeholder="Investigation" [(ngModel)]="investigation" name="investigation" required></textarea>
-        <label for="investigation">Investigations</label>
-      </div>
-      <div class="form-floating mb-3">
-        <textarea class="form-control" id="treatment" placeholder="Treatment" [(ngModel)]="treatment" name="treatment" required></textarea>
-        <label for="treatment">Treatment</label>
-      </div>
-      <div class="form-floating mb-3">
-        <textarea class="form-control" id="caseSummary" placeholder="Case Summary" [(ngModel)]="caseSummary" name="caseSummary" required></textarea>
-        <label for="caseSummary">Case Summary</label>
-      </div>
-      <button type="submit" class="btn btn-primary w-100">Submit</button>
-    </form>
-  </div>
-  
+    </div>
+    <div class="form-floating mb-3">
+      <textarea class="form-control" id="pastHistory" placeholder="Past History" [(ngModel)]="pastHistory"
+        name="pastHistory" required></textarea>
+      <label for="pastHistory">Past History</label>
+    </div>
+    <div class="form-floating mb-3">
+      <textarea class="form-control" id="examination" placeholder="Examination" [(ngModel)]="examination"
+        name="examination" required></textarea>
+      <label for="examination">Examination</label>
+    </div>
+    <div class="form-floating mb-3">
+      <textarea class="form-control" id="investigation" placeholder="Investigation" [(ngModel)]="investigation"
+        name="investigation" required></textarea>
+      <label for="investigation">Investigations</label>
+    </div>
+    <div class="form-floating mb-3">
+      <textarea class="form-control" id="treatment" placeholder="Treatment" [(ngModel)]="treatment" name="treatment"
+        required></textarea>
+      <label for="treatment">Treatment</label>
+    </div>
+    <div class="form-floating mb-3">
+      <textarea class="form-control" id="caseSummary" placeholder="Case Summary" [(ngModel)]="caseSummary"
+        name="caseSummary" required></textarea>
+      <label for="caseSummary">Case Summary</label>
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Submit</button>
+  </form>
+</div>

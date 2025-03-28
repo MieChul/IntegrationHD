@@ -153,7 +153,8 @@
                     </li>
                     <li class="nav-item" *ngIf="this.user.role != 'patient'">
                         <div class="nav-link" id="hosp_info" #hosp_info (click)="changeTab('hosp_info',hosp_info)"><i
-                                class="bi bi-hospital"></i>{{this.user.role === 'physician' ? 'Hospital / Clinic Information' : 'Basic
+                                class="bi bi-hospital"></i>{{this.user.role === 'physician' ? 'Hospital / Clinic
+                            Information' : 'Basic
                             Information'}}</div>
                     </li>
                     <li class="nav-item" *ngIf="this.user.role != 'physician' &&  this.user.role != 'patient' ">
@@ -288,7 +289,8 @@
                                             placeholder="House / Flat Number" autocomplete="off"
                                             [ngClass]="{ 'is-invalid': submitted && f['address1'].errors }">
                                         <div *ngIf="submitted && f['address1'].errors" class="invalid-feedback">
-                                            <div *ngIf="f['address1'].errors['required']">House / Flat Number is required
+                                            <div *ngIf="f['address1'].errors['required']">House / Flat Number is
+                                                required
                                             </div>
                                         </div>
                                         <label for="address1" class="form-label-floating">House / Flat Number<i
@@ -382,12 +384,11 @@
                     <div *ngIf="tab =='q_info'">
                         <div class="card mb-4">
                             <div class="card-body">
-                                <div class="row col-sm-4">   
+                                <div class="row col-sm-4">
                                     <mat-form-field appearance="outline" class="w-100">
                                         <mat-label>Speciality</mat-label>
                                         <mat-select formControlName="speciality" required
-                                            [ngClass]="{ 'is-invalid': submitted && f['speciality'].errors }"
-                                            required>
+                                            [ngClass]="{ 'is-invalid': submitted && f['speciality'].errors }" required>
                                             <mat-option>
                                                 <ngx-mat-select-search [formControl]="specialityFilterCtrl"
                                                     placeholderLabel="Search Speciality"></ngx-mat-select-search>
@@ -406,24 +407,21 @@
                                 <p class="mb-4"><span class="text-primary font-italic me-1">Medical Registration</span>
                                 </p>
                                 <div class="row" formGroupName="medicalRegistration">
-                                    <div class="form-floating col-sm-4">
-                                        <input type="text" class="form-control" id="certificateNumber"
-                                            placeholder="MRC Number" autocomplete="off"
-                                            formControlName="certificateNumber"
-                                            [ngClass]="{ 'is-invalid': submitted && (certificateNumberError || f['medicalRegistration'].get('certificateNumber')?.errors) }">
-                                        <div *ngIf="submitted && certificateNumberError"
-                                            class="invalid-feedback d-flex">
-                                            <div>Certificate Number is required</div>
-                                        </div>
-                                        <div *ngIf="submitted &&  f['medicalRegistration'].get('certificateNumber')?.errors"
-                                            class="invalid-feedback">
-                                            <div
-                                                *ngIf=" f['medicalRegistration'].get('certificateNumber')?.errors?.['pattern']">
-                                                Please enter a valid Certificate Number.
-                                            </div>
-                                        </div>
-                                        <label for="certificateNumber" class="form-label-floating">MRC Number<i class="danger">*</i></label>
-                                    </div>
+                                    <mat-form-field appearance="outline" class="col-sm-4" style="height: 30px;">
+                                        <mat-label>MRC Number<i class="danger">*</i></mat-label>
+                                        <input matInput formControlName="certificateNumber" placeholder="MRC Number"
+                                            [ngClass]="{'is-invalid': submitted && (certificateNumberError || f['medicalRegistration'].get('certificateNumber')?.errors)}">
+                                        <button mat-icon-button matSuffix matTooltip="Medical Registration Number">
+                                            <mat-icon>info</mat-icon>
+                                        </button>
+                                        <mat-error *ngIf="submitted && certificateNumberError">
+                                            Certificate Number is required
+                                        </mat-error>
+                                        <mat-error
+                                            *ngIf="submitted && f['medicalRegistration'].get('certificateNumber')?.errors?.['pattern']">
+                                            Please enter a valid Certificate Number.
+                                        </mat-error>
+                                    </mat-form-field>
                                     <div class="form-floating col-sm-4">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Medical Council Name</mat-label>
@@ -473,7 +471,7 @@
                                 </mat-checkbox>
                                 <div class="row mb-1" formGroupName="graduation">
                                     <span class="text-success font-italic mb-2">Graduation<i class="danger">*</i></span>
-                                    <div class="mb-3 col">  
+                                    <div class="mb-3 col">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Qualification</mat-label>
                                             <mat-select formControlName="name">
@@ -507,7 +505,7 @@
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Institute Name</mat-label>
                                             <mat-select formControlName="institute"
-                                                [ngClass]="{ 'is-invalid': submitted && (gInstituteError ||  f['graduation'].get('institute')?.errors) }" >
+                                                [ngClass]="{ 'is-invalid': submitted && (gInstituteError ||  f['graduation'].get('institute')?.errors) }">
                                                 <mat-option>
                                                     <ngx-mat-select-search [formControl]="collegeFilterCtrl"
                                                         placeholderLabel="Search Institute"></ngx-mat-select-search>
@@ -543,7 +541,7 @@
                                 <hr>
                                 <div class="row" formGroupName="postGraduation">
                                     <span class="text-success font-italic mb-2">Post Graduation</span>
-                                    <div class="mb-3 col">  
+                                    <div class="mb-3 col">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Qualification</mat-label>
                                             <mat-select formControlName="name">
@@ -598,7 +596,7 @@
                                 <hr>
                                 <div class="row" formGroupName="superSpecialization">
                                     <span class="text-success font-italic mb-2">Super Specialization</span>
-                                    <div class="mb-3 col">  
+                                    <div class="mb-3 col">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Qualification</mat-label>
                                             <mat-select formControlName="name">
@@ -606,7 +604,8 @@
                                                     <ngx-mat-select-search [formControl]="superSpecializationFilterCtrl"
                                                         placeholderLabel="Search Super Specialization"></ngx-mat-select-search>
                                                 </mat-option>
-                                                <mat-option *ngFor="let graduation of filteredSuperSpecializaion | async"
+                                                <mat-option
+                                                    *ngFor="let graduation of filteredSuperSpecializaion | async"
                                                     [value]="graduation">
                                                     {{ graduation }}
                                                 </mat-option>
@@ -664,7 +663,7 @@
                                         </select>
                                     </div>
 
-                                    
+
                                     <div class="form-floating col">
                                         <input type="text" class="form-control" id="institute" placeholder="Institute"
                                             autocomplete="off" formControlName="institute">
@@ -703,10 +702,12 @@
                                     <input type="text" class="form-control" id="email" formControlName="clinicName"
                                         placeholder="Hospital Clinic Name" autocomplete="off"
                                         [ngClass]="{ 'is-invalid': submitted && f['clinicName'].errors }">
-                                    <div *ngIf="submitted && f['clinicName']?.errors?.['required']" class="invalid-feedback">
+                                    <div *ngIf="submitted && f['clinicName']?.errors?.['required']"
+                                        class="invalid-feedback">
                                         <div>Hospital / Clinic Name is required</div>
                                     </div>
-                                    <div *ngIf="submitted && f['clinicName']?.errors?.['pattern']" class="invalid-feedback">
+                                    <div *ngIf="submitted && f['clinicName']?.errors?.['pattern']"
+                                        class="invalid-feedback">
                                         <div>Enter valid Hospital / Clinic Name</div>
                                     </div>
                                     <label for="mobile" class="form-label-floating">Hospital / Clinic Name<i

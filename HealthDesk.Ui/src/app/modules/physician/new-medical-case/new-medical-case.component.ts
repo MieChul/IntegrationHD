@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { ValidationService } from '../../../shared/services/validator.service';
 
 @Component({
   selector: 'app-new-medical-case',
@@ -20,8 +21,11 @@ export class NewMedicalCaseComponent {
   images: File[] = [];
   validInitials: boolean = true;
   ageError: string | null = null;
+  imageFiles: (File | null)[] = [null, null, null];
+  imagePreviewUrls: (string | null)[] = [null, null, null];
+  displayImageIndex: number | null = null;
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private validationService: ValidationService) { }
 
   submitCase() {
     this.validInitials = /^[A-Za-z.']{3}$/.test(this.patientInitials);
@@ -48,21 +52,37 @@ export class NewMedicalCaseComponent {
     this.router.navigate(['/physician/medical-cases']);
   }
 
-  addImage() {
-    if (this.images.length < 3) {
-      this.images.push(null as any); // Allow null as a placeholder for a File type
-    }
-  }
-  removeImage(index: number) {
-    this.images.splice(index, 1);
+  triggerFileInput(elementId: string): void {
+    document.getElementById(elementId)?.click();
   }
 
-  onFileSelected(event: any, index: number) {
+
+
+  onFileChange(event: any, index: number): void {
     const file = event.target.files[0];
-    if (file) {
-      this.images[index] = file;
+    if (!file) return;
+
+    // Validate the image (assuming validateImage returns a boolean)
+    if (!this.validationService.validateImage(file)) {
+      return;
     }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imagePreviewUrls[index] = reader.result as string;
+      this.imageFiles[index] = file;
+    };
+    reader.readAsDataURL(file);
   }
+
+  selectDisplayImage(index: number): void {
+    // Only allow selecting an image slot if an image has been uploaded
+    if (!this.imagePreviewUrls[index]) {
+      return;
+    }
+    this.displayImageIndex = index;
+  }
+
 
   addComplaint() {
     this.chiefComplaints.push('');

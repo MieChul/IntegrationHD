@@ -76,7 +76,7 @@ export class MedicalCasesComponent implements OnInit {
   }
 
   createNewCase(): void {
-    this.router.navigate(['/patient/new-medical-case']);
+    this.router.navigate(['/physician/new-medical-case']);
   }
 
   addComment(caseId: number): void {

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ValidationService } from '../../../shared/services/validator.service';
 
 @Component({
   selector: 'app-new-remedy',
@@ -11,8 +12,11 @@ export class NewRemedyComponent implements OnInit {
   remedyForm!: FormGroup;
   images: File[] = [];
   quantities: string[] = [];
+  imageFiles: (File | null)[] = [null, null, null];
+  imagePreviewUrls: (string | null)[] = [null, null, null];
+  displayImageIndex: number | null = null;
 
-  constructor(private fb: FormBuilder, private router: Router) { }
+  constructor(private fb: FormBuilder, private router: Router, private validationService: ValidationService) { }
 
   ngOnInit(): void {
     this.remedyForm = this.fb.group({
@@ -48,24 +52,35 @@ export class NewRemedyComponent implements OnInit {
     this.quantities.splice(index, 1);
   }
 
-  /**
-   * Handle Image Uploads
-   */
-  addImage(): void {
-    if (this.images.length < 3) {
-      this.images.push(new File([], ''));
-    }
+  triggerFileInput(elementId: string): void {
+    document.getElementById(elementId)?.click();
   }
 
-  removeImage(index: number): void {
-    this.images.splice(index, 1);
-  }
 
-  onFileSelected(event: any, index: number): void {
+
+  onFileChange(event: any, index: number): void {
     const file = event.target.files[0];
-    if (file) {
-      this.images[index] = file;
+    if (!file) return;
+
+    // Validate the image (assuming validateImage returns a boolean)
+    if (!this.validationService.validateImage(file)) {
+      return;
     }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imagePreviewUrls[index] = reader.result as string;
+      this.imageFiles[index] = file;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  selectDisplayImage(index: number): void {
+    // Only allow selecting an image slot if an image has been uploaded
+    if (!this.imagePreviewUrls[index]) {
+      return;
+    }
+    this.displayImageIndex = index;
   }
 
   /**
