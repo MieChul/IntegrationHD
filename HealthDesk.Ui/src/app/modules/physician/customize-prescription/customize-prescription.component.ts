@@ -583,33 +583,15 @@ export class CustomizePrescriptionComponent implements OnInit {
 
     addHeaderAndFooter(); // Add header and footer to the first page
 
-    // Add Date on top-right
-    doc.text(`Date: ${patientData.date || '_________________'}`, pageWidth - 40, headerHeight + 10);
+    doc.setFontSize(10);
+    doc.text(`Barcode: `, 14, headerHeight + 10);
+    doc.text(`Date:`, pageWidth - 40, headerHeight + 10);
+    doc.text(`Patient\'s name:`, 14, headerHeight + 17);
+    doc.text(`Age:`, 14, headerHeight + 24);
+    doc.text(`Gender:`, 60, headerHeight + 24);
+    doc.text(`OPD Registration:`, 14, headerHeight + 31);
 
-    // General Details Table (Patient Information, Age, OPD)
-    const generalDetails = [
-      ['Patient\'s name', patientData.name || '', 'OPD registration', patientData.opd || ''],
-      ['Age', patientData.age || '', 'Gender', patientData.gender || '']
-    ];
-
-    let result = autoTable(doc, {
-      startY: startY,
-      theme: 'plain',
-      styles: {
-        font: 'Times',
-        fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1, cellPadding: { top: 2, right: 5, bottom: 2, left: 5 }
-      },
-      columnStyles: {
-        0: { cellWidth: 30 },  // Column for 'Patient\'s name', 'Age', 'OPD registration'
-        1: { cellWidth: 61 }, // Column for patient name value and OPD value
-        2: { cellWidth: 30 },  // Column for 'Gender' (hardcoded text)
-        3: { cellWidth: 61 }   // Column for gender value (UI-provided)
-      },
-      body: generalDetails
-    });
-
-    startY = (doc as any).autoTable.previous.finalY + 5;
-
+    startY = headerHeight + 37;
     // Chief Complaints Table
     checkAndAddNewPage(30);
     doc.text('Chief Complaints:', 14, startY);
@@ -634,54 +616,25 @@ export class CustomizePrescriptionComponent implements OnInit {
       startY: startY,
       styles: {
         font: 'Times',
-        fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
+        fontSize:8, lineColor: [0, 0, 0], lineWidth: 0.1
       }
     });
     startY = (doc as any).autoTable.previous.finalY + 5;
-    checkAndAddNewPage(30);
-    // Vitals Info Table
-    doc.text('Vitals:', 14, startY);
-    startY += 2;
-    const vitalsInfo = [
-      [`Pulse (per minute): ${patientData.pulse || ''}`, `Respiratory rate (per minute): ${patientData.respiratoryRate || ''}`],
-      [`Blood pressure (mm Hg): ${patientData.bp || ''}`, `Temperature: ${patientData.temperature || ''}`]
-    ];
+    checkAndAddNewPage(20);
+    doc.setFontSize(10);
+    doc.text('Vitals:', 14, startY + 5);
+    doc.text(`Pulse (per minute):`, 50, startY);
+    doc.text(`Respiratory rate (per minute):`, 50, startY + 5);
+    doc.text(`Blood pressure (mm Hg):`, 50, startY + 10);
+    doc.text(`Temperature:`, 50, startY + 15);
 
-    // Approximate height for vitals info
-    autoTable(doc, {
-      startY: startY,
-      theme: 'plain',
-      styles: {
-        font: 'Times',
-        fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
-      },
-      body: vitalsInfo
-    });
-    startY = (doc as any).autoTable.previous.finalY + 5;
-    checkAndAddNewPage(30);
-    // Local Examination Table
-    const localExamination = [
-      [`Local examination`, `${patientData.localExamination || ''}`]
-    ];
 
-    doc.text('Local Examination:', 14, startY);
-    startY += 2;
-    // Approximate height
-    autoTable(doc, {
-      startY: startY,
-      theme: 'plain',
-      styles: {
-        font: 'Times',
-        fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
-      },
-      columnStyles: {
-        0: { cellWidth: 30 },
-        1: { cellWidth: 152 }
-      },
-      body: localExamination
-    });
-    startY = (doc as any).autoTable.previous.finalY + 5;
-    checkAndAddNewPage(30);
+    startY = startY + 25;
+    checkAndAddNewPage(15);
+    doc.setFontSize(10);
+    doc.text(`Local examination:`, 14, startY);
+    doc.text(`Investigations:`, 14, startY + 7);
+    startY = startY + 15;
     // Systemic Table
     const systemicData = patientData.systemic?.map((system: any, index: number) => [
       index + 1,
@@ -707,32 +660,11 @@ export class CustomizePrescriptionComponent implements OnInit {
       startY: startY
     });
     startY = (doc as any).autoTable.previous.finalY + 5;
-    checkAndAddNewPage(30);
-    // Diagnosis Table
-    const diagnosisData = patientData.diagnosis?.map((diag: any, index: number) => [
-      index + 1,
-      diag.provisionalDiagnosis,
-      diag.investigations
-    ]) || [['', '', '']];
-
-    doc.text('Diagnosis:', 14, startY);
-    startY += 2;
-    // Approximate height
-    autoTable(doc, {
-      head: [['Sr.', 'Provisional Diagnosis', 'Investigations']],
-      headStyles: {
-        fillColor: [255, 255, 255], // Transparent white header (plain)
-        textColor: [0, 0, 0],       // Black text color for header
-        fontStyle: 'normal'         // Plain font style
-      },
-      body: diagnosisData,
-      styles: {
-        font: 'Times',
-        fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
-      },
-      startY: startY
-    });
-    startY = (doc as any).autoTable.previous.finalY + 5;
+    
+    checkAndAddNewPage(10);
+    doc.setFontSize(10);
+    doc.text(`Provisional Diagnosis:`, 14, startY);
+    startY = startY + 7;
     checkAndAddNewPage(40);
     // Rx Details Table
     const rxData = patientData.rx?.map((medication: any, index: number) => [
@@ -759,34 +691,19 @@ export class CustomizePrescriptionComponent implements OnInit {
       body: rxData,
       styles: {
         font: 'Times',
-        fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
+        fontSize: 8, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       startY: startY
     });
     startY = (doc as any).autoTable.previous.finalY + 5;
-    checkAndAddNewPage(30);
-    // Other Instructions Table
-    const instructionsData = [
-      ['Other Instructions', patientData.otherInstructions || ''],
-      ['Next Follow-up', patientData.nextFollowUp || '']
-    ];
+    checkAndAddNewPage(15);
+    doc.setFontSize(10);
 
-    // Approximate height
-    autoTable(doc, {
-      body: instructionsData,
-      startY: startY,
-      theme: 'plain',
-      columnStyles: {
-        0: { cellWidth: 30 }, // Hardcoded text
-        1: { cellWidth: 152 } // Value from UI
-      },
-      styles: {
-        font: 'Times',
-        fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
-      }
-    });
-    startY = (doc as any).autoTable.previous.finalY + 5;
-    checkAndAddNewPage(30);
+    doc.text(`Other Instructions:`, 14, startY);
+    doc.text(`Next Follow-up: `, 14, startY + 5);
+    startY = startY + 15;
+    checkAndAddNewPage(25);
+    doc.setFontSize(10);
     // Physician Signature and Stamp Table
     const signatureData = [['Physician Signature', 'Stamp']];
     // Approximate height for signature section

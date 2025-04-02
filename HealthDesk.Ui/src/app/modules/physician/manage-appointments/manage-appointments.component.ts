@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { NgbTooltipConfig } from '@ng-bootstrap/ng-bootstrap';
 import { Modal } from 'bootstrap';
 import { Appointment } from '../../../shared/models/appointment';
@@ -20,7 +20,9 @@ import { Tooltip } from 'bootstrap';
 export class ManageAppointmentsComponent implements OnInit {
   @ViewChild('proposeTimeModal') proposeTimeModal!: ElementRef;
   @ViewChild('rejectReasonModal') rejectReasonModal!: ElementRef;
-
+  @ViewChild('changeSlotModal') changeSlotModal!: ElementRef;
+  @ViewChild('openConfirmModal') openConfirmModal!: ElementRef;
+  
   ngAfterViewInit(): void {
     this.setupModalEventListeners();
   }
@@ -29,7 +31,8 @@ export class ManageAppointmentsComponent implements OnInit {
   setupModalEventListeners(): void {
     const proposeModalEl = this.proposeTimeModal.nativeElement;
     const rejectModalEl = this.rejectReasonModal.nativeElement;
-
+    const changeSlotModal = this.changeSlotModal.nativeElement;
+    const openConfirmModal = this.openConfirmModal.nativeElement;
     proposeModalEl.addEventListener('hidden.bs.modal', () => {
       this.onModalClose();
     });
@@ -41,9 +44,10 @@ export class ManageAppointmentsComponent implements OnInit {
 
   proposeTimeForm!: FormGroup;
   rejectReasonForm!: FormGroup;
+  changeModalForm!: FormGroup;
   isMultipleAction: boolean = false;
   toggleAllChecked: boolean = false;
-
+  selectedClinic: any;
   filteredAppointments: any = [];
   appointments: any = [];
   currentCarouselIndex: number = 0;
@@ -56,6 +60,7 @@ export class ManageAppointmentsComponent implements OnInit {
   today: Date = new Date();
   status = ''
   multipleSelectedAppointments: any[] = [];
+  submitted = false;
 
 
 
@@ -101,6 +106,45 @@ export class ManageAppointmentsComponent implements OnInit {
     this.rejectReasonForm = this.fb.group({
       reason: ['', Validators.required],
     });
+
+    this.changeModalForm = this.fb.group({
+      id: [''],
+      clinicId: ['', [Validators.required]],
+      date: [],
+      clinicSlots: this.fb.array([], this.validateSlotOverlap.bind(this))
+    });
+  }
+
+  get clinicSlots(): FormArray<FormGroup> {
+    return this.changeModalForm.get('clinicSlots') as FormArray<FormGroup>;
+  }
+
+  validateSlotOverlap(control: AbstractControl): ValidationErrors | null {
+    const formArray = control as FormArray;
+    const slots = formArray.controls;
+    for (let i = 0; i < slots.length; i++) {
+      const slot1 = slots[i];
+      const from1 = slot1.get('timingFrom')?.value;
+      const to1 = slot1.get('timingTo')?.value;
+      if (!from1 || !to1) continue;
+      const start1 = this.parseTime12(from1);
+      const end1 = this.parseTime12(to1);
+      if (start1 === null || end1 === null) continue;
+      for (let j = i + 1; j < slots.length; j++) {
+        const slot2 = slots[j];
+        const from2 = slot2.get('timingFrom')?.value;
+        const to2 = slot2.get('timingTo')?.value;
+        if (!from2 || !to2) continue;
+        const start2 = this.parseTime12(from2);
+        const end2 = this.parseTime12(to2);
+        if (start2 === null || end2 === null) continue;
+        // Check overlap: if slot1 starts before slot2 ends and slot2 starts before slot1 ends
+        if (start1 < end2 && start2 < end1) {
+          return { overlap: 'Slot timings cannot overlap' };
+        }
+      }
+    }
+    return null;
   }
 
   pastDateValidator() {
@@ -130,6 +174,45 @@ export class ManageAppointmentsComponent implements OnInit {
     );
   }
 
+  parseTime12(timeStr: string): number | null {
+    const parts = timeStr.trim().split(' ');
+    if (parts.length < 2) return null; // Expecting "hh:mm AM/PM"
+    const timePart = parts[0]; // e.g. "1:15" or "01:15"
+    const period = parts[1].toUpperCase(); // AM or PM
+    const [hoursStr, minutesStr = '0'] = timePart.split(':');
+    const hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+    if (isNaN(hours) || isNaN(minutes)) return null;
+    let adjustedHours = hours;
+    if (period === 'PM' && hours < 12) {
+      adjustedHours += 12;
+    } else if (period === 'AM' && hours === 12) {
+      adjustedHours = 0;
+    }
+    return adjustedHours * 60 + minutes;
+  }
+
+
+  validateTimeRange(group: FormGroup): ValidationErrors | null {
+    const from = group.get('timingFrom')?.value;
+    const to = group.get('timingTo')?.value;
+    if (!from || !to) {
+      return null;
+    }
+    const fromTotal = this.parseTime12(from);
+    const toTotal = this.parseTime12(to);
+    if (fromTotal === null || toTotal === null) {
+      return { timeFormat: 'Invalid time format' };
+    }
+    if (toTotal < fromTotal) {
+      return { timeRange: 'Time difference cannot exceed 12 hours' };
+    }
+    if (toTotal - fromTotal > 720) { // 9 hours = 540 minutes
+      return { timeRange: 'Time difference cannot exceed 12 hours' };
+    }
+    return null;
+  }
+
   loadAppointments(): Observable<any> {
     if (!this.userData?.id) {
       console.error('User data or user ID is undefined.');
@@ -151,6 +234,46 @@ export class ManageAppointmentsComponent implements OnInit {
     );
   }
 
+  onClinicChange(id: any) {
+    const c = this.clinics.find(x => x.id === id);
+    if (c && c.clinicSlots) {
+      this.clinicSlots.clear();
+      c.clinicSlots.forEach((slot: any) => {
+        this.addSlot(slot);
+      });
+    }
+  }
+
+  addSlot(slotData?: any): void {
+    const slotGroup = this.fb.group({
+      id: [slotData ? slotData.id : ''],
+
+      name: [
+        slotData ? slotData.name : '',
+        [Validators.required, Validators.maxLength(10), Validators.pattern('^[a-zA-Z0-9]+$')]
+      ],
+
+      timingFrom: [
+        slotData ? slotData.timingFrom : '',
+        [Validators.required]
+      ],
+      timingTo: [
+        slotData ? slotData.timingTo : '',
+        [Validators.required]
+      ]
+    }, { validators: this.validateTimeRange.bind(this) });
+
+    // Subscribe to changes so that the custom validator updates immediately.
+    slotGroup.get('timingFrom')?.valueChanges.subscribe(() => {
+      slotGroup.updateValueAndValidity();
+      this.clinicSlots.updateValueAndValidity();
+    });
+    slotGroup.get('timingTo')?.valueChanges.subscribe(() => {
+      slotGroup.updateValueAndValidity();
+      this.clinicSlots.updateValueAndValidity();
+    });
+    this.clinicSlots.push(slotGroup);
+  }
 
   acceptAppointment(appointment: Appointment): void {
     const updatedAppointment = {
@@ -410,7 +533,7 @@ export class ManageAppointmentsComponent implements OnInit {
       .pipe(
         switchMap(() => this.loadAppointments()),
         tap(() => {
-          this.resetSelection(); 
+          this.resetSelection();
           console.log('Multiple appointments accepted successfully');
         }),
         catchError((error) => {
@@ -506,7 +629,7 @@ export class ManageAppointmentsComponent implements OnInit {
       .pipe(
         switchMap(() => this.loadAppointments()),
         tap(() => {
-          this.resetSelection(); 
+          this.resetSelection();
           const rejectReasonModalInstance = Modal.getInstance(this.rejectReasonModal.nativeElement);
           rejectReasonModalInstance?.hide();
         }),
@@ -553,7 +676,7 @@ export class ManageAppointmentsComponent implements OnInit {
       .pipe(
         switchMap(() => this.loadAppointments()),
         tap(() => {
-          this.resetSelection(); 
+          this.resetSelection();
           const modal = Modal.getInstance(this.proposeTimeModal.nativeElement);
           modal?.hide();
         }),
@@ -567,6 +690,25 @@ export class ManageAppointmentsComponent implements OnInit {
 
   onModalClose(): void {
     this.isMultipleAction = false;
+  }
+
+  openChangTimingPopup() {
+    this.changeModalForm.reset();
+    this.changeModalForm.patchValue({ date: this.selectedDate?.toISOString().substring(0, 10) });
+    const modalInstance = new Modal(this.changeSlotModal.nativeElement);
+    modalInstance.show();
+  }
+
+  openConfirm(){
+    const modalInstance = new Modal(this.openConfirmModal.nativeElement);
+    modalInstance.show();
+  }
+
+  saveTimeChange() {
+    this.submitted = true;
+    this.changeModalForm.markAllAsTouched();
+    this.changeModalForm.updateValueAndValidity();
+    this.clinicSlots.clear();
   }
 }
 

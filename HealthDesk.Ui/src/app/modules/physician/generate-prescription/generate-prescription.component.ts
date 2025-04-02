@@ -244,9 +244,16 @@ export class GeneratePrescriptionComponent implements OnInit {
 
   calculateAge(dateOfBirth: string): number {
     const dob = new Date(dateOfBirth);
-    const diff = Date.now() - dob.getTime();
-    const ageDate = new Date(diff);
-    return Math.abs(ageDate.getUTCFullYear() - 1970);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDifference = today.getMonth() - dob.getMonth();
+
+    // Adjust age if the birthday hasn't occurred yet this year
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+
+    return age;
   }
 
 
@@ -377,31 +384,15 @@ export class GeneratePrescriptionComponent implements OnInit {
     // Add header and footer to the first page
     const formattedDate = formatDate(new Date().toISOString());
     // Add Date on top-right
+    doc.setFontSize(10);
+    doc.text(`Barcode: `, 14, headerHeight + 10);
     doc.text(`Date: ${formattedDate || '_________________'}`, pageWidth - 40, headerHeight + 10);
+    doc.text(`Patient\'s name: ${this.prescriptionForm.get('name')?.value || ''}`, 14, headerHeight + 17);
+    doc.text(`Age: ${this.calculateAge(this.patientRecord?.dateOfBirth) || ''}`, 14, headerHeight + 24);
+    doc.text(`Gender: ${this.prescriptionForm.get('gender')?.value || ''}`, 60, headerHeight + 24);
+    doc.text(`OPD Registration: ${''}`, 14, headerHeight + 31);
 
-    // General Details Table (Patient Information, Age, OPD)
-    const generalDetails = [
-      ['Patient\'s name', this.prescriptionForm.get('name')?.value || '', 'OPD registration', this.prescriptionForm.get('opd')?.value || ''],
-      ['Age', this.prescriptionForm.get('age')?.value || '', 'Gender', this.prescriptionForm.get('gender')?.value || '']
-    ];
-
-    let result = autoTable(doc, {
-      startY: startY,
-      theme: 'plain',
-      styles: {
-        font: 'Times',
-        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1, cellPadding: { top: 2, right: 5, bottom: 2, left: 5 }
-      },
-      columnStyles: {
-        0: { cellWidth: 30 },  // Column for 'Patient\'s name', 'Age', 'OPD registration'
-        1: { cellWidth: 61 }, // Column for patient name value and OPD value
-        2: { cellWidth: 30 },  // Column for 'Gender' (hardcoded text)
-        3: { cellWidth: 61 }   // Column for gender value (UI-provided)
-      },
-      body: generalDetails
-    });
-
-    startY = (doc as any).autoTable.previous.finalY + 5;
+    startY = headerHeight + 37;
 
     const complaintsArray = this.prescriptionForm.get('complaints') as FormArray;
 
@@ -415,9 +406,10 @@ export class GeneratePrescriptionComponent implements OnInit {
     }) || [['', '', '']];
 
     // Approximate table height
-    var approxHeight = (chiefComplaints.length * 10) + 6;
+    var approxHeight = (chiefComplaints.length * 10) + 10;
     // Check height for Chief Complaints table
     checkAndAddNewPage(approxHeight);
+    doc.setFontSize(10);
     doc.text('Chief Complaints:', 14, startY);
     startY += 2;
 
@@ -432,58 +424,27 @@ export class GeneratePrescriptionComponent implements OnInit {
       startY: startY,
       styles: {
         font: 'Times',
-        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
+        fontSize: 8, lineColor: [0, 0, 0], lineWidth: 0.1
       }
     });
-    startY = (doc as any).autoTable.previous.finalY + 5;
+    startY = (doc as any).autoTable.previous.finalY + 10;
+
+    checkAndAddNewPage(20);
+    doc.setFontSize(10);
+    doc.text('Vitals:', 14, startY + 5);
+    doc.text(`Pulse (per minute): ${this.prescriptionForm.get('pulseRate')?.value || ''}`, 50, startY);
+    doc.text(`Respiratory rate (per minute): ${this.prescriptionForm.get('respiratoryRate')?.value || ''}`, 50, startY + 5);
+    doc.text(`Blood pressure (mm Hg):  ${this.prescriptionForm.get('bloodPressure')?.value.bloodPressure || ''}`, 50, startY + 10);
+    doc.text(`Temperature: ${this.prescriptionForm.get('temperature')?.value || ''}`, 50, startY + 15);
 
 
-    const vitalsInfo = [
-      [`Pulse (per minute): ${this.prescriptionForm.get('pulseRate')?.value || ''}`, `Respiratory rate (per minute): ${this.prescriptionForm.get('respiratoryRate')?.value || ''}`],
-      [`Blood pressure (mm Hg): ${this.prescriptionForm.get('bloodPressure')?.value.bloodPressure || ''}`, `Temperature: ${this.prescriptionForm.get('temperature')?.value || ''}`]
-    ];
-
-    // Approximate height for vitals info
-    checkAndAddNewPage(27);
-    // Vitals Info Table
-    doc.text('Vitals:', 14, startY);
-    startY += 2;
-    autoTable(doc, {
-      startY: startY,
-      theme: 'plain',
-      styles: {
-        font: 'Times',
-        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
-      },
-      body: vitalsInfo
-    });
-    startY = (doc as any).autoTable.previous.finalY + 5;
-
-    // Local Examination Table
-    const localExamination = [
-      [`Local examination`, `${this.prescriptionForm.get('localExamination')?.value || ''}`],
-      [`Investigations`, this.prescriptionForm.get('finalInvestigations')?.value?.map((inv: any) => inv.name).join(', ') || ''],
-    ];
+    startY = startY + 25;
     checkAndAddNewPage(15);
-    doc.text('Local Examination:', 14, startY);
-    startY += 2;
-    // Approximate height
-    autoTable(doc, {
-      startY: startY,
-      theme: 'plain',
-      styles: {
-        font: 'Times',
-        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
-      },
-      columnStyles: {
-        0: { cellWidth: 30 },
-        1: { cellWidth: 152 }
-      },
-      body: localExamination
-    });
+    doc.setFontSize(10);
+    doc.text(`Local examination: ${this.prescriptionForm.get('localExamination')?.value || ''}`, 14, startY);
+    doc.text(`Investigations: ${this.prescriptionForm.get('finalInvestigations')?.value || ''}`, 14, startY + 7);
 
-    startY = (doc as any).autoTable.previous.finalY + 5;
-
+    startY = startY + 15;
     // Systemic Table
     const systemsArray = this.prescriptionForm.get('systems') as FormArray;
 
@@ -496,8 +457,9 @@ export class GeneratePrescriptionComponent implements OnInit {
       ];
     }) || [['', '', '']];
 
-    var approxHt = (systemicData.length * 10) + 6;
+    var approxHt = (systemicData.length * 10) + 10;
     checkAndAddNewPage(approxHt);
+    doc.setFontSize(10);
     doc.text('Physical Examination:', 14, startY);
     startY += 2;
     // Approximate height
@@ -511,27 +473,17 @@ export class GeneratePrescriptionComponent implements OnInit {
       },
       styles: {
         font: 'Times',
-        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
+        fontSize: 8, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       startY: startY
     });
 
-    startY = (doc as any).autoTable.previous.finalY + 5;
-    // Diagnosis Table
-    const diagnosisData = [
-      ['Provisional Diagnosis', `${this.prescriptionForm.get('pastHistory')?.value || ''}`]
-    ];
-    checkAndAddNewPage(15);
-    // Approximate height
-    autoTable(doc, {
-      body: diagnosisData,
-      styles: {
-        font: 'Times',
-        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
-      },
-      startY: startY
-    });
-    startY = (doc as any).autoTable.previous.finalY + 5;
+    startY = (doc as any).autoTable.previous.finalY + 7;
+    checkAndAddNewPage(10);
+    doc.setFontSize(10);
+    doc.text(`Provisional Diagnosis: ${this.prescriptionForm.get('pastHistory')?.value || ''}`, 14, startY);
+
+    startY = startY + 7;
     // Rx Details Table
     const rxArray = this.prescriptionForm.get('rx') as FormArray;
 
@@ -548,8 +500,9 @@ export class GeneratePrescriptionComponent implements OnInit {
       ];
     }) || [['', '', '', '', '', '', '', '']];
 
-    var approx = (rxData.length * 10) + 6;
+    var approx = (rxData.length * 10) + 10;
     checkAndAddNewPage(approx);
+    doc.setFontSize(10);
     doc.text('Prescription (Rx):', 14, startY);
     startY += 2;
     // Approximate height for Rx details
@@ -563,34 +516,26 @@ export class GeneratePrescriptionComponent implements OnInit {
       body: rxData,
       styles: {
         font: 'Times',
-        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
+        fontSize: 8, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       startY: startY
     });
-    startY = (doc as any).autoTable.previous.finalY + 5;
+    startY = (doc as any).autoTable.previous.finalY + 7;
+    checkAndAddNewPage(15);
+    doc.setFontSize(10);
 
-    // Other Instructions Table
-    const instructionsData = [
-      ['Other Instructions', this.prescriptionForm.get('otherInstructions')?.value || ''],
-      ['Next Follow-up', formatDate(this.prescriptionForm.get('nextFollowUp')?.value) || '']
-    ];
+    doc.text(`Other Instructions: ${this.prescriptionForm.get('otherInstructions')?.value || ''}`, 14, startY);
+    const nextFollowUpValue = this.prescriptionForm.get('nextFollowUp')?.value;
+    const date = new Date(nextFollowUpValue);
+
+    // Get day, month, and year with leading zeros if needed
+    const day = String(date.getDate()).padStart(2, '0') || '';
+    const month = String(date.getMonth() + 1).padStart(2, '0') || '';
+    const year = date.getFullYear() || '';
+    doc.text(`Next Follow-up: ${day}/${month}/${year}`, 14, startY + 5);
+    startY = startY + 15;
     checkAndAddNewPage(25);
-    // Approximate height
-    autoTable(doc, {
-      body: instructionsData,
-      startY: startY,
-      theme: 'plain',
-      columnStyles: {
-        0: { cellWidth: 30 }, // Hardcoded text
-        1: { cellWidth: 152 } // Value from UI
-      },
-      styles: {
-        font: 'Times',
-        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
-      }
-    });
-    startY = (doc as any).autoTable.previous.finalY + 5;
-    checkAndAddNewPage(35);
+    doc.setFontSize(10);
     // Physician Signature and Stamp Table
     const signatureData = [['Physician Signature', 'Stamp']];
     // Approximate height for signature section
@@ -612,10 +557,6 @@ export class GeneratePrescriptionComponent implements OnInit {
       },
       startY: startY
     });
-
-
-
-
 
     const pdfBlob = doc.output('blob');
     const illness = complaintsArray.controls
