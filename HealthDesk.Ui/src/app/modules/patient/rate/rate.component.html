@@ -31,15 +31,33 @@
       <div class="col-md-4">
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Search by Speciality</mat-label>
-          <input matInput placeholder="Speciality" formControlName="speciality">
+          <mat-select formControlName="speciality">
+            <!-- inline search box -->
+            <mat-option class="search-option" disableRipple>
+              <input matInput placeholder="Search…" [formControl]="specialityFilterCtrl" autocomplete="off" />
+            </mat-option>
+            <!-- filtered specialities -->
+            <mat-option *ngFor="let spec of filteredSpecialities | async" [value]="spec">
+              {{ spec }}
+            </mat-option>
+          </mat-select>
         </mat-form-field>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-2">
         <mat-form-field appearance="outline" class="w-100">
-          <mat-label>Timing</mat-label>
-          <input matInput [ngxMatTimepicker]="timePicker" formControlName="timing" placeholder="Timing (HH:mm)" />
-          <ngx-mat-timepicker-toggle [for]="timePicker" matSuffix></ngx-mat-timepicker-toggle>
-          <ngx-mat-timepicker #timePicker></ngx-mat-timepicker>
+          <mat-label>From Time</mat-label>
+          <input matInput [ngxMatTimepicker]="timePickerFrom" formControlName="from" placeholder="From (HH:mm)" />
+          <ngx-mat-timepicker-toggle [for]="timePickerFrom" matSuffix></ngx-mat-timepicker-toggle>
+          <ngx-mat-timepicker #timePickerFrom></ngx-mat-timepicker>
+        </mat-form-field>
+      </div>
+
+      <div class="col-md-2">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>To Time</mat-label>
+          <input matInput [ngxMatTimepicker]="timePickerTo" formControlName="to" placeholder="To (HH:mm)" />
+          <ngx-mat-timepicker-toggle [for]="timePickerTo" matSuffix></ngx-mat-timepicker-toggle>
+          <ngx-mat-timepicker #timePickerTo></ngx-mat-timepicker>
         </mat-form-field>
       </div>
     </div>

@@ -8,6 +8,7 @@ public class PharmaceuticalService : IPharmaceuticalService
 
     private readonly IPharmaceuticalRepository _pharmaceuticalRepository;
     private readonly IMessageService _messageService;
+    
     public PharmaceuticalService(IPharmaceuticalRepository pharmaceuticalRepository, IMessageService messageService)
     {
         _pharmaceuticalRepository = pharmaceuticalRepository;
@@ -20,29 +21,32 @@ public class PharmaceuticalService : IPharmaceuticalService
         return pharmaceutical.BrandLibrary.Select(bl => GenericMapper.Map<BrandLibrary, BrandLibraryDto>(bl));
     }
 
-    public async Task SaveBrandLibraryAsync(string pharmaceuticalId, BrandLibraryDto dto)
+    public async Task SaveBrandLibraryAsync(string pharmaceuticalId, List<BrandLibraryDto> dtos)
     {
         var pharmaceutical = await GetPharmaceuticalByIdAsync(pharmaceuticalId);
-
-        var brandLibrary = new BrandLibrary();
-        GenericMapper.Map(dto, brandLibrary);
-
-        if (string.IsNullOrEmpty(dto.Id))
+        foreach (var dto in dtos)
         {
-            // Add new BrandLibrary
-            pharmaceutical.BrandLibrary.Add(brandLibrary);
-        }
-        else
-        {
-            // Update existing BrandLibrary
-            var existing = pharmaceutical.BrandLibrary.FirstOrDefault(bl => bl.Id == dto.Id);
-            if (existing == null)
-                throw new ArgumentException("BrandLibrary not found.");
+            var brandLibrary = new BrandLibrary();
+            GenericMapper.Map(dto, brandLibrary);
 
-            GenericMapper.Map(dto, existing);
+            if (string.IsNullOrEmpty(dto.Id))
+            {
+                // Add new BrandLibrary
+                pharmaceutical.BrandLibrary.Add(brandLibrary);
+            }
+            else
+            {
+                // Update existing BrandLibrary
+                var existing = pharmaceutical.BrandLibrary.FirstOrDefault(bl => bl.Id == dto.Id);
+                if (existing == null)
+                    throw new ArgumentException("BrandLibrary not found.");
+
+                GenericMapper.Map(dto, existing);
+            }
+
+            await _pharmaceuticalRepository.UpdateAsync(pharmaceutical);
         }
 
-        await _pharmaceuticalRepository.UpdateAsync(pharmaceutical);
     }
 
     public async Task DeleteBrandLibraryAsync(string pharmaceuticalId, string brandLibraryId)
@@ -59,7 +63,7 @@ public class PharmaceuticalService : IPharmaceuticalService
 
     private async Task<Pharmaceutical> GetPharmaceuticalByIdAsync(string pharmaceuticalId)
     {
-        var pharmaceutical = await _pharmaceuticalRepository.GetByIdAsync(pharmaceuticalId);
+        var pharmaceutical = await _pharmaceuticalRepository.GetByDynamicPropertyAsync("UserId", pharmaceuticalId);
         if (pharmaceutical == null)
             throw new ArgumentException("Pharmaceutical not found.");
 

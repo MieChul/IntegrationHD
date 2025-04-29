@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
 import { AbstractControl, AbstractControlOptions, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import * as bootstrap from 'bootstrap';
 import { Router } from '@angular/router';
@@ -10,6 +10,7 @@ import { SortingService } from '../../../shared/services/sorting.service';
 import { FilteringService } from '../../../shared/services/filter.service';
 import { map, Observable, startWith } from 'rxjs';
 import { DatabaseService } from '../../../shared/services/database.service';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-hospital-management',
@@ -17,6 +18,8 @@ import { DatabaseService } from '../../../shared/services/database.service';
   styleUrl: './hospital-management.component.scss'
 })
 export class HospitalManagementComponent implements OnInit {
+  @ViewChild('serviceImportModal') serviceImportModal!: ElementRef;
+
   physicians: any[] = [];
   services: any[] = [];
   filteredPhysicians: any[] = [];
@@ -50,6 +53,10 @@ export class HospitalManagementComponent implements OnInit {
   filteredSuperSpecializations!: Observable<string[]>;
 
   days = ['Su', 'M', 'T', 'W', 'Th', 'F', 'S'];
+
+  serviceFileName = '';
+  serviceImportErrors: { row: number; errors: string[] }[] = [];
+  importedServices: Array<{ name: string; specification: string; comment?: string }> = [];
 
   constructor(private fb: FormBuilder,
     private router: Router,
@@ -106,7 +113,7 @@ export class HospitalManagementComponent implements OnInit {
     });
 
     this.serviceForm = this.fb.group({
-      id:[],
+      id: [],
       name: ['', [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,49}$/)]],
       specification: ['', [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,49}$/)]],
       comment: ['']
@@ -364,7 +371,7 @@ export class HospitalManagementComponent implements OnInit {
     const data = this.serviceForm.value;
 
     this.organizationService
-      .saveService(this.userData.id, data)
+      .saveService(this.userData.id, [data])
       .subscribe({
         next: (response) => {
           this.loadData();
@@ -428,7 +435,94 @@ export class HospitalManagementComponent implements OnInit {
   }
 
 
-  exportToExcel(): void {
+  openServiceImportDialog(): void {
+    this.serviceFileName = '';
+    this.serviceImportErrors = [];
+    this.importedServices = [];
+    const modal = new bootstrap.Modal(this.serviceImportModal.nativeElement);
+    modal.show();
+  }
+  
+  // when user picks a file
+  onServiceFileSelected(evt: Event) {
+    const input = evt.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const file = input.files[0];
+    this.serviceFileName = file.name;
+  
+    const reader = new FileReader();
+    reader.onload = () => {
+      const wb = XLSX.read(reader.result as ArrayBuffer, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const raw: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      this.processServiceRawRows(raw);
+    };
+    reader.readAsArrayBuffer(file);
+  }
+  
+  // validate header + rows
+  private processServiceRawRows(raw: any[][]) {
+    this.serviceImportErrors = [];
+    this.importedServices = [];
+  
+    if (!raw.length) {
+      this.serviceImportErrors.push({ row: 0, errors: ['Excel is empty'] });
+      return;
+    }
+  
+    const header = raw[0].map(h => (h || '').toString().trim());
+    const expected = ['Facility/Service', 'Specification', 'Comment'];
+    // require at least the first two columns
+    if (
+      header.length < 2 ||
+      header[0] !== expected[0] ||
+      header[1] !== expected[1]
+    ) {
+      this.serviceImportErrors.push({
+        row: 0,
+        errors: [`Header must start with: ${expected[0]}, ${expected[1]}, [${expected[2]}]`]
+      });
+      return;
+    }
+  
+    raw.slice(1).forEach((row, idx) => {
+      const rowNum = idx + 2;
+      const svc = {
+        name: row[0].toString().trim(),
+        specification: row[1].toString().trim(),
+        comment: row[2]?.toString().trim() ?? ''
+      };
+      const errs: string[] = [];
+      // same patterns as your form validators
+      if (!svc.name) errs.push('name is required');
+      else if (!/^[a-zA-Z][a-zA-Z \'-]{1,49}$/.test(svc.name))
+        errs.push('name must start with a letter and be 2–50 chars');
+  
+      if (!svc.specification) errs.push('specification is required');
+      else if (!/^[a-zA-Z][a-zA-Z \'-]{1,49}$/.test(svc.specification))
+        errs.push('specification must start with a letter and be 2–50 chars');
+  
+      if (errs.length) {
+        this.serviceImportErrors.push({ row: rowNum, errors: errs });
+      } else {
+        this.importedServices.push(svc);
+      }
+    });
+  }
+  
 
+  submitServiceImport(): void {
+    if (this.serviceImportErrors.length || !this.importedServices.length) return;
+    if (!this.userData?.id) return;
+  
+    this.organizationService
+      .saveService(this.userData.id, this.importedServices)
+      .subscribe({
+        next: () => {
+          this.loadData();
+          bootstrap.Modal.getInstance(this.serviceImportModal.nativeElement)!.hide();
+        },
+        error: (err) => console.error('Error importing services:', err)
+      });
   }
 }

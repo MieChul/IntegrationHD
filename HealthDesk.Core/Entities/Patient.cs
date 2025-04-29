@@ -59,6 +59,9 @@ public class MedicalHistory : BaseEntity
 
     [BsonElement("end_date")]
     public DateTime? End { get; set; }
+
+    [BsonElement("price")]
+    public decimal? Price { get; set; }
 }
 
 public class Treatment : BaseEntity
@@ -86,6 +89,9 @@ public class Treatment : BaseEntity
 
     [BsonElement("comment")]
     public string? Comment { get; set; }
+
+    [BsonElement("price")]
+    public decimal? Price { get; set; }
 }
 
 public class Appointment : BaseEntity
@@ -148,7 +154,7 @@ public class Meal : BaseEntity
     public string Food { get; set; } = string.Empty;
 
     [BsonElement("quantity")]
-    public int Quantity { get; set; } 
+    public int Quantity { get; set; }
 
     [BsonElement("calories")]
     public int Calories { get; set; } // Added to store calculated calories
@@ -185,6 +191,9 @@ public class SelfRecord : BaseEntity
 
     [BsonElement("unit")]
     public string Unit { get; set; }
+
+    [BsonElement("time")]
+    public string Time { get; set; }
 }
 
 public class Symptom : BaseEntity
@@ -231,6 +240,9 @@ public class LabInvestigation : BaseEntity
 
     [BsonElement("unit")]
     public string Unit { get; set; }
+
+    [BsonElement("price")]
+    public decimal? Price { get; set; }
 }
 
 public class Immunization : BaseEntity
@@ -253,6 +265,9 @@ public class Immunization : BaseEntity
 
     [BsonElement("details")]
     public string Details { get; set; }
+
+    [BsonElement("price")]
+    public decimal? Price { get; set; }
 }
 
 public class HomeRemedy : BaseEntity
@@ -337,6 +352,9 @@ public class Report : BaseEntity
 
     [BsonElement("report_url")]
     public string ReportUrl { get; set; }
+
+    [BsonElement("price")]
+    public decimal? Price { get; set; }
 }
 
 

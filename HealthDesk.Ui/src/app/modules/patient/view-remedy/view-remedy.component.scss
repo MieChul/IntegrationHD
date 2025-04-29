@@ -1,0 +1,17 @@
+/* view-remedy.component.scss */
+
+.carousel-fixed-size {
+    max-width: 600px;        /* or whatever width you want */
+    margin: 0 auto;          /* center horizontally */
+    
+    .carousel-inner,
+    .carousel-item {
+      height: 300px;         /* fixed carousel height */
+    }
+  
+    img {
+      height: 100%;          /* fill the 300px height */
+      object-fit: cover;     /* crop/scale nicely */
+    }
+  }
+  

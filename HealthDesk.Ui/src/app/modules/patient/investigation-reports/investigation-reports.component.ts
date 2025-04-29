@@ -70,7 +70,11 @@ export class InvestigationReportsComponent implements OnInit {
       typeOfAssessment: this.fb.control('', Validators.required),
       assessmentParameters: this.fb.control('', Validators.required),
       results: [''],
-      comment: ['']
+      comment: [''],
+        price: this.fb.control('', [
+          Validators.required,
+          Validators.pattern(/^\d+(\.\d{1,2})?$/)  // ➡️ positive decimal, max 2 decimal places
+        ])
     });
 
     this.filterForm = this.fb.group(

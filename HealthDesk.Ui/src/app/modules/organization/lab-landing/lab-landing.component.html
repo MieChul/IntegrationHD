@@ -13,7 +13,7 @@
     </div>
     <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
       <button class="btn btn-primary" (click)="openTestDialog(false,null)">Add Laboratory Test</button>
-      <button class="btn btn-success m-1">Export to Excel</button>
+      <button class="btn btn-success m-1" (click)="openImportDialog()">Import</button>
     </div>
   </div>
 
@@ -135,6 +135,52 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="saveTest()">
           {{ isEditTest ? 'Save Changes' : 'Add Laboratory Test' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Import Excel Modal -->
+<div class="modal fade" data-bs-backdrop="static" tabindex="-1" #importModal>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Import Laboratory Tests</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Select Excel File</label>
+          <input type="file" accept=".xlsx,.xls" class="form-control"
+                 (change)="onFileSelected($event)" />
+          <small *ngIf="fileName" class="form-text text-muted">
+            {{fileName}}
+          </small>
+        </div>
+
+        <div *ngIf="importErrors.length" class="alert alert-danger">
+          <strong>Validation Errors:</strong>
+          <ul>
+            <li *ngFor="let e of importErrors">
+              Row {{e.row}}: {{e.errors.join('; ')}}
+            </li>
+          </ul>
+        </div>
+
+        <div *ngIf="!importErrors.length && importedTests.length">
+          <p class="text-success">
+            {{importedTests.length}} rows ready to import.
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary"
+                data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary"
+                [disabled]="!importedTests.length || importErrors.length"
+                (click)="submitImport()">
+          Import
         </button>
       </div>
     </div>

@@ -49,7 +49,8 @@ public class HospitalService : IHospitalService
                 IsActive = p.IsActive
             };
             physicians.Add(physician);
-        };
+        }
+        ;
 
         return physicians;
     }
@@ -124,29 +125,32 @@ public class HospitalService : IHospitalService
     }
 
     // 5. Save or update a service
-    public async Task SaveServiceAsync(string id, ServiceDto dto)
+    public async Task SaveServiceAsync(string id, List<ServiceDto> dtos)
     {
         var hospital = await GetHospitalByIdAsync(id);
-
-        var service = new Service();
-        GenericMapper.Map(dto, service);
-
-        if (string.IsNullOrEmpty(dto.Id))
+        foreach (var dto in dtos)
         {
-            // Add a new service
-            hospital.Services.Add(service);
-        }
-        else
-        {
-            // Update an existing service
-            var existingService = hospital.Services.FirstOrDefault(s => s.Id == dto.Id);
-            if (existingService == null)
-                throw new ArgumentException("Service not found.");
+            var service = new Service();
+            GenericMapper.Map(dto, service);
 
-            GenericMapper.Map(dto, existingService);
+            if (string.IsNullOrEmpty(dto.Id))
+            {
+                // Add a new service
+                hospital.Services.Add(service);
+            }
+            else
+            {
+                // Update an existing service
+                var existingService = hospital.Services.FirstOrDefault(s => s.Id == dto.Id);
+                if (existingService == null)
+                    throw new ArgumentException("Service not found.");
+
+                GenericMapper.Map(dto, existingService);
+            }
+
+            await _hospitalRepository.UpdateAsync(hospital);
         }
 
-        await _hospitalRepository.UpdateAsync(hospital);
     }
 
     // 6. Delete a service

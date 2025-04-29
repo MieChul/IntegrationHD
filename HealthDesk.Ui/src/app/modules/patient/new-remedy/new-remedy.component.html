@@ -64,16 +64,16 @@
       </div>
     </div>
 
-    <!-- Remedy Name -->
+    <!-- Home Remedy Name -->
     <mat-form-field appearance="outline" class="w-100 mb-3">
-      <mat-label>Remedy Name</mat-label>
-      <input matInput formControlName="name" placeholder="Remedy Name" required>
-      <mat-error *ngIf="remedyForm.get('name')?.hasError('required')">Remedy Name is required.</mat-error>
+      <mat-label>Home Remedy Name</mat-label>
+      <input matInput formControlName="name" placeholder="Home Remedy Name" required>
+      <mat-error *ngIf="remedyForm.get('name')?.hasError('required')">Home Remedy Name is required.</mat-error>
     </mat-form-field>
 
-    <!-- Remedy For (Disease or Condition) -->
+    <!-- Home Remedy For (Disease or Condition) -->
     <mat-form-field appearance="outline" class="w-100 mb-3">
-      <mat-label>Remedy For</mat-label>
+      <mat-label>Home Remedy For</mat-label>
       <input matInput formControlName="remedyFor" placeholder="e.g. Cold, Cough, Headache" required>
       <mat-error *ngIf="remedyForm.get('remedyFor')?.hasError('required')">This field is required.</mat-error>
     </mat-form-field>
@@ -134,6 +134,6 @@
     </mat-form-field>
 
     <!-- Submit Button -->
-    <button type="submit" class="btn btn-primary w-100" [disabled]="!remedyForm.valid">Submit Remedy</button>
+    <button type="submit" class="btn btn-primary w-100" [disabled]="!remedyForm.valid">Submit Home Remedy</button>
   </form>
 </div>

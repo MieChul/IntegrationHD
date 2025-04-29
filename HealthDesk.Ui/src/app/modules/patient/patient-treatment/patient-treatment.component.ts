@@ -99,7 +99,11 @@ export class PatientTreatmentComponent implements OnInit {
           this.futureDateValidator
         ]),
         endDate: this.fb.control('', this.futureDateValidator),
-        comment: this.fb.control('', Validators.maxLength(100)) // Added maxLength validation for comments
+        comment: this.fb.control('', Validators.maxLength(100)),
+        price: this.fb.control('', [
+          Validators.required,
+          Validators.pattern(/^\d+(\.\d{1,2})?$/)  // ➡️ positive decimal, max 2 decimal places
+        ])// Added maxLength validation for comments
       },
       { validators: this.dateRangeValidator, updateOn: 'change' }
     );

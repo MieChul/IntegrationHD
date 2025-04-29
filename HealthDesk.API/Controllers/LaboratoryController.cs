@@ -38,12 +38,12 @@ namespace HealthDesk.API.Controllers
         }
 
         [HttpPost("{id}/lab-tests")]
-        public async Task<IActionResult> SaveLabTest(string id, [FromBody] LabTestDto dto)
+        public async Task<IActionResult> SaveLabTest(string id, [FromBody] List<LabTestDto> dtos)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new { Success = false, Message = "Invalid input.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
 
-            await _laboratoryService.SaveLabTestAsync(id, dto);
+            await _laboratoryService.SaveLabTestAsync(id, dtos);
             return Ok(new { Success = true, Message = "Lab test saved successfully." });
         }
 

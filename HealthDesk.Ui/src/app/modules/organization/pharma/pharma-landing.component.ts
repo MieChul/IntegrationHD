@@ -2,382 +2,242 @@ import {
   Component,
   OnInit,
   ViewChild,
-  TemplateRef,
-  AfterViewInit
+  ElementRef
 } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { Modal } from 'bootstrap';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AccountService } from '../../services/account.service';
+import { OrganizationService } from '../../services/organization.service';
+import { SortingService } from '../../../shared/services/sorting.service';
+import { FilteringService } from '../../../shared/services/filter.service';
+import * as bootstrap from 'bootstrap';
 import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
-
-interface Product {
-  brandName: string;
-  genericName: string;
-  drugClass: string;
-  dosageForm: string;
-  strength: string;
-  packShot: string;
-  approvalAgency: string;
-  comment: string;
-}
-interface Brand {
-  brandOwner: string;
-  brandName: string;
-  genericName: string;
-  drugClass: string;
-  dosageForm: string;
-  strength: string;
-  price: number;
-  discount: number;
-  comment: string;
-}
-
 
 @Component({
-  selector: 'app-pharma',
+  selector: 'app-pharma-landing',
   templateUrl: './pharma-landing.component.html',
   styleUrls: ['./pharma-landing.component.scss']
 })
-export class PharmaLandingComponent implements OnInit, AfterViewInit {
-  @ViewChild('productModal') productModal!: any;
+export class PharmaLandingComponent implements OnInit {
+  @ViewChild('brandModal') brandModal!: ElementRef;
+  @ViewChild('brandImportModal') brandImportModal!: ElementRef;
 
-  selectedTab: string = 'productList';
+  brands: any[] = [];
+  filteredBrands: any[] = [];
+  brandSearchText: string = '';
 
-  // Data arrays
-  products: Product[] = [];
-
-  // Filtered arrays for display
-  filteredProducts: Product[] = [];
-
-
-  // Search texts
-  productSearchText: string = '';
-
-  // Forms
-  productForm!: FormGroup;
-
-  // Modal references
-  productModalRef!: NgbModalRef;
-
-
-  // Flags
-  isEditProduct: boolean = false;
-
-  isOtherProductBrand: boolean = false;
-
-  // Dropdown options
-  brands: Brand[] = [];
-  brandNames: string[] = []; // Populated from brands array
-  brandOwners: string[] = ['Cipla', 'Sun Pharma', 'Dr. Reddy\'s', 'Lupin', 'Aurobindo Pharma'];
-  drugClasses: string[] = ['Antipyretic', 'Analgesic', 'Antibiotic', 'Antacid', 'Antihypertensive'];
-  dosageForms: string[] = ['Tablet', 'Capsule', 'Syrup', 'Injection', 'Ointment'];
-  approvalAgencies: string[] = ['CDSCO', 'FDA', 'EMA'];
-
-  // Pack Shot file
+  brandForm!: FormGroup;
+  isEditBrand = false;
   selectedPackShotFile: File | null = null;
 
-  constructor(private fb: FormBuilder, private modalService: NgbModal) {}
+  drugClasses = ['Antipyretic', 'Analgesic', 'Antibiotic', 'Antacid', 'Antihypertensive'];
+  dosageForms = ['Tablet', 'Capsule', 'Syrup', 'Injection', 'Ointment'];
+  approvalAgencies = ['CDSCO', 'FDA', 'EMA'];
+
+  userData: any;
+  brandFileName = '';
+  importedBrands: any[] = [];
+  importErrors: { row: number; errors: string[] }[] = [];
+
+  constructor(
+    private fb: FormBuilder,
+    private accountService: AccountService,
+    private organizationService: OrganizationService,
+    private filteringService: FilteringService,
+    private sortingService: SortingService
+  ) { }
 
   ngOnInit(): void {
-    this.initForms();
-    this.loadInitialData();
+    this.initForm();
+    this.accountService.getUserData().subscribe({
+      next: data => {
+        this.userData = data;
+        if (data.status === 'Approved') {
+          this.loadBrands();
+        } else {
+          // redirect to account or show a message
+        }
+      },
+      error: err => console.error(err)
+    });
   }
 
-  ngAfterViewInit(): void {
-    this.filterProducts();
-  }
-
-  initForms(): void {
-    this.productForm = this.fb.group({
-      brandName: [''],
-      otherBrandName: [''],
-      genericName: [''],
-      drugClass: [''],
-      dosageForm: [''],
-      strength: [''],
+  initForm() {
+    this.brandForm = this.fb.group({
+      brandName: ['', Validators.required],
+      genericName: ['', Validators.required],
+      drugClass: ['', Validators.required],
+      dosageForm: ['', Validators.required],
+      strength: ['', Validators.required],
       packShot: [''],
-      approvalAgency: [''],
+      approvalAgency: ['', Validators.required],
       comment: ['']
     });
   }
 
-  loadInitialData(): void {
-    this.brands = [
-      {
-        brandOwner: 'Cipla',
-        brandName: 'Cipmol Paracetamol',
-        genericName: 'Paracetamol',
-        drugClass: 'Antipyretic',
-        dosageForm: 'Tablet',
-        strength: '500 mg',
-        price: 20,
-        discount: 5,
-        comment: 'Commonly used for fever'
+  loadBrands() {
+    this.organizationService.getAllBrandLibraries(this.userData.id).subscribe({
+      next: (res: any) => {
+        this.brands = this.sortingService.sort(res.data, 'brandName', 'asc');
+        this.filteredBrands = [...this.brands];
       },
-      {
-        brandOwner: 'Sun Pharma',
-        brandName: 'Volini Gel',
-        genericName: 'Diclofenac',
-        drugClass: 'Analgesic',
-        dosageForm: 'Ointment',
-        strength: '1% w/w',
-        price: 100,
-        discount: 10,
-        comment: 'Topical pain relief'
-      },
-      {
-        brandOwner: 'Dr. Reddy\'s',
-        brandName: 'Omez',
-        genericName: 'Omeprazole',
-        drugClass: 'Antacid',
-        dosageForm: 'Capsule',
-        strength: '20 mg',
-        price: 50,
-        discount: 8,
-        comment: 'Used for acidity'
-      },
-      {
-        brandOwner: 'Lupin',
-        brandName: 'Hypertensionex',
-        genericName: 'Amlodipine',
-        drugClass: 'Antihypertensive',
-        dosageForm: 'Tablet',
-        strength: '5 mg',
-        price: 30,
-        discount: 7,
-        comment: 'Controls high blood pressure'
-      },
-      {
-        brandOwner: 'Aurobindo Pharma',
-        brandName: 'Azithrocin',
-        genericName: 'Azithromycin',
-        drugClass: 'Antibiotic',
-        dosageForm: 'Tablet',
-        strength: '500 mg',
-        price: 120,
-        discount: 12,
-        comment: 'Antibiotic for infections'
-      },
-      {
-        brandOwner: 'Cipla',
-        brandName: 'Cetrizine',
-        genericName: 'Cetirizine',
-        drugClass: 'Antihistamine',
-        dosageForm: 'Tablet',
-        strength: '10 mg',
-        price: 15,
-        discount: 5,
-        comment: 'Used for allergies'
-      }
-    ];
-    // Populate products with some dummy data
-    this.products = [
-      {
-        brandName: 'Cipmol Paracetamol',
-        genericName: 'Paracetamol',
-        drugClass: 'Antipyretic',
-        dosageForm: 'Tablet',
-        strength: '500 mg',
-        packShot: '',
-        approvalAgency: 'CDSCO',
-        comment: 'Effective for fever'
-      },
-      {
-        brandName: 'Volini Gel',
-        genericName: 'Diclofenac',
-        drugClass: 'Analgesic',
-        dosageForm: 'Ointment',
-        strength: '1% w/w',
-        packShot: '',
-        approvalAgency: 'CDSCO',
-        comment: 'Quick relief from pain'
-      },
-      {
-        brandName: 'Omez',
-        genericName: 'Omeprazole',
-        drugClass: 'Antacid',
-        dosageForm: 'Capsule',
-        strength: '20 mg',
-        packShot: '',
-        approvalAgency: 'CDSCO',
-        comment: 'Reduces stomach acid'
-      }
-    ];
-
-    // Filter the data to initialize filtered arrays
-    this.filterProducts();
+      error: err => console.error('Error loading brands', err)
+    });
   }
 
+  applyFilter() {
+    if (this.brandSearchText) {
+      this.filteredBrands = this.filteringService.filter(this.brands, {
+        brandName: this.brandSearchText
+      });
+    } else {
+      this.filteredBrands = [...this.brands];
+    }
+  }
 
-  openProductDialog(product?: Product): void {
-    this.isEditProduct = !!product;
-    this.isOtherProductBrand = false;
-    this.productForm.reset();
+  sortTable(col: string) {
+    this.filteredBrands = this.sortingService.sort(this.filteredBrands, col, 'asc');
+  }
+
+  openBrandDialog(edit: boolean, brand?: any) {
+    this.isEditBrand = edit;
+    this.brandForm.reset();
     this.selectedPackShotFile = null;
 
-    if (product) {
-      this.productForm.patchValue(product);
-      if (!this.brandNames.includes(product.brandName)) {
-        this.isOtherProductBrand = true;
-        this.productForm.patchValue({
-          brandName: 'Other',
-          otherBrandName: product.brandName
-        });
-      }
+    if (edit && brand) {
+      this.brandForm.patchValue(brand);
     }
 
-    const modal = new Modal(this.productModal.nativeElement);
+    const modal = new bootstrap.Modal(this.brandModal.nativeElement);
     modal.show();
-    
   }
 
-  closeProductDialog(): void {
-    const modal = Modal.getInstance(this.productModal.nativeElement);
-    if (modal) {
-      modal.hide();
-    }
+  onPackShotChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.selectedPackShotFile = input.files?.[0] ?? null;
   }
 
-  onProductBrandNameChange(): void {
-    const selectedBrand = this.productForm.get('brandName')!.value;
-    this.isOtherProductBrand = selectedBrand === 'Other';
+  saveBrand() {
+    if (this.brandForm.invalid) return;
 
-    if (!this.isOtherProductBrand && selectedBrand) {
-      // Auto-populate fields from Brand Details
-      const brandDetails = this.brands.find(
-        brand => brand.brandName === selectedBrand
-      );
-      if (brandDetails) {
-        this.productForm.patchValue({
-          genericName: brandDetails.genericName,
-          drugClass: brandDetails.drugClass,
-          dosageForm: brandDetails.dosageForm,
-          strength: brandDetails.strength
-        });
-      }
-    } else {
-      this.productForm.patchValue({
-        genericName: '',
-        drugClass: '',
-        dosageForm: '',
-        strength: ''
-      });
-    }
-  }
-
-  onPackShotChange(event: any): void {
-    this.selectedPackShotFile = event.target.files[0];
-  }
-
-  saveProduct(): void {
-    const formValues = this.productForm.value;
-    const brandName = this.isOtherProductBrand
-      ? formValues.otherBrandName
-      : formValues.brandName;
-
-    const product: Product = {
-      brandName: brandName,
-      genericName: formValues.genericName,
-      drugClass: formValues.drugClass,
-      dosageForm: formValues.dosageForm,
-      strength: formValues.strength,
+    const payload = {
+      ...this.brandForm.value,
       packShot: this.selectedPackShotFile
         ? URL.createObjectURL(this.selectedPackShotFile)
-        : '',
-      approvalAgency: formValues.approvalAgency,
-      comment: formValues.comment
+        : ''
     };
+    // wrap in array to match API
+    this.organizationService
+      .saveBrandLibrary(this.userData.id, [payload])
+      .subscribe({
+        next: () => this.loadBrands(),
+        error: err => console.error('Save failed', err)
+      });
+  }
 
-    if (this.isEditProduct) {
-      const index = this.products.findIndex(
-        p => p.brandName === product.brandName
-      );
-      if (index !== -1) {
-        this.products[index] = product;
-      }
-    } else {
-      this.products.push(product);
+  deleteBrand(brand: any) {
+    this.organizationService
+      .deleteBrandLibrary(this.userData.id, brand.brandName)
+      .subscribe({
+        next: () => this.loadBrands(),
+        error: err => console.error('Delete failed', err)
+      });
+  }
 
-      if (
-        this.isOtherProductBrand &&
-        !this.brandNames.includes(product.brandName)
-      ) {
-        this.brandNames.push(product.brandName);
-      }
+  viewPackShot(url: string) {
+    window.open(url, '_blank');
+  }
+
+  openBrandImportDialog(): void {
+    this.brandFileName = '';
+    this.importedBrands = [];
+    this.importErrors = [];
+
+    const modal = new bootstrap.Modal(this.brandImportModal.nativeElement);
+    modal.show();
+  }
+  onBrandFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const file = input.files[0];
+    this.brandFileName = file.name;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const wb = XLSX.read(reader.result as ArrayBuffer, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+      this.processBrandRows(rows);
+    };
+    reader.readAsArrayBuffer(file);
+  }
+  private processBrandRows(rows: any[][]): void {
+    this.importErrors = [];
+    this.importedBrands = [];
+
+    if (!rows.length) {
+      this.importErrors.push({ row: 0, errors: ['Excel is empty'] });
+      return;
     }
 
-    this.filterProducts();
-    this.closeProductDialog();
-  }
-
-  deleteProduct(product: Product): void {
-    if (confirm('Are you sure you want to delete this product?')) {
-      this.products = this.products.filter(p => p !== product);
-      this.filterProducts();
-    }
-  }
-
-  filterProducts(): void {
-    if (this.productSearchText) {
-      this.filteredProducts = this.products.filter(p =>
-        p.brandName
-          .toLowerCase()
-          .includes(this.productSearchText.toLowerCase())
-      );
-    } else {
-      this.filteredProducts = [...this.products];
-    }
-  }
-
-  viewPackShot(packShotUrl: string): void {
-    window.open(packShotUrl, '_blank');
-  }
-
-  sortProductTable(column: keyof Product): void {
-    //Implement sorting logic for products
-    this.filteredProducts.sort((a, b) =>
-      a[column] > b[column] ? 1 : -1
-    );
-  }
-
-  exportToExcel(): void {
-    // Define the headers matching the HTML table
-    const headers = [
-      'Brand Name',
-      'Generic Name',
-      'Drug Class',
-      'Dosage Form',
-      'Strength',
-      'Pack Shot',
-      'Approval Agency',
-      'Comment'
+    const expectedHeader = [
+      'Brand Name', 'Generic Name', 'Drug Class', 'Dosage Form',
+      'Strength', 'Pack Shot', 'Approval Agency', 'Comment'
     ];
-  
-    // Map the data to include headers
-    const dataToExport = this.filteredProducts.map(product => ({
-      'Brand Name': product.brandName,
-      'Generic Name': product.genericName,
-      'Drug Class': product.drugClass,
-      'Dosage Form': product.dosageForm,
-      'Strength': product.strength,
-      'Pack Shot': product.packShot ? 'View Available' : 'Not Available',
-      'Approval Agency': product.approvalAgency,
-      'Comment': product.comment
-    }));
-  
-    // Add headers as the first row
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport, { header: headers });
-  
-    // Create a new workbook and append the worksheet
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Brand Library');
-  
-    // Write workbook to an Excel file
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-  
-    // Save the file
-    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-    saveAs(blob, `Brand_Library_${new Date().toISOString()}.xlsx`);
-  }  
+
+    const header = rows[0].map(h => (h || '').toString().trim());
+
+    if (expectedHeader.some((h, i) => h !== header[i])) {
+      this.importErrors.push({
+        row: 0,
+        errors: [`Header must be exactly: ${expectedHeader.join(', ')}`]
+      });
+      return;
+    }
+
+    rows.slice(1).forEach((row, idx) => {
+      const rowNum = idx + 2;
+      const brand = {
+        brandName: row[0]?.toString().trim(),
+        genericName: row[1]?.toString().trim(),
+        drugClass: row[2]?.toString().trim(),
+        dosageForm: row[3]?.toString().trim(),
+        strength: row[4]?.toString().trim(),
+        packShot: row[5]?.toString().trim(),
+        approvalAgency: row[6]?.toString().trim(),
+        comment: row[7]?.toString().trim() || ''
+      };
+
+      const errors: string[] = [];
+
+      if (!brand.brandName) errors.push('brandName is required');
+      if (!brand.genericName) errors.push('genericName is required');
+      if (!brand.drugClass) errors.push('drugClass is required');
+      if (!brand.dosageForm) errors.push('dosageForm is required');
+      if (!brand.strength) errors.push('strength is required');
+      if (!brand.approvalAgency) errors.push('approvalAgency is required');
+
+      if (errors.length) {
+        this.importErrors.push({ row: rowNum, errors });
+      } else {
+        this.importedBrands.push(brand);
+      }
+    });
+  }
+
+  submitBrandImport(): void {
+    if (!this.userData?.id || this.importErrors.length || !this.importedBrands.length) return;
+
+    this.organizationService.saveBrandLibrary(this.userData.id, this.importedBrands)
+      .subscribe({
+        next: () => {
+          this.loadBrands();
+          bootstrap.Modal.getInstance(this.brandImportModal.nativeElement)?.hide();
+        },
+        error: (err) => console.error('Import failed', err)
+      });
+  }
+
+
 }

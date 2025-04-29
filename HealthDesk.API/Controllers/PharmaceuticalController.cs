@@ -26,12 +26,12 @@ namespace HealthDesk.API.Controllers
         }
 
         [HttpPost("{pharmaceuticalId}/brand-library")]
-        public async Task<IActionResult> SaveBrandLibrary(string pharmaceuticalId, [FromBody] BrandLibraryDto dto)
+        public async Task<IActionResult> SaveBrandLibrary(string pharmaceuticalId, [FromBody] List<BrandLibraryDto> dtos)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new { Success = false, Message = "Invalid input.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
 
-            await _pharmaceuticalService.SaveBrandLibraryAsync(pharmaceuticalId, dto);
+            await _pharmaceuticalService.SaveBrandLibraryAsync(pharmaceuticalId, dtos);
             return Ok(new { Success = true, Message = "Brand library saved successfully." });
         }
 

@@ -149,4 +149,12 @@ export class HeaderComponent implements OnInit {
       }
     });
   }
+
+  navigateToUsers(){
+    return `/admin/`;
+  }
+
+  navigateToBrands(){
+    return `/admin/brands`;
+  }
 }

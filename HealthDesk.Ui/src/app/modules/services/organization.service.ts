@@ -23,8 +23,11 @@ export class OrganizationService {
     return this.http.get<any>(`${this.apiUrl}/laboratory/${id}/lab-tests/${labTestId}`);
   }
 
-  saveLabTest(id: string, labTest: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/laboratory/${id}/lab-tests`, labTest);
+  saveLabTest(id: string, labTests: any): Observable<{ success: boolean; message: string }> {
+    return this.http.post<{ success: boolean; message: string }>(
+      `${this.apiUrl}/laboratory/${id}/lab-tests`,
+      labTests
+    );
   }
 
   deleteLabTest(id: string, labTestId: string): Observable<any> {
@@ -77,15 +80,15 @@ export class OrganizationService {
   }
 
   getAllBrandLibraries(pharmaceuticalId: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${pharmaceuticalId}/brand-library`);
+    return this.http.get<any[]>(`${this.apiUrl}/pharmaceutical/${pharmaceuticalId}/brand-library`);
   }
 
   saveBrandLibrary(pharmaceuticalId: string, brandLibrary: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${pharmaceuticalId}/brand-library`, brandLibrary);
+    return this.http.post(`${this.apiUrl}/pharmaceutical/${pharmaceuticalId}/brand-library`, brandLibrary);
   }
 
   deleteBrandLibrary(pharmaceuticalId: string, brandLibraryId: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${pharmaceuticalId}/brand-library/${brandLibraryId}`);
+    return this.http.delete(`${this.apiUrl}/pharmaceutical/${pharmaceuticalId}/brand-library/${brandLibraryId}`);
   }
 
   getSurveysmain(pharmaId: string): Observable<any[]> {

@@ -18,9 +18,22 @@ public class Pharmaceutical : BaseEntity
 
 public class BrandLibrary : BaseEntity
 {
-    [BsonElement("brand_id")]
-    [BsonRepresentation(BsonType.ObjectId)]
-    public string BrandId { get; set; } // Reference from Pharmacy
+
+    [BsonElement("brand_name")]
+    public string BrandName { get; set; }
+
+    [BsonElement("generic_name")]
+    public string GenericName { get; set; }
+
+    [BsonElement("drug_class")]
+    public string DrugClass { get; set; }
+
+    [BsonElement("dosage_form")]
+    public string DosageForm { get; set; }
+
+    [BsonElement("strength")]
+    public string Strength { get; set; }
+
 
     [BsonElement("packshot_url")]
     public string PackShotUrl { get; set; }

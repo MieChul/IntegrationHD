@@ -30,11 +30,12 @@ public class PharmacyService : IPharmacyService
         return GenericMapper.Map<Medicine, MedicineDto>(medicine);
     }
 
-    public async Task SaveMedicineAsync(string id, MedicineDto dto)
+    public async Task SaveMedicineAsync(string id, List<MedicineDto> dtos)
     {
         var pharmacy = await GetPharmacyByUserIdAsync(id);
-
-        var medicine = new Medicine();
+foreach(var dto in dtos)
+{
+ var medicine = new Medicine();
         GenericMapper.Map(dto, medicine);
 
         if (string.IsNullOrEmpty(dto.Id))
@@ -53,6 +54,8 @@ public class PharmacyService : IPharmacyService
         }
 
         await _pharmacyRepository.UpdateAsync(pharmacy);
+}
+       
     }
 
     public async Task DeleteMedicineAsync(string id, string medicineId)

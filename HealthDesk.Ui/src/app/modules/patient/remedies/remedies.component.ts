@@ -42,6 +42,7 @@ export class RemediesComponent implements OnInit, AfterViewInit {
   newPreference: string = '';
   preferences: string[] = [];
   ailments: any;
+  selectedPreferences : string[] =[];
 
   // Sub-tab control for the Others Remedies tab
   activeSubTab: string = 'home';
@@ -318,6 +319,12 @@ export class RemediesComponent implements OnInit, AfterViewInit {
       this.recommendedRemedies = this.otherRemedies.filter(remedy =>
         remedy.remedyFor.toLowerCase() === this.searchValue.toLowerCase()
       );
+      this.latestRemedies = this.latestRemedies.filter(remedy =>
+        remedy.remedyFor.toLowerCase() === this.searchValue.toLowerCase()
+      );
+      this.trendingRemedies = this.trendingRemedies.filter(remedy =>
+        remedy.remedyFor.toLowerCase() === this.searchValue.toLowerCase()
+      );
     }
 
     // Latest: top 6 sorted by descending id.
@@ -342,5 +349,9 @@ export class RemediesComponent implements OnInit, AfterViewInit {
 
   viewCase(caseId: number): void {
     this.router.navigate(['/patient/view-remedy', caseId]);
+  }
+
+  savePreferences(): void {
+    this.preferences= [...new Set(this.selectedPreferences)];
   }
 }

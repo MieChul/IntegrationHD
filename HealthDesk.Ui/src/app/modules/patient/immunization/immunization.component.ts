@@ -86,6 +86,10 @@ export class ImmunizationComponent implements OnInit {
         route: this.fb.control('', Validators.required),
         dosageForm: this.fb.control('', Validators.required),
         details: this.fb.control('', Validators.required),
+        price: this.fb.control('', [
+          Validators.required,
+          Validators.pattern(/^\d+(\.\d{1,2})?$/)  // ➡️ positive decimal, max 2 decimal places
+        ])
       });
 
     this.filterForm = this.fb.group(

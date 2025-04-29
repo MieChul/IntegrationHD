@@ -40,7 +40,6 @@ public class PhysicianRecordDto
     [Required(ErrorMessage = "Date of birth is required.")]
     public string DateOfBirth { get; set; }
 
-    [Required(ErrorMessage = "Graduation is required.")]
     public string? Graduation { get; set; }
 
     public string? PostGraduation { get; set; }
@@ -49,7 +48,6 @@ public class PhysicianRecordDto
 
     public string? AdditionalQualification { get; set; }
 
-    [Required(ErrorMessage = "Speciality is required.")]
     public string? Speciality { get; set; }
 
     [Required(ErrorMessage = "At least one day must be selected.")]

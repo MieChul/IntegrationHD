@@ -80,18 +80,21 @@
       <div class="col-md-6">
         <div class="form-floating mb-3">
           <input type="text" class="form-control" id="patientInitials" placeholder="Patient Initials"
-            [(ngModel)]="patientInitials" name="patientInitials" required>
+            name="patientInitials" [(ngModel)]="patientInitials" required pattern="[A-Za-z\-]{3}" />
           <label for="patientInitials">Patient Initials</label>
-          <span *ngIf="!validInitials" class="text-danger">Required, only 3 letters, no special characters except ('.
-            ')</span>
+          <span *ngIf="!validInitials" class="text-danger">
+            Must be exactly 3 characters; letters (A–Z) or hyphen (–) only.
+          </span>
         </div>
       </div>
+
+      <!-- Age -->
       <div class="col-md-6">
         <div class="form-floating mb-3">
-          <input type="number" class="form-control" id="age" placeholder="Age (years)" [(ngModel)]="age" name="age"
-            min="0" max="150" required>
+          <input type="number" class="form-control" id="age" placeholder="Age (years)" name="age" [(ngModel)]="age"
+            min="0" max="150" required />
           <label for="age">Age (years)</label>
-          <span *ngIf="ageError" class="text-danger mt-1 mb-3">{{ ageError }}</span>
+          <span *ngIf="ageError" class="text-danger">{{ ageError }}</span>
         </div>
       </div>
     </div>

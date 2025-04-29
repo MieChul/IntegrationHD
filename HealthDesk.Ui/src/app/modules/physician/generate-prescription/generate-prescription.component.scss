@@ -1,0 +1,25 @@
+::ng-deep .small-field.mat-form-field {
+    width: 100%;
+    margin: 0;
+}
+
+::ng-deep .small-field .mat-form-field-wrapper,
+::ng-deep .small-field .mat-form-field-infix {
+    padding: 0 2px;
+    font-size: 0.7rem;
+}
+
+/* styles.css or component.scss */
+.table-fixed {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.table-fixed th,
+.table-fixed td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    /* tighten up padding a bit */
+    padding: 0.3rem 0.5rem;
+}

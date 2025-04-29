@@ -42,6 +42,7 @@
     <thead>
       <tr>
         <th (click)="sortTable('date')">Date</th>
+        <th (click)="sortTable('date')">Time</th>
         <th (click)="sortTable('type')">Record Type</th>
         <th>Description</th>
         <th>Action</th>
@@ -50,6 +51,7 @@
     <tbody>
       <tr *ngFor="let record of filteredSelfRecords">
         <td>{{ record.date | date: 'dd-MM-yyyy' }}</td>
+        <td>{{ record.time}}</td>
         <td>{{ record.type }}</td>
         <td>
           <ng-container *ngIf="record.type === 'Blood Pressure'; else normalValue">
@@ -101,7 +103,24 @@
                     </mat-error>
                 </mat-form-field>
             </div>
-
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Time </mat-label>
+                  <input matInput [ngxMatTimepicker]="time" formControlName="time"
+                      placeholder="Time (HH:mm)" />
+                  <ngx-mat-timepicker-toggle [for]="time"
+                      matSuffix></ngx-mat-timepicker-toggle>
+                  <ngx-mat-timepicker #time></ngx-mat-timepicker>
+                  <mat-error *ngIf="submitted && selfRecordForm.get('time')?.hasError('required')">Time 
+                      
+                      required</mat-error>
+                  <mat-error *ngIf="submitted && selfRecordForm.get('time')?.hasError('pattern')">Invalid
+                      Time 
+                      format. Use HH:mm.</mat-error>
+              </mat-form-field>
+          </div>
+        </div>
+          <div class="row">
             <!-- Disease -->
             <div class="col-md-6">
               <mat-form-field appearance="outline" class="w-100">
@@ -117,8 +136,6 @@
                 <mat-error *ngIf="selfRecordForm.get('type')?.hasError('required')">Type is required</mat-error>
             </mat-form-field>
             </div>
-        </div>
-          <div class="row">
             <div class="col-md-4">
               <mat-form-field appearance="outline" class="w-100">
                   <mat-label>{{ showValue2 ? 'Systolic (mmHg)' : 'Value' }}</mat-label>

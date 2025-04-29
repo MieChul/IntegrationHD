@@ -69,12 +69,12 @@ namespace HealthDesk.API.Controllers
 
         // 5. Add or update a service
         [HttpPost("{userId}/services")]
-        public async Task<IActionResult> SaveService(string userId, [FromBody] ServiceDto dto)
+        public async Task<IActionResult> SaveService(string userId, [FromBody] List<ServiceDto> dtos)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new { Success = false, Message = "Invalid input.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
 
-            await _hospitalService.SaveServiceAsync(userId, dto);
+            await _hospitalService.SaveServiceAsync(userId, dtos);
             return Ok(new { Success = true, Message = "Service saved successfully." });
         }
 

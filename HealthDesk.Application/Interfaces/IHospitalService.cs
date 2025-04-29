@@ -8,6 +8,6 @@ public interface IHospitalService
     Task<dynamic> GetPhysicanByMobileAsync(string mobile);
 
     Task<IEnumerable<ServiceDto>> GetAllServicesAsync(string id);
-    Task SaveServiceAsync(string id, ServiceDto dto);
+    Task SaveServiceAsync(string id, List<ServiceDto> dtos);
     Task DeleteServiceAsync(string id, string serviceId);
 }

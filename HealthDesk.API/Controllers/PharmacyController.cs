@@ -35,12 +35,12 @@ namespace HealthDesk.API.Controllers
         }
 
         [HttpPost("{id}/medicines")]
-        public async Task<IActionResult> SaveMedicine(string id, [FromBody] MedicineDto dto)
+        public async Task<IActionResult> SaveMedicine(string id, [FromBody] List<MedicineDto> dtos)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new { Success = false, Message = "Invalid input.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
 
-            await _pharmacyService.SaveMedicineAsync(id, dto);
+            await _pharmacyService.SaveMedicineAsync(id, dtos);
             return Ok(new { Success = true, Message = "Medicine saved successfully." });
         }
 

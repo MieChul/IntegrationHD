@@ -33,29 +33,31 @@ public class LaboratoryService : ILaboratoryService
     }
 
     // 3. Save or update a lab test
-    public async Task SaveLabTestAsync(string id, LabTestDto dto)
+    public async Task SaveLabTestAsync(string id, List<LabTestDto> dtos)
     {
         var laboratory = await GetLaboratoryByIdAsync(id);
-
-        var labTest = new LabTest();
-        GenericMapper.Map(dto, labTest);
-
-        if (string.IsNullOrEmpty(dto.Id))
+        foreach (var dto in dtos)
         {
-            // Add a new lab test
-            laboratory.LabTests.Add(labTest);
-        }
-        else
-        {
-            // Update an existing lab test
-            var existingTest = laboratory.LabTests.FirstOrDefault(test => test.Id == dto.Id);
-            if (existingTest == null)
-                throw new ArgumentException("Lab test not found.");
+            var labTest = new LabTest();
+            GenericMapper.Map(dto, labTest);
 
-            GenericMapper.Map(dto, existingTest);
-        }
+            if (string.IsNullOrEmpty(dto.Id))
+            {
+                // Add a new lab test
+                laboratory.LabTests.Add(labTest);
+            }
+            else
+            {
+                // Update an existing lab test
+                var existingTest = laboratory.LabTests.FirstOrDefault(test => test.Id == dto.Id);
+                if (existingTest == null)
+                    throw new ArgumentException("Lab test not found.");
 
-        await _laboratoryRepository.UpdateAsync(laboratory);
+                GenericMapper.Map(dto, existingTest);
+            }
+
+            await _laboratoryRepository.UpdateAsync(laboratory);
+        }
     }
 
     // 4. Delete a lab test

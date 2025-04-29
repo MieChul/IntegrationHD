@@ -33,7 +33,7 @@ const routes: Routes = [{ path: '', component: PatientComponent,
     { path: 'rate', component: RateComponent },
     { path: 'remidies', component: RemediesComponent },
     { path: 'new-remedy', component: NewRemedyComponent },
-    { path: 'view-remedy', component: ViewRemedyComponent },
+    { path: 'view-remedy/:id', component: ViewRemedyComponent },
     // Add other routes here
   ]
  }];

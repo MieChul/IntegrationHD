@@ -1,140 +1,232 @@
 <div class="container">
-    <h1 class="animated-heading">
-      <i class="bi bi-box-seam me-2"></i>Brand library
-    </h1>
-  
-    <div class="row mb-3 align-items-center">
-      <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
-        <div class="mb-2 me-3">
-          <label for="productSearch" class="form-label label-modern shadow">Search by Brand Name</label>
-          <input type="text" id="productSearch" class="form-control" [(ngModel)]="productSearchText"
-            (ngModelChange)="filterProducts()" />
-        </div>
-      </div>
-      <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
-        <button class="btn btn-primary m-1" (click)="openProductDialog()">
-          Add Product
+  <h1 class="animated-heading">
+    <i class="bi bi-box-seam me-2"></i>Brand Library
+  </h1>
+
+  <div class="row mb-3 align-items-center">
+    <div class="col-md-8 col-sm-6">
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>Search by Brand Name</mat-label>
+        <input matInput placeholder="Search by Brand Name" [(ngModel)]="brandSearchText" (input)="applyFilter()" />
+        <button mat-icon-button matSuffix (click)="brandSearchText=''; applyFilter()">
+          <mat-icon>close</mat-icon>
         </button>
-        <button class="btn btn-success m-1" (click)="exportToExcel()">Export to Excel</button>
-      </div>
+      </mat-form-field>
     </div>
-  
-    <div class="table-responsive">
-      <table class="table table-hover table-modern">
-        <thead>
-          <tr>
-            <th (click)="sortProductTable('brandName')">Brand Name</th>
-            <th (click)="sortProductTable('genericName')">Generic Name</th>
-            <th (click)="sortProductTable('drugClass')">Drug Class</th>
-            <th (click)="sortProductTable('dosageForm')">Dosage Form</th>
-            <th (click)="sortProductTable('strength')">Strength</th>
-            <th>Pack Shot</th>
-            <th (click)="sortProductTable('approvalAgency')">
-              Approval Agency
-            </th>
-            <th>Comment</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let product of filteredProducts">
-            <td>{{ product.brandName }}</td>
-            <td>{{ product.genericName }}</td>
-            <td>{{ product.drugClass }}</td>
-            <td>{{ product.dosageForm }}</td>
-            <td>{{ product.strength }}</td>
-            <td>
-              <button class="btn btn-link" *ngIf="product.packShot" (click)="viewPackShot(product.packShot)">
-                View
-              </button>
-            </td>
-            <td>{{ product.approvalAgency }}</td>
-            <td>{{ product.comment }}</td>
-            <td>
-              <button class="btn btn-warning btn-sm me-1" (click)="openProductDialog(product)">
-                <i class="bi bi-pencil"></i>
-              </button>
-              <button class="btn btn-danger btn-sm" (click)="deleteProduct(product)">
-                <i class="bi bi-trash"></i>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="col-md-4 col-sm-6 text-end">
+      <button class="btn btn-primary me-2" (click)="openBrandDialog(false)">
+        Add Brand
+      </button>
+      <button class="btn btn-success" (click)="openBrandImportDialog()">
+        Import
+      </button>
+      
     </div>
   </div>
-  
-  <!-- Add/Edit Product Modal -->
-  <div class="modal fade" data-bs-backdrop='static' id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true"
-    #productModal>
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="productModalLabel">
-            {{ isEditProduct ? 'Edit Product' : 'Add Product' }}
-          </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-            (click)="closeProductDialog()"></button>
-        </div>
-        <div class="modal-body">
-          <form [formGroup]="productForm">
-            <div class="mb-3">
-              <label for="brandName" class="form-label label-modern shadow">Brand Name</label>
-              <select class="form-control" formControlName="brandName" (change)="onProductBrandNameChange()">
-                <option *ngFor="let brand of brandNames" [value]="brand">{{
-                  brand
-                  }}</option>
-                <option value="Other">Other</option>
-              </select>
-              <input *ngIf="isOtherProductBrand" type="text" class="form-control mt-2" placeholder="Enter Brand Name"
-                formControlName="otherBrandName" />
+
+  <div class="table-responsive">
+    <table class="table table-hover table-modern">
+      <thead>
+        <tr>
+          <th (click)="sortTable('brandName')">Brand Name</th>
+          <th (click)="sortTable('genericName')">Generic Name</th>
+          <th (click)="sortTable('drugClass')">Drug Class</th>
+          <th (click)="sortTable('dosageForm')">Dosage Form</th>
+          <th (click)="sortTable('strength')">Strength</th>
+          <th>Pack Shot</th>
+          <th (click)="sortTable('approvalAgency')">Approval Agency</th>
+          <th>Comment</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let b of filteredBrands">
+          <td>{{ b.brandName }}</td>
+          <td>{{ b.genericName }}</td>
+          <td>{{ b.drugClass }}</td>
+          <td>{{ b.dosageForm }}</td>
+          <td>{{ b.strength }}</td>
+          <td>
+            <button *ngIf="b.packShot" class="btn btn-link p-0" (click)="viewPackShot(b.packShot)">
+              View
+            </button>
+          </td>
+          <td>{{ b.approvalAgency }}</td>
+          <td>{{ b.comment }}</td>
+          <td>
+            <button class="btn btn-warning btn-sm me-1" (click)="openBrandDialog(true, b)">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-danger btn-sm" (click)="deleteBrand(b)">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredBrands.length === 0">
+          <td colspan="9" class="text-center text-muted">
+            No brands found.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add/Edit Brand Modal -->
+<div #brandModal class="modal fade" data-bs-backdrop="static" tabindex="-1" aria-labelledby="brandModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 id="brandModalLabel" class="modal-title">
+          {{ isEditBrand ? 'Edit Brand' : 'Add Brand' }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="brandForm">
+          <div class="row">
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Brand Name</mat-label>
+                <input matInput formControlName="brandName" />
+                <mat-error *ngIf="brandForm.get('brandName')?.hasError('required')">
+                  Brand Name is required
+                </mat-error>
+              </mat-form-field>
             </div>
-            <div class="mb-3">
-              <label for="genericName" class="form-label label-modern shadow">Generic Name</label>
-              <input type="text" id="genericName" formControlName="genericName" class="form-control" />
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Generic Name</mat-label>
+                <input matInput formControlName="genericName" />
+                <mat-error *ngIf="brandForm.get('genericName')?.hasError('required')">
+                  Generic Name is required
+                </mat-error>
+              </mat-form-field>
             </div>
-            <div class="mb-3">
-              <label for="drugClass" class="form-label label-modern shadow">Drug Class</label>
-              <select class="form-control" formControlName="drugClass">
-                <option *ngFor="let drug of drugClasses" [value]="drug">{{ drug }}</option>
-              </select>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Drug Class</mat-label>
+                <mat-select formControlName="drugClass">
+                  <mat-option *ngFor="let d of drugClasses" [value]="d">
+                    {{ d }}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="brandForm.get('drugClass')?.hasError('required')">
+                  Drug Class is required
+                </mat-error>
+              </mat-form-field>
             </div>
-            <div class="mb-3">
-              <label for="dosageForm" class="form-label label-modern shadow">Dosage Form</label>
-              <select class="form-control" formControlName="dosageForm">
-                <option *ngFor="let dosage of dosageForms" [value]="dosage">{{ dosage }}</option>
-              </select>
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Dosage Form</mat-label>
+                <mat-select formControlName="dosageForm">
+                  <mat-option *ngFor="let df of dosageForms" [value]="df">
+                    {{ df }}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="brandForm.get('dosageForm')?.hasError('required')">
+                  Dosage Form is required
+                </mat-error>
+              </mat-form-field>
             </div>
-            <div class="mb-3">
-              <label for="strength" class="form-label label-modern shadow">Strength</label>
-              <input type="text" id="strength" formControlName="strength" class="form-control" />
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Strength</mat-label>
+                <input matInput formControlName="strength" />
+                <mat-error *ngIf="brandForm.get('strength')?.hasError('required')">
+                  Strength is required
+                </mat-error>
+              </mat-form-field>
             </div>
-            <div class="mb-3">
-              <label for="packShot" class="form-label label-modern shadow">Pack Shot</label>
-              <input type="file" id="packShot" class="form-control" (change)="onPackShotChange($event)" />
+            <div class="col-md-6">
+              <!-- RIGHT: use a plain file input (you can still wrap in a form field div for styling) -->
+              <div class="mb-3">
+                <mat-label>Pack Shot</mat-label>
+                <input type="file" (change)="onPackShotChange($event)" class="form-control" />
+              </div>
+
             </div>
-            <div class="mb-3">
-              <label for="approvalAgency" class="form-label label-modern shadow">Approval Agency</label>
-              <select class="form-control" formControlName="approvalAgency">
-                <option *ngFor="let agency of approvalAgencies" [value]="agency">{{
-                  agency
-                  }}</option>
-              </select>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Approval Agency</mat-label>
+                <mat-select formControlName="approvalAgency">
+                  <mat-option *ngFor="let ag of approvalAgencies" [value]="ag">
+                    {{ ag }}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="brandForm.get('approvalAgency')?.hasError('required')">
+                  Approval Agency is required
+                </mat-error>
+              </mat-form-field>
             </div>
-            <div class="mb-3">
-              <label for="comment" class="form-label label-modern shadow">Comment</label>
-              <textarea id="comment" formControlName="comment" class="form-control"></textarea>
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>Comment</mat-label>
+                <textarea matInput formControlName="comment" rows="3"></textarea>
+              </mat-form-field>
             </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="closeProductDialog()">
-            Close
-          </button>
-          <button type="button" class="btn btn-primary" (click)="saveProduct()">
-            {{ isEditProduct ? 'Save Changes' : 'Add Product' }}
-          </button>
-        </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Close
+        </button>
+        <button type="button" class="btn btn-primary" (click)="saveBrand()" data-bs-dismiss="modal">
+          {{ isEditBrand ? 'Save Changes' : 'Add Brand' }}
+        </button>
       </div>
     </div>
   </div>
+</div>
+<!-- Import Brand Library Modal -->
+<div class="modal fade" tabindex="-1" #brandImportModal>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Import Brand Library</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Select Excel File</label>
+          <input type="file" accept=".xlsx,.xls" class="form-control" (change)="onBrandFileSelected($event)">
+          <small *ngIf="brandFileName" class="form-text text-muted">{{ brandFileName }}</small>
+        </div>
+
+        <div *ngIf="importErrors.length" class="alert alert-danger">
+          <strong>Validation Errors:</strong>
+          <ul>
+            <li *ngFor="let e of importErrors">
+              Row {{ e.row }}: {{ e.errors.join('; ') }}
+            </li>
+          </ul>
+        </div>
+
+        <div *ngIf="!importErrors.length && importedBrands.length">
+          <p class="text-success">{{ importedBrands.length }} brands ready to import.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button"
+                class="btn btn-primary"
+                [disabled]="!importedBrands.length || importErrors.length"
+                (click)="submitBrandImport()">
+          Import
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

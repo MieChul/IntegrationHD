@@ -8,6 +8,12 @@
     </button>
     <div class="collapse navbar-collapse" [ngClass]="{ 'show': isMenuOpen }">
       <ul class="navbar-nav ms-auto">
+        <li class="nav-item" *ngIf="userData.role === 'admin'">
+          <a class="nav-link nav-bold" mat-button [attr.href]="navigateToUsers()">Users</a>
+        </li>
+        <li class="nav-item" *ngIf="userData.role === 'admin'">
+          <a class="nav-link nav-bold" mat-button [attr.href]="navigateToBrands()">Brands</a>
+        </li>
         <li class="nav-item" *ngIf="userData.role !== 'admin'">
           <a class="nav-link nav-bold" mat-button [attr.href]="getDashboardLink(userData.role)">Dashboard</a>
         </li>
@@ -33,7 +39,7 @@
               </button>
             </div>
             <div
-              *ngIf="userData.isMainApproved || (userData.status ==='Approved' && userData.role !== 'admin' && userData.role !== 'pharmaceutical' && !userData.dependentId)">
+              *ngIf="(userData.isMainApproved && userData.role !== 'pharmaceutical') || (userData.status ==='Approved' && userData.role !== 'admin' && userData.role !== 'pharmaceutical' && !userData.dependentId)">
               <mat-divider></mat-divider>
               <button mat-menu-item (click)="handleSwitchRole()">
                 <mat-icon>settings</mat-icon> {{ switchRole }}

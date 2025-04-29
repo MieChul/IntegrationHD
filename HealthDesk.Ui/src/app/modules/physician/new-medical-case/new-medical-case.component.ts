@@ -28,8 +28,9 @@ export class NewMedicalCaseComponent {
   constructor(private router: Router, private validationService: ValidationService) { }
 
   submitCase() {
-    this.validInitials = /^[A-Za-z.']{3}$/.test(this.patientInitials);
+    this.validInitials = /^[A-Za-z-]{3}$/.test(this.patientInitials);
     if (!this.validInitials) return;
+
     if (!this.validateAge()) return;
     // Logic to handle form submission
     console.log({

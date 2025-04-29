@@ -6,13 +6,15 @@ import { AdminComponent } from './admin.component';
 import { UserListComponent } from './user-list/user-list.component';
 import { SharedModule } from '../../shared/shared.module';
 import { UserInfoComponent } from './user-info/user-info.component';
+import { BrandLibraryListComponent } from './brand-list/brand-list.component';
 
 
 @NgModule({
   declarations: [
     AdminComponent,
     UserListComponent,
-    UserInfoComponent
+    UserInfoComponent,
+    BrandLibraryListComponent
 
   ],
   imports: [

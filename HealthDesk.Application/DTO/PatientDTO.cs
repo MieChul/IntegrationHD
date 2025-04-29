@@ -21,6 +21,8 @@ public class MedicalHistoryDto
 
     [DataType(DataType.Date)]
     public DateTime? End { get; set; }
+
+     public decimal? Price { get; set; }
 }
 
 public class CurrentTreatmentDto
@@ -55,6 +57,8 @@ public class CurrentTreatmentDto
 
     [StringLength(100, ErrorMessage = "Comment must not exceed 100 characters.")]
     public string? Comment { get; set; }
+
+    public decimal? Price { get; set; }
 }
 
 public class AppointmentDto
@@ -105,6 +109,9 @@ public class SelfRecordDto
     [Required(ErrorMessage = "Date is required.")]
     [DataType(DataType.Date)]
     public DateTime Date { get; set; }
+
+    [Required(ErrorMessage = "Time is required.")]
+    public string Time { get; set; }
 
     [Required(ErrorMessage = "Type is required.")]
     public string Type { get; set; }
@@ -171,6 +178,7 @@ public class LabInvestigationDto
 
     [Required(ErrorMessage = "Unit is required.")]
     public string Unit { get; set; }
+    public decimal? Price { get; set; }
 }
 
 public class ReportDto
@@ -183,6 +191,7 @@ public class ReportDto
     public string Results { get; set; }
     public string Comment { get; set; }
     public string ReportUrl { get; set; }
+    public decimal? Price { get; set; }
 }
 
 public class ImmunizationDto
@@ -201,6 +210,8 @@ public class ImmunizationDto
     public string DosageForm { get; set; }
     [Required(ErrorMessage = "Details is required.")]
     public string Details { get; set; }
+
+    public decimal? Price { get; set; }
 }
 
 

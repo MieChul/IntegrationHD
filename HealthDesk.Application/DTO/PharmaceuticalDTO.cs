@@ -2,11 +2,20 @@ namespace HealthDesk.Application;
 
 public class BrandLibraryDto
 {
-    public string Id { get; set; }
-    public string BrandId { get; set; }
-    public string PackShotUrl { get; set; }
+    public string? Id { get; set; }
+    public string BrandName { get; set; }
+
+    public string GenericName { get; set; }
+
+    public string DrugClass { get; set; }
+    public string DosageForm { get; set; }
+
+    public string Strength { get; set; }
+
+    public string? PackShotUrl { get; set; }
+
     public string ApprovalAgency { get; set; }
-    public string Comment { get; set; }
+    public string? Comment { get; set; }
 }
 
 public class SurveyDto

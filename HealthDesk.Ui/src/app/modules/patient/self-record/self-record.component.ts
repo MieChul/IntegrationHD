@@ -60,6 +60,7 @@ export class SelfRecordComponent implements OnInit {
     this.selfRecordForm = this.fb.group({
       id: this.fb.control(''),
       date: this.fb.control('', [Validators.required, this.futureDateValidator]),
+      time:this.fb.control('', [Validators.required]),
       type: this.fb.control('', [Validators.required, Validators.max(50)]),
       value1: this.fb.control('', [Validators.required, Validators.min(0)]),
       value2: this.fb.control(''),

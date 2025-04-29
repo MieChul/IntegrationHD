@@ -309,24 +309,16 @@ export class GeneratePrescriptionComponent implements OnInit {
   async generatePDF(): Promise<Blob> {
     this.prescriptionForm.markAllAsTouched();
     if (this.prescriptionForm.invalid) return Promise.reject('Form is invalid');
+
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageHeight = doc.internal.pageSize.height;
     const pageWidth = doc.internal.pageSize.width;
+
     const headerHeight = 45;
-    const footerHeight = 30;
+    const footerHeight = 40;
     const marginBottom = 20;
     let startY = 60;
-    const storedHeader = localStorage.getItem('prescription_header_default');
-
-
-    const loadImage = (src: string): Promise<HTMLImageElement> => {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-        img.src = src;
-      });
-    };
+    const userDisplay = this.userData.username || 'User';
 
     const addHeaderAndFooter = () => {
       // Add header image (fixed position)
@@ -339,7 +331,8 @@ export class GeneratePrescriptionComponent implements OnInit {
         } catch (error) {
           console.error('Error adding header image:', error);
         }
-
+        doc.setDrawColor(0);
+        doc.line(5, headerHeight, pageWidth - 5, headerHeight);
         // Add footer image
         try {
           if (this.footerImg) {
@@ -356,11 +349,18 @@ export class GeneratePrescriptionComponent implements OnInit {
           console.error('Error adding footer image:', error);
         }
       }
-      doc.setFontSize(6);
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' });
+      const timeStr = now.toTimeString().slice(0, 5);
       doc.setFont('Times');
-      doc.setDrawColor(0, 0, 0);  // Set black color
-      doc.line(5, headerHeight, 200, headerHeight);  // Separator after header
-      startY = 60;
+      doc.setFontSize(6);
+      doc.text(
+        `Generated using HealthDesk by ${userDisplay} on ${dateStr} at ${timeStr}`,
+        14,
+        pageHeight - 8
+      );
+      // Reset startY for content
+      startY = headerHeight + 15;
     };
 
 
@@ -410,31 +410,21 @@ export class GeneratePrescriptionComponent implements OnInit {
     // Check height for Chief Complaints table
     checkAndAddNewPage(approxHeight);
     doc.setFontSize(10);
-    doc.text('Chief Complaints:', 14, startY);
-    startY += 2;
-
-    autoTable(doc, {
-      head: [['Sr.', 'Complaint', 'Duration']],
-      body: chiefComplaints,
-      headStyles: {
-        fillColor: [255, 255, 255], // Transparent white header (plain)
-        textColor: [0, 0, 0],       // Black text color for header
-        fontStyle: 'normal'         // Plain font style
-      },
-      startY: startY,
-      styles: {
-        font: 'Times',
-        fontSize: 8, lineColor: [0, 0, 0], lineWidth: 0.1
-      }
-    });
-    startY = (doc as any).autoTable.previous.finalY + 10;
+    const complaints = (this.prescriptionForm.get('complaints') as FormArray).controls;
+  const complaintsHeight = complaints.length * 6 + 8;
+  doc.text('Chief Complaints:', 14, startY);
+  complaints.forEach((ctrl, idx) => {
+    const { text, duration } = ctrl.value;
+    startY += 6;
+    doc.setFontSize(9).text(`${idx+1}. ${text || ''} (${duration || ''})`, 18, startY);
+  });
 
     checkAndAddNewPage(20);
     doc.setFontSize(10);
     doc.text('Vitals:', 14, startY + 5);
     doc.text(`Pulse (per minute): ${this.prescriptionForm.get('pulseRate')?.value || ''}`, 50, startY);
     doc.text(`Respiratory rate (per minute): ${this.prescriptionForm.get('respiratoryRate')?.value || ''}`, 50, startY + 5);
-    doc.text(`Blood pressure (mm Hg):  ${this.prescriptionForm.get('bloodPressure')?.value.bloodPressure || ''}`, 50, startY + 10);
+    doc.text(`Blood pressure (mm Hg):  ${this.prescriptionForm.get('bloodPressure')?.value || ''}`, 50, startY + 10);
     doc.text(`Temperature: ${this.prescriptionForm.get('temperature')?.value || ''}`, 50, startY + 15);
 
 
@@ -442,9 +432,14 @@ export class GeneratePrescriptionComponent implements OnInit {
     checkAndAddNewPage(15);
     doc.setFontSize(10);
     doc.text(`Local examination: ${this.prescriptionForm.get('localExamination')?.value || ''}`, 14, startY);
-    doc.text(`Investigations: ${this.prescriptionForm.get('finalInvestigations')?.value || ''}`, 14, startY + 7);
 
-    startY = startY + 15;
+    const invText = `Investigations: ${this.selectedProfiles.join(', ')}`;
+    const invLines = doc.splitTextToSize(invText, pageWidth - 28);
+    const invHeight = invLines.length * 6 + 6;
+    checkAndAddNewPage(invHeight);
+    doc.setFontSize(10).text(invLines, 14, startY);
+    startY += invHeight;
+
     // Systemic Table
     const systemsArray = this.prescriptionForm.get('systems') as FormArray;
 
@@ -460,25 +455,15 @@ export class GeneratePrescriptionComponent implements OnInit {
     var approxHt = (systemicData.length * 10) + 10;
     checkAndAddNewPage(approxHt);
     doc.setFontSize(10);
+    const systems = (this.prescriptionForm.get('systems') as FormArray).controls;
+    const physHeight = systems.length * 6 + 8;
     doc.text('Physical Examination:', 14, startY);
-    startY += 2;
-    // Approximate height
-    autoTable(doc, {
-      head: [['Sr.', 'System', 'Findings']],
-      body: systemicData,
-      headStyles: {
-        fillColor: [255, 255, 255], // Transparent white header (plain)
-        textColor: [0, 0, 0],       // Black text color for header
-        fontStyle: 'normal'         // Plain font style
-      },
-      styles: {
-        font: 'Times',
-        fontSize: 8, lineColor: [0, 0, 0], lineWidth: 0.1
-      },
-      startY: startY
+    systems.forEach((ctrl, idx) => {
+      const { name, findings } = ctrl.value;
+      startY += 6;
+      doc.setFontSize(9).text(`${idx+1}. ${name || ''}: ${findings || ''}`, 18, startY);
     });
-
-    startY = (doc as any).autoTable.previous.finalY + 7;
+    startY += 10;
     checkAndAddNewPage(10);
     doc.setFontSize(10);
     doc.text(`Provisional Diagnosis: ${this.prescriptionForm.get('pastHistory')?.value || ''}`, 14, startY);
@@ -635,9 +620,13 @@ export class GeneratePrescriptionComponent implements OnInit {
 
 
   // Trigger on investigation value change
-  onInvestigationValueChange(): void {
-    this.updateCustomInvestigations(); // Keep custom investigations in sync
+  onInvestigationValueChange(selectedInvestigation: string, index: number): void {
+    // Add new investigation
+    if (selectedInvestigation && !this.selectedProfiles.includes(selectedInvestigation)) {
+      this.selectedProfiles.push(selectedInvestigation);
+    }
   }
+
 
 
 
@@ -651,6 +640,13 @@ export class GeneratePrescriptionComponent implements OnInit {
   }
 
   removeInvestigation(index: number): void {
+    const oldInvestigationName = this.finalInvestigationsFormArray.at(index)?.get('name')?.value;
+
+    // Remove old investigation from selectedProfiles if exists
+    const oldIndex = this.selectedProfiles.indexOf(oldInvestigationName);
+    if (oldIndex !== -1) {
+      this.selectedProfiles.splice(oldIndex, 1);
+    }
     this.finalInvestigationsFormArray.removeAt(index);
   }
 
@@ -672,13 +668,9 @@ export class GeneratePrescriptionComponent implements OnInit {
   }
 
   onProfileSelectionChange(selectedProfiles: string[]): void {
-    this.selectedProfiles = selectedProfiles;
-
-    // Clear current investigations in the FormArray
-    this.finalInvestigationsFormArray.clear();
 
     // Find selected profiles from this.profiles
-    const selectedProfileObjects = this.profiles.filter((profile: any) => this.selectedProfiles.includes(profile.name));
+    const selectedProfileObjects = this.profiles.filter((profile: any) => selectedProfiles.includes(profile.name));
 
     // Extract investigations from the selected profiles
     let selectedInvestigations: any[] = [];
@@ -692,22 +684,8 @@ export class GeneratePrescriptionComponent implements OnInit {
     );
 
     // Add investigations to the FormArray
-    uniqueInvestigations.forEach(investigation => {
-      this.finalInvestigationsFormArray.push(
-        this.fb.group({
-          name: [investigation.name, Validators.required], // Add validation as needed
-        })
-      );
-    });
-
-    // Add custom investigations to the FormArray
-    this.customInvestigations.forEach(customInv => {
-      this.finalInvestigationsFormArray.push(
-        this.fb.group({
-          name: [customInv.name, Validators.required], // Add validation as needed
-        })
-      );
-    });
+    this.selectedProfiles = uniqueInvestigations
+      .map(inv => inv.name);
   }
 
   addCustomInvestigation(): void {

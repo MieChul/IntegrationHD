@@ -1,4 +1,5 @@
 
+using System.Dynamic;
 using HealthDesk.Application.Interfaces;
 using HealthDesk.Core.Enum;
 using HealthDesk.Infrastructure;
@@ -8,10 +9,12 @@ public class AdminService : IAdminService
 {
     private readonly IUserRepository _userRepository;
     private readonly IMessageService _messageService;
-    public AdminService(IUserRepository userRepository, IMessageService messageService)
+     private readonly IPharmaceuticalRepository _pharmaceuticalRepository;
+    public AdminService(IUserRepository userRepository, IMessageService messageService, IPharmaceuticalRepository pharmaceuticalRepository)
     {
         _userRepository = userRepository;
         _messageService = messageService;
+        _pharmaceuticalRepository = pharmaceuticalRepository;
     }
 
     public async Task AdminAction(string id, string userRole, string value, string comments)
@@ -69,4 +72,41 @@ public class AdminService : IAdminService
 
         return userList;
     }
+
+    public async Task<List<dynamic>> GetAllBrands()
+    {
+        // 1) load every Pharmaceutical record
+        var allPharmas = await _pharmaceuticalRepository.GetAllAsync();
+
+        var result = new List<dynamic>();
+
+        foreach (var pharma in allPharmas)
+        {
+            // 2) lookup the submitting user
+            var user = await _userRepository.GetByIdAsync(pharma.UserId);
+            var submittedBy = user is not null
+                ? $"{user.AuthFirstName} {user.AuthLastName}".Trim()
+                : string.Empty;
+
+            // 3) for each BrandLibrary entry, build a dynamic object
+            foreach (var bl in pharma.BrandLibrary)
+            {
+                dynamic dto = new ExpandoObject();
+                var dict = (IDictionary<string, object>)dto;
+
+                dict["BrandName"] = bl.BrandName;
+                dict["GenericName"] = bl.GenericName;
+                dict["DrugClass"] = bl.DrugClass;
+                dict["DosageForm"] = bl.DosageForm;
+                dict["Strength"] = bl.Strength;
+                dict["ApprovalAgency"] = bl.ApprovalAgency;
+                dict["SubmittedBy"] = submittedBy;
+
+                result.Add(dto);
+            }
+        }
+
+        return result;
+    }
 }
+

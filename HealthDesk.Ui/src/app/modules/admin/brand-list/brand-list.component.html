@@ -1,0 +1,62 @@
+<div class="page-header text-center mb-4">
+    <h1 class="animated-header">
+        <i class="bi bi-box-seam me-2"></i>
+        Brand Library
+    </h1>
+</div>
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover table-responsive">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Brand Name</th>
+                    <th scope="col">Generic Name</th>
+                    <th scope="col">Drug Class</th>
+                    <th scope="col">Dosage Form</th>
+                    <th scope="col">Strength</th>
+                    <th scope="col">Approval Agency</th>
+                    <th scope="col">Submitted By</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let bl of brandLibraries; index as i" class="cursor-pointer">
+                    <td>{{ i + 1 }}</td>
+                    <td>{{ bl.BrandName }}</td>
+                    <td>{{ bl.GenericName }}</td>
+                    <td>{{ bl.DrugClass }}</td>
+                    <td>{{ bl.DosageForm }}</td>
+                    <td>{{ bl.Strength }}</td>
+                    <td>{{ bl.ApprovalAgency }}</td>
+                    <td>{{ bl.SubmittedBy }}</td>
+                    <td>
+                        <!-- Approve -->
+                        <button type="button" class="btn btn-success btn-sm me-1" title="Approve">
+                            <i class="bi bi-check-lg"></i>
+                        </button>
+
+                        <!-- Reject -->
+                        <button type="button" class="btn btn-danger btn-sm" title="Reject">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </td>
+                </tr>
+
+                <!-- loading spinner -->
+                <tr *ngIf="!brandLibraries">
+                    <td colspan="9" class="text-center">
+                        <span class="spinner-border spinner-border-lg"></span>
+                    </td>
+                </tr>
+
+                <!-- no records -->
+                <tr *ngIf="brandLibraries?.length === 0">
+                    <td colspan="9" class="text-center text-muted">
+                        No brands available.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

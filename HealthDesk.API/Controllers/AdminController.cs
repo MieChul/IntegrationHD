@@ -27,4 +27,11 @@ public class AdminController : ControllerBase
         var users = await _adminService.GetAll();
         return Ok(users);
     }
+
+    [HttpGet("brands")]
+    public async Task<IActionResult> GetAllBrands()
+    {
+        var users = await _adminService.GetAllBrands();
+        return Ok(users);
+    }
 }

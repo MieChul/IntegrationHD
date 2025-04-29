@@ -2,7 +2,7 @@ namespace HealthDesk.Application;
 public interface IPharmaceuticalService
 {
     Task<IEnumerable<BrandLibraryDto>> GetAllBrandLibrariesAsync(string pharmaceuticalId);
-    Task SaveBrandLibraryAsync(string pharmaceuticalId, BrandLibraryDto dto);
+    Task SaveBrandLibraryAsync(string pharmaceuticalId, List<BrandLibraryDto> dtos);
     Task DeleteBrandLibraryAsync(string pharmaceuticalId, string brandLibraryId);
     Task<IEnumerable<SurveyDto>> GetSurveysAsync(string pharmaId);
     Task AddOrUpdateSurveyAsync(string pharmaId, SurveyDto dto);

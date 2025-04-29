@@ -14,10 +14,11 @@
             </mat-form-field>
           </div>
         </div>
+        
         <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
-          <button class="btn btn-primary" (click)="openBrandDialog(false,null)">Add Brand</button>
-          <button class="btn btn-success m-1">Export to Excel</button>
-        </div>
+          <button class="btn btn-primary me-2" (click)="openBrandDialog(false,null)">Add Brand</button>
+          <button class="btn btn-success" (click)="openBrandImportDialog()">Import</button>
+      </div>
       </div>
     </div>
     <div class="table-responsive">
@@ -192,6 +193,46 @@
         </button>
         <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="saveBrand()">
           {{ isEditBrand ? 'Save Changes' : 'Add Brand' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Import Brands Modal -->
+<div class="modal fade" tabindex="-1" #brandImportModal>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Import Brands</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Select Excel File</label>
+          <input type="file" accept=".xlsx,.xls" class="form-control" (change)="onBrandFileSelected($event)">
+          <small *ngIf="brandFileName" class="form-text text-muted">{{ brandFileName }}</small>
+        </div>
+
+        <div *ngIf="brandImportErrors.length" class="alert alert-danger">
+          <strong>Validation Errors:</strong>
+          <ul>
+            <li *ngFor="let e of brandImportErrors">
+              Row {{ e.row }}: {{ e.errors.join('; ') }}
+            </li>
+          </ul>
+        </div>
+
+        <div *ngIf="!brandImportErrors.length && importedBrands.length">
+          <p class="text-success">{{ importedBrands.length }} rows ready to import.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button"
+                class="btn btn-primary"
+                [disabled]="!importedBrands.length || brandImportErrors.length"
+                (click)="submitBrandImport()">
+          Import
         </button>
       </div>
     </div>

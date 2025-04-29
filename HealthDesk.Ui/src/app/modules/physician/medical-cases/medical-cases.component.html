@@ -6,7 +6,7 @@
   <div class="row mb-3 align-items-center">
     <div class="col-md-8">
       <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Search</mat-label>
+        <mat-label>Search by Specialty/Doctor Name</mat-label>
         <input matInput placeholder="Search by Specialty/Doctor Name" [(ngModel)]="searchValue"
           (input)="searchMedicalCases()" />
       </mat-form-field>
@@ -39,16 +39,23 @@
       <!-- Sub Tabs for Medical Cases -->
       <ul class="nav nav-tabs mt-3" id="medicalCasesSubTabs" role="tablist">
         <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="home-sub-tab" data-bs-toggle="tab" data-bs-target="#homeSub" type="button" role="tab" aria-controls="homeSub" aria-selected="true" (click)="setActiveSubTab('home')">Home</button>
+          <button class="nav-link active" id="home-sub-tab" data-bs-toggle="tab" data-bs-target="#homeSub" type="button"
+            role="tab" aria-controls="homeSub" aria-selected="true" (click)="setActiveSubTab('home')">Home</button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="trending-sub-tab" data-bs-toggle="tab" data-bs-target="#trendingSub" type="button" role="tab" aria-controls="trendingSub" aria-selected="false" (click)="setActiveSubTab('trending')">Trending</button>
+          <button class="nav-link" id="trending-sub-tab" data-bs-toggle="tab" data-bs-target="#trendingSub"
+            type="button" role="tab" aria-controls="trendingSub" aria-selected="false"
+            (click)="setActiveSubTab('trending')">Trending</button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="latest-sub-tab" data-bs-toggle="tab" data-bs-target="#latestSub" type="button" role="tab" aria-controls="latestSub" aria-selected="false" (click)="setActiveSubTab('latest')">Latest</button>
+          <button class="nav-link" id="latest-sub-tab" data-bs-toggle="tab" data-bs-target="#latestSub" type="button"
+            role="tab" aria-controls="latestSub" aria-selected="false"
+            (click)="setActiveSubTab('latest')">Latest</button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="mychoice-sub-tab" data-bs-toggle="tab" data-bs-target="#mychoiceSub" type="button" role="tab" aria-controls="mychoiceSub" aria-selected="false" (click)="setActiveSubTab('mychoice')">My Choice</button>
+          <button class="nav-link" id="mychoice-sub-tab" data-bs-toggle="tab" data-bs-target="#mychoiceSub"
+            type="button" role="tab" aria-controls="mychoiceSub" aria-selected="false"
+            (click)="setActiveSubTab('mychoice')">My Choice</button>
         </li>
       </ul>
       <div class="tab-content mt-3" id="medicalCasesSubTabsContent">
@@ -211,8 +218,8 @@
                     View
                   </button>
                   <div>
-                    <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
-                      data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
+                    <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip" data-bs-placement="top"
+                      title="Like" (click)="likeCase(case.id)">
                       <i class="bi bi-hand-thumbs-up"></i>
                       <span class="ms-1">{{ case.likeCount }}</span>
                     </button>
@@ -248,8 +255,8 @@
                     View
                   </button>
                   <div>
-                    <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
-                      data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
+                    <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip" data-bs-placement="top"
+                      title="Like" (click)="likeCase(case.id)">
                       <i class="bi bi-hand-thumbs-up"></i>
                       <span class="ms-1">{{ case.likeCount }}</span>
                     </button>
@@ -293,8 +300,8 @@
                     View
                   </button>
                   <div>
-                    <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
-                      data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
+                    <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip" data-bs-placement="top"
+                      title="Like" (click)="likeCase(case.id)">
                       <i class="bi bi-hand-thumbs-up"></i>
                       <span class="ms-1">{{ case.likeCount }}</span>
                     </button>
@@ -319,7 +326,7 @@
     <!-- My Medical Cases Tab (unchanged) -->
     <div class="tab-pane fade" id="yours" role="tabpanel" aria-labelledby="yours-tab">
       <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
-        <h4>My Home MedicalCases</h4>
+        <h4>My Medical Cases</h4>
         <button class="btn btn-success" (click)="createNewCase()">
           Add New Medical Case
         </button>
@@ -371,7 +378,8 @@
 </div>
 
 <!-- Preferences Modal -->
-<div class="modal fade" data-bs-backdrop="static" id="preferencesModal" tabindex="-1" aria-labelledby="preferencesModalLabel" aria-hidden="true">
+<div class="modal fade" data-bs-backdrop="static" id="preferencesModal" tabindex="-1"
+  aria-labelledby="preferencesModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
@@ -380,17 +388,29 @@
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+
       <div class="modal-body">
-        <div class="input-group">
-          <input type="text" class="form-control" [(ngModel)]="newPreference" placeholder="Enter a tag" />
-          <button class="btn btn-primary" data-bs-dismiss="modal" (click)="addPreference()">
-            Add
-          </button>
-        </div>
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Specialities</mat-label>
+          <mat-select [formControl]="preferenceControl" multiple panelClass="preference-panel">
+            <!-- inline search box -->
+            <mat-option class="search-option" disableRipple>
+              <input matInput placeholder="Search…" [formControl]="specialityFilterCtrl" autocomplete="off" />
+            </mat-option>
+            <!-- filtered specialities -->
+            <mat-option *ngFor="let spec of filteredSpecialities | async" [value]="spec">
+              {{ spec }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
       </div>
+
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
           Close
+        </button>
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="addPreference()">
+          Add Selected
         </button>
       </div>
     </div>

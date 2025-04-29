@@ -8,6 +8,7 @@ import { DatabaseService } from '../../../shared/services/database.service';
 import { SortingService } from '../../../shared/services/sorting.service';
 import { map, Observable, startWith } from 'rxjs';
 import { OrganizationService } from '../../services/organization.service';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-lab-landing',
@@ -16,6 +17,8 @@ import { OrganizationService } from '../../services/organization.service';
 })
 export class LabLandingComponent implements OnInit {
   @ViewChild('testModal') testModal!: ElementRef;
+  @ViewChild('importModal') importModal!: ElementRef;
+
   tests: any[] = [];
   filteredTests: any[] = [];
   testSearchText: string = '';
@@ -24,6 +27,9 @@ export class LabLandingComponent implements OnInit {
   selectedTest: any;
   userData: any;
   sortDirection: { [key: string]: 'asc' | 'desc' } = {};
+  importErrors: { row: number; errors: string[] }[] = [];
+  importedTests: any[] = []
+  fileName = '';
   constructor(
     private fb: FormBuilder,
     private sortingService: SortingService,
@@ -98,7 +104,7 @@ export class LabLandingComponent implements OnInit {
     this.testForm.markAllAsTouched();
     if (this.testForm.invalid || !this.userData.id) return;
 
-    this.organizationService.saveLabTest(this.userData.id, this.testForm.value).subscribe({
+    this.organizationService.saveLabTest(this.userData.id, [this.testForm.value]).subscribe({
       next: (response) => {
         this.loadData();
       },
@@ -140,5 +146,96 @@ export class LabLandingComponent implements OnInit {
 
     // Use the sorting service to sort the data
     this.filteredTests = this.sortingService.sort(this.filteredTests, column, direction);
+  }
+
+  openImportDialog(): void {
+    this.importErrors = [];
+    this.importedTests = [];
+    this.fileName = '';
+    const modal = new bootstrap.Modal(this.importModal.nativeElement);
+    modal.show();
+  }
+
+  // --- when user picks file ---
+  onFileSelected(evt: Event) {
+    const input = evt.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const file = input.files[0];
+    this.fileName = file.name;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const wb = XLSX.read(reader.result as ArrayBuffer, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const raw: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+      this.processRawRows(raw);
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  // --- validate headers + rows ---
+  private processRawRows(raw: any[][]) {
+    this.importErrors = [];
+    this.importedTests = [];
+
+    if (!raw.length) {
+      this.importErrors.push({ row: 0, errors: ['Excel is empty'] });
+      return;
+    }
+
+    const header = raw[0].map(h => (h||'').toString().trim());
+    const expected = ['Laboratory Test Name','Specimen Requirement','Precaution','Reporting Time','Amount','Comment'];
+    if (header.length < expected.length ||
+        expected.some((col, i) => col !== header[i])) {
+      this.importErrors.push({
+        row: 0,
+        errors: [`Header must be exactly: ${expected.join(', ')}`]
+      });
+      return;
+    }
+
+    raw.slice(1).forEach((row, idx) => {
+      const rowNum = idx + 2; // 1-based
+      const dto: any = {
+        name: row[0],
+        specimenRequirement: row[1],
+        precaution: row[2],
+        reportingTime: row[3],
+        amount: Number(row[4]),
+        comment: row[5]
+      };
+
+      const errs: string[] = [];
+      if (!dto.name) errs.push('name is required');
+      if (!dto.specimenRequirement) errs.push('specimenRequirement is required');
+      if (!dto.precaution) errs.push('precaution is required');
+      if (!dto.reportingTime) errs.push('reportingTime is required');
+      if (isNaN(dto.amount) || dto.amount < 0) errs.push('amount must be a non-negative number');
+
+      if (errs.length) {
+        this.importErrors.push({ row: rowNum, errors: errs });
+      } else {
+        this.importedTests.push(dto);
+      }
+    });
+  }
+
+  // --- submit if no errors ---
+  submitImport(): void {
+    if (this.importErrors.length) return;
+    if (!this.userData?.id) return;
+
+    this.organizationService
+      .saveLabTest(this.userData.id, this.importedTests)
+      .subscribe({
+        next: () => {
+          this.loadData();
+          bootstrap.Modal.getInstance(this.importModal.nativeElement)!.hide();
+        },
+        error: err => {
+          console.error('Error importing lab tests:', err);
+        }
+      });
   }
 }

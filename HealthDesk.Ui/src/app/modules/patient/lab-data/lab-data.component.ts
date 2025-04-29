@@ -74,8 +74,12 @@ export class LabDataComponent implements OnInit {
       ]),
       time: this.fb.control('', Validators.required),
       labTest: this.fb.control('', Validators.required),
-      value:  this.fb.control('', Validators.required),
+      value: this.fb.control('', Validators.required),
       unit: this.fb.control('', Validators.required),
+      price: this.fb.control('', [
+        Validators.required,
+        Validators.pattern(/^\d+(\.\d{1,2})?$/)  // ➡️ positive decimal, max 2 decimal places
+      ])
     });
 
     this.filterForm = this.fb.group(
@@ -141,7 +145,7 @@ export class LabDataComponent implements OnInit {
     modal.show();
   }
 
- saveLabData(): void {
+  saveLabData(): void {
     this.labDataForm.markAllAsTouched();
     if (this.labDataForm.invalid || !this.userData.id) return;
 

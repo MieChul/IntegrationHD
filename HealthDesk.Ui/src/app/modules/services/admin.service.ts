@@ -26,4 +26,10 @@ export class AdminService {
             withCredentials: true // Ensures cookies are sent with the request
         });
     }
+
+    getAllBrands() {
+        return this.http.get<User[]>(`${this.apiUrl}/brands`, {
+            withCredentials: true // Ensures cookies are sent with the request
+        });
+    }
 }

@@ -1,10 +1,12 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import * as bootstrap from 'bootstrap';
 import { AccountService } from '../../services/account.service';
 import { PatientService } from '../../services/patient.service';
 import { FilteringService } from '../../../shared/services/filter.service';
 import { Router } from '@angular/router';
+import { map, Observable, startWith } from 'rxjs';
+import { DatabaseService } from '../../../shared/services/database.service';
 
 @Component({
   selector: 'app-rate',
@@ -33,13 +35,17 @@ export class RateComponent implements OnInit {
   laboratories: any[] = [];
   selectedDetails: any = null;
   detailsType: string = '';
+  specialities: any[] = [];
+  specialityFilterCtrl = new FormControl();
+  filteredSpecialities!: Observable<string[]>;
 
   constructor(
     private fb: FormBuilder,
     private accountService: AccountService,
     private patientService: PatientService,
     private filteringService: FilteringService,
-    private router: Router
+    private router: Router,
+    private databaseService: DatabaseService
   ) { }
 
   async ngOnInit() {
@@ -48,6 +54,11 @@ export class RateComponent implements OnInit {
       next: async (data) => {
         this.userData = data;
         await this.loadEntities();
+        this.specialities = await this.databaseService.getSpecialities();
+        this.filteredSpecialities = this.specialityFilterCtrl.valueChanges.pipe(
+          startWith(''),
+          map((search) => this.filterOptions(search, this.specialities))
+        );
       },
       error: (err) => console.error('Error fetching user data:', err)
     });
@@ -63,12 +74,13 @@ export class RateComponent implements OnInit {
     });
 
     this.filterForm = this.fb.group({
-      location: this.fb.control(''),
-      speciality: this.fb.control(''),
-      timing: this.fb.control(''),
-      physician: this.fb.control(''),
-      testName: this.fb.control(''),
-      pharmacy: this.fb.control('')
+      location: [''],
+      speciality: [''],
+      from: [''],  // add new
+      to: [''],    // add new
+      physician: [''],
+      testName: [''],
+      pharmacy: ['']
     });
 
     this.filterForm.valueChanges.subscribe(() => {
@@ -82,6 +94,12 @@ export class RateComponent implements OnInit {
         this.applyFiltersPharma();
       }
     });
+  }
+
+
+  filterOptions(search: string, options: string[]): string[] {
+    const filterValue = search.toLowerCase();
+    return options.filter(option => option.toLowerCase().includes(filterValue));
   }
 
   /**
@@ -194,39 +212,34 @@ export class RateComponent implements OnInit {
    * Applies filters based on selected tab and form inputs
    */
   applyFilters(): void {
-    const filters: any = {};
-
     if (this.currentTab === 'physician') {
-      filters.location = this.filterForm.value.location;
-      filters.speciality = this.filterForm.value.speciality;
-      filters.timing = this.filterForm.value.timing;
+      this.applyFiltersPhysician();
     } else if (this.currentTab === 'hospital') {
-      filters.location = this.filterForm.value.location;
-      filters.service = this.filterForm.value.service;
-      filters.physician = this.filterForm.value.physician;
+      this.applyFiltersHospitals();
     } else if (this.currentTab === 'laboratory') {
-      filters.location = this.filterForm.value.location;
-      filters.testName = this.filterForm.value.testName;
+      this.applyFiltersLaboratory();
     } else if (this.currentTab === 'pharmacy') {
-      filters.location = this.filterForm.value.location;
-      filters.pharmacy = this.filterForm.value.pharmacy;
+      this.applyFiltersPharma();
     }
-
-    this.filteredEntities = this.filteringService.filter(this.entities, filters);
-
-    this.sortByRating();
   }
 
   applyFiltersPhysician(): void {
-    this.filteredPhysicians = this.filteringService.filter(
-      this.physicians,
-      {
-        location: this.filterForm.value.location,
-        service: this.filterForm.value.service,
-        physician: this.filterForm.value.physician
-      },
-      []
-    );
+    const { location, speciality, from, to } = this.filterForm.value;
+
+    this.filteredPhysicians = this.physicians.filter(p => {
+      let matches = true;
+      if (location) matches = matches && p.location?.toLowerCase().includes(location.toLowerCase());
+      if (speciality) matches = matches && p.speciality?.toLowerCase().includes(speciality.toLowerCase());
+
+      if (from && to) {
+        matches = matches &&
+          p.from &&
+          p.to &&
+          p.from >= from && p.to <= to;
+      }
+
+      return matches;
+    });
   }
 
   applyFiltersHospitals(): void {
@@ -271,10 +284,22 @@ export class RateComponent implements OnInit {
    * Sorts entities by rating in ascending or descending order
    */
   sortByRating(): void {
-    if (this.sortOrder === 'highest') {
-      this.filteredEntities.sort((a, b) => b.rating - a.rating);
-    } else {
-      this.filteredEntities.sort((a, b) => a.rating - b.rating);
+    if (this.currentTab === 'physician') {
+      this.filteredPhysicians.sort((a, b) =>
+        this.sortOrder === 'highest' ? b.rating - a.rating : a.rating - b.rating
+      );
+    } else if (this.currentTab === 'hospital') {
+      this.filteredHospitals.sort((a, b) =>
+        this.sortOrder === 'highest' ? b.rating - a.rating : a.rating - b.rating
+      );
+    } else if (this.currentTab === 'laboratory') {
+      this.filteredLaboratories.sort((a, b) =>
+        this.sortOrder === 'highest' ? b.rating - a.rating : a.rating - b.rating
+      );
+    } else if (this.currentTab === 'pharmacy') {
+      this.filteredPharmacies.sort((a, b) =>
+        this.sortOrder === 'highest' ? b.rating - a.rating : a.rating - b.rating
+      );
     }
   }
 

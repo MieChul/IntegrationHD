@@ -1,6 +1,6 @@
 <div class="container">
     <h1 class="animated-heading">
-        <i class="bi bi-hospital me-2"></i>Hospital
+        <i class="bi bi-hospital me-2"></i>Physicians and Services
     </h1>
     <!-- Tabs -->
     <ul class="nav nav-tabs mb-3">
@@ -35,7 +35,6 @@
                 </div>
                 <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
                     <button class="btn btn-primary me-2" (click)="openPhysicianDialog()">Add Physician</button>
-                    <button class="btn btn-success" (click)="exportToExcel()">Export to Excel</button>
                 </div>
 
             </div>
@@ -60,12 +59,18 @@
                             <td>{{ physician.middleName || '' }}</td>
                             <td>{{ physician.lastName }}</td>
                             <td> {{ physician.graduation }}
-                                <span *ngIf="physician.graduation && (physician.postGraduation || physician.superSpecialization || physician.additionalQualification)">, </span>
+                                <span
+                                    *ngIf="physician.graduation && (physician.postGraduation || physician.superSpecialization || physician.additionalQualification)">,
+                                </span>
                                 {{ physician.postGraduation }}
-                                <span *ngIf="physician.postGraduation && (physician.superSpecialization || physician.additionalQualification)">, </span>
+                                <span
+                                    *ngIf="physician.postGraduation && (physician.superSpecialization || physician.additionalQualification)">,
+                                </span>
                                 {{ physician.superSpecialization }}
-                                <span *ngIf="physician.superSpecialization && physician.additionalQualification">, </span>
-                                {{ physician.additionalQualification }}</td>
+                                <span *ngIf="physician.superSpecialization && physician.additionalQualification">,
+                                </span>
+                                {{ physician.additionalQualification }}
+                            </td>
                             <td>{{ physician.speciality }}</td>
                             <td>{{ physician.from }} - {{ physician.to }}</td>
                             <td>{{ physician.days?.join(', ') }}</td>
@@ -96,7 +101,10 @@
                     </div>
                 </div>
                 <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
-                    <button class="btn btn-primary" (click)="openServiceDialog()">Add Service</button>
+                    <button class="btn btn-primary me-2" (click)="openServiceDialog()">Add Service</button>
+                    <button class="btn btn-success" (click)="openServiceImportDialog()">
+                        Import
+                    </button>
                 </div>
             </div>
 
@@ -414,6 +422,51 @@
                 </button>
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="saveService()">
                     {{ isEditService ? 'Save Changes' : 'Add Service' }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Import Services Modal -->
+<div class="modal fade" data-bs-backdrop="static" tabindex="-1" #serviceImportModal>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Import Services</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Select Excel File</label>
+                    <input type="file" accept=".xlsx,.xls" class="form-control"
+                        (change)="onServiceFileSelected($event)" />
+                    <small *ngIf="serviceFileName" class="form-text text-muted">
+                        {{ serviceFileName }}
+                    </small>
+                </div>
+
+                <div *ngIf="serviceImportErrors.length" class="alert alert-danger">
+                    <strong>Validation Errors:</strong>
+                    <ul>
+                        <li *ngFor="let e of serviceImportErrors">
+                            Row {{ e.row }}: {{ e.errors.join('; ') }}
+                        </li>
+                    </ul>
+                </div>
+
+                <div *ngIf="!serviceImportErrors.length && importedServices.length">
+                    <p class="text-success">
+                        {{ importedServices.length }} rows ready to import.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+                <button type="button" class="btn btn-primary"
+                    [disabled]="!importedServices.length || serviceImportErrors.length" (click)="submitServiceImport()">
+                    Import
                 </button>
             </div>
         </div>

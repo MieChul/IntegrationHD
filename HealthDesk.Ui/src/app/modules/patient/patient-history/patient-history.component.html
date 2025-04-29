@@ -49,8 +49,9 @@
                 <tr>
                     <th (click)="sortTable('dateOfDiagnosis')">Date of Diagnosis</th>
                     <th (click)="sortTable('disease')">Disease</th>
-                    <th (click)="sortTable('start')">Start Date</th>
-                    <th (click)="sortTable('end')">End Date</th>
+                    <th (click)="sortTable('start')">Start Date (Symptoms)</th>
+                    <th (click)="sortTable('end')">End Date (Symptoms)</th>
+                    <th (click)="sortTable('price')">Price</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -127,7 +128,7 @@
                         <!-- Start Date -->
                         <div class="col-md-6">
                             <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Start Date</mat-label>
+                                <mat-label>Start Date (Symptoms)</mat-label>
                                 <input matInput [matDatepicker]="datePickerStart" formControlName="start" required />
                                 <mat-datepicker-toggle matSuffix [for]="datePickerStart"></mat-datepicker-toggle>
                                 <mat-datepicker #datePickerStart></mat-datepicker>
@@ -144,7 +145,7 @@
                         <!-- End Date -->
                         <div class="col-md-6">
                             <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>End Date</mat-label>
+                                <mat-label>End Date (Symptoms)</mat-label>
                                 <input matInput [matDatepicker]="datePickerEnd" formControlName="end" />
                                 <mat-datepicker-toggle matSuffix [for]="datePickerEnd"></mat-datepicker-toggle>
                                 <mat-datepicker #datePickerEnd></mat-datepicker>
