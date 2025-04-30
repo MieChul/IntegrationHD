@@ -307,250 +307,249 @@ export class GeneratePrescriptionComponent implements OnInit {
   }
 
   async generatePDF(): Promise<Blob> {
+    // Validate form
     this.prescriptionForm.markAllAsTouched();
-    if (this.prescriptionForm.invalid) return Promise.reject('Form is invalid');
+    if (this.prescriptionForm.invalid) {
+      return Promise.reject('Form is invalid');
+    }
 
-    const doc = new jsPDF('p', 'mm', 'a4');
-    const pageHeight = doc.internal.pageSize.height;
-    const pageWidth = doc.internal.pageSize.width;
+    // Initialize jsPDF
+    const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const pageWidth = doc.internal.pageSize.getWidth();
 
+    // Layout constants
     const headerHeight = 45;
     const footerHeight = 40;
-    const marginBottom = 20;
-    let startY = 60;
+    const bottomMargin = 20;
+    let startY = headerHeight + 15;
     const userDisplay = this.userData.username || 'User';
 
-    const addHeaderAndFooter = () => {
-      // Add header image (fixed position)
-      const useHeader = this.prescriptionForm.get('useHeader')?.value;
-      if (useHeader) {
-        try {
-          if (this.headerImg) {
-            doc.addImage(this.headerImg, 'PNG', 10, 10, 190, 30);
-          }
-        } catch (error) {
-          console.error('Error adding header image:', error);
-        }
-        doc.setDrawColor(0);
-        doc.line(5, headerHeight, pageWidth - 5, headerHeight);
-        // Add footer image
-        try {
-          if (this.footerImg) {
-            doc.addImage(
-              this.footerImg,
-              'PNG',
-              10,
-              pageHeight - 40,
-              190,
-              30
-            );
-          }
-        } catch (error) {
-          console.error('Error adding footer image:', error);
-        }
+    // Date formatting helper
+    const formatDate = (date: Date): string => {
+      const dd = String(date.getDate()).padStart(2, '0');
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const yyyy = date.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    };
+
+    // Add header and footer to current page
+    const addHeaderAndFooter = (): void => {
+      const useHeader = !!this.prescriptionForm.get('useHeader')?.value;
+
+      // Header image
+      if (useHeader && this.headerImg) {
+        try { doc.addImage(this.headerImg, 'PNG', 10, 10, pageWidth - 20, 30); } catch { }
       }
+
+      // Separator below header
+      doc.setDrawColor(0).line(5, headerHeight, pageWidth - 5, headerHeight);
+
+      // Footer image
+      if (this.footerImg) {
+        try { doc.addImage(this.footerImg, 'PNG', 10, pageHeight - footerHeight, pageWidth - 20, 30); } catch { }
+      }
+
+      // "Generated using..." text
       const now = new Date();
       const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' });
       const timeStr = now.toTimeString().slice(0, 5);
-      doc.setFont('Times');
-      doc.setFontSize(6);
+      doc.setFont('Times', 'normal').setFontSize(6);
       doc.text(
         `Generated using HealthDesk by ${userDisplay} on ${dateStr} at ${timeStr}`,
         14,
         pageHeight - 8
       );
-      // Reset startY for content
+
+      // Reset content start
       startY = headerHeight + 15;
     };
 
-
-    const checkAndAddNewPage = (tableHeight: number) => {
-      if (startY + tableHeight > pageHeight - footerHeight - marginBottom) {
+    // Insert page break if needed
+    const checkPageBreak = (blockHeight: number): void => {
+      if (startY + blockHeight > pageHeight - footerHeight - bottomMargin) {
         doc.addPage();
         addHeaderAndFooter();
       }
     };
 
+    // First page header/footer
     addHeaderAndFooter();
 
-    const formatDate = (date: string): string => {
-      if (!date) return '';
-      const d = date ? new Date(date) : new Date();
-      const day = d.getDate().toString().padStart(2, '0');
-      const month = (d.getMonth() + 1).toString().padStart(2, '0');
-      const year = d.getFullYear();
-      return `${day}/${month}/${year}`;
-    };
-    // Add header and footer to the first page
-    const formattedDate = formatDate(new Date().toISOString());
-    // Add Date on top-right
+    // --------------------
+    // 1. Patient Info
+    // --------------------
+    const patientInfoLines = [
+      `Barcode:`,
+      `Date: ${formatDate(new Date())}`,
+      `Patient's name: ${this.prescriptionForm.get('name')?.value || ''}`,
+      `Age: ${this.calculateAge(this.patientRecord?.dateOfBirth) || ''}`,
+      `Gender: ${this.prescriptionForm.get('gender')?.value || ''}`,
+      `OPD Registration: ${''}`
+    ];
+    const patientBlockHeight = patientInfoLines.length * 6;
+    checkPageBreak(patientBlockHeight);
     doc.setFontSize(10);
-    doc.text(`Barcode: `, 14, headerHeight + 10);
-    doc.text(`Date: ${formattedDate || '_________________'}`, pageWidth - 40, headerHeight + 10);
-    doc.text(`Patient\'s name: ${this.prescriptionForm.get('name')?.value || ''}`, 14, headerHeight + 17);
-    doc.text(`Age: ${this.calculateAge(this.patientRecord?.dateOfBirth) || ''}`, 14, headerHeight + 24);
-    doc.text(`Gender: ${this.prescriptionForm.get('gender')?.value || ''}`, 60, headerHeight + 24);
-    doc.text(`OPD Registration: ${''}`, 14, headerHeight + 31);
-
-    startY = headerHeight + 37;
-
-    const complaintsArray = this.prescriptionForm.get('complaints') as FormArray;
-
-    const chiefComplaints = complaintsArray.controls.map((control, index) => {
-      const complaint = control.value; // Access the value of each FormGroup in the FormArray
-      return [
-        index + 1,             // Serial number
-        complaint.text || '',  // Complaint text
-        complaint.duration || '' // Complaint duration
-      ];
-    }) || [['', '', '']];
-
-    // Approximate table height
-    var approxHeight = (chiefComplaints.length * 10) + 10;
-    // Check height for Chief Complaints table
-    checkAndAddNewPage(approxHeight);
-    doc.setFontSize(10);
-    const complaints = (this.prescriptionForm.get('complaints') as FormArray).controls;
-  const complaintsHeight = complaints.length * 6 + 8;
-  doc.text('Chief Complaints:', 14, startY);
-  complaints.forEach((ctrl, idx) => {
-    const { text, duration } = ctrl.value;
-    startY += 6;
-    doc.setFontSize(9).text(`${idx+1}. ${text || ''} (${duration || ''})`, 18, startY);
-  });
-
-    checkAndAddNewPage(20);
-    doc.setFontSize(10);
-    doc.text('Vitals:', 14, startY + 5);
-    doc.text(`Pulse (per minute): ${this.prescriptionForm.get('pulseRate')?.value || ''}`, 50, startY);
-    doc.text(`Respiratory rate (per minute): ${this.prescriptionForm.get('respiratoryRate')?.value || ''}`, 50, startY + 5);
-    doc.text(`Blood pressure (mm Hg):  ${this.prescriptionForm.get('bloodPressure')?.value || ''}`, 50, startY + 10);
-    doc.text(`Temperature: ${this.prescriptionForm.get('temperature')?.value || ''}`, 50, startY + 15);
-
-
-    startY = startY + 25;
-    checkAndAddNewPage(15);
-    doc.setFontSize(10);
-    doc.text(`Local examination: ${this.prescriptionForm.get('localExamination')?.value || ''}`, 14, startY);
-
-    const invText = `Investigations: ${this.selectedProfiles.join(', ')}`;
-    const invLines = doc.splitTextToSize(invText, pageWidth - 28);
-    const invHeight = invLines.length * 6 + 6;
-    checkAndAddNewPage(invHeight);
-    doc.setFontSize(10).text(invLines, 14, startY);
-    startY += invHeight;
-
-    // Systemic Table
-    const systemsArray = this.prescriptionForm.get('systems') as FormArray;
-
-    const systemicData = systemsArray.controls.map((control, index) => {
-      const system = control.value; // Access the value of each FormGroup in the FormArray
-      return [
-        index + 1,            // Serial number
-        system.name || '',    // System name
-        system.findings || '' // System findings
-      ];
-    }) || [['', '', '']];
-
-    var approxHt = (systemicData.length * 10) + 10;
-    checkAndAddNewPage(approxHt);
-    doc.setFontSize(10);
-    const systems = (this.prescriptionForm.get('systems') as FormArray).controls;
-    const physHeight = systems.length * 6 + 8;
-    doc.text('Physical Examination:', 14, startY);
-    systems.forEach((ctrl, idx) => {
-      const { name, findings } = ctrl.value;
-      startY += 6;
-      doc.setFontSize(9).text(`${idx+1}. ${name || ''}: ${findings || ''}`, 18, startY);
+    patientInfoLines.forEach((line, i) => {
+      doc.text(line, 14, startY + i * 6);
     });
-    startY += 10;
-    checkAndAddNewPage(10);
-    doc.setFontSize(10);
-    doc.text(`Provisional Diagnosis: ${this.prescriptionForm.get('pastHistory')?.value || ''}`, 14, startY);
+    startY += patientBlockHeight + 5;
 
-    startY = startY + 7;
-    // Rx Details Table
+    // --------------------
+    // 2. Chief Complaints
+    // --------------------
+    const complaintCtrls = (this.prescriptionForm.get('complaints') as FormArray).controls;
+    const complaintStrings = complaintCtrls
+      .filter(c => (c.value.text || '').trim())
+      .map((c, i) => `${i + 1}. ${c.value.text.trim()} (${c.value.duration || ''} days)`);
+    if (complaintStrings.length) {
+      const complaintText = `Chief Complaints: ${complaintStrings.join(', ')}`;
+      const wrapped = doc.splitTextToSize(complaintText, pageWidth - 28);
+      const complaintHeight = wrapped.length * 6;
+      checkPageBreak(complaintHeight);
+      doc.setFontSize(10).text(wrapped, 14, startY);
+      startY += complaintHeight + 5;
+    }
+
+    // --------------------
+    // 3. Vitals
+    // --------------------
+    const vitalsLines = [
+      `Vitals:`,
+      `Pulse (per min): ${this.prescriptionForm.get('pulseRate')?.value || ''}`,
+      `Respiratory rate (per min): ${this.prescriptionForm.get('respiratoryRate')?.value || ''}`,
+      `Blood pressure (mm Hg): ${this.prescriptionForm.get('bloodPressure')?.value || ''}`,
+      `Temperature: ${this.prescriptionForm.get('temperature')?.value || ''}`
+    ];
+    const vitalsHeight = vitalsLines.length * 6;
+    checkPageBreak(vitalsHeight);
+    doc.setFontSize(10);
+    vitalsLines.forEach((line, i) => {
+      doc.text(line, 14 + (i === 0 ? 0 : 36), startY + i * 6);
+    });
+    startY += vitalsHeight + 5;
+
+    // --------------------
+    // 4. Local Examination
+    // --------------------
+    const localExam = this.prescriptionForm.get('localExamination')?.value?.trim();
+    if (localExam) {
+      const localLines = doc.splitTextToSize(`Local examination: ${localExam}`, pageWidth - 28);
+      const localHeight = localLines.length * 6;
+      checkPageBreak(localHeight);
+      doc.setFontSize(10).text(localLines, 14, startY);
+      startY += localHeight + 5;
+    }
+
+    // --------------------
+    // 5. Investigations
+    // --------------------
+    if (this.selectedProfiles?.length) {
+      const invText = `Investigations: ${this.selectedProfiles.join(', ')}`;
+      const invLines = doc.splitTextToSize(invText, pageWidth - 28);
+      const invHeight = invLines.length * 6;
+      checkPageBreak(invHeight);
+      doc.setFontSize(10).text(invLines, 14, startY);
+      startY += invHeight + 5;
+    }
+
+    // --------------------
+    // 6. Physical Examination
+    // --------------------
+    const systemCtrls = (this.prescriptionForm.get('systems') as FormArray).controls;
+    const systemStrings = systemCtrls
+      .filter(c => (c.value.name || '').trim())
+      .map((c, i) => `${i + 1}. ${c.value.name.trim()}: ${c.value.findings || ''}`);
+    if (systemStrings.length) {
+      const sysText = `Physical Examination: ${systemStrings.join(', ')}`;
+      const sysLines = doc.splitTextToSize(sysText, pageWidth - 28);
+      const sysHeight = sysLines.length * 6;
+      checkPageBreak(sysHeight);
+      doc.setFontSize(10).text(sysLines, 14, startY);
+      startY += sysHeight + 5;
+    }
+
+    // --------------------
+    // 7. Provisional Diagnosis
+    // --------------------
+    const diag = this.prescriptionForm.get('pastHistory')?.value?.trim();
+    if (diag) {
+      const diagLine = `Provisional Diagnosis: ${diag}`;
+      const diagHeight = doc.splitTextToSize(diagLine, pageWidth - 28).length * 6;
+      checkPageBreak(diagHeight);
+      doc.setFontSize(10).text(diagLine, 14, startY);
+      startY += diagHeight + 5;
+    }
+
+    // --------------------
+    // 8. Prescription (Rx) Table
+    // --------------------
     const rxArray = this.prescriptionForm.get('rx') as FormArray;
+    const rxBody = rxArray.controls.map((c, i) => [
+      i + 1,
+      c.value.dosageForm || '',
+      c.value.drugName || '',
+      c.value.strength || '',
+      c.value.times || '',
+      c.value.duration || '',
+      c.value.instruction || ''
+    ]);
+    if (rxBody.length) {
+      checkPageBreak(10 + rxBody.length * 8);
+      doc.setFontSize(10).text('Prescription (Rx):', 14, startY);
+      startY += 5;
+      (doc as any).autoTable({
+        head: [['Sr.', 'Form', 'Drug', 'Strength', 'Freq', 'Dur', 'Instr']],
+        body: rxBody,
+        startY,
+        styles: { font: 'Times', fontSize: 8, lineColor: [0, 0, 0], lineWidth: 0.1 },
+        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'normal' }
+      });
+      startY = (doc as any).autoTable.previous.finalY + 5;
+    }
 
-    const rxData = rxArray.controls.map((control, index) => {
-      const medication = control.value; // Access the value of each FormGroup in the FormArray
-      return [
-        index + 1,                   // Serial number
-        medication.dosageForm || '', // Dosage Form
-        medication.drugName || '',   // Drug Name
-        medication.strength || '',   // Strength
-        medication.times || '',      // Frequency
-        medication.duration || '',   // Duration
-        medication.instruction || '' // Instruction
-      ];
-    }) || [['', '', '', '', '', '', '', '']];
+    // --------------------
+    // 9. Other Instructions & Follow-Up
+    // --------------------
+    const otherInst = this.prescriptionForm.get('otherInstructions')?.value?.trim();
+    if (otherInst) {
+      const oiLines = doc.splitTextToSize(`Other Instructions: ${otherInst}`, pageWidth - 28);
+      checkPageBreak(oiLines.length * 6);
+      doc.setFontSize(10).text(oiLines, 14, startY);
+      startY += oiLines.length * 6 + 5;
+    }
 
-    var approx = (rxData.length * 10) + 10;
-    checkAndAddNewPage(approx);
-    doc.setFontSize(10);
-    doc.text('Prescription (Rx):', 14, startY);
-    startY += 2;
-    // Approximate height for Rx details
-    autoTable(doc, {
-      head: [['Sr.', 'Dosage Form', 'Drug Name', 'Strength', 'Frequency', 'Duration', 'Instruction']],
-      headStyles: {
-        fillColor: [255, 255, 255], // Transparent white header (plain)
-        textColor: [0, 0, 0],       // Black text color for header
-        fontStyle: 'normal'         // Plain font style
-      },
-      body: rxData,
-      styles: {
-        font: 'Times',
-        fontSize: 8, lineColor: [0, 0, 0], lineWidth: 0.1
-      },
-      startY: startY
-    });
-    startY = (doc as any).autoTable.previous.finalY + 7;
-    checkAndAddNewPage(15);
-    doc.setFontSize(10);
+    const followUp = this.prescriptionForm.get('nextFollowUp')?.value;
+    if (followUp) {
+      const fuDate = new Date(followUp);
+      const fuLine = `Next Follow-up: ${String(fuDate.getDate()).padStart(2, '0')}/${String(fuDate.getMonth() + 1).padStart(2, '0')}/${fuDate.getFullYear()}`;
+      checkPageBreak(6);
+      doc.setFontSize(10).text(fuLine, 14, startY);
+      startY += 6 + 5;
+    }
 
-    doc.text(`Other Instructions: ${this.prescriptionForm.get('otherInstructions')?.value || ''}`, 14, startY);
-    const nextFollowUpValue = this.prescriptionForm.get('nextFollowUp')?.value;
-    const date = new Date(nextFollowUpValue);
-
-    // Get day, month, and year with leading zeros if needed
-    const day = String(date.getDate()).padStart(2, '0') || '';
-    const month = String(date.getMonth() + 1).padStart(2, '0') || '';
-    const year = date.getFullYear() || '';
-    doc.text(`Next Follow-up: ${day}/${month}/${year}`, 14, startY + 5);
-    startY = startY + 15;
-    checkAndAddNewPage(25);
-    doc.setFontSize(10);
-    // Physician Signature and Stamp Table
-    const signatureData = [['Physician Signature', 'Stamp']];
-    // Approximate height for signature section
-    autoTable(doc, {
-      body: signatureData,
+    // --------------------
+    // 10. Signature Section
+    // --------------------
+    const sigData = [['Physician Signature', 'Stamp']];
+    checkPageBreak(10 + 20);
+    (doc as any).autoTable({
+      body: sigData,
       theme: 'plain',
-      styles: {
-        font: 'Times',
-        fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1
+      columnStyles: { 0: { cellWidth: (pageWidth - 28) / 2 }, 1: { cellWidth: (pageWidth - 28) / 2 } },
+      styles: { font: 'Times', fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1 },
+      didParseCell: (data: any) => {
+        if (data.row.index === 0) data.cell.styles.minCellHeight = 20;
       },
-      columnStyles: {
-        0: { cellWidth: 90 }, // Signature (larger for space)
-        1: { cellWidth: 90 }   // Stamp
-      },
-      didParseCell: (data) => {
-        if (data.row.index === 0) {
-          data.cell.styles.minCellHeight = 20; // Apply larger row height for signature and stamp
-        }
-      },
-      startY: startY
+      startY
     });
 
+    // Output PDF
     const pdfBlob = doc.output('blob');
-    const illness = complaintsArray.controls
-      .map(control => control.value.text) // Extract the `text` value from each FormGroup
-      .join(', ');
-    const pdfUrl = URL.createObjectURL(pdfBlob);
-    window.open(pdfUrl, '_blank'); // ✅ Open the PDF in a new tab
+    window.open(URL.createObjectURL(pdfBlob), '_blank');
     return pdfBlob;
-  };
+  }
+
 
   openConfirmModal() {
     const modalRef = new bootstrap.Modal(document.getElementById('confirmSaveModal')!);

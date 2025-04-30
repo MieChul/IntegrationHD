@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { OrganizationService } from '../../services/organization.service';
 
 @Component({
@@ -12,7 +12,7 @@ export class ViewSurveyResponseComponent implements OnInit {
   surveyId: string = '';
   surveyTitle:string = '';
 
-  constructor(private route: ActivatedRoute, private organizationService: OrganizationService) { }
+  constructor(private route: ActivatedRoute, private organizationService: OrganizationService, private router: Router,) { }
 
   ngOnInit(): void {
     this.surveyId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -31,5 +31,10 @@ export class ViewSurveyResponseComponent implements OnInit {
     this.organizationService.updateSurvey(this.surveyId, { responses: this.surveyResponses }).then(() => {
       alert('Response deleted successfully');
     });
+  }
+
+  goBack() {
+
+    this.router.navigate(['/organization/pharma/surveys']);
   }
 }

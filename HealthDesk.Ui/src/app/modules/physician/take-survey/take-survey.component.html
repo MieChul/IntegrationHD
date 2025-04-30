@@ -1,3 +1,9 @@
+<div class="col-sm-1 text-start">
+  <button type="button" class="btn btn-secondary" (click)="goBack()" data-bs-toggle="tooltip"
+    data-bs-placement="right" title="Back">
+    <i class="bi bi-arrow-left"></i>
+  </button>
+</div>
 <form *ngIf="surveyForm" class="container" [formGroup]="surveyForm" (ngSubmit)="submitSurvey()">
   <!-- Survey image at the top (if available) -->
   <div class="text-center mb-4" *ngIf="survey?.image">

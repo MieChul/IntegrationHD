@@ -1,19 +1,28 @@
 <div class="container">
-    <h2 class="animated-heading">
-      <i class="bi bi-clipboard-check me-2"></i>View Survey
-    </h2>
-    <div class="card">
-      <div class="card-body">
-        <h3>{{ survey.name }}</h3>
-        <p><strong>Survey Creator:</strong> {{ survey.creator }}</p>
-        <p><strong>Company:</strong> {{ survey.company }}</p>
-        <p><strong>Survey Taken Date:</strong> {{ survey.takenDate}}</p>
-        <h5>Questions and Responses</h5>
-        <div *ngFor="let question of survey.questions">
-          <p><strong>{{ question.text }}</strong></p>
-          <p>{{ question.response }}</p>
-        </div>
+  <div class="col-sm-1 text-start">
+    <button type="button" class="btn btn-secondary" (click)="goBack()" data-bs-toggle="tooltip"
+      data-bs-placement="right" title="Back">
+      <i class="bi bi-arrow-left"></i>
+    </button>
+  </div>
+  <div class="card my-4">
+    <div class="card-header">
+      <h2 class="mb-1">{{ title }}</h2>
+      <small class="text-muted">
+        {{ description }}<br />
+        <strong>By:</strong> {{ author }}
+        <span *ngIf="company">• {{ company }}</span><br />
+        <strong>Taken on:</strong>
+        {{ takenDate | date:'dd MMM yyyy, HH:mm' }}
+      </small>
+    </div>
+    <div class="card-body">
+      <div *ngFor="let qa of qaList; let i = index" class="mb-4">
+        <label class="form-label h5">{{ i + 1 }}. {{ qa.questionText }}</label>
+        <mat-form-field appearance="outline" class="w-100">
+          <input matInput [value]="qa.answer" readonly />
+        </mat-form-field>
       </div>
     </div>
   </div>
-  
+</div>

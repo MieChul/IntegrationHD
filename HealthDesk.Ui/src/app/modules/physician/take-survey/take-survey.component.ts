@@ -9,6 +9,7 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OrganizationService } from '../../services/organization.service';
+import { AccountService } from '../../services/account.service';
 
 @Component({
   selector: 'app-take-survey',
@@ -19,19 +20,29 @@ export class TakeSurveyComponent implements OnInit {
   surveyForm!: FormGroup;
   survey: any; // Loaded survey from IndexedDB
   surveyId!: string;
-  // For demo purposes; in a real app, get this from your authentication service.
-  currentPhysicianId: string = 'physician123';
+  userData: any;
+
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private organizationService: OrganizationService
+    private organizationService: OrganizationService,
+    private accountService: AccountService
   ) {}
 
   ngOnInit(): void {
     this.surveyId = this.route.snapshot.paramMap.get('id')!;
+    this.accountService.getUserData().subscribe({
+      next: (data) => {
+        this.userData = data;
+
+           
     this.loadSurvey();
+      },
+      error: (err) => console.error('Error fetching user data:', err)
+    });
+
   }
 
   async loadSurvey(): Promise<void> {
@@ -120,16 +131,21 @@ export class TakeSurveyComponent implements OnInit {
 
       // Save the response with the current physician's ID.
       const responseData = {
-        physicianId: this.currentPhysicianId,
+        physicianId: this.userData.id,
         answers: responsesPayload,
         submittedAt: new Date().toISOString()
       };
 
       await this.organizationService.saveResponse(this.surveyId, responseData);
       alert('Survey submitted successfully!');
-      this.router.navigate(['/physician/view-survey', this.survey.id]);
+      this.router.navigate(['/physician/survey']);
     } else {
       this.surveyForm.markAllAsTouched();
     }
+  }
+
+  goBack() {
+
+    this.router.navigate(['/physician/survey']);
   }
 }

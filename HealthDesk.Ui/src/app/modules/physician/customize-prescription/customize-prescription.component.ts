@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -12,6 +12,7 @@ import { switchMap, tap, catchError, map } from 'rxjs/operators';
 import { Color } from '@angular-material-components/color-picker';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { ValidationService } from '../../../shared/services/validator.service';
+import { MatMenuTrigger } from '@angular/material/menu';
 
 
 @Component({
@@ -20,6 +21,7 @@ import { ValidationService } from '../../../shared/services/validator.service';
   styleUrls: ['./customize-prescription.component.scss']
 })
 export class CustomizePrescriptionComponent implements OnInit {
+  isPickerOpen = false;
   prescriptionForm!: FormGroup;
   isEditMode: boolean = false;
   prescriptionId: string = '';
@@ -32,15 +34,17 @@ export class CustomizePrescriptionComponent implements OnInit {
   constructor(private route: ActivatedRoute, private router: Router, private physicianService: PhysicianService, private accountService: AccountService,
     private fb: FormBuilder, private notificationService: NotificationService, private validationService: ValidationService) { }
 
+  @ViewChild('pickerTrigger') pickerTrigger!: MatMenuTrigger;
+  @ViewChild('colorInput') colorInput!: ElementRef<HTMLInputElement>;
+
   ngOnInit() {
     this.initializeForm();
     this.loadDataSequentially();
 
   }
 
-  onColorChange(color: string): void {
-    this.selectedColor = color;
-    console.log('Selected Color:', color);
+  onColorChange(hex: string, controlName: string): void {
+    this.prescriptionForm.patchValue({ [controlName]: hex });
   }
 
   loadDataSequentially(): void {
@@ -98,25 +102,25 @@ export class CustomizePrescriptionComponent implements OnInit {
     this.prescriptionForm = this.fb.group({
       id: [''],
       templateId: 0,
-      templateName: ['', Validators.required],
+      templateName: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9 ]+$/)]],
       clinicName: [''],
       clinicNameFontType: ['Arial'],
       clinicNameFontSize: ['medium'],
-      clinicNameFontColor: [new Color(0, 0, 0)],
+      clinicNameFontColor: ['#000000'],
       clinicAddress: [
         '',
         [Validators.required, Validators.maxLength(100)],
       ],
       clinicAddressFontType: ['Arial'],
       clinicAddressFontSize: ['medium'],
-      clinicAddressFontColor: [new Color(0, 0, 0)],
+      clinicAddressFontColor: ['#000000'],
       clinicPhone: [
         '',
         [Validators.required, Validators.pattern('^[6-9][0-9]{9}$')],
       ],
       clinicPhoneFontType: ['Arial'],
       clinicPhoneFontSize: ['medium'],
-      clinicPhoneFontColor: [new Color(0, 0, 0)],
+      clinicPhoneFontColor: ['#000000'],
       physicianName: [
         '',
         [
@@ -126,18 +130,18 @@ export class CustomizePrescriptionComponent implements OnInit {
       ],
       physicianNameFontType: ['Arial'],
       physicianNameFontSize: ['medium'],
-      physicianNameFontColor: [new Color(0, 0, 0)],
+      physicianNameFontColor: ['#000000'],
       clinicTimings: [
         '',
         [Validators.required],
       ],
       clinicTimingsFontType: ['Arial'],
       clinicTimingsFontSize: ['medium'],
-      clinicTimingsFontColor: [new Color(0, 0, 0)],
+      clinicTimingsFontColor: ['#000000'],
       mrcNumber: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9\s.\-\/\\]{2,50}$/)]],
       mrcNumberFontType: ['Arial'],
       mrcNumberFontSize: ['medium'],
-      mrcNumberFontColor: [new Color(0, 0, 0)],
+      mrcNumberFontColor: ['#000000'],
       qualification: [
         '',
         [
@@ -170,35 +174,35 @@ export class CustomizePrescriptionComponent implements OnInit {
       clinicName: prescription.clinicName,
       clinicNameFontType: prescription.clinicNameFontType,
       clinicNameFontSize: prescription.clinicNameFontSize,
-      clinicNameFontColor: prescription.clinicNameFontColor,
+      clinicNameFontColor: prescription.clinicNameFontColor || '#000000',
       clinicAddress: prescription.clinicAddress,
       clinicAddressFontType: prescription.clinicAddressFontType,
       clinicAddressFontSize: prescription.clinicAddressFontSize,
-      clinicAddressFontColor: prescription.clinicAddressFontColor,
+      clinicAddressFontColor: prescription.clinicAddressFontColor || '#000000',
       clinicPhone: prescription.clinicPhone,
       clinicPhoneFontType: prescription.clinicPhoneFontType,
       clinicPhoneFontSize: prescription.clinicPhoneFontSize,
-      clinicPhoneFontColor: prescription.clinicPhoneFontColor,
+      clinicPhoneFontColor: prescription.clinicPhoneFontColor || '#000000',
       physicianName: prescription.physicianName,
       physicianNameFontType: prescription.physicianNameFontType,
       physicianNameFontSize: prescription.physicianNameFontSize,
-      physicianNameFontColor: prescription.physicianNameFontColor,
+      physicianNameFontColor: prescription.physicianNameFontColor || '#000000',
       clinicTimings: prescription.clinicTimings,
       clinicTimingsFontType: prescription.clinicTimingsFontType,
       clinicTimingsFontSize: prescription.clinicTimingsFontSize,
-      clinicTimingsFontColor: prescription.clinicTimingsFontColor,
+      clinicTimingsFontColor: prescription.clinicTimingsFontColor || '#000000',
       mrcNumber: prescription.mrcNumber,
       mrcNumberFontType: prescription.mrcNumberFontType,
       mrcNumberFontSize: prescription.mrcNumberFontSize,
-      mrcNumberFontColor: prescription.mrcNumberFontColor,
+      mrcNumberFontColor: prescription.mrcNumberFontColor || '#000000',
       qualification: prescription.qualification,
       qualificationFontType: prescription.qualificationFontType,
       qualificationFontSize: prescription.qualificationFontSize,
-      qualificationFontColor: prescription.qualificationFontColor,
+      qualificationFontColor: prescription.qualificationFontColor || '#000000',
       footerText: prescription.footerText,
       footerTextFontType: prescription.footerTextFontType,
       footerTextFontSize: prescription.footerTextFontSize,
-      footerTextFontColor: prescription.footerTextFontColor,
+      footerTextFontColor: prescription.footerTextFontColor || '#000000',
       isDefault: prescription.isDefault,
       logoUrl: prescription.logoUrl,
       footerImageUrl: prescription.footerImageUrl,
@@ -616,7 +620,7 @@ export class CustomizePrescriptionComponent implements OnInit {
       startY: startY,
       styles: {
         font: 'Times',
-        fontSize:8, lineColor: [0, 0, 0], lineWidth: 0.1
+        fontSize: 8, lineColor: [0, 0, 0], lineWidth: 0.1
       }
     });
     startY = (doc as any).autoTable.previous.finalY + 5;
@@ -660,7 +664,7 @@ export class CustomizePrescriptionComponent implements OnInit {
       startY: startY
     });
     startY = (doc as any).autoTable.previous.finalY + 5;
-    
+
     checkAndAddNewPage(10);
     doc.setFontSize(10);
     doc.text(`Provisional Diagnosis:`, 14, startY);
@@ -829,6 +833,19 @@ export class CustomizePrescriptionComponent implements OnInit {
       .catch((error) => {
         console.error('Error loading image:', error);
       });
+  }
+
+  onPickerMenuOpened(colorInput: HTMLInputElement) {
+    setTimeout(() => colorInput.click(), 0);
+  }
+  
+  onColorPicked(event: Event, control: string) {
+    const hex = (event.target as HTMLInputElement).value;
+    this.prescriptionForm.get(control)!.setValue(hex);
+  }
+  
+  closePicker(trigger: MatMenuTrigger) {
+    trigger.closeMenu();
   }
 
 }

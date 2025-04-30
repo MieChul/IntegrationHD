@@ -10,7 +10,7 @@ import { OrganizationService } from '../../services/organization.service';
 export class DesignSurveyComponent implements OnInit {
   // Initialize surveyForm with correct structure
   surveyForm: Survey = {
-    id:'',
+    id: '',
     name: '',
     title: '',
     description: '',
@@ -21,7 +21,7 @@ export class DesignSurveyComponent implements OnInit {
     author: '',
     company: '',
     responses: [],
-    isTaken:false
+    isTaken: false
   };
 
   questionErrors: any = [];
@@ -175,6 +175,11 @@ export class DesignSurveyComponent implements OnInit {
       });
       this.router.navigate(['/organization/pharma/surveys']);
     }
+  }
+
+  goBack() {
+
+    this.router.navigate(['/organization/pharma/surveys']);
   }
 }
 

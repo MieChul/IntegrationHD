@@ -15,8 +15,11 @@
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Template Name</mat-label>
           <input matInput formControlName="templateName" required />
-          <mat-error *ngIf="prescriptionForm.get('templateName')?.invalid">
+          <mat-error *ngIf="prescriptionForm.get('templateName')?.hasError('required')">
             Template Name is required.
+          </mat-error>
+          <mat-error *ngIf="prescriptionForm.get('templateName')?.hasError('pattern')">
+            Template name must be alphanumeric.
           </mat-error>
         </mat-form-field>
       </div>
@@ -70,11 +73,30 @@
       <div class="col">
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Color</mat-label>
-          <input matInput formControlName="clinicPhoneFontColor" [ngxMatColorPicker]="colorPicker1" />
-          <ngx-mat-color-toggle matSuffix [for]="colorPicker1"
-            (colorChange)="onColorSelected($event,'clinicPhoneFontColor',colorPicker1)"></ngx-mat-color-toggle>
-          <ngx-mat-color-picker #colorPicker1></ngx-mat-color-picker>
+          <input matInput formControlName="clinicPhoneFontColor" readonly class="hex-display-input" />
+
+          <button matSuffix mat-icon-button #pickerTrigger="matMenuTrigger" [matMenuTriggerFor]="pickerMenu"
+            aria-label="Pick color" (menuOpened)="onPickerMenuOpened(colorInput)" type="button">
+            <mat-icon [style.color]="prescriptionForm.get('clinicPhoneFontColor')?.value" style="font-size:24px">
+              palette
+            </mat-icon>
+          </button>
         </mat-form-field>
+
+        <mat-menu #pickerMenu="matMenu" yPosition="below" class="color-menu-panel">
+          <div class="color-menu-content" (click)="$event.stopPropagation()">
+            <input #colorInput type="color" [value]="prescriptionForm.get('clinicPhoneFontColor')?.value"
+              (input)="onColorPicked($event,'clinicPhoneFontColor')" class="native-color-input" />
+
+            <div class="menu-actions">
+              <button mat-mini-fab color="primary" (click)="closePicker(pickerTrigger)">
+                <mat-icon>check</mat-icon>
+              </button>
+            </div>
+          </div>
+        </mat-menu>
+
+
       </div>
     </div>
 
@@ -110,15 +132,35 @@
           </mat-select>
         </mat-form-field>
       </div>
+      <!-- physicianNameFontColor picker -->
       <div class="col">
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Color</mat-label>
-          <input matInput formControlName="physicianNameFontColor" [ngxMatColorPicker]="colorPicker2" />
-          <ngx-mat-color-toggle matSuffix [for]="colorPicker2"
-            (colorChange)="onColorSelected($event,'physicianNameFontColor',colorPicker2)"></ngx-mat-color-toggle>
-          <ngx-mat-color-picker #colorPicker2></ngx-mat-color-picker>
+
+          <input matInput formControlName="physicianNameFontColor" readonly class="hex-display-input" />
+
+          <button matSuffix mat-icon-button #physPicker="matMenuTrigger" [matMenuTriggerFor]="physMenu"
+            (menuOpened)="onPickerMenuOpened(colorInputPhys)" type="button" aria-label="Pick color">
+            <mat-icon [style.color]="prescriptionForm.get('physicianNameFontColor')?.value" style="font-size:24px">
+              palette
+            </mat-icon>
+          </button>
         </mat-form-field>
+
+        <mat-menu #physMenu="matMenu" yPosition="below" class="color-menu-panel">
+          <div class="color-menu-content" (click)="$event.stopPropagation()">
+            <input #colorInputPhys type="color" [value]="prescriptionForm.get('physicianNameFontColor')?.value"
+              (input)="onColorPicked($event,'physicianNameFontColor')" class="native-color-input" />
+
+            <div class="menu-actions">
+              <button mat-mini-fab color="primary" (click)="closePicker(physPicker)">
+                <mat-icon>check</mat-icon>
+              </button>
+            </div>
+          </div>
+        </mat-menu>
       </div>
+
     </div>
 
 
@@ -154,15 +196,39 @@
           </mat-select>
         </mat-form-field>
       </div>
+      <!-- Qualification “Color” picker -->
       <div class="col">
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Color</mat-label>
-          <input matInput formControlName="qualificationFontColor" [ngxMatColorPicker]="colorPicker3" />
-          <ngx-mat-color-toggle matSuffix [for]="colorPicker3"
-            (colorChange)="onColorSelected($event,'qualificationFontColor',colorPicker3)"></ngx-mat-color-toggle>
-          <ngx-mat-color-picker #colorPicker3></ngx-mat-color-picker>
+
+          <!-- show the hex code -->
+          <input matInput formControlName="qualificationFontColor" readonly class="hex-display-input" />
+
+          <!-- palette icon: opens menu & immediately fires the native picker -->
+          <button matSuffix mat-icon-button #qualPicker="matMenuTrigger" [matMenuTriggerFor]="qualMenu"
+            (menuOpened)="onPickerMenuOpened(colorInputQual)" type="button" aria-label="Pick qualification color">
+            <mat-icon [style.color]="prescriptionForm.get('qualificationFontColor')?.value" style="font-size:24px">
+              palette
+            </mat-icon>
+          </button>
         </mat-form-field>
+
+        <!-- pop-over menu -->
+        <mat-menu #qualMenu="matMenu" yPosition="below" class="color-menu-panel" overlapTrigger="false">
+          <div class="color-menu-content" (click)="$event.stopPropagation()">
+            <!-- the real color input -->
+            <input #colorInputQual type="color" [value]="prescriptionForm.get('qualificationFontColor')?.value"
+              (input)="onColorPicked($event,'qualificationFontColor')" class="native-color-input" />
+
+            <div class="menu-actions">
+              <button mat-mini-fab color="primary" (click)="closePicker(qualPicker)">
+                <mat-icon>check</mat-icon>
+              </button>
+            </div>
+          </div>
+        </mat-menu>
       </div>
+
     </div>
 
     <!-- MRC Number -->
@@ -194,15 +260,39 @@
           </mat-select>
         </mat-form-field>
       </div>
+      <!-- MRC Number “Color” picker -->
       <div class="col">
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Color</mat-label>
-          <input matInput formControlName="mrcNumberFontColor" [ngxMatColorPicker]="colorPicker4" />
-          <ngx-mat-color-toggle matSuffix [for]="colorPicker4"
-            (colorChange)="onColorSelected($event,'mrcNumberFontColor',colorPicker4)"></ngx-mat-color-toggle>
-          <ngx-mat-color-picker #colorPicker4></ngx-mat-color-picker>
+
+          <!-- show the hex code -->
+          <input matInput formControlName="mrcNumberFontColor" readonly class="hex-display-input" />
+
+          <!-- palette icon: opens menu & immediately fires the native picker -->
+          <button matSuffix mat-icon-button #mrcPicker="matMenuTrigger" [matMenuTriggerFor]="mrcMenu"
+            (menuOpened)="onPickerMenuOpened(colorInputMrc)" type="button" aria-label="Pick MRC number color">
+            <mat-icon [style.color]="prescriptionForm.get('mrcNumberFontColor')?.value" style="font-size:24px">
+              palette
+            </mat-icon>
+          </button>
         </mat-form-field>
+
+        <!-- pop-over menu -->
+        <mat-menu #mrcMenu="matMenu" yPosition="below" class="color-menu-panel">
+          <div class="color-menu-content" (click)="$event.stopPropagation()">
+            <!-- the real color input -->
+            <input #colorInputMrc type="color" [value]="prescriptionForm.get('mrcNumberFontColor')?.value"
+              (input)="onColorPicked($event,'mrcNumberFontColor')" class="native-color-input" />
+
+            <div class="menu-actions">
+              <button mat-mini-fab color="primary" (click)="closePicker(mrcPicker)">
+                <mat-icon>check</mat-icon>
+              </button>
+            </div>
+          </div>
+        </mat-menu>
       </div>
+
     </div>
 
     <!-- Clinic Name -->
@@ -239,12 +329,30 @@
       <div class="col">
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Color</mat-label>
-          <input matInput formControlName="clinicNameFontColor" [ngxMatColorPicker]="colorPicker5" />
-          <ngx-mat-color-toggle matSuffix [for]="colorPicker5"
-            (colorChange)="onColorSelected($event,'clinicNameFontColor',colorPicker5)"></ngx-mat-color-toggle>
-          <ngx-mat-color-picker #colorPicker5></ngx-mat-color-picker>
+
+          <input matInput formControlName="clinicNameFontColor" readonly class="hex-display-input" />
+
+          <button matSuffix mat-icon-button #clinicPicker="matMenuTrigger" [matMenuTriggerFor]="clinicMenu"
+            (menuOpened)="onPickerMenuOpened(colorInputClinic)" type="button" aria-label="Pick clinic name color">
+            <mat-icon [style.color]="prescriptionForm.get('clinicNameFontColor')?.value" style="font-size:24px">
+              palette
+            </mat-icon>
+          </button>
         </mat-form-field>
+
+        <mat-menu #clinicMenu="matMenu" yPosition="below" class="color-menu-panel">
+          <div class="color-menu-content" (click)="$event.stopPropagation()">
+            <input #colorInputClinic type="color" [value]="prescriptionForm.get('clinicNameFontColor')?.value"
+              (input)="onColorPicked($event,'clinicNameFontColor')" class="native-color-input" />
+            <div class="menu-actions">
+              <button mat-mini-fab color="primary" (click)="closePicker(clinicPicker)">
+                <mat-icon>check</mat-icon>
+              </button>
+            </div>
+          </div>
+        </mat-menu>
       </div>
+
     </div>
 
 
@@ -277,15 +385,38 @@
           </mat-select>
         </mat-form-field>
       </div>
+      <!-- Clinic Address “Color” picker -->
       <div class="col">
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Color</mat-label>
-          <input matInput formControlName="clinicAddressFontColor" [ngxMatColorPicker]="colorPicker6" />
-          <ngx-mat-color-toggle matSuffix [for]="colorPicker6"
-            (colorChange)="onColorSelected($event,'clinicAddressFontColor',colorPicker6)"></ngx-mat-color-toggle>
-          <ngx-mat-color-picker #colorPicker6></ngx-mat-color-picker>
+
+          <!-- display the hex code -->
+          <input matInput formControlName="clinicAddressFontColor" readonly class="hex-display-input" />
+
+          <!-- palette icon: opens menu & fires the native picker -->
+          <button matSuffix mat-icon-button #addressPicker="matMenuTrigger" [matMenuTriggerFor]="addressMenu"
+            (menuOpened)="onPickerMenuOpened(colorInputAddress)" type="button" aria-label="Pick clinic address color">
+            <mat-icon [style.color]="prescriptionForm.get('clinicAddressFontColor')?.value" style="font-size:24px">
+              palette
+            </mat-icon>
+          </button>
         </mat-form-field>
+
+        <!-- pop-over menu -->
+        <mat-menu #addressMenu="matMenu" yPosition="below" class="color-menu-panel">
+          <div class="color-menu-content" (click)="$event.stopPropagation()">
+            <!-- the real color input -->
+            <input #colorInputAddress type="color" [value]="prescriptionForm.get('clinicAddressFontColor')?.value"
+              (input)="onColorPicked($event,'clinicAddressFontColor')" class="native-color-input" />
+            <div class="menu-actions">
+              <button mat-mini-fab color="primary" (click)="closePicker(addressPicker)">
+                <mat-icon>check</mat-icon>
+              </button>
+            </div>
+          </div>
+        </mat-menu>
       </div>
+
     </div>
 
     <!-- Clinic Timings -->
@@ -317,15 +448,39 @@
           </mat-select>
         </mat-form-field>
       </div>
+      <!-- Clinic Timings “Color” picker -->
       <div class="col">
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Color</mat-label>
-          <input matInput formControlName="clinicTimingsFontColor" [ngxMatColorPicker]="colorPicker7" />
-          <ngx-mat-color-toggle matSuffix [for]="colorPicker7"
-            (colorChange)="onColorSelected($event,'clinicTimingsFontColor',colorPicker7)"></ngx-mat-color-toggle>
-          <ngx-mat-color-picker #colorPicker7></ngx-mat-color-picker>
+
+          <!-- display the hex code -->
+          <input matInput formControlName="clinicTimingsFontColor" readonly class="hex-display-input" />
+
+          <!-- palette icon: opens menu & fires the native picker -->
+          <button matSuffix mat-icon-button #timingsPicker="matMenuTrigger" [matMenuTriggerFor]="timingsMenu"
+            (menuOpened)="onPickerMenuOpened(colorInputTimings)" type="button" aria-label="Pick clinic timings color">
+            <mat-icon [style.color]="prescriptionForm.get('clinicTimingsFontColor')?.value" style="font-size:24px">
+              palette
+            </mat-icon>
+          </button>
         </mat-form-field>
+
+        <!-- pop-over menu -->
+        <mat-menu #timingsMenu="matMenu" yPosition="below" class="color-menu-panel">
+          <div class="color-menu-content" (click)="$event.stopPropagation()">
+            <!-- the real color input -->
+            <input #colorInputTimings type="color" [value]="prescriptionForm.get('clinicTimingsFontColor')?.value"
+              (input)="onColorPicked($event,'clinicTimingsFontColor')" class="native-color-input" />
+
+            <div class="menu-actions">
+              <button mat-mini-fab color="primary" (click)="closePicker(timingsPicker)">
+                <mat-icon>check</mat-icon>
+              </button>
+            </div>
+          </div>
+        </mat-menu>
       </div>
+
     </div>
 
     <!-- Footer Text -->
@@ -357,15 +512,39 @@
           </mat-select>
         </mat-form-field>
       </div>
+      <!-- Footer Text “Color” picker -->
       <div class="col">
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Color</mat-label>
-          <input matInput formControlName="footerTextFontColor" [ngxMatColorPicker]="colorPicker8" />
-          <ngx-mat-color-toggle matSuffix [for]="colorPicker8"
-            (colorChange)="onColorSelected($event,'footerTextFontColor',colorPicker8)"></ngx-mat-color-toggle>
-          <ngx-mat-color-picker #colorPicker8></ngx-mat-color-picker>
+
+          <!-- show the hex code -->
+          <input matInput formControlName="footerTextFontColor" readonly class="hex-display-input" />
+
+          <!-- palette icon: opens menu & immediately fires the native picker -->
+          <button matSuffix mat-icon-button #footerPicker="matMenuTrigger" [matMenuTriggerFor]="footerMenu"
+            (menuOpened)="onPickerMenuOpened(colorInputFooter)" type="button" aria-label="Pick footer text color">
+            <mat-icon [style.color]="prescriptionForm.get('footerTextFontColor')?.value" style="font-size:24px">
+              palette
+            </mat-icon>
+          </button>
         </mat-form-field>
+
+        <!-- pop-over menu -->
+        <mat-menu #footerMenu="matMenu" yPosition="below" class="color-menu-panel">
+          <div class="color-menu-content" (click)="$event.stopPropagation()">
+            <!-- the real color input -->
+            <input #colorInputFooter type="color" [value]="prescriptionForm.get('footerTextFontColor')?.value"
+              (input)="onColorPicked($event,'footerTextFontColor')" class="native-color-input" />
+
+            <div class="menu-actions">
+              <button mat-mini-fab color="primary" (click)="closePicker(footerPicker)">
+                <mat-icon>check</mat-icon>
+              </button>
+            </div>
+          </div>
+        </mat-menu>
       </div>
+
     </div>
     <div class="row align-items-center mb-4">
       <div class="col text-center">

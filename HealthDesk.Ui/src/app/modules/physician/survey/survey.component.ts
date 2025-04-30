@@ -24,22 +24,25 @@ export class SurveyComponent implements OnInit {
     this.accountService.getUserData().subscribe({
       next: (data) => {
         this.userData = data;
-        this.organizationService.getSurveys().then((surveys: any[]) => {
-          // Filter only those surveys that have been shared with the current physician
-          this.surveys = surveys.filter((survey) =>
-            survey.sharedWith && survey.sharedWith.includes(data.id)
-          ).map((survey) => {
-            // Check if the current physician has already responded
-            const hasResponded = survey.responses && survey.responses.some((resp: any) => resp.physicianId === data.id);
-            return { ...survey, isTaken: hasResponded };
-          });
-          this.filteredSurveys = [...this.surveys];
-        });
+
+        this.loadPhysicianSurveys();
+
       },
       error: (err) => console.error('Error fetching user data:', err)
     });
   }
 
+  private async loadPhysicianSurveys() {
+    const all = await this.organizationService.getSurveys();
+    // only surveys shared with me
+    this.surveys = all
+      .filter((s : any)=> s.sharedWith?.includes(this.userData.id))
+      .map((s : any) => {
+        const responded = s.responses?.some((r: any) => r.physicianId === this.userData.id);
+        return { ...s, isTaken: responded };
+      });
+    this.filteredSurveys = [...this.surveys];
+  }
 
   filterSurveys(): void {
     this.filteredSurveys = this.surveys.filter(survey =>
@@ -56,7 +59,13 @@ export class SurveyComponent implements OnInit {
     this.router.navigate(['/physician/view-survey', surveyId]);
   }
 
-  takeSurvey(surveyId: any): void {
-    this.router.navigate(['/physician/take-survey', surveyId]);
+  takeSurvey(id: any) {
+    const survey = this.surveys.find(s => s.id === id);
+    if (survey?.isTaken) {
+      // just in case someone re-enables the button
+      alert('You have already taken this survey.');
+      return;
+    }
+    this.router.navigate(['/physician/take-survey', id]);
   }
 }

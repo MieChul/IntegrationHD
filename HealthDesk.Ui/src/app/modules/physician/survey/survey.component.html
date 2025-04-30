@@ -1,52 +1,55 @@
 <div class="container">
-    <h2 class="animated-heading">
-      <i class="bi bi-clipboard me-2"></i>Surveys
-    </h2>
-    <div class="row mb-3 align-items-center">
-      <div class="col-md-6 d-flex justify-content-start flex-wrap">
-        <div class="mb-2 me-3">
-          <mat-form-field appearance="outline" class="w-100" class="w-100">
-            <mat-label>Search Surveys</mat-label>
-            <input matInput placeholder="Search by Name" [(ngModel)]="searchTerm" (input)="filterSurveys()" />
-          </mat-form-field>
-        </div>
+  <h2 class="animated-heading">
+    <i class="bi bi-clipboard me-2"></i>Surveys
+  </h2>
+  <div class="row mb-3 align-items-center">
+    <div class="col-md-6 d-flex justify-content-start flex-wrap">
+      <div class="mb-2 me-3">
+        <mat-form-field appearance="outline" class="w-100" class="w-100">
+          <mat-label>Search Surveys</mat-label>
+          <input matInput placeholder="Search by Name" [(ngModel)]="searchTerm" (input)="filterSurveys()" />
+        </mat-form-field>
       </div>
     </div>
-    <div class="table-responsive">
-      <table class="table table-hover table-modern">
-        <thead>
-          <tr>
-            <th>Sr.No</th>
-            <th>Title </th>
-            <th>Description</th>
-            <th>Author </th>
-            <th>Date</th>
-            <th>Responded?</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let survey of filteredSurveys; let i = index">
-            <td>{{ i + 1 }}</td>
-            <td>{{ survey.title }}</td>
-            <td>{{ survey.description }}</td>
-            <td>{{ survey.author }}</td>
-            <td>{{ survey.date | date }}</td>
-            <td>{{ survey.isTaken }}</td>
-            <td>
-              <button class="btn btn-info btn-sm me-1" (click)="viewSurvey(survey?.id)" [disabled]="!survey.isTaken" ngbTooltip="View Survey" tooltipClass="view-tooltip">
-                <i class="bi bi-eye"></i>
-              </button>
-              <button class="btn btn-primary btn-sm" (click)="takeSurvey(survey?.id)" [disabled]="survey.isTaken" ngbTooltip="Take Survey" tooltipClass="take-tooltip">
-                <i class="bi bi-arrow-up-right-square"></i>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <div *ngIf="filteredSurveys?.length === 0" class="alert alert-info">
-        No surveys found.
-    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover table-modern">
+      <thead>
+        <tr>
+          <th>Sr.No</th>
+          <th>Title </th>
+          <th>Description</th>
+          <th>Author </th>
+          <th>Date</th>
+          <th>Responded?</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let survey of filteredSurveys; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ survey.title }}</td>
+          <td>{{ survey.description }}</td>
+          <td>{{ survey.author }}</td>
+          <td>{{ survey.date | date }}</td>
+          <td>{{ survey.isTaken }}</td>
+          <td>
+            <button *ngIf="survey.isTaken" class="btn btn-info btn-sm me-1" (click)="viewSurvey(survey.id)"
+              ngbTooltip="View Survey" tooltipClass="view-tooltip">
+              <i class="bi bi-eye"></i>
+            </button>
+
+            <!-- Take button only if NOT yet taken -->
+            <button *ngIf="!survey.isTaken" class="btn btn-primary btn-sm" (click)="takeSurvey(survey.id)"
+              ngbTooltip="Take Survey" tooltipClass="take-tooltip">
+              <i class="bi bi-arrow-up-right-square"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div *ngIf="filteredSurveys?.length === 0" class="alert alert-info">
+      No surveys found.
     </div>
   </div>
-  
+</div>

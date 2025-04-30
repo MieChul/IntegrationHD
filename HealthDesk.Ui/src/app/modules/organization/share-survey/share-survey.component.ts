@@ -129,4 +129,9 @@ export class ShareSurveyComponent implements OnInit {
       []
     );
   }
+
+  goBack() {
+
+    this.router.navigate(['/organization/pharma/surveys']);
+  }
 }

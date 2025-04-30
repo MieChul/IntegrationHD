@@ -2,6 +2,12 @@
   <h1 class="animated-heading">
     <i class="bi bi-share me-2"></i>Share Survey: {{ surveyTitle }}
   </h1>
+  <div class="col-sm-1 text-start">
+    <button type="button" class="btn btn-secondary" (click)="goBack()" data-bs-toggle="tooltip"
+      data-bs-placement="right" title="Back">
+      <i class="bi bi-arrow-left"></i>
+    </button>
+  </div>
 
   <!-- Survey URL Section -->
   <div class="input-group mb-4">

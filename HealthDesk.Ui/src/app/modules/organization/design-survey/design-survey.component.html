@@ -3,6 +3,12 @@
     <h1 class="animated-heading">
       <i class="bi bi-box-seam me-2"></i>Create Survey
     </h1>
+    <div class="col-sm-1 text-start">
+      <button type="button" class="btn btn-secondary" (click)="goBack()" data-bs-toggle="tooltip"
+        data-bs-placement="right" title="Back">
+        <i class="bi bi-arrow-left"></i>
+      </button>
+    </div>
     
     <form (ngSubmit)="saveSurvey()">
       <h3 for="image" class="form-label mt-3">Upload Survey Header Image</h3>
