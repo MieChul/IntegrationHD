@@ -213,7 +213,7 @@ namespace HealthDesk.API.Controllers
         public async Task<IActionResult> GetPatientInfo(string patientId) =>
             Ok(new { Success = true, Message = "Patient info retrieved successfully.", Data = await _patientService.GetPatientInfoAsync(patientId) });
 
-        [HttpPut("{patientId}/info")]
+        [HttpPost("{patientId}/info")]
         public async Task<IActionResult> UpdatePatientInfo(string patientId, [FromBody] PatientInfoDto dto)
         {
             if (!ModelState.IsValid)
@@ -367,7 +367,7 @@ namespace HealthDesk.API.Controllers
 
         }
 
-        [HttpPut("{userId}/like/{remedyId}/{likedUser}")]
+        [HttpPost("{userId}/like/{remedyId}/{likedUser}")]
         public async Task<IActionResult> ToggleLike(string userId, string remedyId, string likedUser)
         {
             if (!ModelState.IsValid)
@@ -378,7 +378,7 @@ namespace HealthDesk.API.Controllers
 
         }
 
-        [HttpPut("{userId}/preference")]
+        [HttpPost("{userId}/preference")]
         public async Task<IActionResult> UpdatePreferences(string userId, [FromBody] List<string> preferences)
         {
             await _patientService.UpdatePreferencesAsync(userId, preferences);

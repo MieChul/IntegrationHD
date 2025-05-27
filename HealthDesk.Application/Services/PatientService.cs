@@ -1106,7 +1106,7 @@ public class PatientService : IPatientService
             img.ImageName = $@"{remedy.Id}_image{count++}.png";
             remedy.Images.Add(new CaseImage
             {
-                ImageUrl = $@"/assets/documents/{dto.UserId}/remedies/{remedy.Id}_image{count++}.png",
+                ImageUrl = $@"/assets/documents/{dto.UserId}/remedies/{img.ImageName}",
                 IsDefault = img.IsDefault
             });
         }

@@ -317,7 +317,7 @@ public class PhysicianService : IPhysicianService
             img.ImageName = $@"{medicalCase.Id}_image{count++}.png";
             medicalCase.CaseImages.Add(new CaseImage
             {
-                ImageUrl = $@"/assets/documents/{dto.UserId}/medical_cases/{medicalCase.Id}_image{count++}.png",
+                ImageUrl = $@"/assets/documents/{dto.UserId}/medical_cases/{img.ImageName}",
                 IsDefault = img.IsDefault
             });
         }

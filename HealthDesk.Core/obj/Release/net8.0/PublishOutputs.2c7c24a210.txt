@@ -1,0 +1,10 @@
+D:\Publish\HealthDesk.Core.dll
+D:\Publish\HealthDesk.Core.deps.json
+D:\Publish\HealthDesk.Core.pdb
+D:\Publish\DnsClient.dll
+D:\Publish\Microsoft.Extensions.Logging.Abstractions.dll
+D:\Publish\MongoDB.Bson.dll
+D:\Publish\MongoDB.Driver.dll
+D:\Publish\SharpCompress.dll
+D:\Publish\Snappier.dll
+D:\Publish\ZstdSharp.dll

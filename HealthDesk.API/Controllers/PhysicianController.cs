@@ -354,7 +354,7 @@ namespace HealthDesk.API.Controllers
 
         }
 
-        [HttpPut("{userId}/like/{caseId}/{likedUser}")]
+        [HttpPost("{userId}/like/{caseId}/{likedUser}")]
         public async Task<IActionResult> ToggleLike(string userId, string caseId, string likedUser)
         {
             if (!ModelState.IsValid)
@@ -365,7 +365,7 @@ namespace HealthDesk.API.Controllers
 
         }
 
-        [HttpPut("{userId}/preference")]
+        [HttpPost("{userId}/preference")]
         public async Task<IActionResult> UpdatePreferences(string userId, [FromBody] List<string> preferences)
         {
             await _physicianService.UpdatePreferencesAsync(userId, preferences);

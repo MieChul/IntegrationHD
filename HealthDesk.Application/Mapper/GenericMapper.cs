@@ -27,48 +27,61 @@ namespace HealthDesk.Application
                 var sourceType = sourceProperty.PropertyType;
                 var destType = destProp.PropertyType;
 
-                // Handle collections
-                if (IsList(sourceType) && IsList(destType))
+                try
                 {
-                    var sourceList = (IEnumerable)sourceValue;
-                    var destList = (IList)(Activator.CreateInstance(destType) ?? throw new InvalidOperationException());
-
-                    var sourceItemType = sourceType.GetGenericArguments()[0];
-                    var destItemType = destType.GetGenericArguments()[0];
-
-                    foreach (var item in sourceList)
+                    // Handle collections
+                    if (IsList(sourceType) && IsList(destType))
                     {
-                        if (IsComplexType(sourceItemType))
-                        {
-                            var destItem = Activator.CreateInstance(destItemType);
+                        var sourceList = (IEnumerable)sourceValue;
+                        var destList = (IList)(Activator.CreateInstance(destType) ?? throw new InvalidOperationException());
 
-                            var mapMethod = typeof(GenericMapper)
-                                .GetMethod(nameof(Map))!
-                                .MakeGenericMethod(sourceItemType, destItemType);
+                        var sourceItemType = sourceType.GetGenericArguments()[0];
+                        var destItemType = destType.GetGenericArguments()[0];
 
-                            var mappedItem = mapMethod.Invoke(null, new[] { item, destItem });
-                            destList.Add(mappedItem);
-                        }
-                        else
+                        foreach (var item in sourceList)
                         {
-                            destList.Add(ConvertIfNeeded(item, destItemType));
+                            if (IsComplexType(sourceItemType) && IsComplexType(destItemType))
+                            {
+                                var destItem = Activator.CreateInstance(destItemType);
+
+                                var mapMethod = typeof(GenericMapper)
+                                    .GetMethod(nameof(Map))!
+                                    .MakeGenericMethod(sourceItemType, destItemType);
+
+                                var mappedItem = mapMethod.Invoke(null, new[] { item, destItem });
+                                destList.Add(mappedItem);
+                            }
+                            else
+                            {
+                                destList.Add(ConvertIfNeeded(item, destItemType));
+                            }
                         }
+
+                        destProp.SetValue(destination, destList);
                     }
-
-                    destProp.SetValue(destination, destList);
+                    // Handle nested complex object
+                    else if (IsComplexType(sourceType) && IsComplexType(destType))
+                    {
+                        // Only attempt to map if both types are complex and not string
+                        var nestedDest = Activator.CreateInstance(destType);
+                        Map(sourceValue, nestedDest);
+                        destProp.SetValue(destination, nestedDest);
+                    }
+                    else if (!IsComplexType(sourceType) && IsComplexType(destType))
+                    {
+                        // Skip mapping if source is simple type but destination is complex
+                        continue;
+                    }
+                    else
+                    {
+                        var convertedValue = ConvertIfNeeded(sourceValue, destType);
+                        destProp.SetValue(destination, convertedValue);
+                    }
                 }
-
-                // Handle nested complex object
-                else if (IsComplexType(sourceType) && IsComplexType(destType))
+                catch
                 {
-                    var nestedDest = Activator.CreateInstance(destType);
-                    Map(sourceValue, nestedDest);
-                    destProp.SetValue(destination, nestedDest);
-                }
-                else
-                {
-                    var convertedValue = ConvertIfNeeded(sourceValue, destType);
-                    destProp.SetValue(destination, convertedValue);
+                    // Skip this property if any error occurs during mapping
+                    continue;
                 }
             }
 

@@ -121,7 +121,7 @@ export class PatientService {
   }
 
   updatePatientInfo(patientId: string, info: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${patientId}/info`, info);
+    return this.http.post(`${this.apiUrl}/${patientId}/info`, info);
   }
 
 
@@ -190,10 +190,10 @@ export class PatientService {
   }
 
   toggleLike(remedyOwnerId: string, remedyId: string, currentUserId: string): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${remedyOwnerId}/like/${remedyId}/${currentUserId}`, {});
+    return this.http.post<any>(`${this.apiUrl}/${remedyOwnerId}/like/${remedyId}/${currentUserId}`, {});
   }
 
   updatePreferences(userId: string, preferences: string[]): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${userId}/preference`, preferences);
+    return this.http.post<any>(`${this.apiUrl}/${userId}/preference`, preferences);
   }
 }

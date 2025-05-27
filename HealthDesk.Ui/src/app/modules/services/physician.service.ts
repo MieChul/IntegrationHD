@@ -101,11 +101,11 @@ export class PhysicianService {
   }
 
   toggleLike(userId: string, caseId: string, currentUserId: string): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${userId}/like/${caseId}/${currentUserId}`, {});
+    return this.http.post<any>(`${this.apiUrl}/${userId}/like/${caseId}/${currentUserId}`, {});
   }
 
   updatePreferences(userId: string, preferences: string[]): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${userId}/preference`, preferences);
+    return this.http.post<any>(`${this.apiUrl}/${userId}/preference`, preferences);
   }
 
   incrementLikes(id: string, caseId: string): Observable<any> {
