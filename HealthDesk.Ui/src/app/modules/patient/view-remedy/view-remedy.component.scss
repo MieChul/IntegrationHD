@@ -1,17 +1,25 @@
-/* view-remedy.component.scss */
-
 .carousel-fixed-size {
-    max-width: 600px;        /* or whatever width you want */
-    margin: 0 auto;          /* center horizontally */
-    
-    .carousel-inner,
-    .carousel-item {
-      height: 300px;         /* fixed carousel height */
-    }
-  
-    img {
-      height: 100%;          /* fill the 300px height */
-      object-fit: cover;     /* crop/scale nicely */
-    }
+  max-width: 600px;
+  margin: 0 auto;
+
+  .carousel-inner,
+  .carousel-item {
+    height: 300px;
   }
-  
+
+  img {
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+li.comment-enter {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease-in-out;
+}
+
+li.comment-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+}

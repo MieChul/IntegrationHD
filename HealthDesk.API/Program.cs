@@ -2,6 +2,7 @@
 using HealthDesk.API;
 using HealthDesk.Application.Extensions;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,6 +33,26 @@ builder.Services.RegisterServices(builder.Configuration);
 // {
 //     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
 // });
+
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(e => e.Value.Errors.Count > 0)
+            .Select(e => new
+            {
+                Field = e.Key,
+                Errors = e.Value.Errors.Select(x => x.ErrorMessage).ToArray()
+            });
+
+        return new BadRequestObjectResult(new
+        {
+            Message = "Validation Failed",
+            Errors = errors
+        });
+    };
+});
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
     {

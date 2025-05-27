@@ -63,92 +63,58 @@ namespace HealthDesk.API.Controllers
             if (string.IsNullOrEmpty(dto.TemplateName))
                 return BadRequest(new { Success = false, Message = "Template name is required." });
 
+            var designCount = await _physicianService.GetDesignPrescriptionCountAsync(id);
+            if (string.IsNullOrEmpty(dto.Id) || designCount == 0)
+                designCount++;
+            var directoryPath = string.Empty;
 
 
-            try
+            directoryPath = Path.Combine(_env.WebRootPath, "assets", "documents", id, "prescription");
+
+            Directory.CreateDirectory(directoryPath);
+
+            var headerFileName = $"header{designCount}.png";
+            if (!string.IsNullOrEmpty(dto.HeaderImage))
             {
-                var designCount = await _physicianService.GetDesignPrescriptionCountAsync(id);
-                if (string.IsNullOrEmpty(dto.Id) || designCount == 0)
-                    designCount++;
-                var directoryPath = string.Empty;
-
-                // For production deployment
-                directoryPath = Path.Combine(_env.WebRootPath, "assets", "documents", id, "prescription");
-
-
-
-                Directory.CreateDirectory(directoryPath);
-
-                // Save Header Image
-                var headerFileName = $"header{designCount}.png";
-                if (!string.IsNullOrEmpty(dto.HeaderImage))
-                {
-                    dto.HeaderUrl = await CreateFile(directoryPath, headerFileName, id, dto.HeaderImage);
-                }
-
-                // Save Footer Image
-                var footerFileName = $"footer{designCount}.png";
-                if (!string.IsNullOrEmpty(dto.FooterImage))
-                {
-                    dto.FooterUrl = await CreateFile(directoryPath, footerFileName, id, dto.FooterImage);
-                }
-
-                // Save Logo Image
-                var logoFileName = $"logo_image{designCount}.png";
-                if (!string.IsNullOrEmpty(dto.LogoImage))
-                {
-                    dto.LogoUrl = await CreateFile(directoryPath, logoFileName, id, dto.LogoImage);
-                }
-
-                // Save design prescription data (excluding images)
-                await _physicianService.SaveDesignPrescriptionAsync(id, dto);
-
-                return Ok(new { Success = true, Message = "Design prescription saved successfully." });
+                await CreateFile(directoryPath, headerFileName, id, dto.HeaderImage);
+                dto.HeaderUrl = $@"/assets/documents/{id}/prescription/{headerFileName}";
             }
-            catch (Exception ex)
+
+            var footerFileName = $"footer{designCount}.png";
+            if (!string.IsNullOrEmpty(dto.FooterImage))
             {
-                return StatusCode(500, new { Success = false, Message = "An error occurred while saving the design prescription.", Error = ex.Message });
+                await CreateFile(directoryPath, footerFileName, id, dto.FooterImage);
+                dto.FooterUrl = $@"/assets/documents/{id}/prescription/{footerFileName}";
             }
+
+            var logoFileName = $"logo_image{designCount}.png";
+            if (!string.IsNullOrEmpty(dto.LogoImage))
+            {
+                await CreateFile(directoryPath, logoFileName, id, dto.LogoImage);
+                dto.LogoUrl = $@"/assets/documents/{id}/prescription/{logoFileName}";
+            }
+
+            await _physicianService.SaveDesignPrescriptionAsync(id, dto);
+
+            return Ok(new { Success = true, Message = "Design prescription saved successfully." });
         }
 
-        private async Task<string> CreateFile(string folderPath, string filename, string id, string base64Image)
+        private async Task CreateFile(string folderPath, string filename, string id, string base64Image)
         {
-            // Construct the full file path
             var filePath = Path.Combine(folderPath, filename);
 
-            try
+            if (string.IsNullOrWhiteSpace(base64Image))
             {
-                // Validate and extract Base64 data
-                if (string.IsNullOrWhiteSpace(base64Image))
-                {
-                    throw new ArgumentException("Base64 image string is null or empty.");
-                }
-
-                var base64Data = base64Image.Contains(",")
-                    ? base64Image.Substring(base64Image.IndexOf(',') + 1)
-                    : base64Image;
-
-                // Convert Base64 string to byte array
-                byte[] imageBytes = Convert.FromBase64String(base64Data);
-
-                // Write the image bytes to the file
-                await System.IO.File.WriteAllBytesAsync(filePath, imageBytes);
-            }
-            catch (FormatException)
-            {
-                throw new Exception("Invalid Base64 string format.");
-            }
-            catch (UnauthorizedAccessException)
-            {
-                throw new Exception("Access denied. Unable to write to the specified file path.");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Unexpected error while saving the image: {ex.Message}");
+                throw new ArgumentException("Base64 image string is null or empty.");
             }
 
-            // Return the relative URL for the saved file
-            return $@"/assets/documents/{id}/prescription/{filename}";
+            var base64Data = base64Image.Contains(",")
+                ? base64Image.Substring(base64Image.IndexOf(',') + 1)
+                : base64Image;
+
+            byte[] imageBytes = Convert.FromBase64String(base64Data);
+
+            await System.IO.File.WriteAllBytesAsync(filePath, imageBytes);
         }
 
         [HttpDelete("{id}/design-prescriptions/{prescriptionId}")]
@@ -218,56 +184,46 @@ namespace HealthDesk.API.Controllers
                     Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage))
                 });
 
-            try
-            {
-                // Get the count of prescriptions for the patient
-                var fileData = Convert.FromBase64String(dto.PdfBase64);
-                var prescriptionCount = await _physicianService.GetPrescriptionCountAsync(dto.PhysicianId, dto.PatientId);
-                prescriptionCount++;
+            var fileData = Convert.FromBase64String(dto.PdfBase64);
+            var prescriptionCount = await _physicianService.GetPrescriptionCountAsync(dto.PhysicianId, dto.PatientId);
+            prescriptionCount++;
 
-                // Define the directory path
-                var directoryPath = string.Empty;
+            var directoryPath = string.Empty;
+
+            directoryPath = Path.Combine(_env.WebRootPath, "assets", "documents", dto.PatientId, "prescription");
 
 
-                // For production deployment
-                directoryPath = Path.Combine(_env.WebRootPath, "assets", "documents", dto.PatientId, "prescription");
+            Directory.CreateDirectory(directoryPath);
 
+            var pdfFileName = $"p_{prescriptionCount}.pdf";
+            var pdfFilePath = Path.Combine(directoryPath, pdfFileName);
+            await System.IO.File.WriteAllBytesAsync(pdfFilePath, fileData);
 
-                Directory.CreateDirectory(directoryPath);
+            var pdfUrl = $@"/assets/documents/{dto.PatientId}/prescription/{pdfFileName}";
 
-                // Save the PDF file
-                var pdfFileName = $"p_{prescriptionCount}.pdf";
-                var pdfFilePath = Path.Combine(directoryPath, pdfFileName);
-                await System.IO.File.WriteAllBytesAsync(pdfFilePath, fileData);
+            dto.PrescriptionUrl = pdfUrl;
+            var prescriptionId = await _physicianService.AddPrescriptionAsync(dto);
 
-                // Set the URL for the PDF file
-                var pdfUrl = $@"/assets/documents/{dto.PatientId}/prescription/{pdfFileName}";
-
-                // Call the service to save the prescription details
-                dto.PrescriptionUrl = pdfUrl;
-                var prescriptionId = await _physicianService.AddPrescriptionAsync(dto);
-
-                return Ok(new { Success = true, Message = "Prescription added successfully." });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    Success = false,
-                    Message = "An error occurred while saving the prescription.",
-                    Error = ex.Message
-                });
-            }
+            return Ok(new { Success = true, Message = "Prescription added successfully." });
         }
 
-        [HttpPost("{id}/medical-cases")]
-        public async Task<IActionResult> SaveMedicalCase(string id, [FromBody] MedicalCaseDto dto)
+        [HttpPost("{id}/medical-case")]
+        public async Task<IActionResult> SaveMedicalCase(string id,[FromBody] MedicalCaseDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new { Success = false, Message = "Invalid data provided.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
 
-            await _physicianService.SaveMedicalCaseAsync(id, dto);
-            return Ok(new { Success = true, Message = "Medical case saved successfully." });
+            var directoryPath = string.Empty;
+            directoryPath = Path.Combine(_env.WebRootPath ?? "", "assets", "documents", dto.UserId, "cases");
+
+            Directory.CreateDirectory(directoryPath);
+            var images = await _physicianService.SaveMedicalCaseAsync(dto);
+            foreach (var img in images)
+            {
+                await CreateFile(directoryPath, img.ImageName, dto.UserId, img.Image);
+            }
+
+            return Ok(new { Success = true, Message = "Saved successfully." });
         }
 
         [HttpGet("{id}/medical-cases")]
@@ -284,11 +240,11 @@ namespace HealthDesk.API.Controllers
             return Ok(new { Success = true, Message = "Medical case deleted successfully." });
         }
 
-        [HttpPost("{id}/medical-cases/{caseId}/increment-likes")]
-        public async Task<IActionResult> IncrementLikes(string id, string caseId)
+        [HttpGet("{userId}/medical-case/{caseId}")]
+        public async Task<IActionResult> GetMedicalCase(string userId, string caseId)
         {
-            await _physicianService.IncrementLikesAsync(id, caseId);
-            return Ok(new { Success = true, Message = "Likes incremented successfully." });
+            var medicalCase = await _physicianService.GetMedicalCase(userId, caseId);
+            return Ok(new { Success = true, Message = "Remedy retrieved successfully.", Data = medicalCase });
         }
 
         [HttpGet("{id}/user-details")]
@@ -302,20 +258,13 @@ namespace HealthDesk.API.Controllers
         [HttpGet("{physicianId}/design-prescriptions/{prescriptionId}")]
         public async Task<IActionResult> LoadPrescription(string physicianId, string prescriptionId)
         {
-            try
+            var prescription = await _physicianService.LoadPrescriptionAsync(physicianId, prescriptionId);
+            if (prescription == null)
             {
-                var prescription = await _physicianService.LoadPrescriptionAsync(physicianId, prescriptionId);
-                if (prescription == null)
-                {
-                    return NotFound(new { Success = false, Message = "Prescription not found." });
-                }
+                return NotFound(new { Success = false, Message = "Prescription not found." });
+            }
 
-                return Ok(new { Success = true, Data = prescription });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Success = false, Message = "An error occurred while loading the prescription.", Error = ex.Message });
-            }
+            return Ok(new { Success = true, Data = prescription });
         }
 
         [HttpGet("{id}/patients/by-mobile/{mobile}")]
@@ -389,5 +338,40 @@ namespace HealthDesk.API.Controllers
             await _physicianService.SaveMultipleAppointment(request.Status, request.Date, request.Time, request.Reason, request.Dtos);
             return Ok(new { Success = true, Message = "Appointments saved successfully." });
         }
+
+        [HttpGet("{physicianId}/info")]
+        public async Task<IActionResult> GetPhysicianInfo(string physicianId) =>
+            Ok(new { Success = true, Message = "Patient info retrieved successfully.", Data = await _physicianService.GetPhysicianInfoAsync(physicianId) });
+
+        [HttpPost("{userId}/comment/{caseId}")]
+        public async Task<IActionResult> SaveComment(string userId, string caseId, [FromBody] CommentDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { Success = false, Message = "Invalid data provided.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+
+            await _physicianService.SaveComment(userId, caseId, dto);
+            return Ok(new { Success = true, Message = "Comment saved." });
+
+        }
+
+        [HttpPut("{userId}/like/{caseId}/{likedUser}")]
+        public async Task<IActionResult> ToggleLike(string userId, string caseId, string likedUser)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { Success = false, Message = "Invalid data provided.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+
+            await _physicianService.ToggleLikeAsync(userId, caseId, likedUser);
+            return Ok(new { Success = true });
+
+        }
+
+        [HttpPut("{userId}/preference")]
+        public async Task<IActionResult> UpdatePreferences(string userId, [FromBody] List<string> preferences)
+        {
+            await _physicianService.UpdatePreferencesAsync(userId, preferences);
+            return Ok(new { Success = true, Message = "Preferences updated." });
+        }
     }
 }
+
+

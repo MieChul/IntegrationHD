@@ -373,10 +373,31 @@ public class PatientService : IPatientService
         await _patientRepository.UpdateAsync(patient);
     }
 
-    // 9. Patient Info
     public async Task<PatientInfoDto> GetPatientInfoAsync(string patientId)
     {
         var patient = await GetPatientByIdAsync(patientId);
+        if (string.IsNullOrEmpty(patient.PatientInfo.Age))
+        {
+            var user = await _userRepository.GetByIdAsync(patientId);
+            var dobString = user.BirthDate;
+
+            if (!string.IsNullOrEmpty(dobString) && DateTime.TryParse(dobString, null, System.Globalization.DateTimeStyles.RoundtripKind, out var dob))
+            {
+                var today = DateTime.UtcNow.Date;
+                var age = today.Year - dob.Year;
+
+                if (dob.Date > today.AddYears(-age))
+                {
+                    age--;
+                }
+
+                patient.PatientInfo.Age = age.ToString();
+                patient.PatientInfo.Gender = user.Gender;
+
+                await _patientRepository.UpdateAsync(patient);
+            }
+        }
+
         return GenericMapper.Map<PatientInfo, PatientInfoDto>(patient.PatientInfo);
     }
 
@@ -387,7 +408,6 @@ public class PatientService : IPatientService
         await _patientRepository.UpdateAsync(patient);
     }
 
-    // Helper Method
     private async Task<Patient> GetPatientByIdAsync(string patientId)
     {
         var patient = await _patientRepository.GetByDynamicPropertyAsync("UserId", patientId);
@@ -398,7 +418,6 @@ public class PatientService : IPatientService
 
     public async Task<IEnumerable<PatientComplianceDto>> GetComplianceAsync(string patientId)
     {
-        // Retrieve the patient document from your data store.
         var patient = await GetPatientByIdAsync(patientId);
         if (patient == null)
         {
@@ -407,13 +426,10 @@ public class PatientService : IPatientService
 
         var complianceDtos = new List<PatientComplianceDto>();
 
-        // Get active treatments (those that have not ended)
         var activeTreatments = patient.CurrentTreatments.Where(t => t.EndDate == null).ToList();
 
         foreach (var treatment in activeTreatments)
         {
-            // Find the associated compliance record for this treatment.
-            // We assume each treatment has at most one compliance record.
             var complianceEntity = patient.Compliance.FirstOrDefault(c => c.TreatmentId == treatment.Id);
             if (complianceEntity != null)
             {
@@ -572,170 +588,101 @@ public class PatientService : IPatientService
     public async Task<IEnumerable<ActivityDto>> GetActivitiesAsync(string patientId)
     {
         var patient = await GetPatientByIdAsync(patientId);
-        return patient.Activities.Select(a => GenericMapper.Map<Activity, ActivityDto>(a));
+        var act = patient.Activities.Select(a => GenericMapper.Map<Activity, ActivityDto>(a));
+        return act;
     }
 
     public async Task AddOrUpdateActivityAsync(string patientId, ActivityDto dto)
     {
-        // Fetch the patient by dynamic property
-        var patient = await GetPatientByIdAsync(patientId); ;
+        var patient = await GetPatientByIdAsync(patientId);
         if (patient == null)
             throw new ArgumentException("Patient not found.");
 
-        // Find the activity to update or create a new one if not found
         var activity = patient.Activities.FirstOrDefault(a => a.Id == dto.Id);
-
         if (activity == null)
         {
-            // New Activity: Map the DTO and add to patient's activities
             activity = new Activity();
             GenericMapper.Map(dto, activity);
-
-            // Map Meals
-            activity.Meals = dto.Meals?.Select(mdto => new Meal
-            {
-                MealType = mdto.Type,
-                Food = mdto.Food,
-                Quantity = mdto.Quantity
-            }).ToList();
-
-            // Map Exercises
-            activity.Exercises = dto.Exercises?.Select(edto => new Exercise
-            {
-                Id = Guid.NewGuid().ToString(),
-                Type = edto.Type,
-                ExerciseName = edto.Exercise,
-                DurationMinutes = edto.DurationMinutes
-            }).ToList();
-
+            activity.Meals = UpdateMeals(null, dto.Meals);
+            activity.Exercises = UpdateExercises(null, dto.Exercises);
             patient.Activities.Add(activity);
         }
         else
         {
-            // Update existing activity
             GenericMapper.Map(dto, activity);
-
-            // === Handle Meals ===
-            if (activity.Meals == null)
-                activity.Meals = new List<Meal>();
-
-            var dtoMeals = dto.Meals ?? new List<MealsDto>();
-            var dtoMealIds = dtoMeals.Where(m => !string.IsNullOrEmpty(m.Id)).Select(m => m.Id).ToList();
-
-            // Remove meals not present in the DTO
-            var mealsToRemove = activity.Meals
-                .Where(m => !string.IsNullOrEmpty(m.Id) && !dtoMealIds.Contains(m.Id))
-                .ToList();
-            foreach (var meal in mealsToRemove)
-            {
-                activity.Meals.Remove(meal);
-            }
-
-            // Process each meal from DTO
-            foreach (var mealDto in dtoMeals)
-            {
-                if (!string.IsNullOrEmpty(mealDto.Id))
-                {
-                    // Update existing meal
-                    var existingMeal = activity.Meals.FirstOrDefault(m => m.Id == mealDto.Id);
-                    if (existingMeal != null)
-                    {
-                        existingMeal.MealType = mealDto.Type;
-                        existingMeal.Food = mealDto.Food;
-                        existingMeal.Quantity = mealDto.Quantity;
-                    }
-                    else
-                    {
-                        // If Id is provided but not found, consider it a new meal
-                        var newMeal = new Meal
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            MealType = mealDto.Type,
-                            Food = mealDto.Food,
-                            Quantity = mealDto.Quantity
-                        };
-                        activity.Meals.Add(newMeal);
-                    }
-                }
-                else
-                {
-                    // New meal (no Id provided)
-                    var newMeal = new Meal
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        MealType = mealDto.Type,
-                        Food = mealDto.Food,
-                        Quantity = mealDto.Quantity
-                    };
-                    activity.Meals.Add(newMeal);
-                }
-            }
-
-            // === Handle Exercises ===
-            if (activity.Exercises == null)
-                activity.Exercises = new List<Exercise>();
-
-            var dtoExercises = dto.Exercises ?? new List<ExerciseDto>();
-            var dtoExerciseIds = dtoExercises.Where(e => !string.IsNullOrEmpty(e.Id)).Select(e => e.Id).ToList();
-
-            // Remove exercises not present in the DTO
-            var exercisesToRemove = activity.Exercises
-                .Where(e => !string.IsNullOrEmpty(e.Id) && !dtoExerciseIds.Contains(e.Id))
-                .ToList();
-            foreach (var exercise in exercisesToRemove)
-            {
-                activity.Exercises.Remove(exercise);
-            }
-
-            // Process each exercise from DTO
-            foreach (var exerciseDto in dtoExercises)
-            {
-                if (!string.IsNullOrEmpty(exerciseDto.Id))
-                {
-                    // Update existing exercise
-                    var existingExercise = activity.Exercises.FirstOrDefault(e => e.Id == exerciseDto.Id);
-                    if (existingExercise != null)
-                    {
-                        existingExercise.Type = exerciseDto.Type;
-                        existingExercise.ExerciseName = exerciseDto.Exercise;
-                        existingExercise.DurationMinutes = exerciseDto.DurationMinutes;
-                    }
-                    else
-                    {
-                        // If Id is provided but not found, consider it a new exercise
-                        var newExercise = new Exercise
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            Type = exerciseDto.Type,
-                            ExerciseName = exerciseDto.Exercise,
-                            DurationMinutes = exerciseDto.DurationMinutes
-                        };
-                        activity.Exercises.Add(newExercise);
-                    }
-                }
-                else
-                {
-                    // New exercise (no Id provided)
-                    var newExercise = new Exercise
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Type = exerciseDto.Type,
-                        ExerciseName = exerciseDto.Exercise,
-                        DurationMinutes = exerciseDto.DurationMinutes
-                    };
-                    activity.Exercises.Add(newExercise);
-                }
-            }
+            activity.Meals = UpdateMeals(activity.Meals, dto.Meals);
+            activity.Exercises = UpdateExercises(activity.Exercises, dto.Exercises);
         }
 
-        // Update patient in repository
         await _patientRepository.UpdateAsync(patient);
+    }
+
+    private List<Meal> UpdateMeals(List<Meal> existingMeals, List<MealsDto>? dtoMeals)
+    {
+        dtoMeals ??= new List<MealsDto>();
+        existingMeals ??= new List<Meal>();
+
+        // Remove meals that no longer exist
+        existingMeals.RemoveAll(m => !dtoMeals.Any(dto => dto.Id == m.Id));
+
+        foreach (var dto in dtoMeals)
+        {
+            var meal = existingMeals.FirstOrDefault(m => m.Id == dto.Id);
+            if (meal == null)
+            {
+                meal = new Meal();
+                existingMeals.Add(meal);
+            }
+
+            meal.Type = dto.Type;
+
+            // Replace food items (simplified logic)
+            meal.FoodItems = dto.FoodItems?.Select(f => new Item
+            {
+                Name = f.Name,
+                Quantity = f.Quantity,
+                Calories = f.Calories
+            }).ToList();
+        }
+
+        return existingMeals;
+    }
+
+
+    private List<Exercise> UpdateExercises(List<Exercise> existingExercises, List<ExerciseDto>? dtoExercises)
+    {
+        dtoExercises ??= new List<ExerciseDto>();
+        existingExercises ??= new List<Exercise>();
+
+        // Remove exercises that no longer exist
+        existingExercises.RemoveAll(e => !dtoExercises.Any(dto => dto.Id == e.Id));
+
+        foreach (var dto in dtoExercises)
+        {
+            var exercise = existingExercises.FirstOrDefault(e => e.Id == dto.Id);
+            if (exercise == null)
+            {
+                exercise = new Exercise();
+                existingExercises.Add(exercise);
+            }
+
+            exercise.Type = dto.Type;
+
+            exercise.ExerciseItems = dto.ExerciseItems?.Select(i => new Item
+            {
+                Name = i.Name,
+                Quantity = i.Quantity,
+                Calories = i.Calories
+            }).ToList();
+        }
+
+        return existingExercises;
     }
 
 
     public async Task DeleteActivityAsync(string patientId, string activityId)
     {
-        var patient = await _patientRepository.GetByIdAsync(patientId);
+        var patient = await GetPatientByIdAsync(patientId);
         RemoveIfNotExpired(patient.Activities, r => r.Id == activityId);
         await _patientRepository.UpdateAsync(patient);
     }
@@ -1108,5 +1055,131 @@ public class PatientService : IPatientService
             default:
                 throw new Exception("Invalid entity type.");
         }
+    }
+
+    public async Task<dynamic> GetRemedies(string patientId)
+    {
+        var remedies = _patientRepository.GetAllRemedies();
+        var remediesWithThumbnail = remedies.Select(r => new
+        {
+            r.Id,
+            r.Name,
+            r.Description,
+            r.UserId,
+            r.Images,
+            r.Comments,
+            r.CreateDate,
+            r.Ingredients,
+            r.Precaution,
+            r.PreparationMethod,
+            r.RemedyFor,
+            r.UsageDirection,
+            r.SubmittedBy,
+            r.LikedBy,
+            ThumbnailUrl = r.Images.FirstOrDefault(i => i.IsDefault)?.ImageUrl,
+            LikedCount = r.LikedBy?.Count ?? 0
+        });
+
+        var yourRemedies = remediesWithThumbnail.Where(r => r.UserId == patientId);
+
+        return new
+        {
+            Others = remediesWithThumbnail,
+            Yours = yourRemedies
+        };
+    }
+
+    public async Task<List<ImageDto>> SaveRemedyAsync(RemedyDto dto)
+    {
+        var patient = await _patientRepository.GetByDynamicPropertyAsync("UserId", dto.UserId);
+        var user = await _userRepository.GetByIdAsync(dto.UserId);
+        var remedy = new Remedy();
+        if (!string.IsNullOrEmpty(dto.Id))
+            remedy = patient.HomeRemedies.FirstOrDefault(mc => mc.Id == dto.Id);
+
+        GenericMapper.Map<RemedyDto, Remedy>(dto, remedy);
+
+        remedy.Images = new List<CaseImage>();
+        var count = 0;
+        foreach (var img in dto.Images)
+        {
+            img.ImageName = $@"{remedy.Id}_image{count++}.png";
+            remedy.Images.Add(new CaseImage
+            {
+                ImageUrl = $@"/assets/documents/{dto.UserId}/remedies/{remedy.Id}_image{count++}.png",
+                IsDefault = img.IsDefault
+            });
+        }
+
+        remedy.SubmittedBy = user.FirstName + " " + user.LastName;
+        if (string.IsNullOrEmpty(dto.Id))
+            patient.HomeRemedies.Add(remedy);
+        await _patientRepository.UpdateAsync(patient);
+        return dto.Images;
+    }
+
+    public async Task<Remedy> GetRemedy(string userId, string id)
+    {
+        var patient = await _patientRepository.GetByDynamicPropertyAsync("UserId", userId);
+        if (patient == null)
+            throw new ArgumentException("Patient not found.");
+
+        return patient.HomeRemedies.Where(h => h.Id == id).FirstOrDefault();
+    }
+
+    public async Task SaveComment(string remedyUserId, string remedyId, CommentDto dto)
+    {
+        var patient = await _patientRepository.GetByDynamicPropertyAsync("UserId", remedyUserId);
+        var user = await _userRepository.GetByIdAsync(dto.UserId);
+        if (patient == null)
+            throw new ArgumentException("Patient not found.");
+        var comment = new Comment();
+        if (!string.IsNullOrEmpty(dto.Id))
+            comment = patient.HomeRemedies?.FirstOrDefault(h => h.Id == remedyId)?.Comments?.FirstOrDefault(c => c.Id == dto.Id) ?? new Comment();
+        GenericMapper.Map<CommentDto, Comment>(dto, comment);
+        comment.SubmittedBy = user.FirstName + " " + user.LastName;
+        if (string.IsNullOrEmpty(dto.Id))
+        {
+            var remedy = patient.HomeRemedies?.FirstOrDefault(h => h.Id == remedyId);
+            if (remedy != null)
+            {
+                remedy.Comments ??= new List<Comment>();
+                remedy.Comments.Add(comment);
+
+            }
+
+        }
+        await _patientRepository.UpdateAsync(patient);
+    }
+
+    public async Task ToggleLikeAsync(string remedyUserId, string remedyId, string userId)
+    {
+        var patient = await _patientRepository.GetByDynamicPropertyAsync("UserId", remedyUserId);
+        if (patient == null)
+            throw new ArgumentException("Patient not found.");
+
+        var remedy = patient.HomeRemedies?.FirstOrDefault(h => h.Id == remedyId);
+        if (remedy == null)
+            throw new ArgumentException("Remedy not found.");
+
+        remedy.LikedBy ??= new List<string>();
+
+        if (remedy.LikedBy.Contains(userId))
+            remedy.LikedBy.Remove(userId);
+        else
+            remedy.LikedBy.Add(userId);
+
+        await _patientRepository.UpdateAsync(patient);
+    }
+
+    public async Task UpdatePreferencesAsync(string userId, List<string> preferences)
+    {
+        var patient = await _patientRepository.GetByDynamicPropertyAsync("UserId", userId);
+        if (patient == null)
+            throw new ArgumentException("Patient not found.");
+
+        patient.PatientInfo.Preferences = new List<string>();
+        patient.PatientInfo.Preferences.AddRange(preferences);
+        await _patientRepository.UpdateAsync(patient);
     }
 }

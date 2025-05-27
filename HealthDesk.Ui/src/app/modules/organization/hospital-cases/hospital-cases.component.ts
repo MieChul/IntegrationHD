@@ -1,16 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-
-interface HospitalCase {
-  id: number;
-  submittedBy: string;
-  speciality: string;
-  comments: string[];
-  likeCount: number;
-  shareCount: number;
-  shortDescription: string;
-  thumbnail: string;
-}
+import { DatabaseService } from '../../../shared/services/database.service';
+import { AccountService } from '../../services/account.service';
+import { FormControl } from '@angular/forms';
+import { map, Observable, startWith } from 'rxjs';
+import { OrganizationService } from '../../services/organization.service';
 
 @Component({
   selector: 'app-hospital-cases',
@@ -18,112 +12,70 @@ interface HospitalCase {
   styleUrls: ['./hospital-cases.component.scss']
 })
 export class HospitalCasesComponent implements OnInit {
+
+  userData: any;
   searchValue: string = '';
   newPreference: string = '';
   preferences: string[] = [];
   activeSubTab: string = 'home';
+  specialities: any[] = [];
+  specialityFilterCtrl = new FormControl();
+  filteredSpecialities!: Observable<string[]>;
+  preferenceControl = new FormControl<string[]>([])
 
-  latestHospitalCases: HospitalCase[] = [
-    {
-      id: 1,
-      submittedBy: 'Dr. Smith',
-      speciality: 'Cardiology',
-      comments: ['Great case!'],
-      likeCount: 10,
-      shareCount: 5,
-      shortDescription: 'A detailed case study on cardiology',
-      thumbnail: 'https://via.placeholder.com/400x200'
-    },
-    {
-      id: 2,
-      submittedBy: 'Dr. Johnson',
-      speciality: 'Neurology',
-      comments: [],
-      likeCount: 7,
-      shareCount: 2,
-      shortDescription: 'An intriguing neurology case',
-      thumbnail: 'https://via.placeholder.com/400x200'
-    }
-  ];
-
-  trendingHospitalCases: HospitalCase[] = [
-    {
-      id: 3,
-      submittedBy: 'Dr. Lee',
-      speciality: 'Orthopedics',
-      comments: [],
-      likeCount: 15,
-      shareCount: 3,
-      shortDescription: 'Orthopedics case study and analysis',
-      thumbnail: 'https://via.placeholder.com/400x200'
-    },
-    {
-      id: 4,
-      submittedBy: 'Dr. Brown',
-      speciality: 'Dermatology',
-      comments: [],
-      likeCount: 8,
-      shareCount: 4,
-      shortDescription: 'Dermatology case with treatment details',
-      thumbnail: 'https://via.placeholder.com/400x200'
-    }
-  ];
-
-  recommendedHospitalCases: HospitalCase[] = [
-    {
-      id: 5,
-      submittedBy: 'Dr. Taylor',
-      speciality: 'Pediatrics',
-      comments: [],
-      likeCount: 12,
-      shareCount: 6,
-      shortDescription: 'A pediatric case involving rare symptoms',
-      thumbnail: 'https://via.placeholder.com/400x200'
-    }
-  ];
-
-  yourHospitalCases: HospitalCase[] = [
-    {
-      id: 6,
-      submittedBy: 'You',
-      speciality: 'Cardiology',
-      comments: [],
-      likeCount: 0,
-      shareCount: 0,
-      shortDescription: 'Your own case study on cardiology',
-      thumbnail: 'https://via.placeholder.com/400x200'
-    },
-    {
-      id: 7,
-      submittedBy: 'You',
-      speciality: 'Neurology',
-      comments: [],
-      likeCount: 0,
-      shareCount: 0,
-      shortDescription: 'Your own case study on neurology',
-      thumbnail: 'https://via.placeholder.com/400x200'
-    },
-    {
-      id: 8,
-      submittedBy: 'You',
-      speciality: 'Orthopedics',
-      comments: [],
-      likeCount: 0,
-      shareCount: 0,
-      shortDescription: 'Your own case study on orthopedics',
-      thumbnail: 'https://via.placeholder.com/400x200'
-    }
-  ];
+  latestHospitalCases: any = [];
+  trendingHospitalCases: any = [];
+  recommendedHospitalCases: any = [];
+  yourHospitalCases: any = [];
+  othersHospitalCases: any = [];
 
   shareLink: string = '';
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private databaseService: DatabaseService, private accountService: AccountService, private organizationService: OrganizationService) { }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.accountService.getUserData().subscribe({
+      next: async (data) => {
+        this.userData = data;
+        await this.loadCases();
+
+        this.specialities = await this.databaseService.getSpecialities();
+        this.filteredSpecialities = this.specialityFilterCtrl.valueChanges.pipe(
+          startWith(''),
+          map((search) => this.filterOptions(search, this.specialities))
+        );
+        this.filterHospitalCases();
+      },
+      error: (err) => console.error('Error fetching user data:', err)
+    });
+
+  }
+
+  loadCases(): void {
+    if (!this.userData?.id) {
+      console.error('User ID is missing');
+      return;
+    }
+
+    this.organizationService.getCases(this.userData.id).subscribe({
+      next: (data: any) => {
+
+      },
+      error: (error) => {
+        console.error('Error loading history:', error);
+      }
+    });
+  }
+
+  filterOptions(search: string, options: string[]): string[] {
+    const filterValue = search.toLowerCase();
+    return options.filter(option => option.toLowerCase().includes(filterValue));
+  }
+
+  filterHospitalCases() { }
 
   searchHospitalCases(): void {
-    // Implement your search/filter logic here
-    console.log('Searching hospital cases for:', this.searchValue);
+
   }
 
   setActiveSubTab(tab: string): void {
@@ -135,9 +87,8 @@ export class HospitalCasesComponent implements OnInit {
   }
 
   likeCase(caseId: number): void {
-    // Increase like count in whichever array the case is found.
-    const updateLike = (cases: HospitalCase[]) => {
-      const foundCase = cases.find(c => c.id === caseId);
+    const updateLike = (cases: any) => {
+      const foundCase = cases.find((c: any) => c.id === caseId);
       if (foundCase) {
         foundCase.likeCount++;
       }
@@ -150,8 +101,6 @@ export class HospitalCasesComponent implements OnInit {
   }
 
   viewComments(caseId: number): void {
-    // Add your logic here to show case comments (modal or inline)
-    console.log('Viewing comments for case', caseId);
   }
 
   shareCase(caseId: number): void {

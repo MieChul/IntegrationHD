@@ -120,7 +120,7 @@ public class UserService : IUserService
                     Compliance = new List<Compliance>(),
                     Activities = new List<Activity>(),
                     PatientInfo = new PatientInfo(),
-                    HomeRemedies = new List<HomeRemedy>(),
+                    HomeRemedies = new List<Remedy>(),
                     Reports = new List<Report>()
                 };
                 await _patientRepository.AddAsync(patient);

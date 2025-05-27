@@ -659,7 +659,7 @@ h6,
   text-align: center;
   margin-bottom: 1.5rem;
   animation: fadeIn 2s ease-in-out;
-  background: linear-gradient(to right, #d76745bc, #a159ffd2);
+  background: linear-gradient(to right, #d76745bc, #880ED4);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-family: 'Roboto', sans-serif; // Modern font style
@@ -679,7 +679,7 @@ h6,
   text-align: center;
   margin-bottom: 1.5rem;
   animation: fadeIn 2s ease-in-out;
-  background: linear-gradient(to right, #d76745bc, #a159ffd2);
+  background: linear-gradient(to right, #d76745bc, #880ED4);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-family: 'Roboto', sans-serif; // Modern font style
@@ -719,7 +719,7 @@ h6,
     transition: background-color 0.3s ease-in-out, box-shadow 0.3s;
 
     &:hover {
-      background-color: #FCA5A5; // Slightly darker shade for hover effect
+      background-color: #FF69B4; // Slightly darker shade for hover effect
     }
 
     // 3D effect
@@ -741,7 +741,7 @@ h6,
     }
 
     // Adding a gradient effect
-    background: linear-gradient(145deg, #FEE2E2, #FCA5A5);
+    background: linear-gradient(145deg, #d8a8c0, #FF69B4);
     color: #111827; // Dark text color for contrast
   }
 
@@ -932,7 +932,7 @@ body.dark-mode .modal-content {
 .label-modern {
   font-size: 1.1rem;
   color: #0c0c0c;
-  background: linear-gradient(145deg, #fee2e2, #fca5a5);
+  background: linear-gradient(145deg,  #d8a8c0, #FF69B4);
   padding: 0.25rem;
   border-radius: 0.25rem;
   transition: transform 0.3s, background-color 0.3s;

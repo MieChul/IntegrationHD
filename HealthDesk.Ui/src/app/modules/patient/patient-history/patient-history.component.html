@@ -1,6 +1,6 @@
 <div class="container">
     <h1 class="animated-heading">
-        <i class="bi bi-calendar-check me-2"></i>Medical History
+        Medical History
     </h1>
 
     <div class="row mb-3 align-items-center">
@@ -79,8 +79,8 @@
 </div>
 
 <!-- Add/Edit History Modal -->
-<div class="modal fade" data-bs-backdrop='static' data-bs-focus="false" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel"
-    aria-hidden="true" #historyModal *ngIf="historyForm">
+<div class="modal fade" data-bs-backdrop='static' data-bs-focus="false" id="historyModal" tabindex="-1"
+    aria-labelledby="historyModalLabel" aria-hidden="true" #historyModal *ngIf="historyForm">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -94,17 +94,18 @@
                         <div class="col-md-6">
                             <mat-form-field appearance="outline" class="w-100">
                                 <mat-label>Date of Diagnosis</mat-label>
-                                <input matInput [matDatepicker]="datePicker" formControlName="dateOfDiagnosis" required />
+                                <input matInput [matDatepicker]="datePicker" formControlName="dateOfDiagnosis"
+                                    required />
                                 <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
                                 <mat-datepicker #datePicker></mat-datepicker>
-                                
+
                                 <mat-error *ngIf="historyForm.get('dateOfDiagnosis')?.hasError('required')">
                                     Date of diagnosis is required.
                                 </mat-error>
                                 <mat-error *ngIf="historyForm.get('dateOfDiagnosis')?.hasError('futureDate')">
                                     Date cannot be in the future.
                                 </mat-error>
-                               
+
                             </mat-form-field>
                         </div>
 
@@ -132,7 +133,7 @@
                                 <input matInput [matDatepicker]="datePickerStart" formControlName="start" required />
                                 <mat-datepicker-toggle matSuffix [for]="datePickerStart"></mat-datepicker-toggle>
                                 <mat-datepicker #datePickerStart></mat-datepicker>
-                                
+
                                 <mat-error *ngIf="historyForm.get('start')?.hasError('required')">
                                     Start date is required.
                                 </mat-error>
@@ -153,22 +154,24 @@
                                 <mat-error *ngIf="historyForm.get('end')?.hasError('futureDate')">
                                     End date cannot be in the future.
                                 </mat-error>
-                               
-                               
+
+
                             </mat-form-field>
                         </div>
-                    </div>                  
+                    </div>
                 </form>
-                <mat-error *ngIf="historyForm.errors?.['endBeforeDiagnosis'] && historyForm.touched" style="font-size: 12px;">
+                <mat-error *ngIf="historyForm.errors?.['endBeforeDiagnosis'] && historyForm.touched"
+                    style="font-size: 12px;">
                     End Date cannot be before Date of Diagnosis.
                 </mat-error>
-                <mat-error *ngIf="historyForm.errors?.['endBeforeStart'] && historyForm.touched" style="font-size: 12px;">
+                <mat-error *ngIf="historyForm.errors?.['endBeforeStart'] && historyForm.touched"
+                    style="font-size: 12px;">
                     End Date cannot be before Start Date.
                 </mat-error>
                 <mat-error *ngIf="historyForm.errors?.['dateDiagnosisBeforeStart']" style="font-size: 12px;">
                     Date of Diagnosis cannot be before Start Date.
                 </mat-error>
-                
+
             </div>
 
             <div class="modal-footer  d-flex justify-content-between">

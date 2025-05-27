@@ -3,6 +3,7 @@ using System.Security.AccessControl;
 using HealthDesk.Core.Enum;
 
 namespace HealthDesk.Application;
+
 public class MedicalHistoryDto
 {
     public string? Id { get; set; }
@@ -22,7 +23,7 @@ public class MedicalHistoryDto
     [DataType(DataType.Date)]
     public DateTime? End { get; set; }
 
-     public decimal? Price { get; set; }
+    public decimal? Price { get; set; }
 }
 
 public class CurrentTreatmentDto
@@ -267,87 +268,55 @@ public class ActivityDto : IValidatableObject
     public List<MealsDto> Meals { get; set; } = new();
     public List<ExerciseDto> Exercises { get; set; } = new();
 
+    public decimal? TotalCalories { get; set; }
+    public decimal? TotalCaloriesBurnt { get; set; }
+
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        // Check if at least one meal or exercise is present
-        if ((Meals == null || !Meals.Any()) && (Exercises == null || !Exercises.Any()))
+        if ((Meals == null || Meals.Count == 0) && (Exercises == null || Exercises.Count == 0))
         {
             yield return new ValidationResult(
-                "At least one Meal or one Exercise is required.",
+                "At least one meal or one exercise is required.",
                 new[] { nameof(Meals), nameof(Exercises) }
             );
         }
     }
 }
 
-public class MealsDto : IValidatableObject
+public class MealsDto
 {
     public string? Id { get; set; }
 
     [Required(ErrorMessage = "Meal Type is required.")]
-    public string Type { get; set; }
+    public string Type { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Food is required.")]
-    public string Food { get; set; }
-
-    [Required(ErrorMessage = "Quantity is required.")]
-    [Range(1, int.MaxValue, ErrorMessage = "Quantity should be greater than 0.")]
-    public int Quantity { get; set; }
-
-    // Custom Validation to ensure all fields are present if Meals list is not empty
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-    {
-        if (!string.IsNullOrEmpty(Food) || !string.IsNullOrEmpty(Type) || Quantity > 0)
-        {
-            if (string.IsNullOrEmpty(Food))
-            {
-                yield return new ValidationResult("Food is required when Meal is present.", new[] { nameof(Food) });
-            }
-            if (string.IsNullOrEmpty(Type))
-            {
-                yield return new ValidationResult("Meal Type is required when Meal is present.", new[] { nameof(Type) });
-            }
-            if (Quantity <= 0)
-            {
-                yield return new ValidationResult("Quantity is required when Meal is present.", new[] { nameof(Quantity) });
-            }
-        }
-    }
+    [MinLength(1, ErrorMessage = "At least one food item is required.")]
+    public List<Items> FoodItems { get; set; } = new();
 }
 
-public class ExerciseDto : IValidatableObject
+public class ExerciseDto
 {
     public string? Id { get; set; }
 
     [Required(ErrorMessage = "Exercise Type is required.")]
-    public string Type { get; set; }
+    public string Type { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Exercise Name is required.")]
-    public string Exercise { get; set; }
+    [MinLength(1, ErrorMessage = "At least one exercise item is required.")]
+    public List<Items> ExerciseItems { get; set; } = new();
+}
 
-    [Required(ErrorMessage = "Duration is required.")]
-    [Range(1, int.MaxValue, ErrorMessage = "Duration must be greater than 0.")]
-    public int DurationMinutes { get; set; }
+public class Items
+{
+    public string? Id { get; set; }
 
-    // Custom Validation to ensure all fields are present if Exercises list is not empty
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-    {
-        if (!string.IsNullOrEmpty(Exercise) || !string.IsNullOrEmpty(Type) || DurationMinutes > 0)
-        {
-            if (string.IsNullOrEmpty(Exercise))
-            {
-                yield return new ValidationResult("Exercise Name is required when Exercise is present.", new[] { nameof(Exercise) });
-            }
-            if (string.IsNullOrEmpty(Type))
-            {
-                yield return new ValidationResult("Exercise Type is required when Exercise is present.", new[] { nameof(Type) });
-            }
-            if (DurationMinutes <= 0)
-            {
-                yield return new ValidationResult("Duration must be greater than 0 when Exercise is present.", new[] { nameof(DurationMinutes) });
-            }
-        }
-    }
+    [Required(ErrorMessage = "Name is required.")]
+    public string Name { get; set; } = string.Empty;
+
+    [Range(1, int.MaxValue, ErrorMessage = "Quantity must be at least 1.")]
+    public int Quantity { get; set; }
+
+    public decimal? Calories { get; set; }
 }
 
 public class PatientInfoDto
@@ -362,6 +331,13 @@ public class PatientInfoDto
     [Required(ErrorMessage = "Lifestyle is required.")]
     public string LifeStyle { get; set; }
 
+    public string? Age { get; set; }
+
+    public string? Gender { get; set; }
+
+    public List<string>? Preferences { get; set; } = new List<string>();
+
+
 }
 
 public class ReviewRequestDto
@@ -373,4 +349,40 @@ public class ReviewRequestDto
     public string Comment { get; set; }
 }
 
+public class RemedyDto
+{
+    public string? Id { get; set; }
 
+    [Required(ErrorMessage = "User Id is required.")]
+    public string UserId { get; set; }
+
+    [Required(ErrorMessage = "Remedy For is required.")]
+    [MinLength(1, ErrorMessage = "Please select at least one “Remedy For”.")]
+    public List<string> RemedyFor { get; set; }
+
+    [Required(ErrorMessage = "Name is required.")]
+    public string Name { get; set; }
+
+    public string? Description { get; set; }
+
+    public string? PreparationMethod { get; set; }
+
+    public string? UsageDirection { get; set; }
+
+    public string? Precaution { get; set; }
+    [Required]
+    public List<IngredientDto> Ingredients { get; set; }
+    [Required]
+    public List<ImageDto> Images { get; set; }
+    public string? ThumbnailUrl => Images.FirstOrDefault(i => i.IsDefault)?.Url;
+
+}
+
+public class IngredientDto
+{
+    public string? Id { get; set; }
+    public string Name { get; set; }
+    [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0.")]
+    public decimal Quantity { get; set; }
+
+}

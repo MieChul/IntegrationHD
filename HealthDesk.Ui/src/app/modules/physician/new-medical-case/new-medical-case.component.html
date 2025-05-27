@@ -1,22 +1,24 @@
 <div class="container">
   <button class="btn btn-secondary mb-3" (click)="goBack()">
-    <i class="bi bi-arrow-left"></i> Back
+    <i class="bi bi-arrow-left"></i>
   </button>
   <h2 class="animated-heading">
     <i class="bi bi-file-earmark-plus me-2"></i>New Medical Case
   </h2>
-  <form (ngSubmit)="submitCase()">
+  <form [formGroup]="caseForm" (ngSubmit)="submitCase()">
     <div class="mb-3">
-      <div class="row">
-        <!-- First Image Slot -->
+      <div class="row mb-3">
+        <mat-error *ngIf="showDefaultImageError()">
+          Please select one display image.
+        </mat-error>
         <div class="col-sm-4">
           <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" [checked]="displayImageIndex === 0"
+            <input class="form-check-input" type="checkbox" [checked]="images.at(0).get('isDefault')?.value"
               (change)="selectDisplayImage(0)" [disabled]="!imagePreviewUrls[0]" />
             <label class="form-check-label ms-1">Display Image</label>
           </div>
           <div class="upload-square" (click)="triggerFileInput('imageFile0')">
-            <div class="text-center">
+            <div class="text-center" *ngIf="!imagePreviewUrls[0]">
               <i class="bi bi-plus-circle fs-1 text-secondary"></i>
               <div>Upload Image 1</div>
             </div>
@@ -25,15 +27,14 @@
           <input type="file" id="imageFile0" (change)="onFileChange($event, 0)" accept="image/*" hidden />
         </div>
 
-        <!-- Second Image Slot -->
         <div class="col-sm-4">
           <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" [checked]="displayImageIndex === 1"
+            <input class="form-check-input" type="checkbox" [checked]="images.at(1).get('isDefault')?.value"
               (change)="selectDisplayImage(1)" [disabled]="!imagePreviewUrls[1]" />
             <label class="form-check-label ms-1">Display Image</label>
           </div>
           <div class="upload-square" (click)="triggerFileInput('imageFile1')">
-            <div class="text-center">
+            <div class="text-center" *ngIf="!imagePreviewUrls[1]">
               <i class="bi bi-plus-circle fs-1 text-secondary"></i>
               <div>Upload Image 2</div>
             </div>
@@ -42,15 +43,14 @@
           <input type="file" id="imageFile1" (change)="onFileChange($event, 1)" accept="image/*" hidden />
         </div>
 
-        <!-- Third Image Slot -->
         <div class="col-sm-4">
           <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" [checked]="displayImageIndex === 2"
+            <input class="form-check-input" type="checkbox" [checked]="images.at(2).get('isDefault')?.value"
               (change)="selectDisplayImage(2)" [disabled]="!imagePreviewUrls[2]" />
             <label class="form-check-label ms-1">Display Image</label>
           </div>
           <div class="upload-square" (click)="triggerFileInput('imageFile2')">
-            <div class="text-center">
+            <div class="text-center" *ngIf="!imagePreviewUrls[2]">
               <i class="bi bi-plus-circle fs-1 text-secondary"></i>
               <div>Upload Image 3</div>
             </div>
@@ -60,63 +60,103 @@
         </div>
       </div>
     </div>
+
+    <mat-form-field appearance="outline" class="w-100 mb-3">
+      <mat-label>Medical Case Title</mat-label>
+      <input matInput formControlName="name" placeholder="Medical Case Title" required>
+      <mat-error *ngIf="caseForm.get('name')?.hasError('required')">Medical Case Title is required.</mat-error>
+    </mat-form-field>
+
     <div class="row mb-3">
       <div class="col-md-6">
-        <div class="form-floating mb-3">
-          <input type="text" class="form-control" id="speciality" placeholder="Speciality" [(ngModel)]="speciality"
-            name="speciality" required>
-          <label for="speciality">Speciality</label>
-        </div>
+
+        <mat-form-field appearance="outline" class="w-100 mb-3">
+          <mat-label>Specialityr</mat-label>
+          <mat-select formControlName="speciality" multiple placeholder="Select one or more...">
+            <mat-option>
+              <ngx-mat-select-search [formControl]="specialitiesFilterCtrl"
+                placeholderLabel="Search conditions"></ngx-mat-select-search>
+            </mat-option>
+
+            <mat-option *ngFor="let condition of filteredSpecialitiesOptions | async" [value]="condition">
+              {{ condition }}
+            </mat-option>
+          </mat-select>
+
+          <mat-error *ngIf="caseForm.get('speciality')?.hasError('required')">
+            Please select at least one speciality.
+          </mat-error>
+          <mat-error *ngIf="caseForm.get('speciality')?.hasError('minlength')">
+            Please select at least one speciality.
+          </mat-error>
+        </mat-form-field>
+
       </div>
       <div class="col-md-6">
-        <div class="form-floating mb-3">
-          <input type="text" class="form-control" id="diagnosis" placeholder="Diagnosis" [(ngModel)]="diagnosis"
-            name="diagnosis" required>
-          <label for="diagnosis">Diagnosis</label>
-        </div>
+        <mat-form-field appearance="outline" class="w-100 mb-3">
+          <mat-label>Diagnosis</mat-label>
+          <textarea matInput formControlName="diagnosis" placeholder="Diagnosis." required></textarea>
+        </mat-form-field>
       </div>
     </div>
     <div class="row mb-3">
       <div class="col-md-6">
-        <div class="form-floating mb-3">
-          <input type="text" class="form-control" id="patientInitials" placeholder="Patient Initials"
-            name="patientInitials" [(ngModel)]="patientInitials" required pattern="[A-Za-z\-]{3}" />
-          <label for="patientInitials">Patient Initials</label>
-          <span *ngIf="!validInitials" class="text-danger">
-            Must be exactly 3 characters; letters (A–Z) or hyphen (–) only.
-          </span>
-        </div>
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Patient Initials</mat-label>
+          <input matInput formControlName="patientInitials" placeholder="e.g., AB" />
+          <mat-error *ngIf="caseForm.get('patientInitials')?.hasError('required')">
+            Patient Initials is required
+          </mat-error>
+          <mat-error *ngIf="caseForm.get('patientInitials')?.hasError('pattern')">
+            Must be 2+ letters or hyphens (A–Z/-)
+          </mat-error>
+        </mat-form-field>
       </div>
 
-      <!-- Age -->
       <div class="col-md-6">
-        <div class="form-floating mb-3">
-          <input type="number" class="form-control" id="age" placeholder="Age (years)" name="age" [(ngModel)]="age"
-            min="0" max="150" required />
-          <label for="age">Age (years)</label>
-          <span *ngIf="ageError" class="text-danger">{{ ageError }}</span>
-        </div>
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Age</mat-label>
+          <input matInput type="number" formControlName="age" placeholder="Age" />
+          <mat-error *ngIf="caseForm.get('age')?.hasError('required')">
+            Age is required
+          </mat-error>
+          <mat-error *ngIf="caseForm.get('age')?.hasError('min') || caseForm.get('age')?.hasError('max')">
+            Age must be between 0 and 150
+          </mat-error>
+        </mat-form-field>
       </div>
     </div>
     <div class="right-section dynamic-scroll-container">
       <h3>Chief Complaints</h3>
-      <button class="btn btn-success add-button pointer-cursor" (click)="addComplaint()" title="Add Complaint">
+      <button type="button" class="btn btn-success add-button pointer-cursor" (click)="addComplaint()"
+        title="Add Complaint">
         <i class="bi bi-plus-lg"></i>
       </button>
-
-      <!-- Make table responsive and enable horizontal scroll -->
       <div class="table-responsive" style="overflow-x: auto; max-width: 100%;">
         <table class="table table-hover table-modern">
           <thead class="table-light">
             <tr>
               <th>Complaint</th>
+              <th>Days</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let complaint of chiefComplaints; let i = index">
+            <mat-error *ngIf="chiefComplaints?.hasError('noComplaints')">At least one complaints is required</mat-error>
+            <tr *ngFor="let complaint of chiefComplaints.controls; let i = index" [formGroupName]="i">
               <td>
-                <input type="text" class="form-control" [(ngModel)]="chiefComplaints[i]" name="complaint{{i}}" required>
+                <mat-form-field appearance="outline" style="width: 100%;">
+                  <mat-label>Complaint</mat-label>
+                  <input matInput placeholder="Complaint" formControlName="name" required />
+                  <mat-error *ngIf="complaint.get('name')?.hasError('required')">Required</mat-error>
+                </mat-form-field>
+              </td>
+              <td>
+                <mat-form-field appearance="outline" style="width: 100%;">
+                  <mat-label>Days</mat-label>
+                  <input matInput type="number" placeholder="Days" formControlName="days" required />
+                  <mat-error *ngIf="complaint.get('days')?.hasError('required')">Required</mat-error>
+                </mat-form-field>
               </td>
               <td>
                 <button class="btn btn-danger" (click)="removeComplaint(i)">-</button>
@@ -126,30 +166,36 @@
         </table>
       </div>
     </div>
+
     <div class="form-floating mb-3">
-      <textarea class="form-control" id="pastHistory" placeholder="Past History" [(ngModel)]="pastHistory"
-        name="pastHistory" required></textarea>
-      <label for="pastHistory">Past History</label>
+      <mat-form-field appearance="outline" class="w-100 mb-3">
+        <mat-label>Past History</mat-label>
+        <textarea matInput formControlName="pastHistory" matTextareaAutosize></textarea>
+      </mat-form-field>
     </div>
     <div class="form-floating mb-3">
-      <textarea class="form-control" id="examination" placeholder="Examination" [(ngModel)]="examination"
-        name="examination" required></textarea>
-      <label for="examination">Examination</label>
+      <mat-form-field appearance="outline" class="w-100 mb-3">
+        <mat-label>Examination</mat-label>
+        <textarea matInput formControlName="examination" matTextareaAutosize></textarea>
+      </mat-form-field>
     </div>
     <div class="form-floating mb-3">
-      <textarea class="form-control" id="investigation" placeholder="Investigation" [(ngModel)]="investigation"
-        name="investigation" required></textarea>
-      <label for="investigation">Investigations</label>
+      <mat-form-field appearance="outline" class="w-100 mb-3">
+        <mat-label>Investigations</mat-label>
+        <textarea matInput formControlName="investigations" matTextareaAutosize></textarea>
+      </mat-form-field>
     </div>
     <div class="form-floating mb-3">
-      <textarea class="form-control" id="treatment" placeholder="Treatment" [(ngModel)]="treatment" name="treatment"
-        required></textarea>
-      <label for="treatment">Treatment</label>
+      <mat-form-field appearance="outline" class="w-100 mb-3">
+        <mat-label>Treatment</mat-label>
+        <textarea matInput formControlName="treatment" matTextareaAutosize></textarea>
+      </mat-form-field>
     </div>
     <div class="form-floating mb-3">
-      <textarea class="form-control" id="caseSummary" placeholder="Case Summary" [(ngModel)]="caseSummary"
-        name="caseSummary" required></textarea>
-      <label for="caseSummary">Case Summary</label>
+      <mat-form-field appearance="outline" class="w-100 mb-3">
+        <mat-label>Case Summary</mat-label>
+        <textarea matInput formControlName="caseSummary" matTextareaAutosize></textarea>
+      </mat-form-field>
     </div>
     <button type="submit" class="btn btn-primary w-100">Submit</button>
   </form>

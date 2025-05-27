@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using System.Runtime.CompilerServices;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace HealthDesk.Core;
@@ -43,7 +44,8 @@ public class Patient : BaseEntity
     public PatientInfo PatientInfo { get; set; }
 
     [BsonElement("home_remedies")]
-    public List<HomeRemedy> HomeRemedies { get; set; } = new();
+    public List<Remedy> HomeRemedies { get; set; } = new();
+
 }
 
 public class MedicalHistory : BaseEntity
@@ -143,21 +145,33 @@ public class Activity : BaseEntity
 
     [BsonElement("exercises")]
     public List<Exercise> Exercises { get; set; } = new();
+
+    [BsonElement("total_calories")]
+    public decimal? TotalCalories { get; set; }
+
+    [BsonElement("total_calories_burnt")]
+    public decimal? TotalCaloriesBurnt { get; set; }
 }
 
 public class Meal : BaseEntity
 {
     [BsonElement("meal_type")]
-    public string MealType { get; set; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
 
-    [BsonElement("food")]
-    public string Food { get; set; } = string.Empty;
+    [BsonElement("food_items")]
+    public List<Item> FoodItems { get; set; }
+}
+
+public class Item : BaseEntity
+{
+    [BsonElement("name")]
+    public string Name { get; set; }
 
     [BsonElement("quantity")]
     public int Quantity { get; set; }
 
     [BsonElement("calories")]
-    public int Calories { get; set; } // Added to store calculated calories
+    public decimal? Calories { get; set; }
 }
 
 public class Exercise : BaseEntity
@@ -165,14 +179,8 @@ public class Exercise : BaseEntity
     [BsonElement("type")]
     public string Type { get; set; } = string.Empty;
 
-    [BsonElement("exercise")]
-    public string ExerciseName { get; set; } = string.Empty;
-
-    [BsonElement("duration_minutes")]
-    public int DurationMinutes { get; set; }
-
-    [BsonElement("calories_burnt")]
-    public int CaloriesBurnt { get; set; } // Added to store calculated calories burnt
+    [BsonElement("exercise_items")]
+    public List<Item> ExerciseItems { get; set; }
 }
 
 public class SelfRecord : BaseEntity
@@ -270,18 +278,67 @@ public class Immunization : BaseEntity
     public decimal? Price { get; set; }
 }
 
-public class HomeRemedy : BaseEntity
+public class Remedy : BaseEntity
 {
-    [BsonElement("remedy")]
-    public string Remedy { get; set; }
+    [BsonElement("user_id")]
+    public string UserId { get; set; }
+
+    [BsonElement("submitted_by")]
+    public string SubmittedBy { get; set; }
+
+    [BsonElement("remedy_for")]
+    public List<string> RemedyFor { get; set; }
+
+    [BsonElement("name")]
+    public string Name { get; set; }
+
+    [BsonElement("comments")]
+    public List<Comment> Comments { get; set; } = new();
+
+    [BsonElement("liked_by")]
+    public List<string> LikedBy { get; set; }
+
+    [BsonElement("share_count")]
+    public int ShareCount { get; set; }
 
     [BsonElement("description")]
     public string Description { get; set; }
+
+    [BsonElement("preparation_method")]
+    public string PreparationMethod { get; set; }
+
+    [BsonElement("usage_direction")]
+    public string UsageDirection { get; set; }
+
+    [BsonElement("precaution")]
+    public string Precaution { get; set; }
+
+    [BsonElement("ingredients")]
+    public List<Ingredient> Ingredients { get; set; } = new();
+
+
+    [BsonElement("images")]
+    public List<CaseImage> Images { get; set; } = new();
+}
+
+public class Ingredient : BaseEntity
+{
+    [BsonElement("name")]
+    public string Name { get; set; }
+
+    [BsonElement("quantity")]
+    public decimal Quantity { get; set; }
+
+}
+
+public class CaseImage : BaseEntity
+{
+    public string ImageUrl { get; set; }
+    public bool IsDefault { get; set; }
 }
 
 public class Compliance : BaseEntity
 {
-
     public string Id { get; set; }
     public string TreatmentId { get; set; }
     public List<PatientComplianceDetail> ComplianceDetails { get; set; } = new();
@@ -327,7 +384,18 @@ public class PatientInfo : BaseEntity
     public double Height { get; set; }
 
     [BsonElement("lifestyle")]
-    public string Lifestyle { get; set; }
+    public string LifeStyle { get; set; }
+
+
+    [BsonElement("age")]
+    public string Age { get; set; }
+
+
+    [BsonElement("gender")]
+    public string Gender { get; set; }
+
+    [BsonElement("preferences")]
+    public List<string>? Preferences { get; set; } = new List<string>();
 }
 
 public class Report : BaseEntity

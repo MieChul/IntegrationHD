@@ -15,7 +15,6 @@ export class PhysicianService {
     return this.http.get<any[]>(`${this.apiUrl}/${physicianId}/clinics`);
   }
 
-
   addUpdateClinic(userId: string, clinic: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/${userId}/clinics`, clinic);
   }
@@ -28,6 +27,7 @@ export class PhysicianService {
     const url = `${this.apiUrl}/${id}/design-prescriptions/${prescriptionId}`;
     return this.http.get<any>(url);
   }
+
   getUserDetails(id: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${id}/user-details`);
   }
@@ -80,16 +80,32 @@ export class PhysicianService {
     return this.http.post<any>(`${this.apiUrl}/${physicianId}/prescriptions`, prescription);
   }
 
+  getMedicalCaseById(userId: string, caseId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${userId}/medical-case/${caseId}`);
+  }
+
   getMedicalCases(id: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${id}/medical-cases`);
   }
 
   saveMedicalCase(id: string, medicalCase: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/medical-cases`, medicalCase);
+    return this.http.post<any>(`${this.apiUrl}/${id}/medical-case`, medicalCase);
   }
 
   deleteMedicalCase(id: string, caseId: string): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/${id}/medical-cases/${caseId}`);
+  }
+
+  saveComment(userId: string, caseId: string, comment: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${userId}/comment/${caseId}`, comment);
+  }
+
+  toggleLike(userId: string, caseId: string, currentUserId: string): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${userId}/like/${caseId}/${currentUserId}`, {});
+  }
+
+  updatePreferences(userId: string, preferences: string[]): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${userId}/preference`, preferences);
   }
 
   incrementLikes(id: string, caseId: string): Observable<any> {
@@ -109,18 +125,17 @@ export class PhysicianService {
   }
 
   uploadPrescription(data: { pdfBlob: Blob; patientId: string; illness: string; physicianId: string }): Observable<any> {
-    // Convert Blob to Base64
     return new Observable((observer) => {
       const reader = new FileReader();
       reader.onload = () => {
-        const base64Data = reader.result as string; // Base64 string
+        const base64Data = reader.result as string;
         const payload = {
           PhysicianId: data.physicianId,
           PatientId: data.patientId,
           Illness: data.illness,
-          PdfBase64: base64Data.split(',')[1], // Remove metadata prefix
+          PdfBase64: base64Data.split(',')[1],
         };
-        // Send the payload as JSON
+
         this.http.post<any>(`${this.apiUrl}/${data.physicianId}/prescriptions`, payload).subscribe(
           (response) => observer.next(response),
           (error) => observer.error(error),
@@ -128,7 +143,7 @@ export class PhysicianService {
         );
       };
       reader.onerror = (error) => observer.error(error);
-      reader.readAsDataURL(data.pdfBlob); // Convert Blob to Base64
+      reader.readAsDataURL(data.pdfBlob);
     });
   }
 
@@ -136,6 +151,10 @@ export class PhysicianService {
     return this.http.get<any[]>(`${this.apiUrl}/${physicianId}/clinic-slots`, {
       params: { clinicId, date }
     });
+  }
+
+  getPhysicianInfo(physiianId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${physiianId}/info`);
   }
 
   saveMultipleAppointments(
@@ -147,7 +166,7 @@ export class PhysicianService {
   ): Observable<any> {
     const payload = {
       status: status,
-      date: date ? date.toISOString() : null, // Convert date to ISO format if provided
+      date: date ? date.toISOString() : null,
       time: time || null,
       reason: reason || null,
       dtos: appointments.map(a => ({

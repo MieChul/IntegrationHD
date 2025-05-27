@@ -11,7 +11,6 @@ export class PatientService {
 
   constructor(private http: HttpClient) { }
 
-  // Medical History
   getMedicalHistory(patientId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${patientId}/medical-history`);
   }
@@ -24,7 +23,6 @@ export class PatientService {
     return this.http.delete(`${this.apiUrl}/${patientId}/medical-history/${historyId}`);
   }
 
-  // Current Treatments
   getCurrentTreatments(patientId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${patientId}/current-treatments`);
   }
@@ -41,7 +39,6 @@ export class PatientService {
     return this.http.delete(`${this.apiUrl}/${patientId}/current-treatments/${treatmentId}`);
   }
 
-  // Appointments
   getAppointments(patientId: string, isPhysician: boolean = false): Observable<any[]> {
     return this.http.get<any[]>(
       `${this.apiUrl}/${patientId}/appointments`,
@@ -59,7 +56,6 @@ export class PatientService {
     return this.http.delete(`${this.apiUrl}/${patientId}/update-appointment-status/${appointmentId}`);
   }
 
-  // Self Records
   getSelfRecords(patientId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${patientId}/self-records`);
   }
@@ -72,7 +68,6 @@ export class PatientService {
     return this.http.delete(`${this.apiUrl}/${patientId}/self-records/${recordId}`);
   }
 
-  // Symptoms
   getSymptoms(patientId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${patientId}/symptoms`);
   }
@@ -85,7 +80,6 @@ export class PatientService {
     return this.http.delete(`${this.apiUrl}/${patientId}/symptoms/${symptomId}`);
   }
 
-  // Lab Investigations
   getLabInvestigations(patientId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${patientId}/lab-investigations`);
   }
@@ -98,7 +92,6 @@ export class PatientService {
     return this.http.delete(`${this.apiUrl}/${patientId}/lab-investigations/${investigationId}`);
   }
 
-  // Reports
   getReports(patientId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${patientId}/reports`);
   }
@@ -111,7 +104,6 @@ export class PatientService {
     return this.http.delete(`${this.apiUrl}/${patientId}/reports/${reportId}`);
   }
 
-  // Immunizations
   getImmunizations(patientId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${patientId}/immunizations`);
   }
@@ -124,7 +116,6 @@ export class PatientService {
     return this.http.delete(`${this.apiUrl}/${patientId}/immunizations/${immunizationId}`);
   }
 
-  // Patient Info
   getPatientInfo(patientId: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${patientId}/info`);
   }
@@ -142,11 +133,9 @@ export class PatientService {
     return this.http.post<any>(`${this.apiUrl}/${patientId}/activities`, activity);
   }
 
-
   deleteActivity(patientId: string, activityId: string): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/${patientId}/activities/${activityId}`);
   }
-
 
   getReminders(patientId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${patientId}/reminders`);
@@ -172,7 +161,6 @@ export class PatientService {
     return this.http.post<any>(`${this.apiUrl}/${patientId}/compliance/medicineinfo/${treatmentId}`, dto);
   }
 
-
   confirmIntake(patientId: string, treatmentId: string, isTaken: boolean): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/${patientId}/compliance/confirmintake/${treatmentId}?isTaken=${isTaken}`, {});
   }
@@ -181,9 +169,31 @@ export class PatientService {
     return this.http.get<any[]>(`${this.apiUrl}/entities`);
   }
 
-  // Add or Update Review
   addOrUpdateReview(review: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/review`, review);
   }
 
+  getRemedies(patientId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${patientId}/remedies`);
+  }
+
+  saveRemedy(patientId: string, remedy: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${patientId}/remedy`, remedy);
+  }
+
+  getRemedyById(userId: string, id: string): Observable<any> {
+    return this.http.get<any[]>(`${this.apiUrl}/${userId}/remedy/${id}`);
+  }
+
+  saveComment(userId: string, remedyId: string, comment: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${userId}/comment/${remedyId}`, comment);
+  }
+
+  toggleLike(remedyOwnerId: string, remedyId: string, currentUserId: string): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${remedyOwnerId}/like/${remedyId}/${currentUserId}`, {});
+  }
+
+  updatePreferences(userId: string, preferences: string[]): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${userId}/preference`, preferences);
+  }
 }

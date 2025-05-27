@@ -9,4 +9,14 @@ public class PatientRepository : GenericRepository<Patient>, IPatientRepository
     {
         _collection = context.GetCollection<Patient>("Patients");
     }
+
+    public List<Remedy> GetAllRemedies()
+    {
+        return _collection
+            .Find(Builders<Patient>.Filter.Empty)
+            .Project(p => p.HomeRemedies)
+            .ToList()
+            .SelectMany(r => r)
+            .ToList();
+    }
 }

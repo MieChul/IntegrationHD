@@ -4,6 +4,7 @@ using HealthDesk.Core;
 using Microsoft.AspNetCore.Http;
 
 namespace HealthDesk.Application;
+
 public class PhysicianClinicDto
 {
     public string? Id { get; set; }
@@ -201,21 +202,52 @@ public class PatientHistoryDto
 
 public class MedicalCaseDto
 {
-    public string Id { get; set; }
-    public string ImageUrl1 { get; set; }
-    public string ImageUrl2 { get; set; }
-    public string ImageUrl3 { get; set; }
-    public string Speciality { get; set; }
+    public string? Id { get; set; }
+
+    [Required(ErrorMessage = "User Id is required.")]
+    public string UserId { get; set; }
+
+    [Required(ErrorMessage = "Name is required.")]
+    public string Name { get; set; }
+
+    public List<ImageDto> Images { get; set; }
+
+    [Required(ErrorMessage = "Speciality is required.")]
+    public List<string> Speciality { get; set; }
+
+    [Required(ErrorMessage = "Diagnosis is required.")]
     public string Diagnosis { get; set; }
+
+    [Required(ErrorMessage = "State is required.")]
+    [MinLength(2, ErrorMessage = "Minimun 2 characters is needed.")]
     public string PatientInitials { get; set; }
+
+    [Range(1, 150, ErrorMessage = "Age must be between 1 and 150.")]
     public int Age { get; set; }
-    public List<string> ChiefComplaints { get; set; }
-    public string PastHistory { get; set; }
-    public string Examination { get; set; }
-    public string Investigations { get; set; }
-    public string Treatment { get; set; }
-    public string CaseSummary { get; set; }
-    public int LikesCount { get; set; }
+    public List<ComplaintsDto> ChiefComplaints { get; set; }
+
+    public string? PastHistory { get; set; }
+    public string? Examination { get; set; }
+    public string? Investigations { get; set; }
+    public string? Treatment { get; set; }
+    public string? CaseSummary { get; set; }
+}
+
+public class ImageDto
+{
+    public string Image { get; set; }
+    public string? Url { get; set; }
+    public bool IsDefault { get; set; }
+    public string? ImageName { get; set; }
+
+}
+
+public class ComplaintsDto
+{
+    public string? Id { get; set; }
+    public string Name { get; set; }
+    public int Days { get; set; }
+
 }
 
 public class ComplianceDetailDto
@@ -264,4 +296,11 @@ public class ProfileInvestigationDTO
 
     public string? ProfileId { get; set; }
 }
+
+public class PhysicianInfoDto
+{
+    public List<string>? Preferences { get; set; } = new List<string>();
+}
+
+
 

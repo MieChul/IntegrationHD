@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using MongoDB.Bson;
 
 namespace HealthDesk.Application;
+
 public class PhysicianService : IPhysicianService
 {
     private readonly IPhysicianRepository _physicianRepository;
@@ -161,7 +162,8 @@ public class PhysicianService : IPhysicianService
                 SecondaryId = p.SecondaryId
             };
             patients.Add(patient);
-        };
+        }
+        ;
         return patients;
     }
 
@@ -187,7 +189,7 @@ public class PhysicianService : IPhysicianService
             };
             var id = await _userService.Register(user);
             dto.UserId = id;
-           // _messageService.SendSms(dto.Mobile, "Hi, Welcome to HealthDesk. Your profile is created with Username: " + user.Username + " and Password: " + user.Password);
+            // _messageService.SendSms(dto.Mobile, "Hi, Welcome to HealthDesk. Your profile is created with Username: " + user.Username + " and Password: " + user.Password);
         }
         else if (string.IsNullOrEmpty(dto.Id))
         {
@@ -259,29 +261,73 @@ public class PhysicianService : IPhysicianService
         patient.Prescriptions.Add(prescription);
 
         await _physicianRepository.UpdateAsync(physician);
-        return prescription.Id; // Return the ID of the added prescription
+        return prescription.Id;
     }
 
-    public async Task<IEnumerable<MedicalCaseDto>> GetAllMedicalCasesAsync(string physicianId)
+    public async Task<dynamic> GetAllMedicalCasesAsync(string physicianId)
     {
-        var physician = await _physicianRepository.GetByIdAsync(physicianId);
-        return physician.MedicalCases.Select(mc => GenericMapper.Map<MedicalCase, MedicalCaseDto>(mc));
-    }
-
-    public async Task SaveMedicalCaseAsync(string physicianId, MedicalCaseDto dto)
-    {
-        var physician = await _physicianRepository.GetByIdAsync(physicianId);
-        var medicalCase = GenericMapper.Map<MedicalCaseDto, MedicalCase>(dto);
-
-        if (string.IsNullOrEmpty(dto.Id))
-            physician.MedicalCases.Add(medicalCase);
-        else
+        var medicalCases = _physicianRepository.GetAllCases();
+        var medicalCasesWithThumbnail = medicalCases.Select(r => new
         {
-            var existing = physician.MedicalCases.FirstOrDefault(mc => mc.Id == dto.Id);
-            if (existing != null) GenericMapper.Map(dto, existing);
+            r.Id,
+            r.Name,
+            r.CaseSummary,
+            r.UserId,
+            r.CaseImages,
+            r.Comments,
+            r.CreateDate,
+            r.Speciality,
+            r.Diagnosis,
+            r.PatientInitials,
+            r.Age,
+            r.Complaints,
+            r.PastHistory,
+            r.Examination,
+            r.Investigations,
+            r.Treatment,
+            r.SubmittedBy,
+            r.LikedBy,
+            ThumbnailUrl = r.CaseImages.FirstOrDefault(i => i.IsDefault)?.ImageUrl,
+            LikedCount = r.LikedBy?.Count ?? 0
+        });
+
+        var yourmedicalCases = medicalCasesWithThumbnail.Where(r => r.UserId == physicianId);
+
+        return new
+        {
+            Others = medicalCasesWithThumbnail,
+            Yours = yourmedicalCases
+        };
+    }
+
+    public async Task<List<ImageDto>> SaveMedicalCaseAsync(MedicalCaseDto dto)
+    {
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", dto.UserId);
+        var user = await _userRepository.GetByIdAsync(dto.UserId);
+        var medicalCase = new MedicalCase();
+        if (!string.IsNullOrEmpty(dto.Id))
+            medicalCase = physician.MedicalCases.FirstOrDefault(mc => mc.Id == dto.Id);
+
+        GenericMapper.Map<MedicalCaseDto, MedicalCase>(dto, medicalCase);
+
+        medicalCase.CaseImages = new List<CaseImage>();
+        var count = 0;
+        foreach (var img in dto.Images)
+        {
+            img.ImageName = $@"{medicalCase.Id}_image{count++}.png";
+            medicalCase.CaseImages.Add(new CaseImage
+            {
+                ImageUrl = $@"/assets/documents/{dto.UserId}/medical_cases/{medicalCase.Id}_image{count++}.png",
+                IsDefault = img.IsDefault
+            });
         }
 
+        medicalCase.SubmittedBy = user.FirstName + " " + user.LastName;
+        if (string.IsNullOrEmpty(dto.Id))
+            physician.MedicalCases.Add(medicalCase);
+
         await _physicianRepository.UpdateAsync(physician);
+        return dto.Images;
     }
 
     public async Task DeleteMedicalCaseAsync(string physicianId, string caseId)
@@ -291,13 +337,13 @@ public class PhysicianService : IPhysicianService
         await _physicianRepository.UpdateAsync(physician);
     }
 
-    public async Task IncrementLikesAsync(string physicianId, string caseId)
+    public async Task<MedicalCase> GetMedicalCase(string userId, string id)
     {
-        var physician = await _physicianRepository.GetByIdAsync(physicianId);
-        var medicalCase = physician.MedicalCases.FirstOrDefault(mc => mc.Id == caseId);
-        if (medicalCase != null) medicalCase.LikesCount++;
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", userId);
+        if (physician == null)
+            throw new ArgumentException("physician not found.");
 
-        await _physicianRepository.UpdateAsync(physician);
+        return physician.MedicalCases.Where(h => h.Id == id).FirstOrDefault();
     }
 
     public async Task<dynamic> GetUserDetailsAsync(string id)
@@ -700,4 +746,67 @@ public class PhysicianService : IPhysicianService
 
     }
 
+    public async Task<PhysicianInfoDto> GetPhysicianInfoAsync(string physicianId)
+    {
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
+
+        return GenericMapper.Map<PhysicianInfo, PhysicianInfoDto>(physician.PhysicianInfo);
+    }
+
+    public async Task SaveComment(string userId, string medicalCaseId, CommentDto dto)
+    {
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", userId);
+        var user = await _userRepository.GetByIdAsync(dto.UserId);
+        if (physician == null)
+            throw new ArgumentException("Physician not found.");
+        var comment = new Comment();
+        if (!string.IsNullOrEmpty(dto.Id))
+            comment = physician.MedicalCases?.FirstOrDefault(h => h.Id == medicalCaseId)?.Comments?.FirstOrDefault(c => c.Id == dto.Id) ?? new Comment();
+        GenericMapper.Map<CommentDto, Comment>(dto, comment);
+        comment.SubmittedBy = user.FirstName + " " + user.LastName;
+        if (string.IsNullOrEmpty(dto.Id))
+        {
+            var medicalCase = physician.MedicalCases?.FirstOrDefault(h => h.Id == medicalCaseId);
+            if (medicalCase != null)
+            {
+                medicalCase.Comments ??= new List<Comment>();
+                medicalCase.Comments.Add(comment);
+
+            }
+
+        }
+        await _physicianRepository.UpdateAsync(physician);
+    }
+
+    public async Task ToggleLikeAsync(string medicalCaseUserId, string medicalCaseId, string userId)
+    {
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", medicalCaseUserId);
+        if (physician == null)
+            throw new ArgumentException("Physician not found.");
+
+        var medicalCase = physician.MedicalCases?.FirstOrDefault(h => h.Id == medicalCaseId);
+        if (medicalCase == null)
+            throw new ArgumentException("Medical Case not found.");
+
+        medicalCase.LikedBy ??= new List<string>();
+
+        if (medicalCase.LikedBy.Contains(userId))
+            medicalCase.LikedBy.Remove(userId);
+        else
+            medicalCase.LikedBy.Add(userId);
+
+        await _physicianRepository.UpdateAsync(physician);
+    }
+
+    public async Task UpdatePreferencesAsync(string userId, List<string> preferences)
+    {
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", userId);
+        if (physician == null)
+            throw new ArgumentException("Patient not found.");
+        if (physician.PhysicianInfo == null)
+            physician.PhysicianInfo = new PhysicianInfo();
+        physician.PhysicianInfo.Preferences = new List<string>();
+        physician.PhysicianInfo.Preferences.AddRange(preferences);
+        await _physicianRepository.UpdateAsync(physician);
+    }
 }

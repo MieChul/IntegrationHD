@@ -26,12 +26,8 @@ export class PatientHistoryComponent implements OnInit {
   selectedHistory!: any;
   diseases: any = [];
   userData: any = [];
-
   diseaseFilterCtrl = new FormControl();
-
-  // Filtered Observables
   filteredDiseases!: Observable<string[]>;
-
   filteredHistories: any;
 
 

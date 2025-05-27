@@ -5,6 +5,7 @@ using HealthDesk.Core.Enum;
 using HealthDesk.Infrastructure;
 
 namespace HealthDesk.Application;
+
 public class AccountService : IAccountService
 {
     private readonly IUserRepository _userRepository;
@@ -264,7 +265,7 @@ public class AccountService : IAccountService
                                 Compliance = new List<Compliance>(),
                                 Activities = new List<Activity>(),
                                 PatientInfo = new PatientInfo(),
-                                HomeRemedies = new List<HomeRemedy>(),
+                                HomeRemedies = new List<Remedy>(),
                                 Reports = new List<Report>()
                             };
                             await _patientRepository.AddAsync(patient);
@@ -450,44 +451,35 @@ public class AccountService : IAccountService
             CanSwitch = false
         };
 
-        // Add the new dependent to the database
-        try
-        {
+        await _userRepository.AddAsync(user);
+        // Ensure the ID is retrieved
+        if (string.IsNullOrEmpty(user.Id))
+            throw new InvalidOperationException("Failed to retrieve the generated ID for the new user.");
 
-            await _userRepository.AddAsync(user);
-            // Ensure the ID is retrieved
-            if (string.IsNullOrEmpty(user.Id))
-                throw new InvalidOperationException("Failed to retrieve the generated ID for the new user.");
-
-            var roleId = string.Empty;
-            var patient = new Patient
-            {
-                UserId = user.Id,
-                MedicalHistory = new List<MedicalHistory>(),
-                CurrentTreatments = new List<Treatment>(),
-                Appointments = new List<Appointment>(),
-                SelfRecords = new List<SelfRecord>(),
-                Symptoms = new List<Symptom>(),
-                LabInvestigations = new List<LabInvestigation>(),
-                Immunizations = new List<Immunization>(),
-                Compliance = new List<Compliance>(),
-                Activities = new List<Activity>(),
-                PatientInfo = new PatientInfo(),
-                HomeRemedies = new List<HomeRemedy>(),
-                Reports = new List<Report>()
-            };
-            await _patientRepository.AddAsync(patient);
-            roleId = patient.Id;
-            user.Roles = new List<UserRole> { new UserRole { Id = roleId, Role = Role.Patient, Status = "New" } };
-            await _userRepository.UpdateAsync(user);
-            userEntity.HasDependent = true;
-            userEntity.DependentName = $"{user.FirstName} {user.LastName}";
-            await _userRepository.UpdateAsync(userEntity);
-        }
-        catch (Exception ex)
+        var roleId = string.Empty;
+        var patient = new Patient
         {
-            throw new InvalidOperationException("Failed to add the dependent user.", ex);
-        }
+            UserId = user.Id,
+            MedicalHistory = new List<MedicalHistory>(),
+            CurrentTreatments = new List<Treatment>(),
+            Appointments = new List<Appointment>(),
+            SelfRecords = new List<SelfRecord>(),
+            Symptoms = new List<Symptom>(),
+            LabInvestigations = new List<LabInvestigation>(),
+            Immunizations = new List<Immunization>(),
+            Compliance = new List<Compliance>(),
+            Activities = new List<Activity>(),
+            PatientInfo = new PatientInfo(),
+            HomeRemedies = new List<Remedy>(),
+            Reports = new List<Report>()
+        };
+        await _patientRepository.AddAsync(patient);
+        roleId = patient.Id;
+        user.Roles = new List<UserRole> { new UserRole { Id = roleId, Role = Role.Patient, Status = "New" } };
+        await _userRepository.UpdateAsync(user);
+        userEntity.HasDependent = true;
+        userEntity.DependentName = $"{user.FirstName} {user.LastName}";
+        await _userRepository.UpdateAsync(userEntity);
 
         // Map the new user to a DTO
         var userDto = new UserDto

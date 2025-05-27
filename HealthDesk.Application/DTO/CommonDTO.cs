@@ -1,13 +1,16 @@
 
 
 namespace HealthDesk.Application;
+
 public class CommentDto
 {
-    public string Id { get; set; }
+    public string? Id { get; set; }
     public string Text { get; set; }
     public string UserId { get; set; }
-    public string ItemType { get; set; }
+    public string? ItemType { get; set; }
+    public string? SubmittedBy { get; set; }
 }
+
 
 public class RatingDto
 {

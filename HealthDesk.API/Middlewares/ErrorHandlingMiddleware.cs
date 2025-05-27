@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using HealthDesk.Infrastructure;
 
 namespace HealthDesk.API;
@@ -26,27 +27,32 @@ public class ErrorHandlingMiddleware
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        // Resolve ILogRepository within the request scope and log the error
         var logRepository = context.RequestServices.GetService<ILogRepository>();
+        var trace = new StackTrace(exception, true);
+        var frame = trace.GetFrames()?.FirstOrDefault(f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("HealthDesk") == true);
+        var method = frame?.GetMethod();
+        var className = method?.DeclaringType?.FullName ?? "UnknownClass";
+        var methodName = method?.Name ?? "UnknownMethod";
+        var message = exception.Message ?? " " + exception.InnerException?.Message ?? "";
+
+        var logMessage = $@"[EXCEPTION] Message: {message} Class: {className} Method: {methodName} StackTrace: {exception.StackTrace}";
         if (logRepository != null)
         {
             await logRepository.LogAsync(exception.Message, "Error");
         }
 
-        // Set response status and headers
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
         var errorMessage = exception is InvalidOperationException
                ? exception.Message
                : "An unexpected error occurred.";
-        // Create the error response
+
         var errorResponse = new
         {
             Success = false,
             Message = errorMessage
         };
 
-        // Serialize and write the error response
         var errorJson = JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
         await context.Response.WriteAsync(errorJson);
     }

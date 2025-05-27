@@ -12,12 +12,14 @@ namespace HealthDesk.API.Controllers
         private readonly IAccountService _accountService;
         private readonly IPhysicianService _physicianService;
         private readonly IPatientService _patientService;
+        private readonly IWebHostEnvironment _env;
 
-        public PatientController(IAccountService accountService, IPhysicianService physicianService, IPatientService patientService)
+        public PatientController(IAccountService accountService, IPhysicianService physicianService, IPatientService patientService, IWebHostEnvironment env)
         {
             _accountService = accountService;
             _physicianService = physicianService;
             _patientService = patientService;
+            _env = env;
         }
 
         // 1. Medical History
@@ -299,6 +301,88 @@ namespace HealthDesk.API.Controllers
             // Call the service method with the converted enum
             await _patientService.AddOrUpdateReview(request.UserId, request.EntityId, (Role)roleEnum, request.Rating, request.Comment);
             return Ok(new { Success = true, Message = "Review added or updated successfully." });
+        }
+
+        [HttpGet("{patientId}/remedies")]
+        public async Task<IActionResult> GetRemedies(string patientId)
+        {
+            var remedies = await _patientService.GetRemedies(patientId);
+            return Ok(new { Success = true, Message = "Remedies retrieved successfully.", Data = remedies });
+        }
+
+        [HttpGet("{userId}/remedy/{id}")]
+        public async Task<IActionResult> GetRemedy(string userId, string id)
+        {
+            var remedy = await _patientService.GetRemedy(userId, id);
+            return Ok(new { Success = true, Message = "Remedy retrieved successfully.", Data = remedy });
+        }
+
+        [HttpPost("{patientId}/remedy")]
+        public async Task<IActionResult> SaveRemedy(string patientId, [FromBody] RemedyDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { Success = false, Message = "Invalid data provided.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+
+            var directoryPath = string.Empty;
+            directoryPath = Path.Combine(_env.WebRootPath ?? "", "assets", "documents", dto.UserId, "remedies");
+
+            Directory.CreateDirectory(directoryPath);
+            var images = await _patientService.SaveRemedyAsync(dto);
+            foreach (var img in images)
+            {
+                await CreateFile(directoryPath, img.ImageName, dto.UserId, img.Image);
+            }
+
+            return Ok(new { Success = true, Message = "Remedy saved successfully." });
+
+        }
+
+        private async Task CreateFile(string folderPath, string filename, string id, string base64Image)
+        {
+            var filePath = Path.Combine(folderPath, filename);
+
+            if (string.IsNullOrWhiteSpace(base64Image))
+            {
+                throw new ArgumentException("Base64 image string is null or empty.");
+            }
+
+            var base64Data = base64Image.Contains(",")
+                ? base64Image.Substring(base64Image.IndexOf(',') + 1)
+                : base64Image;
+
+            byte[] imageBytes = Convert.FromBase64String(base64Data);
+
+            await System.IO.File.WriteAllBytesAsync(filePath, imageBytes);
+        }
+
+
+        [HttpPost("{userId}/comment/{remedyId}")]
+        public async Task<IActionResult> SaveComment(string userId, string remedyId, [FromBody] CommentDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { Success = false, Message = "Invalid data provided.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+
+            await _patientService.SaveComment(userId, remedyId, dto);
+            return Ok(new { Success = true, Message = "Comment saved." });
+
+        }
+
+        [HttpPut("{userId}/like/{remedyId}/{likedUser}")]
+        public async Task<IActionResult> ToggleLike(string userId, string remedyId, string likedUser)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { Success = false, Message = "Invalid data provided.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+
+            await _patientService.ToggleLikeAsync(userId, remedyId, likedUser);
+            return Ok(new { Success = true });
+
+        }
+
+        [HttpPut("{userId}/preference")]
+        public async Task<IActionResult> UpdatePreferences(string userId, [FromBody] List<string> preferences)
+        {
+            await _patientService.UpdatePreferencesAsync(userId, preferences);
+            return Ok(new { Success = true, Message = "Preferences updated." });
         }
 
     }

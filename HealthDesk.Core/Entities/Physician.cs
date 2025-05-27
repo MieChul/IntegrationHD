@@ -27,6 +27,9 @@ public class Physician : BaseEntity
     [BsonElement("reviews")]
     public List<Reviews> Reviews { get; set; } = new();
 
+    [BsonElement("info")]
+    public PhysicianInfo PhysicianInfo { get; set; }
+
 }
 
 public class Clinic : BaseEntity
@@ -229,17 +232,29 @@ public class Prescription : BaseEntity
 
 public class MedicalCase : BaseEntity
 {
-    [BsonElement("image_url1")]
-    public string ImageUrl1 { get; set; }
+    [BsonElement("user_id")]
+    public string UserId { get; set; }
 
-    [BsonElement("image_url2")]
-    public string ImageUrl2 { get; set; }
+    [BsonElement("name")]
+    public string Name { get; set; }
 
-    [BsonElement("image_url3")]
-    public string ImageUrl3 { get; set; }
+    [BsonElement("submitted_by")]
+    public string SubmittedBy { get; set; }
+
+    [BsonElement("comments")]
+    public List<Comment> Comments { get; set; }
+
+    [BsonElement("likes")]
+    public List<string> LikedBy { get; set; }
+
+    [BsonElement("shares_count")]
+    public int SharesCount { get; set; }
+
+    [BsonElement("images")]
+    public List<CaseImage> CaseImages { get; set; }
 
     [BsonElement("speciality")]
-    public string Speciality { get; set; }
+    public List<string> Speciality { get; set; }
 
     [BsonElement("diagnosis")]
     public string Diagnosis { get; set; }
@@ -250,8 +265,8 @@ public class MedicalCase : BaseEntity
     [BsonElement("age")]
     public int Age { get; set; }
 
-    [BsonElement("chief_complaints")]
-    public List<string> ChiefComplaints { get; set; } = new();
+    [BsonElement("complaints")]
+    public List<Complaint> Complaints { get; set; }
 
     [BsonElement("past_history")]
     public string PastHistory { get; set; }
@@ -267,7 +282,15 @@ public class MedicalCase : BaseEntity
 
     [BsonElement("case_summary")]
     public string CaseSummary { get; set; }
-    public int LikesCount { get; set; } = 0;
+}
+
+public class Complaint : BaseEntity
+{
+    [BsonElement("name")]
+    public string Name { get; set; }
+
+    [BsonElement("days")]
+    public int Days { get; set; }
 }
 
 public class Profile : BaseEntity
@@ -287,6 +310,12 @@ public class ProfileInvestigation : BaseEntity
     [BsonElement("profile_id")]
     [BsonRepresentation(BsonType.ObjectId)]
     public string ProfileId { get; set; }
+}
+
+public class PhysicianInfo
+{
+    public List<string>? Preferences { get; set; } = new List<string>();
+
 }
 
 

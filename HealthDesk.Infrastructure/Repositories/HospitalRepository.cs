@@ -10,4 +10,14 @@ public class HospitalRepository : GenericRepository<Hospital>, IHospitalReposito
     {
         _collection = context.GetCollection<Hospital>("Hospitals");
     }
+
+    public List<MedicalCase> GetAllCases()
+    {
+        return _collection
+            .Find(Builders<Hospital>.Filter.Empty)
+            .Project(p => p.MedicalCases)
+            .ToList()
+            .SelectMany(r => r)
+            .ToList();
+    }
 }

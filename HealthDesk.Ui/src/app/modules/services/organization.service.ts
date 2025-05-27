@@ -74,7 +74,6 @@ export class OrganizationService {
     return this.http.post(`${this.apiUrl}/hospital/${id}/physicians`, physician);
   }
 
-
   deleteService(id: string, serviceId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}/hopital/services/${serviceId}`);
   }
@@ -109,6 +108,22 @@ export class OrganizationService {
 
   addSharedWith(pharmaId: string, surveyId: string, sharedWith: string[]): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/${pharmaId}/surveys/${surveyId}/shared-with`, sharedWith);
+  }
+
+  getCases(hospitalId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${hospitalId}/cases`);
+  }
+
+  getCaseById(id: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${id}/case`);
+  }
+
+  saveCase(id: string, medicalCase: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/case`, medicalCase);
+  }
+
+  deleteCase(id: string, caseId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}/case/${caseId}`);
   }
 
   async initDB() {

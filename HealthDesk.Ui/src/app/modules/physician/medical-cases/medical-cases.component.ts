@@ -5,17 +5,8 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Modal, Tooltip } from 'bootstrap';
 import { map, Observable, startWith } from 'rxjs';
 import { DatabaseService } from '../../../shared/services/database.service';
-
-interface MedicalCase {
-  id: number;
-  submittedBy: string;
-  speciality: string;
-  comments: string[];
-  likeCount: number;
-  shareCount: number;
-  shortDescription: string;
-  thumbnail: string;
-}
+import { AccountService } from '../../services/account.service';
+import { PhysicianService } from '../../services/physician.service';
 
 @Component({
   selector: 'app-medical-cases',
@@ -23,7 +14,6 @@ interface MedicalCase {
   styleUrls: ['./medical-cases.component.scss']
 })
 export class MedicalCasesComponent implements OnInit {
-  activeSubTab: string = 'home';
 
   ngAfterViewInit(): void {
     const tooltipTriggerList = Array.from(
@@ -34,124 +24,125 @@ export class MedicalCasesComponent implements OnInit {
     });
   }
 
-  @ViewChild('commentsModal') commentsModal!: ElementRef;
+  @ViewChild('commentModal') commentModal!: ElementRef;
   @ViewChild('shareModal') shareModal!: ElementRef;
 
+  userData: any;
   shareLink: string = '';
-  searchValue: string = '';
-  comments: string[] = [];
-  newComment: { [key: number]: string } = {};
+  searchValue: string[] = [];
   newPreference: string = '';
   preferences: string[] = [];
+  selectedPreferences: string[] = [];
+  activeSubTab: string = 'home';
   specialities: any[] = [];
   specialityFilterCtrl = new FormControl();
   filteredSpecialities!: Observable<string[]>;
-  preferenceControl    = new FormControl<string[]>([])
+  recommendedMedicalCases: any = [];
+  latestMedicalCases: any = [];
+  trendingMedicalCases: any = [];
+  otherMedicalCases: any = [];
+  yourMedicalCases: any = [];
+  case: any;
+  existingComment: any;
+  newCommentText: any;
+  isEditing: any;
 
-  recommendedMedicalCases: MedicalCase[] = [];
-  latestMedicalCases: MedicalCase[] = [];
-  trendingMedicalCases: MedicalCase[] = [];
-
-  otherMedicalCases: MedicalCase[] = [
-    { id: 1, submittedBy: ' Smith', speciality: 'Cardiology', comments: ['Great case!'], likeCount: 10, shareCount: 5, shortDescription: 'A detailed case study on cardiology', thumbnail: 'assets/remedies/3.jpg' },
-    { id: 2, submittedBy: ' Johnson', speciality: 'Neurology', comments: [], likeCount: 7, shareCount: 2, shortDescription: 'An intriguing neurology case', thumbnail: 'assets/remedies/7.jpg' },
-    { id: 3, submittedBy: ' Lee', speciality: 'Orthopedics', comments: [], likeCount: 15, shareCount: 3, shortDescription: 'Orthopedics case study and analysis', thumbnail: 'assets/remedies/2.jpg' },
-    { id: 4, submittedBy: ' Brown', speciality: 'Dermatology', comments: [], likeCount: 8, shareCount: 4, shortDescription: 'Dermatology case with treatment details', thumbnail: 'assets/remedies/8.jpg' },
-    { id: 5, submittedBy: ' Taylor', speciality: 'Pediatrics', comments: [], likeCount: 12, shareCount: 6, shortDescription: 'A pediatric case involving rare symptoms', thumbnail: 'assets/remedies/5.jpg' },
-    { id: 6, submittedBy: ' Adams', speciality: 'Oncology', comments: [], likeCount: 9, shareCount: 3, shortDescription: 'Case study on oncology treatment', thumbnail: 'assets/remedies/4.jpg' },
-    { id: 7, submittedBy: ' Clark', speciality: 'Gastroenterology', comments: [], likeCount: 11, shareCount: 4, shortDescription: 'Digestive health case analysis', thumbnail: 'assets/remedies/10.jpg' },
-    { id: 8, submittedBy: ' Evans', speciality: 'Urology', comments: [], likeCount: 6, shareCount: 2, shortDescription: 'Urological case study', thumbnail: 'assets/remedies/9.jpg' },
-    { id: 9, submittedBy: ' Foster', speciality: 'Endocrinology', comments: [], likeCount: 14, shareCount: 5, shortDescription: 'Endocrine system analysis', thumbnail: 'assets/remedies/1.jpg' },
-    { id: 10, submittedBy: ' Green', speciality: 'Rheumatology', comments: [], likeCount: 5, shareCount: 1, shortDescription: 'Rheumatology case report', thumbnail: 'assets/remedies/6.jpg' },
-    { id: 11, submittedBy: ' Harris', speciality: 'Nephrology', comments: [], likeCount: 13, shareCount: 4, shortDescription: 'Kidney disease case study', thumbnail: 'assets/remedies/11.jpg' },
-    { id: 12, submittedBy: ' Irving', speciality: 'Ophthalmology', comments: [], likeCount: 7, shareCount: 3, shortDescription: 'Eye condition and treatment', thumbnail: 'assets/remedies/12.jpg' },
-    { id: 13, submittedBy: ' Jones', speciality: 'ENT', comments: [], likeCount: 8, shareCount: 2, shortDescription: 'ENT examination report', thumbnail: 'assets/remedies/2.jpg' },
-    { id: 14, submittedBy: ' King', speciality: 'Psychiatry', comments: [], likeCount: 10, shareCount: 3, shortDescription: 'Psychiatric case discussion', thumbnail: 'assets/remedies/4.jpg' },
-    { id: 15, submittedBy: ' Lewis', speciality: 'Immunology', comments: [], likeCount: 9, shareCount: 2, shortDescription: 'Immunology and allergies case', thumbnail: 'assets/remedies/7.jpg' }
-  ];
-
-  yourMedicalCases: MedicalCase[] = [
-    { id: 1, submittedBy: 'You', speciality: 'Cardiology', comments: [], likeCount: 0, shareCount: 0, shortDescription: 'Your own case study on cardiology', thumbnail: 'assets/remedies/3.jpg' },
-    { id: 2, submittedBy: 'You', speciality: 'Neurology', comments: [], likeCount: 0, shareCount: 0, shortDescription: 'Your own case study on neurology', thumbnail: 'assets/remedies/9.jpg' },
-    { id: 3, submittedBy: 'You', speciality: 'Orthopedics', comments: [], likeCount: 0, shareCount: 0, shortDescription: 'Your own case study on orthopedics', thumbnail: 'assets/remedies/5.jpg' }
-  ];
-
-  constructor(private router: Router, private modalService: NgbModal, private databaseService: DatabaseService,) { }
+  constructor(private router: Router, private modalService: NgbModal, private databaseService: DatabaseService, private accountService: AccountService, private physicianService: PhysicianService) { }
 
   async ngOnInit(): Promise<void> {
+    this.accountService.getUserData().subscribe({
+      next: async (data) => {
+        this.userData = data;
 
-    this.specialities = await this.databaseService.getSpecialities();
+        this.specialities = await this.databaseService.getSpecialities();
+        await this.loadCases();
+        await this.loadInfo();
+        await this.initializeSearch();
+      },
+      error: (err) => console.error('Error fetching user data:', err)
+    });
+  }
+
+  initializeSearch(): void {
     this.filteredSpecialities = this.specialityFilterCtrl.valueChanges.pipe(
       startWith(''),
       map((search) => this.filterOptions(search, this.specialities))
     );
+  }
 
-    this.filterMedicalCases();
+  savePreferences() {
+    this.physicianService.updatePreferences(this.userData.id, this.selectedPreferences).subscribe({
+      next: (res: any) => {
+        this.loadInfo();
+      },
+      error: (error) => {
+        console.error('Error Saving data:', error);
+      }
+    });
+  }
 
+  loadCases(): void {
+    if (!this.userData?.id) {
+      console.error('User ID is missing');
+      return;
+    }
+
+    this.physicianService.getMedicalCases(this.userData.id).subscribe({
+      next: (cases: any) => {
+        this.otherMedicalCases = cases.data.others;
+        this.yourMedicalCases = cases.data.yours;
+      },
+      error: (error) => {
+        console.error('Error loading history:', error);
+      }
+    });
+  }
+
+  loadInfo() {
+    this.physicianService.getPhysicianInfo(this.userData.id).subscribe({
+      next: info => {
+        this.selectedPreferences = info.data.preferences || [];
+        this.filterMedicalCases();
+      },
+      error: (error) => {
+
+      }
+    });
   }
 
   filterOptions(search: string, options: string[]): string[] {
     const filterValue = search.toLowerCase();
     return options.filter(option => option.toLowerCase().includes(filterValue));
   }
+
+  onPreferencesChange(newPrefs: string[]) {
+    this.selectedPreferences = newPrefs;
+  }
+
   createNewCase(): void {
     this.router.navigate(['/physician/new-medical-case']);
   }
 
-  addComment(caseId: number): void {
-    const index = this.otherMedicalCases.findIndex(c => c.id === caseId);
-    if (index !== -1 && this.newComment[caseId]) {
-      this.otherMedicalCases[index].comments.push(this.newComment[caseId]);
-      this.newComment[caseId] = '';
-    }
+  toggleLike(user: string, id: string,): void {
+    this.physicianService.toggleLike(user, id, this.userData.id).subscribe({
+      next: (com: any) => {
+        this.loadCases();
+      },
+      error: (error) => {
+        console.error('Error Saving data:', error);
+      }
+    });
   }
 
-  likeCase(caseId: number): void {
-    const index = this.otherMedicalCases.findIndex(c => c.id === caseId);
-    if (index !== -1) {
-      this.otherMedicalCases[index].likeCount++;
-      this.filterMedicalCases();
-    }
-  }
-
-  viewComments(caseId: number): void {
-    const index = this.otherMedicalCases.findIndex(c => c.id === caseId);
-    if (index !== -1) {
-      this.comments = this.otherMedicalCases[index].comments;
-      const modalInstance = new Modal(this.commentsModal.nativeElement);
-      modalInstance.show();
-    }
-  }
-
-  shareCase(caseId: number): void {
+  shareCase(caseId: string): void {
     this.shareLink = `https://HealthDesk.com/physician/view-medical/${caseId}`;
     const modalInstance = new Modal(this.shareModal.nativeElement);
     modalInstance.show();
   }
 
-  // Filtering based on search term and, for My Choice, on preference tags.
-  searchMedicalCases(): void {
-    this.filterMedicalCases();
-  }
 
-  addPreference(): void {
-    const selected = this.preferenceControl.value || [];
-    selected.forEach(pref => {
-      if (!this.preferences.includes(pref)) {
-        this.preferences.push(pref);
-      }
-    });
-
-    // reset control & search input
-    this.preferenceControl.setValue([]);
-    this.specialityFilterCtrl.setValue('');
-
-    // re-run your case filter now that prefs changed
-    this.filterMedicalCases();
-  }
-
-  viewCase(caseId: number): void {
-    this.router.navigate(['/patient/view-medical-case', caseId]);
+  viewCase(caseId: string): void {
+    this.router.navigate(['/physician/view-medical-case', caseId]);
   }
 
   setActiveSubTab(tab: string): void {
@@ -160,35 +151,124 @@ export class MedicalCasesComponent implements OnInit {
   }
 
   filterMedicalCases(): void {
-    const searchTerm = this.searchValue.toLowerCase();
-    let filteredCases = this.otherMedicalCases;
-    if (this.searchValue.trim()) {
-      filteredCases = this.otherMedicalCases.filter(c =>
-        c.speciality.toLowerCase().includes(searchTerm) ||
-        c.submittedBy.toLowerCase().includes(searchTerm)
-      );
-    }
-    // Latest: top 6 sorted by descending id.
-    this.latestMedicalCases = [...filteredCases]
-      .sort((a, b) => b.id - a.id)
-      .slice(0, 6);
+    const limit = this.getDisplayLimit();
 
-    // Trending: top 6 sorted by descending likeCount.
-    this.trendingMedicalCases = [...filteredCases]
-      .sort((a, b) => b.likeCount - a.likeCount)
-      .slice(0, 6);
+    const searchVals = (Array.isArray(this.searchValue) ? this.searchValue : [])
+      .map(val => val.trim().toLowerCase())
+      .filter(val => val);
 
-    // Recommended/My Choice: filter based on preferences (if any) and search.
-    if (!this.searchValue.trim() && this.preferences.length === 0) {
+    const matchesSearch = (cases: any): boolean => {
+      return Array.isArray(cases.speciality) &&
+        cases.speciality.some((rf: string) =>
+          searchVals.some(search => rf.toLowerCase().includes(search))
+        );
+    };
+
+    const filteredCases = searchVals.length
+      ? this.otherMedicalCases.filter(matchesSearch)
+      : [...this.otherMedicalCases];
+
+    this.latestMedicalCases = filteredCases
+      .sort((a: any, b: any) => new Date(b.createDate).getTime() - new Date(a.createDate).getTime())
+      .slice(0, limit);
+
+    this.trendingMedicalCases = filteredCases
+      .sort((a: any, b: any) => b.likedCount - a.likedCount)
+      .slice(0, limit);
+
+    this.filterRecommended();
+  }
+
+  filterRecommended(): void {
+    const limit = this.getDisplayLimit();
+
+    const prefs = (this.selectedPreferences || [])
+      .map(p => p.toLowerCase().trim())
+      .filter(p => p);
+
+    if (!prefs.length) {
       this.recommendedMedicalCases = [];
-    } else {
-      this.recommendedMedicalCases = filteredCases.filter(c => {
-        return this.preferences.length
-          ? this.preferences.some(pref =>
-            c.speciality.toLowerCase().includes(pref.toLowerCase())
-          )
-          : true;
-      });
+      return;
     }
+
+    this.recommendedMedicalCases = this.otherMedicalCases
+      .filter((cases: any) => {
+        const rfArr = Array.isArray(cases.speciality)
+          ? cases.speciality
+          : [cases.speciality];
+
+        return rfArr
+          .map((rf: any) => (rf || '').toLowerCase().trim())
+          .some((rf: string) => prefs.includes(rf));
+      })
+      .sort((a: any, b: any) =>
+        new Date(b.createDate).getTime() - new Date(a.createDate).getTime()
+      )
+      .slice(0, limit);
+  }
+
+  private getDisplayLimit(): number {
+    return ['latest', 'trending', 'mychoice'].includes(this.activeSubTab) ? 30 : 5;
+  }
+
+  hasLiked(cases: any): boolean {
+    return cases?.likedBy?.includes(this.userData.id);
+  }
+
+  copyLink(): void {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(this.shareLink)
+        .then(() => console.log('Link copied!'))
+        .catch(err => console.error('Copy failed', err));
+    } else {
+      const dummy = document.createElement('textarea');
+      dummy.value = this.shareLink;
+      document.body.appendChild(dummy);
+      dummy.select();
+      document.execCommand('copy');
+      document.body.removeChild(dummy);
+      console.log('Link copied (fallback)!');
+    }
+  }
+
+  enableEdit(): void {
+    this.isEditing = true;
+  }
+
+  postComment(): void {
+    const trimmedText = this.newCommentText.trim();
+    if (!trimmedText) return;
+
+    const comment = {
+      id: this.existingComment?.id,
+      userId: this.userData.id,
+      text: trimmedText,
+      itemType: "Medical Case"
+    };
+
+    this.physicianService.saveComment(this.case.userId, this.case.id, comment).subscribe({
+      next: (com: any) => {
+        this.loadCases();
+        this.newCommentText = '';
+        this.isEditing = false;
+      },
+      error: (error) => {
+        console.error('Error Saving data:', error);
+      }
+    });
+  }
+
+  viewComments(selectedCase: any) {
+    if (!selectedCase) return;
+
+    this.case = selectedCase;
+    this.existingComment = selectedCase.comments?.find(
+      (c: any) => c.userId === this.userData.id
+    );
+    this.newCommentText = this.existingComment?.text || '';
+    this.isEditing = false;
+
+    const modalInstance = new Modal(this.commentModal.nativeElement);
+    modalInstance.show();
   }
 }

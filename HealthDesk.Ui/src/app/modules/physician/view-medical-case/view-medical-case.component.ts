@@ -1,6 +1,8 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Modal } from 'bootstrap'; // Import Bootstrap modal
+import { Carousel, Modal } from 'bootstrap'; // Import Bootstrap modal
+import { AccountService } from '../../services/account.service';
+import { PhysicianService } from '../../services/physician.service';
 
 @Component({
   selector: 'app-view-medical-case',
@@ -8,56 +10,130 @@ import { Modal } from 'bootstrap'; // Import Bootstrap modal
   styleUrls: ['./view-medical-case.component.scss']
 })
 export class ViewMedicalCaseComponent implements OnInit {
-  caseDetails: any = {
-    speciality: 'Cardiology',
-    diagnosis: 'Myocardial Infarction',
-    patientInitials: 'JD',
-    age: 65,
-    chiefComplaints: 'Severe chest pain',
-    pastHistory: 'Hypertension, Diabetes',
-    examination: 'Patient is conscious, BP 140/90 mmHg',
-    investigation: 'ECG shows ST elevation, Troponin I positive',
-    treatment: 'Aspirin, Nitroglycerin, Heparin',
-    caseSummary: 'Patient was admitted with severe chest pain and diagnosed with myocardial infarction. Treated with Aspirin, Nitroglycerin, and Heparin.',
-    likeCount: 10 // Initial like count
-  };
 
-  shareLink: string = ''; // Store the shareable link
+  case!: any;
+  shareLink: string = '';
+  userData: any;
+  caseId: any;
+  newCommentText: string = '';
+  existingComment: any = null;
+  isEditing: boolean = false;
   @ViewChild('shareModal') shareModal!: ElementRef;
+  @ViewChild('caseCarousel') caseCarousel!: ElementRef;
 
-  caseDetailSections = [
-    { title: 'Patient Initials', content: this.caseDetails.patientInitials },
-    { title: 'Age (years)', content: this.caseDetails.age },
-    { title: 'Chief Complaints', content: this.caseDetails.chiefComplaints },
-    { title: 'Past History', content: this.caseDetails.pastHistory },
-    { title: 'Examination', content: this.caseDetails.examination },
-    { title: 'Investigation', content: this.caseDetails.investigation },
-    { title: 'Treatment', content: this.caseDetails.treatment },
-    { title: 'Case Summary', content: this.caseDetails.caseSummary }
-  ];
-
-  constructor(private route: ActivatedRoute, private router: Router) {}
+  constructor(private route: ActivatedRoute, private router: Router, private accountService: AccountService,
+    private physicianService: PhysicianService) { }
 
   ngOnInit(): void {
-    const caseId = this.route.snapshot.paramMap.get('id');
-    // Fetch case details using caseId if needed
-    this.shareLink = `https://HealthDesk.com/physician/view-medical/${caseId}`; // Example link
+    this.caseId = this.route.snapshot.paramMap.get('id');
+    this.accountService.getUserData().subscribe({
+      next: async (data) => {
+        this.userData = data;
+        await this.loadCase();
+        this.shareLink = `${window.location.origin}/patient/view-medical-case/${this.caseId}`;
+      },
+      error: (err) => console.error('Error fetching user data:', err)
+    });
   }
 
-  // Go back to the previous page (Medical Cases)
+  ngAfterViewInit(): void {
+    new Carousel(this.caseCarousel.nativeElement, {
+      interval: 3000,
+      ride: 'carousel'
+    });
+  }
+
+  loadCase() {
+    this.physicianService.getMedicalCaseById(this.userData.id, this.caseId).subscribe({
+      next: (rem: any) => {
+        this.case = rem.data;
+        this.setExistingComment();
+      },
+      error: (error) => {
+        console.error('Error loading data:', error);
+      }
+    });
+  }
+
   goBack() {
     this.router.navigate(['/physician/medical-cases']);
   }
 
-  // Increment like count
-  likeCase() {
-    this.caseDetails.likeCount++;
-    console.log('Liked the case! New like count:', this.caseDetails.likeCount);
+  toggleLike() {
+    this.physicianService.toggleLike(this.case.userId, this.case.id, this.userData.id).subscribe({
+      next: (com: any) => {
+        this.loadCase();
+        this.newCommentText = '';
+        this.isEditing = false;
+        this.setExistingComment();
+      },
+      error: (error) => {
+        console.error('Error Saving data:', error);
+      }
+    });
   }
 
-  // Open the share modal
   openShareModal() {
     const modalInstance = new Modal(this.shareModal.nativeElement);
     modalInstance.show();
+  }
+
+  copyLink(): void {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(this.shareLink)
+        .then(() => console.log('Link copied!'))
+        .catch(err => console.error('Copy failed', err));
+    } else {
+      const dummy = document.createElement('textarea');
+      dummy.value = this.shareLink;
+      document.body.appendChild(dummy);
+      dummy.select();
+      document.execCommand('copy');
+      document.body.removeChild(dummy);
+      console.log('Link copied (fallback)!');
+    }
+  }
+
+  setExistingComment(): void {
+    this.case.comments = this.case.comments || [];
+    this.existingComment = this.case.comments.find(
+      (c: any) => c.userId === this.userData.id
+    );
+
+    if (this.existingComment) {
+      this.newCommentText = this.existingComment.text;
+    }
+  }
+
+  enableEdit(): void {
+    this.isEditing = true;
+  }
+
+  postComment(): void {
+    const trimmedText = this.newCommentText.trim();
+    if (!trimmedText) return;
+
+    const comment = {
+      id: this.existingComment?.id,
+      userId: this.userData.id,
+      text: trimmedText,
+      itemType: "Medical_Case"
+    };
+
+    this.physicianService.saveComment(this.case.userId, this.case.id, comment).subscribe({
+      next: (com: any) => {
+        this.loadCase();
+        this.newCommentText = '';
+        this.isEditing = false;
+        this.setExistingComment();
+      },
+      error: (error) => {
+        console.error('Error Saving data:', error);
+      }
+    });
+  }
+
+  hasLiked(): boolean {
+    return this.case?.likedBy?.includes(this.userData.id);
   }
 }

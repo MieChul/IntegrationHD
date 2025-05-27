@@ -3,6 +3,7 @@ using HealthDesk.Application.DTO;
 using HealthDesk.Core;
 
 namespace HealthDesk.Application;
+
 public interface IPhysicianService
 {
     Task<IEnumerable<Clinic>> GetClinicsAsync(string physicianId);
@@ -21,12 +22,10 @@ public interface IPhysicianService
 
     Task<string> AddPrescriptionAsync(PrescriptionDto dto);
 
-    Task<IEnumerable<MedicalCaseDto>> GetAllMedicalCasesAsync(string physicianId);
-    Task SaveMedicalCaseAsync(string physicianId, MedicalCaseDto dto);
+    Task<dynamic> GetAllMedicalCasesAsync(string physicianId);
+    Task<List<ImageDto>> SaveMedicalCaseAsync(MedicalCaseDto dto);
     Task DeleteMedicalCaseAsync(string physicianId, string caseId);
-
-    Task IncrementLikesAsync(string physicianId, string caseId);
-
+    Task<MedicalCase> GetMedicalCase(string userId, string id);
     Task<dynamic> GetUserDetailsAsync(string id);
 
     Task<DesignPrescriptionDto> LoadPrescriptionAsync(string physicianId, string prescriptionId);
@@ -41,4 +40,9 @@ public interface IPhysicianService
     Task<dynamic> GetClinicSlotsAsync(string physicianId, string clinicId, DateTime date);
     Task SaveMultipleAppointment(string status, DateTime? date, string? time, string? reason, List<AppointmentDto> dtos);
     Task DeleteProfileAsync(string physicianId, string profileId);
+
+    Task<PhysicianInfoDto> GetPhysicianInfoAsync(string physicianId);
+    Task SaveComment(string userId, string caseId, CommentDto dto);
+    Task ToggleLikeAsync(string userId, string caseId, string likedUser);
+    Task UpdatePreferencesAsync(string userId, List<string> preferences);
 }

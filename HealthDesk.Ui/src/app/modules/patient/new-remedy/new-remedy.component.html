@@ -7,19 +7,19 @@
   </h2>
 
   <form [formGroup]="remedyForm" (ngSubmit)="submitRemedy()">
-
-    <!-- Image Uploads (Max 3) -->
     <div class="mb-3">
-      <div class="row">
-        <!-- First Image Slot -->
+      <div class="row mb-3">
+        <mat-error *ngIf="showDefaultImageError()">
+          Please select one display image.
+        </mat-error>
         <div class="col-sm-4">
           <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" [checked]="displayImageIndex === 0"
+            <input class="form-check-input" type="checkbox" [checked]="images.at(0).get('isDefault')?.value"
               (change)="selectDisplayImage(0)" [disabled]="!imagePreviewUrls[0]" />
             <label class="form-check-label ms-1">Display Image</label>
           </div>
           <div class="upload-square" (click)="triggerFileInput('imageFile0')">
-            <div class="text-center">
+            <div class="text-center" *ngIf="!imagePreviewUrls[0]">
               <i class="bi bi-plus-circle fs-1 text-secondary"></i>
               <div>Upload Image 1</div>
             </div>
@@ -28,15 +28,14 @@
           <input type="file" id="imageFile0" (change)="onFileChange($event, 0)" accept="image/*" hidden />
         </div>
 
-        <!-- Second Image Slot -->
         <div class="col-sm-4">
           <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" [checked]="displayImageIndex === 1"
+            <input class="form-check-input" type="checkbox" [checked]="images.at(1).get('isDefault')?.value"
               (change)="selectDisplayImage(1)" [disabled]="!imagePreviewUrls[1]" />
             <label class="form-check-label ms-1">Display Image</label>
           </div>
           <div class="upload-square" (click)="triggerFileInput('imageFile1')">
-            <div class="text-center">
+            <div class="text-center" *ngIf="!imagePreviewUrls[1]">
               <i class="bi bi-plus-circle fs-1 text-secondary"></i>
               <div>Upload Image 2</div>
             </div>
@@ -45,15 +44,14 @@
           <input type="file" id="imageFile1" (change)="onFileChange($event, 1)" accept="image/*" hidden />
         </div>
 
-        <!-- Third Image Slot -->
         <div class="col-sm-4">
           <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" [checked]="displayImageIndex === 2"
+            <input class="form-check-input" type="checkbox" [checked]="images.at(2).get('isDefault')?.value"
               (change)="selectDisplayImage(2)" [disabled]="!imagePreviewUrls[2]" />
             <label class="form-check-label ms-1">Display Image</label>
           </div>
           <div class="upload-square" (click)="triggerFileInput('imageFile2')">
-            <div class="text-center">
+            <div class="text-center" *ngIf="!imagePreviewUrls[2]">
               <i class="bi bi-plus-circle fs-1 text-secondary"></i>
               <div>Upload Image 3</div>
             </div>
@@ -64,27 +62,44 @@
       </div>
     </div>
 
-    <!-- Home Remedy Name -->
     <mat-form-field appearance="outline" class="w-100 mb-3">
       <mat-label>Home Remedy Name</mat-label>
       <input matInput formControlName="name" placeholder="Home Remedy Name" required>
       <mat-error *ngIf="remedyForm.get('name')?.hasError('required')">Home Remedy Name is required.</mat-error>
     </mat-form-field>
 
-    <!-- Home Remedy For (Disease or Condition) -->
     <mat-form-field appearance="outline" class="w-100 mb-3">
-      <mat-label>Home Remedy For</mat-label>
-      <input matInput formControlName="remedyFor" placeholder="e.g. Cold, Cough, Headache" required>
-      <mat-error *ngIf="remedyForm.get('remedyFor')?.hasError('required')">This field is required.</mat-error>
+      <mat-form-field appearance="outline" class="w-100 mb-3">
+        <mat-label>Home Remedy For</mat-label>
+
+        <mat-select formControlName="remedyFor" multiple placeholder="Select one or more...">
+          <mat-option>
+            <ngx-mat-select-search [formControl]="remedyForFilterCtrl"
+              placeholderLabel="Search conditions"></ngx-mat-select-search>
+          </mat-option>
+
+          <mat-option *ngFor="let condition of filteredRemedyForOptions | async" [value]="condition">
+            {{ condition }}
+          </mat-option>
+        </mat-select>
+
+        <mat-error *ngIf="remedyForm.get('remedyFor')?.hasError('required')">
+          Please select at least one remedy-for.
+        </mat-error>
+        <mat-error *ngIf="remedyForm.get('remedyFor')?.hasError('minlength')">
+          Please select at least one remedy-for.
+        </mat-error>
+      </mat-form-field>
+
     </mat-form-field>
 
     <div class="right-section dynamic-scroll-container">
       <h3>Ingredients</h3>
-      <button class="btn btn-success add-button pointer-cursor" (click)="addIngredient()" title="Add Ingredient">
+      <button class="btn btn-success add-button pointer-cursor" (click)="addIngredient()" title="Add Ingredient"
+        type="button">
         <i class="bi bi-plus-lg"></i>
       </button>
 
-      <!-- Make table responsive and enable horizontal scroll -->
       <div class="table-responsive" style="overflow-x: auto; max-width: 100%;">
         <table class="table table-hover table-modern">
           <thead class="table-light">
@@ -94,25 +109,38 @@
               <th>Action</th>
             </tr>
           </thead>
-          <tbody>
-            <tr *ngFor="let ingredient of ingredients.controls; let i = index">
+          <tbody formArrayName="ingredients">
+            <mat-error *ngIf="ingredients?.hasError('noIngredients')">At least one ingredient is required</mat-error>
+            <tr *ngFor="let ing of ingredients.controls; let i = index" [formGroupName]="i">
               <td>
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>Ingredient</mat-label>
-                  <input matInput placeholder="Ingredient" [formControlName]="i" required>
+                  <input matInput formControlName="name" required placeholder="e.g. Ginger">
+                  <mat-error *ngIf="ing.get('name')?.hasError('required')">Required</mat-error>
                 </mat-form-field>
               </td>
               <td>
-                <input type="text" class="form-control" [(ngModel)]="quantities[i]" placeholder="Quantity">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Quantity</mat-label>
+                  <input matInput type="number" formControlName="quantity" required placeholder="e.g. 2">
+                  <mat-error *ngIf="ing.get('quantity')?.hasError('required')">Required</mat-error>
+                </mat-form-field>
               </td>
               <td>
-                <button class="btn btn-danger" (click)="removeIngredient(i)">-</button>
+                <button class="btn btn-danger" type="button" (click)="removeIngredient(i)">X</button>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+
+    <!-- Preparation Method -->
+    <mat-form-field appearance="outline" class="w-100 mb-3">
+      <mat-label>Short Description</mat-label>
+      <textarea matInput formControlName="description" placeholder="Describe what is the remedy for."
+        required></textarea>
+    </mat-form-field>
 
     <!-- Preparation Method -->
     <mat-form-field appearance="outline" class="w-100 mb-3">
@@ -124,16 +152,16 @@
     <!-- Usage Directions -->
     <mat-form-field appearance="outline" class="w-100 mb-3">
       <mat-label>Usage Directions</mat-label>
-      <textarea matInput formControlName="usageDirections" placeholder="How to use the remedy" required></textarea>
+      <textarea matInput formControlName="usageDirection" placeholder="How to use the remedy" required></textarea>
     </mat-form-field>
 
     <!-- Precautions -->
     <mat-form-field appearance="outline" class="w-100 mb-3">
       <mat-label>Precautions</mat-label>
-      <textarea matInput formControlName="precautions" placeholder="Any precautions or side effects"></textarea>
+      <textarea matInput formControlName="precaution" placeholder="Any precautions or side effects"></textarea>
     </mat-form-field>
 
     <!-- Submit Button -->
-    <button type="submit" class="btn btn-primary w-100" [disabled]="!remedyForm.valid">Submit Home Remedy</button>
+    <button type="submit" class="btn btn-primary w-100">Submit Home Remedy</button>
   </form>
 </div>

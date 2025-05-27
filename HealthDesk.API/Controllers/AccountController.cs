@@ -53,42 +53,28 @@ public class AccountController : ControllerBase
 
         var filename = $"{propName}{extension}";
 
-        // Use environment to determine the correct folder path
         string folderPath;
 
-
-        // For production deployment
         folderPath = Path.Combine(_env.WebRootPath, "assets", "documents", id);
 
+        Directory.CreateDirectory(folderPath);
 
-        try
+        var filePath = Path.Combine(folderPath, filename);
+
+        if (System.IO.File.Exists(filePath))
         {
-            Directory.CreateDirectory(folderPath);
-
-            var filePath = Path.Combine(folderPath, filename);
-
-            // Delete existing file if needed
-            if (System.IO.File.Exists(filePath))
-            {
-                System.IO.File.Delete(filePath);
-            }
-
-            // Save the new file
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(fileStream);
-            }
-
-            // Construct the relative path for Angular
-            var res = $@"/assets/documents/{id}/{filename}";
-
-            return Ok(new { fileName = res });
+            System.IO.File.Delete(filePath);
         }
-        catch (Exception ex)
+
+        using (var fileStream = new FileStream(filePath, FileMode.Create))
         {
-            // Log the error (if logging mechanism exists)
-            return StatusCode(500, "An error occurred while uploading the file.");
+            await file.CopyToAsync(fileStream);
         }
+
+        var res = $@"/assets/documents/{id}/{filename}";
+
+        return Ok(new { fileName = res });
+
     }
 
     [HttpPost("switch/{id}")]

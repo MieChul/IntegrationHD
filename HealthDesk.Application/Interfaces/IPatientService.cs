@@ -1,8 +1,10 @@
 
 
+using HealthDesk.Core;
 using HealthDesk.Core.Enum;
 
 namespace HealthDesk.Application;
+
 public interface IPatientService
 {
     Task<IEnumerable<MedicalHistoryDto>> GetMedicalHistoryAsync(string patientId);
@@ -61,4 +63,11 @@ public interface IPatientService
     Task<dynamic> GetEntities();
     Task AddOrUpdateReview(string userId, string entityId, Role entityType, int rating, string comment);
     Task SaveCurrentTreatmentRxAsync(string patientId, List<CurrentTreatmentDto> dtos);
+    Task<dynamic> GetRemedies(string patientId);
+
+    Task<List<ImageDto>> SaveRemedyAsync(RemedyDto dto);
+    Task<Remedy> GetRemedy(string userId, string id);
+    Task SaveComment(string remedyUserId, string remedyId, CommentDto dto);
+    Task ToggleLikeAsync(string remedyUserId, string remedyId, string userId);
+    Task UpdatePreferencesAsync(string userId, List<string> preferences);
 }

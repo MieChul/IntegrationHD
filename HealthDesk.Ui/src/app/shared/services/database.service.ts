@@ -269,7 +269,7 @@ export class DatabaseService {
     });
   }
 
-  getSpecializations // Assuming Column 0: Exercise name, Column 1: Calories burnt per minute
+  getSpecializations 
     () {
     return this.database.Specializations;
   }

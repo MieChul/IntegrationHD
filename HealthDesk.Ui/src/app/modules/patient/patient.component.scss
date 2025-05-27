@@ -10,8 +10,8 @@ $gradient-color1: hsl(302, 76%, 53%);
 $gradient-color2: #63b4ee;
 $gradient-color3: #2cbf5d;
 $gradient-color1-dark: hsl(302, 76%, 20%); // Deep purple, closer to black
-$gradient-color2-dark: #1b3b5a;           // Dark navy blue
-$gradient-color3-dark: #0d331b;           // Dark forest green
+$gradient-color2-dark: #1b3b5a; // Dark navy blue
+$gradient-color3-dark: #0d331b; // Dark forest green
 
 // Additional colors from the background
 $background-light-blue: #7ac7fd;
@@ -38,9 +38,11 @@ body {
     0% {
       background-position: 0% 50%;
     }
+
     50% {
       background-position: 100% 50%;
     }
+
     100% {
       background-position: 0% 50%;
     }
@@ -49,6 +51,7 @@ body {
   &.dark-mode {
     background: linear-gradient(to right, $gradient-color1-dark, $gradient-color2-dark, $gradient-color3-dark);
     animation: gradientAnimation 10s ease infinite;
+
     .navbar,
     .footer,
     main,
@@ -154,9 +157,11 @@ main {
     0% {
       transform: scale(1);
     }
+
     50% {
       transform: scale(1.05);
     }
+
     100% {
       transform: scale(1);
     }
@@ -169,12 +174,13 @@ main {
       from {
         opacity: 0;
       }
+
       to {
         opacity: 1;
       }
     }
   }
-  
+
   &.small {
     .card-img-top {
       height: 100px;
@@ -288,14 +294,14 @@ h4,
 .h4 {
   font-size: 1.5rem;
   font-weight: 500;
-  color: lighten($primary-color,0%);
+  color: lighten($primary-color, 0%);
 }
 
 h5,
 .h5 {
   font-size: 1.25rem;
   font-weight: 400;
-  color: lighten($primary-color,0%);
+  color: lighten($primary-color, 0%);
 }
 
 h6,
@@ -352,7 +358,7 @@ h6,
   text-align: center;
   margin-bottom: 1.5rem;
   animation: fadeIn 2s ease-in-out;
-  background: linear-gradient(to right, #d76745bc, #a159ffd2);
+  background: linear-gradient(to right, #d76745bc, #880ED4);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-family: 'Roboto', sans-serif; // Modern font style
@@ -372,7 +378,7 @@ h6,
   text-align: center;
   margin-bottom: 1.5rem;
   animation: fadeIn 2s ease-in-out;
-  background: linear-gradient(to right, #d76745bc, #a159ffd2);
+  background: linear-gradient(to right, #d76745bc, #880ED4);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-family: 'Roboto', sans-serif; // Modern font style
@@ -391,6 +397,7 @@ h6,
     opacity: 0;
     transform: translateY(-20px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -409,199 +416,215 @@ h6,
     padding: 0.75rem;
     background-color: #FEE2E2; // Light red from palette
     border-bottom: 2px solid #dee2e6;
-  transition: background-color 0.3s ease-in-out, box-shadow 0.3s;
+    transition: background-color 0.3s ease-in-out, box-shadow 0.3s;
 
-  &:hover {
-    background-color: #FCA5A5; // Slightly darker shade for hover effect
+    &:hover {
+      background-color: #FF69B4; // Slightly darker shade for hover effect
+    }
+
+    // 3D effect
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    &::after {
+      content: '';
+      position: absolute;
+      right: 0.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 0.3rem solid transparent;
+      border-top-color: #fff;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    &.asc::after {
+      transform: translateY(-50%) rotate(180deg);
+    }
+
+    // Adding a gradient effect
+    background: linear-gradient(145deg, #d8a8c0, #FF69B4);
+    color: #111827; // Dark text color for contrast
   }
 
-  // 3D effect
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-
-  &::after {
-    content: '';
-    position: absolute;
-    right: 0.5rem;
-    top: 50%;
-    transform: translateY(-50%);
-    border: 0.3rem solid transparent;
-    border-top-color: #fff;
-    transition: transform 0.3s ease-in-out;
+  td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #dee2e6;
   }
-
-  &.asc::after {
-    transform: translateY(-50%) rotate(180deg);
-  }
-
-  // Adding a gradient effect
-  background: linear-gradient(145deg, #FEE2E2, #FCA5A5);
-  color: #111827; // Dark text color for contrast
-}
-
-td {
-  padding: 0.75rem;
-  border-bottom: 1px solid #dee2e6;
-}
 }
 
 .table-hover tbody tr:hover {
-background-color: rgba(252, 165, 165, 0.3); // Light red background on hover
+  background-color: rgba(252, 165, 165, 0.3); // Light red background on hover
 }
 
 .proposed-time {
-background-color: rgba(253, 230, 138, 0.6);  /* Light yellow for proposed time */
+  background-color: rgba(253, 230, 138, 0.6);
+  /* Light yellow for proposed time */
 }
 
 .upcoming-appointment {
-background-color: rgba(167, 243, 208, 0.6);  /* Light green for upcoming appointment */
+  background-color: rgba(167, 243, 208, 0.6);
+  /* Light green for upcoming appointment */
 }
 
 .past-appointment {
-background-color: rgba(253, 164, 175, 0.6);  /* Light pink for past appointment */
+  background-color: rgba(253, 164, 175, 0.6);
+  /* Light pink for past appointment */
 }
 
 .tab-content {
-margin-top: 20px;
+  margin-top: 20px;
 }
 
 .modal-content {
-background-color: var(--bs-light);
-color: var(--bs-dark);
+  background-color: var(--bs-light);
+  color: var(--bs-dark);
 }
 
 body.dark-mode .modal-content {
-background-color: var(--bs-dark);
-color: var(--bs-light);
+  background-color: var(--bs-dark);
+  color: var(--bs-light);
 }
 
 .tooltip-inner {
-max-width: 200px;
-width: auto;
-text-align: left;
+  max-width: 200px;
+  width: auto;
+  text-align: left;
 }
 
 .legend {
-display: flex;
-align-items: center;
+  display: flex;
+  align-items: center;
 
-.legend-color {
-  width: 1rem;
-  height: 1rem;
-  border-radius: 50%;
-  display: inline-block;
-  margin-right: 0.5rem;
-}
+  .legend-color {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.5rem;
+  }
 }
 
 .accept-tooltip {
-background-color: #34D399;
-color: #fff;
+  background-color: #34D399;
+  color: #fff;
 }
 
 .propose-tooltip {
-background-color: #FDE68A;
-color: #000;
+  background-color: #FDE68A;
+  color: #000;
 }
 
 .reject-tooltip {
-background-color: #F87171;
-color: #fff;
+  background-color: #F87171;
+  color: #fff;
 }
 
 .proposed-tooltip {
-background-color: #FDE68A;
-color: #000;
+  background-color: #FDE68A;
+  color: #000;
 }
 
 // Modern Tabs with lighter theme and gradient 3D effect
 .nav-tabs {
-.nav-link {
-  background: linear-gradient(145deg, #E0F2FE, #BAE6FD); // Light blue gradient
-  color: #111827; // Dark text color
-  border: 1px solid transparent;
-  border-radius: 0.25rem;
-  transition: background-color 0.3s, box-shadow 0.3s;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  .nav-link {
+    background: linear-gradient(145deg, #E0F2FE, #BAE6FD); // Light blue gradient
+    color: #111827; // Dark text color
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  &:hover {
-    background: linear-gradient(145deg, #BAE6FD, #7DD3FC); // Darker blue on hover
-  }
+    &:hover {
+      background: linear-gradient(145deg, #BAE6FD, #7DD3FC); // Darker blue on hover
+    }
 
-  &.active {
-    background: linear-gradient(145deg, #7DD3FC, #38BDF8); // Even darker blue for active tab
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-  }
+    &.active {
+      background: linear-gradient(145deg, #7DD3FC, #38BDF8); // Even darker blue for active tab
+      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    }
 
-  i {
-    margin-right: 0.5rem;
+    i {
+      margin-right: 0.5rem;
+    }
   }
-}
 }
 
 @media (max-width: 768px) {
-.table-responsive {
-  overflow-x: auto;
-}
+  .table-responsive {
+    overflow-x: auto;
+  }
 
-.row.mb-3 {
-  flex-direction: column;
-}
+  .row.mb-3 {
+    flex-direction: column;
+  }
 
-.col-md-8 {
-  margin-top: 1rem;
-}
+  .col-md-8 {
+    margin-top: 1rem;
+  }
 }
 
 .light-green-row td {
-background-color: #32ed5ea9 !important; /* Light green */
+  background-color: #32ed5ea9 !important;
+  /* Light green */
 }
 
 .light-red-row td {
-background-color: #cf3c487b !important; /* Light red */
+  background-color: #cf3c487b !important;
+  /* Light red */
 }
 
 .light-yellow-row td {
-background-color: #e6b71d8a !important; /* Light yellow */
+  background-color: #e6b71d8a !important;
+  /* Light yellow */
 }
 
 .pointer-cursor {
-cursor: pointer;
+  cursor: pointer;
 }
 
 .label-modern {
-font-size: 1.1rem;
-color: #0c0c0c;
-background: linear-gradient(145deg, #fee2e2, #fca5a5);
-padding: 0.25rem;
-border-radius: 0.25rem;
-transition: transform 0.3s, background-color 0.3s;
+  font-size: 1.1rem;
+  color: #0c0c0c;
+  background: linear-gradient(145deg, #d8a8c0, #FF69B4);
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: transform 0.3s, background-color 0.3s;
 }
 
 .label-modern:hover {
-background-color: #d82c2c;
-transform: scale(1.05);
+  background-color: #d82c2c;
+  transform: scale(1.05);
 }
 
 
 .blink-message {
-  color: white; /* Text color white */
-  animation: blink 1s infinite; /* Apply blinking animation */
-  padding: 10px; /* Optional: padding for better spacing */
-  text-align: center; /* Optional: centers the text */
-  border-radius: 5px; /* Optional: rounded corners */
+  color: white;
+  /* Text color white */
+  animation: blink 1s infinite;
+  /* Apply blinking animation */
+  padding: 10px;
+  /* Optional: padding for better spacing */
+  text-align: center;
+  /* Optional: centers the text */
+  border-radius: 5px;
+  /* Optional: rounded corners */
 }
 
 
 /* Keyframes for blinking effect */
 @keyframes blink {
-  0%, 100% {
-    opacity: 1; /* Fully visible */
+
+  0%,
+  100% {
+    opacity: 1;
+    /* Fully visible */
   }
+
   50% {
-    opacity: 0; /* Invisible */
+    opacity: 0;
+    /* Invisible */
   }
 }
 

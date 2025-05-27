@@ -1,99 +1,111 @@
 ﻿using System.Collections;
 using System.Reflection;
 
-namespace HealthDesk.Application;
-
-public static class GenericMapper
+namespace HealthDesk.Application
 {
-    public static TDestination Map<TSource, TDestination>(TSource source, TDestination destination = null)
-        where TDestination : class, new()
+    public static class GenericMapper
     {
-        if (source == null)
-            throw new ArgumentNullException(nameof(source), "Source cannot be null");
-
-        // Create a new instance of destination if not provided
-        destination ??= new TDestination();
-
-        var sourceProperties = typeof(TSource).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-        var destinationProperties = typeof(TDestination).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-        foreach (var sourceProperty in sourceProperties)
+        public static TDestination Map<TSource, TDestination>(TSource source, TDestination destination = null)
+            where TDestination : class, new()
         {
-            var destinationProperty = destinationProperties.FirstOrDefault(prop =>
-                prop.Name == sourceProperty.Name &&
-                prop.CanWrite &&
-                AreTypesCompatible(sourceProperty.PropertyType, prop.PropertyType));
+            if (source == null)
+                throw new ArgumentNullException(nameof(source), "Source cannot be null");
 
-            if (destinationProperty != null)
+            destination ??= new TDestination();
+
+            var sourceProperties = typeof(TSource).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var destinationProperties = typeof(TDestination).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            foreach (var sourceProperty in sourceProperties)
             {
-                var sourceValue = sourceProperty.GetValue(source);
+                var destProp = destinationProperties.FirstOrDefault(prop => prop.Name == sourceProperty.Name && prop.CanWrite);
+                if (destProp == null) continue;
 
+                var sourceValue = sourceProperty.GetValue(source);
                 if (sourceValue == null) continue;
 
+                var sourceType = sourceProperty.PropertyType;
+                var destType = destProp.PropertyType;
+
                 // Handle collections
-                if (IsList(sourceProperty.PropertyType))
+                if (IsList(sourceType) && IsList(destType))
                 {
                     var sourceList = (IEnumerable)sourceValue;
+                    var destList = (IList)(Activator.CreateInstance(destType) ?? throw new InvalidOperationException());
 
-                    // Ensure destination list is initialized
-                    var destinationList = (IList)destinationProperty.GetValue(destination) ??
-                                          (IList)Activator.CreateInstance(destinationProperty.PropertyType);
+                    var sourceItemType = sourceType.GetGenericArguments()[0];
+                    var destItemType = destType.GetGenericArguments()[0];
 
                     foreach (var item in sourceList)
                     {
-                        if (IsComplexType(item.GetType()))
+                        if (IsComplexType(sourceItemType))
                         {
-                            var destinationItem = Activator.CreateInstance(destinationProperty.PropertyType.GenericTypeArguments[0]);
-                            Map(item, destinationItem);
-                            destinationList.Add(destinationItem);
+                            var destItem = Activator.CreateInstance(destItemType);
+
+                            var mapMethod = typeof(GenericMapper)
+                                .GetMethod(nameof(Map))!
+                                .MakeGenericMethod(sourceItemType, destItemType);
+
+                            var mappedItem = mapMethod.Invoke(null, new[] { item, destItem });
+                            destList.Add(mappedItem);
                         }
                         else
                         {
-                            destinationList.Add(item);
+                            destList.Add(ConvertIfNeeded(item, destItemType));
                         }
                     }
 
-                    destinationProperty.SetValue(destination, destinationList);
+                    destProp.SetValue(destination, destList);
                 }
-                else if (IsComplexType(sourceProperty.PropertyType))
+
+                // Handle nested complex object
+                else if (IsComplexType(sourceType) && IsComplexType(destType))
                 {
-                    // Handle complex nested objects
-                    var destinationValue = destinationProperty.GetValue(destination) ??
-                                           Activator.CreateInstance(destinationProperty.PropertyType);
-                    Map(sourceValue, destinationValue);
-                    destinationProperty.SetValue(destination, destinationValue);
+                    var nestedDest = Activator.CreateInstance(destType);
+                    Map(sourceValue, nestedDest);
+                    destProp.SetValue(destination, nestedDest);
                 }
                 else
                 {
-                    // Handle simple types
-                    destinationProperty.SetValue(destination, sourceValue);
+                    var convertedValue = ConvertIfNeeded(sourceValue, destType);
+                    destProp.SetValue(destination, convertedValue);
                 }
+            }
+
+            return destination;
+        }
+
+        private static object ConvertIfNeeded(object value, Type destinationType)
+        {
+            if (value == null) return null;
+
+            var valueType = value.GetType();
+
+            if (destinationType.IsAssignableFrom(valueType))
+                return value;
+
+            try
+            {
+                var underlyingType = Nullable.GetUnderlyingType(destinationType);
+                if (underlyingType != null)
+                    return Convert.ChangeType(value, underlyingType);
+
+                return Convert.ChangeType(value, destinationType);
+            }
+            catch
+            {
+                return value;
             }
         }
 
-        return destination;
-    }
-
-    private static bool AreTypesCompatible(Type sourceType, Type destinationType)
-    {
-        if (destinationType.IsAssignableFrom(sourceType)) return true;
-
-        // Handle nullable types
-        if (destinationType.IsGenericType && destinationType.GetGenericTypeDefinition() == typeof(Nullable<>))
+        private static bool IsList(Type type)
         {
-            return Nullable.GetUnderlyingType(destinationType) == sourceType;
+            return type.IsGenericType && typeof(IEnumerable).IsAssignableFrom(type) && type != typeof(string);
         }
 
-        return false;
-    }
-
-    private static bool IsList(Type type)
-    {
-        return type.IsGenericType && typeof(IEnumerable).IsAssignableFrom(type) && type != typeof(string);
-    }
-
-    private static bool IsComplexType(Type type)
-    {
-        return type.IsClass && type != typeof(string) && !IsList(type);
+        private static bool IsComplexType(Type type)
+        {
+            return type.IsClass && type != typeof(string);
+        }
     }
 }
