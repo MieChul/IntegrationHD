@@ -159,7 +159,9 @@ public class PhysicianService : IPhysicianService
                 Gender = user.Gender,
                 Mobile = user.Mobile,
                 ABHAID = p.ABHAID,
-                SecondaryId = p.SecondaryId
+                SecondaryId = p.SecondaryId,
+                DateOfBirth = Convert.ToDateTime(user.BirthDate),
+                LastVisitedDate = p.LastVisitedDate
             };
             patients.Add(patient);
         }
@@ -314,12 +316,16 @@ public class PhysicianService : IPhysicianService
         var count = 0;
         foreach (var img in dto.Images)
         {
-            img.ImageName = $@"{medicalCase.Id}_image{count++}.png";
-            medicalCase.CaseImages.Add(new CaseImage
+            if (!string.IsNullOrEmpty(img.Image))
             {
-                ImageUrl = $@"/assets/documents/{dto.UserId}/medical_cases/{img.ImageName}",
-                IsDefault = img.IsDefault
-            });
+                img.ImageName = $@"{medicalCase.Id}_image{count++}.png";
+                medicalCase.CaseImages.Add(new CaseImage
+                {
+                    ImageUrl = $@"/assets/documents/{dto.UserId}/medical_cases/{img.ImageName}",
+                    IsDefault = img.IsDefault
+                });
+            }
+
         }
 
         medicalCase.SubmittedBy = user.FirstName + " " + user.LastName;
@@ -482,8 +488,8 @@ public class PhysicianService : IPhysicianService
         var defaultPrescription = physician.DesignPrescriptions.Where(p => p.IsDefault).FirstOrDefault();
         return new
         {
-            header = defaultPrescription.HeaderUrl,
-            footer = defaultPrescription.FooterUrl
+            header = defaultPrescription?.HeaderUrl ?? "",
+            footer = defaultPrescription?.FooterUrl ?? ""
         };
     }
 
@@ -749,6 +755,8 @@ public class PhysicianService : IPhysicianService
     public async Task<PhysicianInfoDto> GetPhysicianInfoAsync(string physicianId)
     {
         var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
+        if (physician.PhysicianInfo == null)
+            physician.PhysicianInfo = new PhysicianInfo() { Preferences = new List<string>() };
 
         return GenericMapper.Map<PhysicianInfo, PhysicianInfoDto>(physician.PhysicianInfo);
     }

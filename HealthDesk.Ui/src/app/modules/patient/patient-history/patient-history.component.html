@@ -47,8 +47,8 @@
         <table class="table table-hover table-modern">
             <thead>
                 <tr>
-                    <th (click)="sortTable('dateOfDiagnosis')">Date of Diagnosis</th>
-                    <th (click)="sortTable('disease')">Disease</th>
+                    <th style="width: 15%;" (click)="sortTable('dateOfDiagnosis')">Date of Diagnosis</th>
+                    <th style="width: 25%;" (click)="sortTable('disease')">Disease</th>
                     <th (click)="sortTable('start')">Start Date (Symptoms)</th>
                     <th (click)="sortTable('end')">End Date (Symptoms)</th>
                     <th (click)="sortTable('price')">Price</th>
@@ -61,6 +61,7 @@
                     <td>{{ history.disease }}</td>
                     <td>{{ history.start | date: 'dd-MM-yyyy' }}</td>
                     <td>{{ history.end ? (history.end | date: 'dd-MM-yyyy') : 'Ongoing' }}</td>
+                    <td>{{ history.price }}</td>
                     <td class="text-center align-middle text-nowrap">
                         <button class="btn btn-warning btn-sm me-1" (click)="openHistoryModal(true, history)">
                             <i class="bi bi-pencil"></i>
@@ -156,6 +157,18 @@
                                 </mat-error>
 
 
+                            </mat-form-field>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100 mb-3">
+                                <mat-label>Price</mat-label>
+                                <input matInput formControlName="price" type="number" step="0.01" min="0"
+                                    placeholder="Enter price" />
+                                <mat-error *ngIf="historyForm.get('price')?.hasError('pattern')">
+                                    Enter a valid positive amount (up to 2 decimals)
+                                </mat-error>
                             </mat-form-field>
                         </div>
                     </div>

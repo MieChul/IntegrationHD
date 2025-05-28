@@ -263,7 +263,7 @@ public class MedicalCase : BaseEntity
     public string PatientInitials { get; set; }
 
     [BsonElement("age")]
-    public int Age { get; set; }
+    public decimal Age { get; set; }
 
     [BsonElement("complaints")]
     public List<Complaint> Complaints { get; set; }

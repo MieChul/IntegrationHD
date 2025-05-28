@@ -38,7 +38,7 @@ public class ErrorHandlingMiddleware
         var logMessage = $@"[EXCEPTION] Message: {message} Class: {className} Method: {methodName} StackTrace: {exception.StackTrace}";
         if (logRepository != null)
         {
-            await logRepository.LogAsync(exception.Message, "Error");
+            await logRepository.LogAsync(logMessage, "Error");
         }
 
         context.Response.ContentType = "application/json";

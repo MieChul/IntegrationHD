@@ -1,6 +1,6 @@
 <div class="container" *ngIf="this.clinics">
   <h1 class="animated-heading">
-    <i class="bi bi-geo me-2"></i>Manage Clinics
+    <i class="bi bi-geo me-2"></i>Clinic Management
   </h1>
 
   <div class="row mb-3 align-items-center">
@@ -65,8 +65,8 @@
   </div>
 
   <!-- Add/Edit Clinic Modal -->
-  <div class="modal fade" data-bs-backdrop='static' data-bs-focus="false" id="clinicModal" tabindex="-1" aria-labelledby="clinicModalLabel"
-    aria-hidden="true">
+  <div class="modal fade" data-bs-backdrop='static' data-bs-focus="false" id="clinicModal" tabindex="-1"
+    aria-labelledby="clinicModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
@@ -135,7 +135,7 @@
               </div>
               <!-- State -->
               <div class="col-md-6">
-                <mat-form-field appearance="fill" class="full-width">
+                <mat-form-field appearance="outline" class="full-width">
                   <mat-label>Select State</mat-label>
                   <mat-select formControlName="state" (selectionChange)="onStateChange($event)">
                     <mat-option>
@@ -149,7 +149,7 @@
                 </mat-form-field>
               </div>
               <div class="col-md-6">
-                <mat-form-field appearance="fill" class="w-100">
+                <mat-form-field appearance="outline" class="w-100">
                   <mat-label>Select City</mat-label>
                   <mat-select formControlName="city" disableOptionCentering>
                     <!-- Prevent dropdown from closing when clicking on the search box -->
@@ -180,7 +180,19 @@
                 <h5>Clinic Slots</h5>
 
                 <!-- Container for all slot cards -->
+                <div *ngIf="submitted">
+                  <mat-error *ngIf="clinicSlots.hasError('duplicateName')">
+                    {{ clinicSlots.getError('duplicateName') }}
+                  </mat-error>
 
+                  <mat-error *ngIf="clinicSlots.hasError('overlap')">
+                    {{ clinicSlots.getError('overlap') }}
+                  </mat-error>
+
+                  <mat-error *ngIf="clinicSlots.hasError('globalOverlap')">
+                    {{ clinicSlots.getError('globalOverlap') }}
+                  </mat-error>
+                </div>
                 <div class="slot-container" style="max-height:300px; overflow-y:auto;">
                   <div class="slot-card mb-3 p-3 border rounded"
                     *ngFor="let slot of clinicSlots.controls; let i = index" [formGroup]="slot">
@@ -236,20 +248,14 @@
                             Use HH:mm.</mat-error>
                         </mat-form-field>
                       </div>
-
-                      <!-- Group-level custom error for time range validations -->
-                      <div class="col-12" *ngIf="submitted && slot.hasError('timeRange')">
-                        <mat-error>{{ slot.getError('timeRange') }}</mat-error>
-                      </div>
                     </div>
                   </div>
                 </div>
 
                 <!-- Green plus button with tooltip for adding a new slot -->
 
-                <button type="button" class="btn btn-success btn-sm mt-2" (click)="addSlot()"  data-bs-toggle="tooltip"
-                data-bs-placement="top"
-                title="Add Slot">
+                <button type="button" class="btn btn-success btn-sm mt-2" (click)="addSlot()" data-bs-toggle="tooltip"
+                  data-bs-placement="top" title="Add Slot">
                   <i class="bi bi-plus-circle"></i>
                 </button>
 
@@ -288,5 +294,5 @@
             {{ isEditMode ? 'Save Changes' : 'Add Clinic' }}
           </button>
         </div>
+      </div>
     </div>
-  </div>

@@ -175,7 +175,7 @@ public class PatientRecordDto
     public string Mobile { get; set; }
     public string? ABHAID { get; set; } = string.Empty;
     public string? SecondaryId { get; set; } = string.Empty;
-    public DateTime LastVisitedDate { get; set; }
+    public DateTime? LastVisitedDate { get; set; }
 }
 
 public class PrescriptionDto
@@ -222,9 +222,9 @@ public class MedicalCaseDto
     [MinLength(2, ErrorMessage = "Minimun 2 characters is needed.")]
     public string PatientInitials { get; set; }
 
-    [Range(1, 150, ErrorMessage = "Age must be between 1 and 150.")]
-    public int Age { get; set; }
-    public List<ComplaintsDto> ChiefComplaints { get; set; }
+    [Range(0.09, 150, ErrorMessage = "Age must be between 0 and 150.")]
+    public decimal Age { get; set; }
+    public List<ComplaintsDto> Complaints { get; set; }
 
     public string? PastHistory { get; set; }
     public string? Examination { get; set; }

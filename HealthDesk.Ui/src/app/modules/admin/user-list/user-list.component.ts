@@ -3,6 +3,7 @@ import { first } from 'rxjs/operators';
 import { Router, ActivatedRoute } from '@angular/router';
 import * as _ from 'lodash';
 import { AdminService } from '../../services/admin.service';
+import * as XLSX from 'xlsx';
 
 @Component({ templateUrl: 'user-list.component.html' })
 
@@ -58,5 +59,72 @@ export class UserListComponent implements OnInit {
                 }
             }
         );
+    }
+
+    exportToExcel(): void {
+        const exportData = this.filteredUsers?.map(user => ({
+            '#': user.id || '',
+            'Name': user.name || '',
+            'Phone/Email': user.contact || '',
+            'City': user.city || '',
+            'Role': this.titleCaseWord(user.role) || '',
+            'Dependant Name': this.titleCaseWord(user.dependentName) || '',
+            'Status': user.status || ''
+        })) || [];
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(exportData);
+
+        const wscols = [
+            { wch: 5 },  
+            { wch: 20 }, 
+            { wch: 25 },
+            { wch: 15 },
+            { wch: 15 }, 
+            { wch: 20 }, 
+            { wch: 15 }  
+        ];
+
+        ws['!cols'] = wscols;
+
+        const range = XLSX.utils.decode_range(ws['!ref'] || 'A1:G1');
+
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+            const headerCell = XLSX.utils.encode_cell({ r: range.s.r, c: C });
+            if (!ws[headerCell]) continue;
+
+            ws[headerCell].s = {
+                font: { bold: true },
+                border: {
+                    top: { style: 'thin', color: { rgb: '000000' } },
+                    bottom: { style: 'thin', color: { rgb: '000000' } },
+                    left: { style: 'thin', color: { rgb: '000000' } },
+                    right: { style: 'thin', color: { rgb: '000000' } }
+                },
+                fill: { fgColor: { rgb: 'D3D3D3' } }
+            };
+        }
+
+
+        for (let R = range.s.r + 1; R <= range.e.r; ++R) {
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+                const cell = XLSX.utils.encode_cell({ r: R, c: C });
+                if (!ws[cell]) continue;
+
+                ws[cell].s = {
+                    border: {
+                        top: { style: 'hair', color: { rgb: '000000' } },
+                        bottom: { style: 'hair', color: { rgb: '000000' } },
+                        left: { style: 'hair', color: { rgb: '000000' } },
+                        right: { style: 'hair', color: { rgb: '000000' } }
+                    }
+                };
+            }
+        }
+
+        XLSX.utils.book_append_sheet(wb, ws, 'Users');
+
+        const currentDate = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `Users_${currentDate}.xlsx`);
     }
 }

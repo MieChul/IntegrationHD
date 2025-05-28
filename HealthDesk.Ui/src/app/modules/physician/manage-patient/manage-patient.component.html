@@ -26,7 +26,7 @@
       <thead>
         <tr>
           <th (click)="sortTable('name')">Patient Name</th>
-          <th (click)="sortTable('age')">Age</th>
+          <th (click)="sortTable('dateOfBirth')">Date Of Birth</th>
           <th (click)="sortTable('mobile')">Mobile Number</th>
           <th (click)="sortTable('abhaid')">ABHA Id</th>
           <th (click)="sortTable('secondaryId')">Secondary Id</th>
@@ -41,7 +41,7 @@
           <td>{{ patient.mobile }}</td>
           <td>{{ patient.abhaid }}</td>
           <td>{{ patient.secondaryId }}</td>
-          <td>{{ patient.lastVisitedDate | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ patient.lastVisitedDate ? (patient.lastVisitedDate | date: 'dd/MM/yyyy') : 'NA' }}</td>
           <td>
             <div class="action-buttons">
               <button class="btn btn-primary btn-sm m-1 pointer-cursor" (click)="editPatient(patient)"

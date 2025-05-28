@@ -78,7 +78,7 @@ export class LabDataComponent implements OnInit {
       unit: this.fb.control('', Validators.required),
       price: this.fb.control('', [
         Validators.required,
-        Validators.pattern(/^\d+(\.\d{1,2})?$/)  // ➡️ positive decimal, max 2 decimal places
+        Validators.pattern(/^\d{1,9}(\.\d{1,2})?$/)
       ])
     });
 

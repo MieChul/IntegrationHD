@@ -136,7 +136,7 @@ export class LabProfileComponent implements OnInit {
     const searchValue = this.searchCtrl.value?.toLowerCase() || '';
     this.filteredProfiles = this.filteringService.filter(
       this.profiles,
-      { investigationNames: searchValue }
+      { name: searchValue }
     );
   }
 }

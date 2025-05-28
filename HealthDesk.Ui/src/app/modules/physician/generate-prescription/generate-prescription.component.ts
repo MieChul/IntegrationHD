@@ -354,7 +354,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       const now = new Date();
       const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' });
       const timeStr = now.toTimeString().slice(0, 5);
-      doc.setFont('Times', 'normal').setFontSize(6);
+      doc.setFont('helvetica', 'normal').setFontSize(6);
       doc.text(
         `Generated using HealthDesk by ${userDisplay} on ${dateStr} at ${timeStr}`,
         14,
@@ -502,7 +502,7 @@ export class GeneratePrescriptionComponent implements OnInit {
         head: [['Sr.', 'Form', 'Drug', 'Strength', 'Freq', 'Dur', 'Instr']],
         body: rxBody,
         startY,
-        styles: { font: 'Times', fontSize: 8, lineColor: [0, 0, 0], lineWidth: 0.1 },
+        styles: { font: 'helvetica', fontSize: 8, lineColor: [0, 0, 0], lineWidth: 0.1 },
         headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'normal' }
       });
       startY = (doc as any).autoTable.previous.finalY + 5;
@@ -537,7 +537,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       body: sigData,
       theme: 'plain',
       columnStyles: { 0: { cellWidth: (pageWidth - 28) / 2 }, 1: { cellWidth: (pageWidth - 28) / 2 } },
-      styles: { font: 'Times', fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1 },
+      styles: { font: 'helvetica', fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1 },
       didParseCell: (data: any) => {
         if (data.row.index === 0) data.cell.styles.minCellHeight = 20;
       },

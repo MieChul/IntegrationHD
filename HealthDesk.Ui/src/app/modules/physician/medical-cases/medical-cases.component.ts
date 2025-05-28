@@ -58,6 +58,7 @@ export class MedicalCasesComponent implements OnInit {
         await this.loadCases();
         await this.loadInfo();
         await this.initializeSearch();
+        this.filterMedicalCases();
       },
       error: (err) => console.error('Error fetching user data:', err)
     });
@@ -91,6 +92,7 @@ export class MedicalCasesComponent implements OnInit {
       next: (cases: any) => {
         this.otherMedicalCases = cases.data.others;
         this.yourMedicalCases = cases.data.yours;
+        this.filterMedicalCases();
       },
       error: (error) => {
         console.error('Error loading history:', error);

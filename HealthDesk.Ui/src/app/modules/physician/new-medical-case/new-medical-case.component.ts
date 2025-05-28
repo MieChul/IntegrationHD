@@ -44,9 +44,9 @@ export class NewMedicalCaseComponent {
       name: ['', Validators.required],
       diagnosis: ['', Validators.required],
       patientInitials: ['', [Validators.required, Validators.minLength(2), Validators.pattern(/^[A-Za-z\-]{2,}$/)]],
-      age: ['', [Validators.min(1), Validators.max(150)]],
+      age: ['', [Validators.min(0.09), Validators.max(150)]],
       images: this.fb.array([this.createImage(), this.createImage(), this.createImage()], [this.atLeastOneDefaultImageValidator()]),
-      chiefComplaints: this.fb.array([this.createComplaint()], [this.atLeastOneComplaintValidator()]),
+      complaints: this.fb.array([this.createComplaint()], [this.atLeastOneComplaintValidator()]),
       pastHistory: [''],
       examination: [''],
       investigations: [''],
@@ -72,8 +72,8 @@ export class NewMedicalCaseComponent {
     return this.caseForm?.get('images') as FormArray;
   }
 
-  get chiefComplaints(): FormArray {
-    return this.caseForm?.get('chiefComplaints') as FormArray;
+  get complaints(): FormArray {
+    return this.caseForm?.get('complaints') as FormArray;
   }
 
   createImage(): FormGroup {
@@ -111,11 +111,11 @@ export class NewMedicalCaseComponent {
   addComplaint() {
     const newComplaint = this.createComplaint();
     newComplaint.reset({ id: null, name: '', days: 0 });
-    this.chiefComplaints.push(newComplaint);
+    this.complaints.push(newComplaint);
   }
 
   removeComplaint(index: number) {
-    this.chiefComplaints.removeAt(index);
+    this.complaints.removeAt(index);
   }
 
   triggerFileInput(inputId: string) {

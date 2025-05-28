@@ -90,17 +90,42 @@
                             </div>
                         </div>
                         <div class="row" *ngIf="this.user.role == 'patient'">
+                            <div class="col-sm">
+                                <mat-form-field appearance="outline" class="w-100 mb-3">
+                                    <mat-label>Blood Group</mat-label>
+                                    <mat-select formControlName="bloodGroup" placeholder="Select Blood Group">
+                                        <mat-option value="A+">A positive (A+)</mat-option>
+                                        <mat-option value="A-">A negative (A-)</mat-option>
+                                        <mat-option value="B+">B positive (B+)</mat-option>
+                                        <mat-option value="B-">B negative (B-)</mat-option>
+                                        <mat-option value="AB+">AB positive (AB+)</mat-option>
+                                        <mat-option value="AB-">AB negative (AB-)</mat-option>
+                                        <mat-option value="O+">O positive (O+)</mat-option>
+                                        <mat-option value="O-">O negative (O-)</mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+                            </div>
+                        </div>
+                        <div class="row" *ngIf="this.user.role == 'patient'">
+                            <mat-label>Relative Details</mat-label>
                             <div class="form-floating col-sm-6">
-                                <input class="form-control" id="floatingInput" placeholder="Blood Group"
-                                    autocomplete="off" formControlName="bloodGroup">
-                                <label for="floatingInput" class="form-label-floating">Blood Group</label>
+                                <mat-form-field appearance="outline" class="w-100 mb-3">
+                                    <mat-label>Relationship</mat-label>
+                                    <mat-select formControlName="bloodGroup" placeholder="Select Blood Group">
+                                        <mat-option value="Mother">Mother</mat-option>
+                                        <mat-option value="Father">Father</mat-option>
+                                        <mat-option value="Brother">Brother</mat-option>
+                                        <mat-option value="Sister">Sister</mat-option>
+                                        <mat-option value="Daughter">Daughter</mat-option>
+                                        <mat-option value="Son">Son</mat-option>
+                                    </mat-select>
+                                </mat-form-field>
                             </div>
                             <div class="form-floating col-sm-6">
                                 <input class="form-control" id="floatingInput" placeholder="Blood Group"
                                     autocomplete="off" formControlName="relationId">
-                                <label for="floatingInput" class="form-label-floating">Relative Unique Id</label>
+                                <label for="floatingInput" class="form-label-floating">Mobile</label>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -411,7 +436,8 @@
                                         <mat-label>MRC Number<i class="danger">*</i></mat-label>
                                         <input matInput formControlName="certificateNumber" placeholder="MRC Number"
                                             [ngClass]="{'is-invalid': submitted && (certificateNumberError || f['medicalRegistration'].get('certificateNumber')?.errors)}">
-                                        <button mat-icon-button matSuffix matTooltip="Medical Registration Number">
+                                        <button mat-icon-button matSuffix
+                                            matTooltip="Medical Registration Certificate Number">
                                             <mat-icon>info</mat-icon>
                                         </button>
                                         <mat-error *ngIf="submitted && certificateNumberError">
@@ -447,7 +473,8 @@
                                             <div class="col-sm-9">
                                                 <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
                                                     id="formFile" (change)="upload($event, 'medicalRegistration')"
-                                                    [ngClass]="{ 'is-invalid': submitted && docError }">
+                                                    [ngClass]="{ 'is-invalid': submitted && docError }"
+                                                    style="height:56px">
                                                 <div *ngIf="submitted && docError" class="invalid-feedback d-flex">
                                                     <div> Document is required</div>
                                                 </div>
@@ -525,13 +552,14 @@
                                             <div class="col-sm-9">
                                                 <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
                                                     id="formFile" (change)="upload($event, 'graduation')"
-                                                    [ngClass]="{ 'is-invalid': submitted && gDocError }">
+                                                    [ngClass]="{ 'is-invalid': submitted && gDocError }"
+                                                    style="height:56px">
                                                 <div *ngIf="submitted && gDocError" class="invalid-feedback d-flex">
                                                     <div>Give consent by checking above or Document is required</div>
                                                 </div>
                                             </div>
-                                            <div *ngIf="user.graduation.document" class="form-floating mb-3 col-sm-3">
-                                                <div (click)="view(user.graduation.document)" class="btn btn-primary">
+                                            <div *ngIf="user.graduation?.document" class="form-floating mb-3 col-sm-3">
+                                                <div (click)="view(user.graduation?.document)" class="btn btn-primary">
                                                     View</div>
                                             </div>
                                         </div>
@@ -582,11 +610,12 @@
                                         <div class="row">
                                             <div class="col-sm-9">
                                                 <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
-                                                    id="formFile" (change)="upload($event, 'postGraduation')">
+                                                    id="formFile" (change)="upload($event, 'postGraduation')"
+                                                    style="height:56px">
                                             </div>
-                                            <div *ngIf="user.postGraduation.document"
+                                            <div *ngIf="user.postGraduation?.document"
                                                 class="form-floating mb-3 col-sm-3">
-                                                <div (click)="view(user.postGraduation.document)"
+                                                <div (click)="view(user.postGraduation?.document)"
                                                     class="btn btn-primary"> View</div>
                                             </div>
                                         </div>
@@ -638,11 +667,12 @@
                                         <div class="row">
                                             <div class="col-sm-9">
                                                 <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
-                                                    id="formFile" (change)="upload($event, 'superSpecialization')">
+                                                    id="formFile" (change)="upload($event, 'superSpecialization')"
+                                                    style="height:56px">
                                             </div>
-                                            <div *ngIf="user.superSpecialization.document"
+                                            <div *ngIf="user.superSpecialization?.document"
                                                 class="form-floating mb-3 col-sm-3">
-                                                <div (click)="view(user.superSpecialization.document)"
+                                                <div (click)="view(user.superSpecialization?.document)"
                                                     class="btn btn-primary"> View</div>
                                             </div>
                                         </div>
@@ -673,11 +703,12 @@
                                         <div class="row">
                                             <div class="col-sm-9">
                                                 <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
-                                                    id="formFile" (change)="upload($event, 'additionalQualification')">
+                                                    id="formFile" (change)="upload($event, 'additionalQualification')"
+                                                    style="height:56px">
                                             </div>
-                                            <div *ngIf="user.additionalQualification.document"
+                                            <div *ngIf="user.additionalQualification?.document"
                                                 class="form-floating mb-3 col-sm-3">
-                                                <div (click)="view(user.additionalQualification.document)"
+                                                <div (click)="view(user.additionalQualification?.document)"
                                                     class="btn btn-primary"> View</div>
                                             </div>
                                         </div>

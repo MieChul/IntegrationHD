@@ -330,7 +330,8 @@ namespace HealthDesk.API.Controllers
             var images = await _patientService.SaveRemedyAsync(dto);
             foreach (var img in images)
             {
-                await CreateFile(directoryPath, img.ImageName, dto.UserId, img.Image);
+                if (!string.IsNullOrEmpty(img.Image))
+                    await CreateFile(directoryPath, img.ImageName, dto.UserId, img.Image);
             }
 
             return Ok(new { Success = true, Message = "Remedy saved successfully." });

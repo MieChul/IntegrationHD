@@ -188,7 +188,7 @@
               </div>
               <div *ngIf="recommendedMedicalCases.length > 0; else noMyChoiceHome">
                 <div class="row row-cols-1 g-2">
-                  <div class="col" *ngFor="let case of latestMedicalCases">
+                  <div class="col" *ngFor="let case of recommendedMedicalCases">
                     <div class="card h-100">
                       <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
                         style="height: 120px; object-fit: cover" />

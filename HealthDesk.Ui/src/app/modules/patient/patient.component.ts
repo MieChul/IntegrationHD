@@ -17,15 +17,47 @@ export class PatientComponent implements OnInit {
     this.accountService.getUserData().subscribe({
       next: (data) => {
         this.patientNavLinks = [
-          { url: data.status === 'Approved' ? '/patient/history' : '/account', tooltip: 'Medical Hitory', iconClass: 'bi bi-file-medical' },
-          { url: data.status === 'Approved' ? '/patient/treatment' : '/account', tooltip: 'Current Treatment & Pill Remainder', iconClass: 'bi bi-people' },
-          { url: data.status === 'Approved' ? '/patient/appointments' : '/account', tooltip: 'Appointments', iconClass: 'bi bi-calendar' },
-          { url: data.status === 'Approved' ? '/patient/self-recording' : '/account', tooltip: 'Self Recording Data', iconClass: 'bi bi-journal-medical' },
-          { url: data.status === 'Approved' ? '/patient/refill' : '/account', tooltip: 'Medicine Refill & Complaince', iconClass: 'bi bi-folder2-open' },
-          { url: data.status === 'Approved' ? '/patient/daily-activity' : '/account', tooltip: 'Record Daily Activity', iconClass: 'bi bi-clipboard-data' },
-          { url: data.status === 'Approved' ? '/patient/rate' : '/account', tooltip: 'Search and Rate Doctors', iconClass: 'bi bi-clipboard-data' },
-          { url: data.status === 'Approved' ? '/patient/remidies' : '/account', tooltip: 'Home Remidies', iconClass: 'bi bi-clipboard-data' }
-        ]
+  { 
+    url: data.status === 'Approved' ? '/patient/history' : '/account', 
+    tooltip: 'Medical History', 
+    iconClass: 'bi bi-file-earmark-medical'  
+  },
+  { 
+    url: data.status === 'Approved' ? '/patient/treatment' : '/account', 
+    tooltip: 'Treatments', 
+    iconClass: 'bi bi-heart-pulse' 
+  },
+  { 
+    url: data.status === 'Approved' ? '/patient/appointments' : '/account', 
+    tooltip: 'Appointments', 
+    iconClass: 'bi bi-calendar2-check'  
+  },
+  { 
+    url: data.status === 'Approved' ? '/patient/self-recording' : '/account', 
+    tooltip: 'Self Records', 
+    iconClass: 'bi bi-journal-plus' 
+  },
+  { 
+    url: data.status === 'Approved' ? '/patient/refill' : '/account', 
+    tooltip: 'Medicine Refill & Compliance', 
+    iconClass: 'bi bi-capsule'  
+  },
+  { 
+    url: data.status === 'Approved' ? '/patient/daily-activity' : '/account', 
+    tooltip: 'Diet and Physical Activity', 
+    iconClass: 'bi bi-activity' 
+  },
+  { 
+    url: data.status === 'Approved' ? '/patient/rate' : '/account', 
+    tooltip: 'Search and Rate', 
+    iconClass: 'bi bi-search-heart'  
+  },
+  { 
+    url: data.status === 'Approved' ? '/patient/remidies' : '/account', 
+    tooltip: 'Home Remedies', 
+    iconClass: 'bi bi-house-heart'  
+  }
+]
       }
     });
   }

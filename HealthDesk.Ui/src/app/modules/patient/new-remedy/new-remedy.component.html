@@ -69,28 +69,25 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="w-100 mb-3">
-      <mat-form-field appearance="outline" class="w-100 mb-3">
-        <mat-label>Home Remedy For</mat-label>
+      <mat-label>Home Remedy For</mat-label>
 
-        <mat-select formControlName="remedyFor" multiple placeholder="Select one or more...">
-          <mat-option>
-            <ngx-mat-select-search [formControl]="remedyForFilterCtrl"
-              placeholderLabel="Search conditions"></ngx-mat-select-search>
-          </mat-option>
+      <mat-select formControlName="remedyFor" multiple placeholder="Select one or more...">
+        <mat-option>
+          <ngx-mat-select-search [formControl]="remedyForFilterCtrl"
+            placeholderLabel="Search conditions"></ngx-mat-select-search>
+        </mat-option>
 
-          <mat-option *ngFor="let condition of filteredRemedyForOptions | async" [value]="condition">
-            {{ condition }}
-          </mat-option>
-        </mat-select>
+        <mat-option *ngFor="let condition of filteredRemedyForOptions | async" [value]="condition">
+          {{ condition }}
+        </mat-option>
+      </mat-select>
 
-        <mat-error *ngIf="remedyForm.get('remedyFor')?.hasError('required')">
-          Please select at least one remedy-for.
-        </mat-error>
-        <mat-error *ngIf="remedyForm.get('remedyFor')?.hasError('minlength')">
-          Please select at least one remedy-for.
-        </mat-error>
-      </mat-form-field>
-
+      <mat-error *ngIf="remedyForm.get('remedyFor')?.hasError('required')">
+        Please select at least one remedy-for.
+      </mat-error>
+      <mat-error *ngIf="remedyForm.get('remedyFor')?.hasError('minlength')">
+        Please select at least one remedy-for.
+      </mat-error>
     </mat-form-field>
 
     <div class="right-section dynamic-scroll-container">

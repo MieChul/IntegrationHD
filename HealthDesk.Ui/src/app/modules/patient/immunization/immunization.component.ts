@@ -75,22 +75,22 @@ export class ImmunizationComponent implements OnInit {
   }
 
   initializeForms(): void {
-      this.immunizationForm = this.fb.group({
-        id: this.fb.control(''),
-        date: this.fb.control('', [
-          Validators.required,
-          this.futureDateValidator
-        ]),
-        vaccine: this.fb.control('', Validators.required),
-        disease: this.fb.control('', Validators.required),
-        route: this.fb.control('', Validators.required),
-        dosageForm: this.fb.control('', Validators.required),
-        details: this.fb.control('', Validators.required),
-        price: this.fb.control('', [
-          Validators.required,
-          Validators.pattern(/^\d+(\.\d{1,2})?$/)  // ➡️ positive decimal, max 2 decimal places
-        ])
-      });
+    this.immunizationForm = this.fb.group({
+      id: this.fb.control(''),
+      date: this.fb.control('', [
+        Validators.required,
+        this.futureDateValidator
+      ]),
+      vaccine: this.fb.control('', Validators.required),
+      disease: this.fb.control('', Validators.required),
+      route: this.fb.control('', Validators.required),
+      dosageForm: this.fb.control('', Validators.required),
+      details: this.fb.control('', Validators.required),
+      price: this.fb.control('', [
+        Validators.required,
+        Validators.pattern(/^\d{1,9}(\.\d{1,2})?$/)
+      ])
+    });
 
     this.filterForm = this.fb.group(
       {

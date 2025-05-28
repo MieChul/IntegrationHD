@@ -5,12 +5,12 @@
   </button>
 
   <h1 class="display-5 mb-4">
-    <i class="bi bi-journal-text me-2"></i>{{ case.name }}
+    <i class="bi bi-journal-text me-2"></i>{{ case?.name }}
   </h1>
 
   <div id="caseCarousel" #caseCarousel class="carousel slide mb-4 carousel-fixed-size">
     <div class="carousel-inner">
-      <div *ngFor="let img of case.images; let i = index" class="carousel-item" [class.active]="i === 0">
+      <div *ngFor="let img of case?.caseImages; let i = index" class="carousel-item" [class.active]="i === 0">
         <img [src]="img.imageUrl" class="d-block w-100" alt>
       </div>
     </div>
@@ -26,25 +26,25 @@
     <span>
       <i class="bi bi-activity me-1 text-primary"></i>
       <strong>For:</strong>
-      <ng-container *ngIf="case.speciality?.length; else nospeciality">
-        {{ case.speciality.join(', ') }}
+      <ng-container *ngIf="case?.speciality?.length; else nospeciality">
+        {{ case?.speciality.join(', ') }}
       </ng-container>
       <ng-template #nospeciality>None</ng-template>
     </span>
 
     <span>
       <i class="bi bi-person-fill me-1 text-secondary"></i>
-      <strong>Initials:</strong> {{ case.patientInitials || 'N/A' }}
+      <strong>Initials:</strong> {{ case?.patientInitials || 'N/A' }}
     </span>
 
     <span>
       <i class="bi bi-calendar3 me-1 text-success"></i>
-      <strong>Age:</strong> {{ case.age || 'N/A' }}
+      <strong>Age:</strong> {{ case?.age || 'N/A' }}
     </span>
 
     <span>
       <i class="bi bi-person-badge me-1 text-info"></i>
-      <strong>By:</strong> {{ case.submittedBy }}
+      <strong>By:</strong> {{ case?.submittedBy }}
     </span>
   </p>
 
@@ -59,7 +59,7 @@
     </div>
 
     <ul class="list-group shadow-sm">
-      <li *ngFor="let i of case.chiefComplaints" class="list-group-item d-flex align-items-center">
+      <li *ngFor="let i of case?.complaints" class="list-group-item d-flex align-items-center">
         <div class="d-flex align-items-center" style="flex: 0 0 70%;">
           <i class="bi bi-leaf-fill me-2 text-warning"></i>
           {{ i.name }}
@@ -77,7 +77,7 @@
     <h4 class="text-primary">
       <i class="bi bi-info-circle me-2"></i>Case Summary
     </h4>
-    <p class="lead border-start border-4 ps-3 border-primary">{{ case.caseSummary }}</p>
+    <p class="lead border-start border-4 ps-3 border-primary">{{ case?.caseSummary }}</p>
   </div>
 
   <div class="mb-4 fade show">
@@ -85,7 +85,7 @@
       <i class="bi bi-clipboard-check me-2"></i>Diagnosis
     </h4>
     <p class="border-start border-4 ps-3 border-dark text-muted">
-      {{ case.diagnosis || 'Not provided' }}
+      {{ case?.diagnosis || 'Not provided' }}
     </p>
   </div>
 
@@ -93,28 +93,28 @@
     <h4 class="text-warning">
       <i class="bi-clock-history me-2"></i>Past History
     </h4>
-    <p class="border-start border-4 ps-3 border-warning text-muted">{{ case.pastHistory }}</p>
+    <p class="border-start border-4 ps-3 border-warning text-muted">{{ case?.pastHistory }}</p>
   </div>
 
   <div class="mb-4 fade show">
     <h4 class="text-info">
       <i class="bi-heart-pulse me-2"></i>Examination
     </h4>
-    <p class="border-start border-4 ps-3 border-info">{{ case.examination }}</p>
+    <p class="border-start border-4 ps-3 border-info">{{ case?.examination }}</p>
   </div>
 
   <div class="mb-4 fade show">
     <h4 class="text-danger">
       <i class="bi-search me-2"></i>Investigations
     </h4>
-    <p class="border-start border-4 ps-3 border-danger">{{ case.investigations }}</p>
+    <p class="border-start border-4 ps-3 border-danger">{{ case?.investigations }}</p>
   </div>
 
   <div class="mb-4 fade show">
     <h4 class="text-success">
       <i class="bi-syringe me-2"></i>Treatment
     </h4>
-    <p class="border-start border-4 ps-3 border-danger">{{ case.treatment }}</p>
+    <p class="border-start border-4 ps-3 border-danger">{{ case?.treatment }}</p>
   </div>
 
   <hr />
@@ -152,7 +152,7 @@
     </div>
 
     <ul class="list-unstyled">
-      <li *ngFor="let c of case.comments" class="mb-3 p-3 border rounded shadow-sm bg-light position-relative">
+      <li *ngFor="let c of case?.comments" class="mb-3 p-3 border rounded shadow-sm bg-light position-relative">
 
         <div class="mb-1">
           <i class="bi bi-chat-left-text-fill me-2 text-primary"></i>
@@ -164,7 +164,7 @@
         </small>
       </li>
 
-      <li *ngIf="!case.comments?.length" class="text-muted fst-italic">
+      <li *ngIf="!case?.comments?.length" class="text-muted fst-italic">
         No comments yet.
       </li>
     </ul>

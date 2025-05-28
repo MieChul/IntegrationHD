@@ -1,139 +1,117 @@
 <div class="container my-4">
   <h2 class="animated-heading mb-4">
-    <i class="bi bi-journal-medical me-2"></i>Hospital Cases
+    <i class="bi bi-journal-medical me-2"></i>Medical Cases
   </h2>
 
   <div class="row mb-3 align-items-center">
-    <div class="col-md-8">
+    <div class="col-md-4">
       <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Search</mat-label>
-        <input matInput placeholder="Search by Specialty/Doctor Name" [(ngModel)]="searchValue"
-          (input)="searchHospitalCases()" />
+        <mat-label>Search By Speciality</mat-label>
+        <mat-select multiple [(ngModel)]="searchValue" name="searchValue" (ngModelChange)="filterMedicalCases()">
+          <mat-option>
+            <ngx-mat-select-search [formControl]="specialityFilterCtrl"
+              placeholderLabel="Search Speciality"></ngx-mat-select-search>
+          </mat-option>
+          <mat-option *ngFor="let option of filteredSpecialities | async" [value]="option">
+            {{ option }}
+          </mat-option>
+        </mat-select>
       </mat-form-field>
+
     </div>
+    <div class="col-md-4 "></div>
     <div class="col-md-4 text-end">
       <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#preferencesModal">
-        Set Preferences
+        Select Preferences for Choice
       </button>
     </div>
   </div>
 
   <!-- Main Tabs -->
-  <ul class="nav nav-tabs" id="hospitalCasesTabs" role="tablist">
+  <ul class="nav nav-tabs" id="medicalCasesTabs" role="tablist">
     <li class="nav-item" role="presentation">
       <button class="nav-link active" id="others-tab" data-bs-toggle="tab" data-bs-target="#others" type="button"
         role="tab" aria-controls="others" aria-selected="true">
-        Hospital Cases
+        Medical Cases
       </button>
     </li>
     <li class="nav-item" role="presentation">
       <button class="nav-link" id="yours-tab" data-bs-toggle="tab" data-bs-target="#yours" type="button" role="tab"
         aria-controls="yours" aria-selected="false">
-        My Hospital Cases
+        My Medical Cases
       </button>
     </li>
   </ul>
-  <div class="tab-content" id="hospitalCasesTabsContent">
-    <!-- Hospital Cases Main Tab with Sub Tabs -->
+  <div class="tab-content" id="medicalCasesTabsContent">
+    <!-- Medical Cases Main Tab with Sub Tabs -->
     <div class="tab-pane fade show active" id="others" role="tabpanel" aria-labelledby="others-tab">
-      <!-- Sub Tabs for Hospital Cases -->
-      <ul class="nav nav-tabs mt-3" id="hospitalCasesSubTabs" role="tablist">
+      <!-- Sub Tabs for Medical Cases -->
+      <ul class="nav nav-tabs mt-3" id="medicalCasesSubTabs" role="tablist">
         <li class="nav-item" role="presentation">
           <button class="nav-link active" id="home-sub-tab" data-bs-toggle="tab" data-bs-target="#homeSub" type="button"
-            role="tab" aria-controls="homeSub" aria-selected="true" (click)="setActiveSubTab('home')">Home</button>
+            role="tab" aria-controls="homeSub" aria-selected="true" (click)="setActiveSubTab('home')">All</button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="trending-sub-tab" data-bs-toggle="tab" data-bs-target="#trendingSub" type="button"
-            role="tab" aria-controls="trendingSub" aria-selected="false" (click)="setActiveSubTab('trending')">Trending</button>
+          <button class="nav-link" id="trending-sub-tab" data-bs-toggle="tab" data-bs-target="#trendingSub"
+            type="button" role="tab" aria-controls="trendingSub" aria-selected="false"
+            (click)="setActiveSubTab('trending')">Trending</button>
         </li>
         <li class="nav-item" role="presentation">
           <button class="nav-link" id="latest-sub-tab" data-bs-toggle="tab" data-bs-target="#latestSub" type="button"
-            role="tab" aria-controls="latestSub" aria-selected="false" (click)="setActiveSubTab('latest')">Latest</button>
+            role="tab" aria-controls="latestSub" aria-selected="false"
+            (click)="setActiveSubTab('latest')">Latest</button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="mychoice-sub-tab" data-bs-toggle="tab" data-bs-target="#mychoiceSub" type="button"
-            role="tab" aria-controls="mychoiceSub" aria-selected="false" (click)="setActiveSubTab('mychoice')">My Choice</button>
+          <button class="nav-link" id="mychoice-sub-tab" data-bs-toggle="tab" data-bs-target="#mychoiceSub"
+            type="button" role="tab" aria-controls="mychoiceSub" aria-selected="false"
+            (click)="setActiveSubTab('mychoice')">My Choice</button>
         </li>
       </ul>
-      <div class="tab-content mt-3" id="hospitalCasesSubTabsContent">
-        <!-- Home Sub Tab: Shows Latest, Trending and My Choice in three columns -->
+      <div class="tab-content mt-3" id="medicalCasesSubTabsContent">
         <div class="tab-pane fade show active" id="homeSub" role="tabpanel" aria-labelledby="home-sub-tab">
           <div class="row">
-            <!-- Latest Column -->
             <div class="col-md-4" style="border-right: 1px solid #ccc;">
-              <h4>Latest</h4>
-              <div *ngIf="latestHospitalCases.length > 0; else noLatestHome">
+              <h4>Top 5 Trending</h4>
+              <div *ngIf="trendingMedicalCases.length > 0; else noTrendingHome">
                 <div class="row row-cols-1 g-2">
-                  <div class="col" *ngFor="let case of latestHospitalCases">
+                  <div class="col" *ngFor="let case of trendingMedicalCases">
                     <div class="card h-100">
                       <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
                         style="height: 120px; object-fit: cover" />
                       <div class="card-body p-2">
-                        <h6 class="card-title text-truncate">Case {{ case.id }}</h6>
-                        <p class="card-text text-truncate">{{ case.shortDescription }}</p>
+                        <h6 class="card-title text-truncate">{{ case.name }}</h6>
+                        <p class="card-text text-truncate">{{ case.caseSummary }}</p>
                         <p class="card-text">
                           <small>Submitted by: {{ case.submittedBy }}</small>
                         </p>
-                        <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
-                          View
-                        </button>
+                        <p class="card-text text-truncate-specialities" data-bs-toggle="tooltip" data-bs-placement="top"
+                          [attr.title]="case.speciality?.join(', ')">
+                          <small><b>Speciality:</b>
+                            <ng-container *ngIf="case.speciality?.length; else noSpec">
+                              {{ case.speciality.join(', ') | slice:0:50 }}<span
+                                *ngIf="case.speciality.join(', ').length > 50">...</span>
+                            </ng-container>
+                            <ng-template #noSpec>None</ng-template>
+                          </small>
+                        </p>
                         <div>
-                          <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
-                            <i class="bi bi-hand-thumbs-up"></i>
-                            <span class="ms-1">{{ case.likeCount }}</span>
+                          <button class="btn btn-primary btn-sm me-1" (click)="viewCase(case.id)">View</button>
+                          <button
+                            [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(case),'btn-info': hasLiked(case)}"
+                            class="btn-sm me-1" (click)="toggleLike(case.userId, case.id)"
+                            [attr.title]="hasLiked(case) ? 'Unlike' : 'Like'">
+                            <i class="bi" [ngClass]="hasLiked(case)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
+                            <span class="ms-1">{{ case.likedBy?.length || 0 }}</span>
                           </button>
                           <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Comment" (click)="viewComments(case.id)">
+                            data-bs-placement="top" title="Comment" (click)="viewComments(case)">
                             <i class="bi bi-chat"></i>
-                            <span class="ms-1">{{ case.comments.length }}</span>
+                            <span class="ms-1">{{ case.comments?.length ?? 0 }}</span>
                           </button>
                           <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
                             title="Share" (click)="shareCase(case.id)">
                             <i class="bi bi-share"></i>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <ng-template #noLatestHome>
-                <p class="text-muted">No latest hospital cases available.</p>
-              </ng-template>
-            </div>
-            <!-- Trending Column -->
-            <div class="col-md-4" style="border-right: 1px solid #ccc;">
-              <h4>Trending</h4>
-              <div *ngIf="trendingHospitalCases.length > 0; else noTrendingHome">
-                <div class="row row-cols-1 g-2">
-                  <div class="col" *ngFor="let case of trendingHospitalCases">
-                    <div class="card h-100">
-                      <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
-                        style="height: 120px; object-fit: cover" />
-                      <div class="card-body p-2">
-                        <h6 class="card-title text-truncate">Case {{ case.id }}</h6>
-                        <p class="card-text text-truncate">{{ case.shortDescription }}</p>
-                        <p class="card-text">
-                          <small>Submitted by: {{ case.submittedBy }}</small>
-                        </p>
-                        <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
-                          View
-                        </button>
-                        <div>
-                          <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
-                            <i class="bi bi-hand-thumbs-up"></i>
-                            <span class="ms-1">{{ case.likeCount }}</span>
-                          </button>
-                          <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Comment" (click)="viewComments(case.id)">
-                            <i class="bi bi-chat"></i>
-                            <span class="ms-1">{{ case.comments.length }}</span>
-                          </button>
-                          <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
-                            title="Share" (click)="shareCase(case.id)">
-                            <i class="bi bi-share"></i>
+                            <span class="ms-1">&nbsp;</span>
                           </button>
                         </div>
                       </div>
@@ -142,49 +120,112 @@
                 </div>
               </div>
               <ng-template #noTrendingHome>
-                <p class="text-muted">No trending hospital cases available.</p>
+                <p class="text-muted">No trending medical cases available.</p>
               </ng-template>
             </div>
-            <!-- My Choice Column -->
+            <div class="col-md-4" style="border-right: 1px solid #ccc;">
+              <h4>Top 5 Latest</h4>
+              <div *ngIf="latestMedicalCases.length > 0; else noLatestHome">
+                <div class="row row-cols-1 g-2">
+                  <div class="col" *ngFor="let case of latestMedicalCases">
+                    <div class="card h-100">
+                      <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
+                        style="height: 120px; object-fit: cover" />
+                      <div class="card-body p-2">
+                        <h6 class="card-title text-truncate">{{ case.name }}</h6>
+                        <p class="card-text text-truncate">{{ case.caseSummary }}</p>
+                        <p class="card-text">
+                          <small>Submitted by: {{ case.submittedBy }}</small>
+                        </p>
+                        <p class="card-text text-truncate-specialities" data-bs-toggle="tooltip" data-bs-placement="top"
+                          [attr.title]="case.speciality?.join(', ')">
+                          <small><b>Speciality:</b>
+                            <ng-container *ngIf="case.speciality?.length; else noSpec">
+                              {{ case.speciality.join(', ') | slice:0:50 }}<span
+                                *ngIf="case.speciality.join(', ').length > 50">...</span>
+                            </ng-container>
+                            <ng-template #noSpec>None</ng-template>
+                          </small>
+                        </p>
+                        <div>
+                          <button class="btn btn-primary btn-sm me-1" (click)="viewCase(case.id)">View</button>
+                          <button
+                            [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(case),'btn-info': hasLiked(case)}"
+                            class="btn-sm me-1" (click)="toggleLike(case.userId, case.id)"
+                            [attr.title]="hasLiked(case) ? 'Unlike' : 'Like'">
+                            <i class="bi" [ngClass]="hasLiked(case)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
+                            <span class="ms-1">{{ case.likedBy?.length || 0 }}</span>
+                          </button>
+                          <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Comment" (click)="viewComments(case)">
+                            <i class="bi bi-chat"></i>
+                            <span class="ms-1">{{ case.comments?.length ?? 0 }}</span>
+                          </button>
+                          <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
+                            title="Share" (click)="shareCase(case.id)">
+                            <i class="bi bi-share"></i>
+                            <span class="ms-1">&nbsp;</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <ng-template #noLatestHome>
+                <p class="text-muted">No latest medical cases available.</p>
+              </ng-template>
+            </div>
             <div class="col-md-4">
               <h4>My Choice</h4>
               <div class="preferences-container mb-4 p-3" style="box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
                 <h5>Your Preferences</h5>
                 <div id="preferencesTags">
-                  <span *ngFor="let tag of preferences" class="badge bg-primary me-2">
+                  <span *ngFor="let tag of selectedPreferences" class="badge bg-primary me-2">
                     {{ tag }}
                   </span>
                 </div>
               </div>
-              <div *ngIf="recommendedHospitalCases.length > 0; else noMyChoiceHome">
+              <div *ngIf="recommendedMedicalCases.length > 0; else noMyChoiceHome">
                 <div class="row row-cols-1 g-2">
-                  <div class="col" *ngFor="let case of recommendedHospitalCases">
+                  <div class="col" *ngFor="let case of recommendedMedicalCases">
                     <div class="card h-100">
                       <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
                         style="height: 120px; object-fit: cover" />
                       <div class="card-body p-2">
-                        <h6 class="card-title text-truncate">Case {{ case.id }}</h6>
-                        <p class="card-text text-truncate">{{ case.shortDescription }}</p>
+                        <h6 class="card-title text-truncate">{{ case.name }}</h6>
+                        <p class="card-text text-truncate">{{ case.caseSummary }}</p>
                         <p class="card-text">
                           <small>Submitted by: {{ case.submittedBy }}</small>
                         </p>
-                        <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
-                          View
-                        </button>
+                        <p class="card-text text-truncate-specialities" data-bs-toggle="tooltip" data-bs-placement="top"
+                          [attr.title]="case.speciality?.join(', ')">
+                          <small><b>Speciality:</b>
+                            <ng-container *ngIf="case.speciality?.length; else noSpec">
+                              {{ case.speciality.join(', ') | slice:0:50 }}<span
+                                *ngIf="case.speciality.join(', ').length > 50">...</span>
+                            </ng-container>
+                            <ng-template #noSpec>None</ng-template>
+                          </small>
+                        </p>
                         <div>
-                          <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
-                            <i class="bi bi-hand-thumbs-up"></i>
-                            <span class="ms-1">{{ case.likeCount }}</span>
+                          <button class="btn btn-primary btn-sm me-1" (click)="viewCase(case.id)">View</button>
+                          <button
+                            [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(case),'btn-info': hasLiked(case)}"
+                            class="btn-sm me-1" (click)="toggleLike(case.userId, case.id)"
+                            [attr.title]="hasLiked(case) ? 'Unlike' : 'Like'">
+                            <i class="bi" [ngClass]="hasLiked(case)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
+                            <span class="ms-1">{{ case.likedBy?.length || 0 }}</span>
                           </button>
                           <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Comment" (click)="viewComments(case.id)">
+                            data-bs-placement="top" title="Comment" (click)="viewComments(case)">
                             <i class="bi bi-chat"></i>
-                            <span class="ms-1">{{ case.comments.length }}</span>
+                            <span class="ms-1">{{ case.comments?.length ?? 0 }}</span>
                           </button>
                           <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
                             title="Share" (click)="shareCase(case.id)">
                             <i class="bi bi-share"></i>
+                            <span class="ms-1">&nbsp;</span>
                           </button>
                         </div>
                       </div>
@@ -198,36 +239,45 @@
             </div>
           </div>
         </div>
-        <!-- Trending Sub Tab: Only trending cases -->
         <div class="tab-pane fade" id="trendingSub" role="tabpanel" aria-labelledby="trending-sub-tab">
           <div class="row">
-            <div class="col-md-4 mb-3" *ngFor="let case of trendingHospitalCases">
+            <div class="col-md-4 mb-3" *ngFor="let case of trendingMedicalCases">
               <div class="card h-100">
                 <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
                   style="height: 120px; object-fit: cover" />
                 <div class="card-body p-2">
-                  <h6 class="card-title text-truncate">Case {{ case.id }}</h6>
-                  <p class="card-text text-truncate">{{ case.shortDescription }}</p>
+                  <h6 class="card-title text-truncate">{{ case.name }}</h6>
+                  <p class="card-text text-truncate">{{ case.caseSummary }}</p>
                   <p class="card-text">
                     <small>Submitted by: {{ case.submittedBy }}</small>
                   </p>
-                  <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
-                    View
-                  </button>
+                  <p class="card-text text-truncate-specialities" data-bs-toggle="tooltip" data-bs-placement="top"
+                    [attr.title]="case.speciality?.join(', ')">
+                    <small><b>Speciality:</b>
+                      <ng-container *ngIf="case.speciality?.length; else noSpec">
+                        {{ case.speciality.join(', ') | slice:0:50 }}<span
+                          *ngIf="case.speciality.join(', ').length > 50">...</span>
+                      </ng-container>
+                      <ng-template #noSpec>None</ng-template>
+                    </small>
+                  </p>
                   <div>
-                    <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
-                      data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
-                      <i class="bi bi-hand-thumbs-up"></i>
-                      <span class="ms-1">{{ case.likeCount }}</span>
+                    <button class="btn btn-primary btn-sm me-1" (click)="viewCase(case.id)">View</button>
+                    <button [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(case),'btn-info': hasLiked(case)}"
+                      class="btn-sm me-1" (click)="toggleLike(case.userId, case.id)"
+                      [attr.title]="hasLiked(case) ? 'Unlike' : 'Like'">
+                      <i class="bi" [ngClass]="hasLiked(case)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
+                      <span class="ms-1">{{ case.likedBy?.length || 0 }}</span>
                     </button>
                     <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
-                      data-bs-placement="top" title="Comment" (click)="viewComments(case.id)">
+                      data-bs-placement="top" title="Comment" (click)="viewComments(case)">
                       <i class="bi bi-chat"></i>
-                      <span class="ms-1">{{ case.comments.length }}</span>
+                      <span class="ms-1">{{ case.comments?.length ?? 0 }}</span>
                     </button>
                     <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
                       title="Share" (click)="shareCase(case.id)">
                       <i class="bi bi-share"></i>
+                      <span class="ms-1">&nbsp;</span>
                     </button>
                   </div>
                 </div>
@@ -235,36 +285,47 @@
             </div>
           </div>
         </div>
-        <!-- Latest Sub Tab: Only latest cases -->
+        <!-- Latest Sub Tab: Only latest cases (3 per row) -->
         <div class="tab-pane fade" id="latestSub" role="tabpanel" aria-labelledby="latest-sub-tab">
           <div class="row">
-            <div class="col-md-4 mb-3" *ngFor="let case of latestHospitalCases">
+            <div class="col-md-4 mb-3" *ngFor="let case of latestMedicalCases">
               <div class="card h-100">
                 <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
                   style="height: 120px; object-fit: cover" />
                 <div class="card-body p-2">
-                  <h6 class="card-title text-truncate">Case {{ case.id }}</h6>
-                  <p class="card-text text-truncate">{{ case.shortDescription }}</p>
+                  <h6 class="card-title text-truncate">{{ case.name }}</h6>
+                  <p class="card-text text-truncate">{{ case.caseSummary }}</p>
                   <p class="card-text">
                     <small>Submitted by: {{ case.submittedBy }}</small>
                   </p>
-                  <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
-                    View
-                  </button>
+                  <p class="card-text text-truncate-specialities" data-bs-toggle="tooltip" data-bs-placement="top"
+                    [attr.title]="case.speciality?.join(', ')">
+                    <small><b>Speciality:</b>
+                      <ng-container *ngIf="case.speciality?.length; else noSpec">
+                        {{ case.speciality.join(', ') | slice:0:50 }}<span
+                          *ngIf="case.speciality.join(', ').length > 50">...</span>
+                      </ng-container>
+                      <ng-template #noSpec>None</ng-template>
+                    </small>
+                  </p>
+
                   <div>
-                    <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
-                      data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
-                      <i class="bi bi-hand-thumbs-up"></i>
-                      <span class="ms-1">{{ case.likeCount }}</span>
+                    <button class="btn btn-primary btn-sm me-1" (click)="viewCase(case.id)">View</button>
+                    <button [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(case),'btn-info': hasLiked(case)}"
+                      class="btn-sm me-1" (click)="toggleLike(case.userId, case.id)"
+                      [attr.title]="hasLiked(case) ? 'Unlike' : 'Like'">
+                      <i class="bi" [ngClass]="hasLiked(case)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
+                      <span class="ms-1">{{ case.likedBy?.length || 0 }}</span>
                     </button>
                     <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
-                      data-bs-placement="top" title="Comment" (click)="viewComments(case.id)">
+                      data-bs-placement="top" title="Comment" (click)="viewComments(case)">
                       <i class="bi bi-chat"></i>
-                      <span class="ms-1">{{ case.comments.length }}</span>
+                      <span class="ms-1">{{ case.comments?.length ?? 0 }}</span>
                     </button>
                     <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
                       title="Share" (click)="shareCase(case.id)">
                       <i class="bi bi-share"></i>
+                      <span class="ms-1">&nbsp;</span>
                     </button>
                   </div>
                 </div>
@@ -272,44 +333,56 @@
             </div>
           </div>
         </div>
+
         <!-- My Choice Sub Tab: Only my choices with preferences shown -->
         <div class="tab-pane fade" id="mychoiceSub" role="tabpanel" aria-labelledby="mychoice-sub-tab">
           <div class="preferences-container mb-4 p-3" style="box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
             <h5>Your Preferences</h5>
             <div id="preferencesTags">
-              <span *ngFor="let tag of preferences" class="badge bg-primary me-2">
+              <span *ngFor="let tag of selectedPreferences" class="badge bg-primary me-2">
                 {{ tag }}
               </span>
             </div>
           </div>
           <div class="row">
-            <div class="col-md-4 mb-3" *ngFor="let case of recommendedHospitalCases">
+            <div class="col-md-4 mb-3" *ngFor="let case of recommendedMedicalCases">
               <div class="card h-100">
                 <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
                   style="height: 120px; object-fit: cover" />
                 <div class="card-body p-2">
-                  <h6 class="card-title text-truncate">Case {{ case.id }}</h6>
-                  <p class="card-text text-truncate">{{ case.shortDescription }}</p>
+                  <h6 class="card-title text-truncate">{{ case.name }}</h6>
+                  <p class="card-text text-truncate">{{ case.caseSummary }}</p>
                   <p class="card-text">
                     <small>Submitted by: {{ case.submittedBy }}</small>
                   </p>
-                  <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
-                    View
-                  </button>
+                  <p class="card-text text-truncate-specialities" data-bs-toggle="tooltip" data-bs-placement="top"
+                    [attr.title]="case.speciality?.join(', ')">
+                    <small><b>Speciality:</b>
+                      <ng-container *ngIf="case.speciality?.length; else noSpec">
+                        {{ case.speciality.join(', ') | slice:0:50 }}<span
+                          *ngIf="case.speciality.join(', ').length > 50">...</span>
+                      </ng-container>
+                      <ng-template #noSpec>None</ng-template>
+                    </small>
+                  </p>
+
                   <div>
-                    <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="tooltip"
-                      data-bs-placement="top" title="Like" (click)="likeCase(case.id)">
-                      <i class="bi bi-hand-thumbs-up"></i>
-                      <span class="ms-1">{{ case.likeCount }}</span>
+                    <button class="btn btn-primary btn-sm me-1" (click)="viewCase(case.id)">View</button>
+                    <button [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(case),'btn-info': hasLiked(case)}"
+                      class="btn-sm me-1" (click)="toggleLike(case.userId, case.id)"
+                      [attr.title]="hasLiked(case) ? 'Unlike' : 'Like'">
+                      <i class="bi" [ngClass]="hasLiked(case)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
+                      <span class="ms-1">{{ case.likedBy?.length || 0 }}</span>
                     </button>
                     <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
-                      data-bs-placement="top" title="Comment" (click)="viewComments(case.id)">
+                      data-bs-placement="top" title="Comment" (click)="viewComments(case)">
                       <i class="bi bi-chat"></i>
-                      <span class="ms-1">{{ case.comments.length }}</span>
+                      <span class="ms-1">{{ case.comments?.length ?? 0 }}</span>
                     </button>
                     <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
                       title="Share" (click)="shareCase(case.id)">
                       <i class="bi bi-share"></i>
+                      <span class="ms-1">&nbsp;</span>
                     </button>
                   </div>
                 </div>
@@ -319,44 +392,42 @@
         </div>
       </div>
     </div>
-
-    <!-- My Hospital Cases Tab -->
+    <!-- My Medical Cases Tab (unchanged) -->
     <div class="tab-pane fade" id="yours" role="tabpanel" aria-labelledby="yours-tab">
       <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
-        <h4>My Hospital Cases</h4>
+        <h4>My Medical Cases</h4>
         <button class="btn btn-success" (click)="createNewCase()">
-          Add New Hospital Case
+          Add New Medical Case
         </button>
       </div>
-      <div *ngIf="yourHospitalCases.length > 0; else noYourHospitalCases">
+      <div *ngIf="yourMedicalCases.length > 0; else noYourMedicalCases">
         <div class="row g-3">
-          <div class="col-md-4" *ngFor="let case of yourHospitalCases">
+          <div class="col-md-4" *ngFor="let case of yourMedicalCases">
             <div class="card h-100 shadow-sm">
               <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
                 style="height: 160px; object-fit: cover" />
               <div class="card-body p-3">
-                <h6 class="card-title text-truncate">Case {{ case.id }}</h6>
+                <h6 class="card-title text-truncate">{{ case.name }}</h6>
                 <p class="card-text text-truncate">{{ case.shortDescription }}</p>
                 <p class="card-text">
                   <small>Submitted by: {{ case.submittedBy }}</small>
                 </p>
-                <button class="btn btn-primary btn-sm mb-2" (click)="viewCase(case.id)">
-                  View
-                </button>
+                <p class="card-text text-truncate-specialities" data-bs-toggle="tooltip" data-bs-placement="top"
+                  [attr.title]="case.speciality?.join(', ')">
+                  <small><b>Speciality:</b>
+                    <ng-container *ngIf="case.speciality?.length; else noSpec">
+                      {{ case.speciality.join(', ') | slice:0:50 }}<span
+                        *ngIf="case.speciality.join(', ').length > 50">...</span>
+                    </ng-container>
+                    <ng-template #noSpec>None</ng-template>
+                  </small>
+                </p>
                 <div class="d-flex justify-content-start">
-                  <button class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="tooltip" data-bs-placement="top"
-                    title="Like" (click)="likeCase(case.id)">
-                    <i class="bi bi-hand-thumbs-up"></i>
-                    <span class="ms-1">{{ case.likeCount }}</span>
-                  </button>
-                  <button class="btn btn-outline-secondary btn-sm me-2" data-bs-toggle="tooltip" data-bs-placement="top"
-                    title="Comment" (click)="viewComments(case.id)">
-                    <i class="bi bi-chat"></i>
-                    <span class="ms-1">{{ case.comments.length }}</span>
-                  </button>
+                  <button class="btn btn-primary btn-sm me-1" (click)="viewCase(case.id)">View</button>
                   <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
                     title="Share" (click)="shareCase(case.id)">
                     <i class="bi bi-share"></i>
+                    <span class="ms-1">&nbsp;</span>
                   </button>
                 </div>
               </div>
@@ -364,37 +435,137 @@
           </div>
         </div>
       </div>
-      <ng-template #noYourHospitalCases>
+      <ng-template #noYourMedicalCases>
         <p class="text-muted">
-          No cases added yet. Click "Add New Hospital Case" to get started.
+          No cases added yet. Click "Add New Case" to get started.
         </p>
       </ng-template>
     </div>
   </div>
 </div>
 
-<!-- Preferences Modal -->
-<div class="modal fade" data-bs-backdrop="static" id="preferencesModal" tabindex="-1" aria-labelledby="preferencesModalLabel" aria-hidden="true">
+
+<div class="modal fade" data-bs-focus="false" data-bs-backdrop="static" #commentModal id="commentModal" tabindex="-1"
+  aria-labelledby="commentModalLabel" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="commentModalLabel">
+          <i class="bi bi-chat-dots me-2"></i>Comments
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+
+      <div class="modal-body">
+
+        <div *ngIf="!existingComment || isEditing" class="mb-4 d-flex align-items-start">
+          <i class="bi bi-person-circle fs-3 text-primary me-2"></i>
+          <div class="flex-grow-1">
+            <textarea class="form-control" rows="2" [(ngModel)]="newCommentText"
+              placeholder="Write a comment..."></textarea>
+            <div class="d-flex justify-content-end mt-2">
+              <button class="btn btn-sm btn-primary" data-bs-dismiss="modal" [disabled]="!(newCommentText?.trim?.())"
+                (click)="postComment()">
+                <i class="bi bi-send me-1"></i>{{ isEditing ? 'Update' : 'Post' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="existingComment && !isEditing" class="mb-3 border rounded p-3 bg-light">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <i class="bi bi-person-circle text-secondary me-1"></i>
+              <span class="fw-semibold">You</span>
+              <p class="mb-0 text-muted fst-italic">{{ existingComment.text }}</p>
+            </div>
+            <button class="btn btn-sm btn-outline-primary" (click)="enableEdit()">
+              <i class="bi bi-pencil-square me-1"></i>Edit
+            </button>
+          </div>
+        </div>
+
+        <hr />
+
+        <div *ngIf="case">
+          <div *ngIf="case.comments?.length > 0; else noComments">
+            <div *ngFor="let c of case.comments" class="mb-3 border rounded p-3 bg-white shadow-sm">
+              <div class="d-flex align-items-start">
+                <i class="bi bi-person-circle fs-4 text-secondary me-2"></i>
+                <div>
+                  <div class="fw-semibold text-dark">{{ c.submittedBy || 'Anonymous' }}</div>
+                  <div class="text-muted fst-italic">{{ c.text }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noComments>
+            <p class="text-muted fst-italic">No comments yet. Be the first to comment!</p>
+          </ng-template>
+        </div>
+
+
+        <ng-template #noComments>
+          <p class="text-muted fst-italic">No comments yet. Be the first to comment!</p>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" data-bs-focus="false" data-bs-backdrop="static" id="preferencesModal" tabindex="-1"
+  aria-labelledby="preferencesModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="preferencesModalLabel">
-          Set Preferences
-        </h5>
+        <h5 class="modal-title" id="preferencesModalLabel">Select Preferences for Choice</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div class="input-group">
-          <input type="text" class="form-control" [(ngModel)]="newPreference" placeholder="Enter a tag" />
-          <button class="btn btn-primary" data-bs-dismiss="modal" (click)="addPreference()">
-            Add
-          </button>
-        </div>
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Select Preferences</mat-label>
+          <mat-select multiple [(ngModel)]="selectedPreferences" name="preferences"
+            (ngModelChange)="onPreferencesChange($event)">
+            <mat-option>
+              <ngx-mat-select-search [formControl]="specialityFilterCtrl"
+                placeholderLabel="Search Speciality"></ngx-mat-select-search>
+            </mat-option>
+
+            <mat-option *ngFor="let speciality of filteredSpecialities | async" [value]="speciality">
+              {{ speciality }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          Close
+        <button type="button" class="btn btn-primary" (click)="savePreferences()" data-bs-dismiss="modal">
+          Save Preferences
         </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" data-bs-focus="false" data-bs-backdrop="static" #shareModal tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-3">
+      <div class="modal-header">
+        <h5 class="modal-title">Share This Case</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Copy the link below to share:</p>
+        <div class="input-group">
+          <input type="text" class="form-control" [value]="shareLink" readonly>
+          <button class="btn btn-outline-secondary" (click)="copyLink()" title="Copy to clipboard">
+            <i class="bi bi-clipboard"></i>
+          </button>
+        </div>
       </div>
     </div>
   </div>

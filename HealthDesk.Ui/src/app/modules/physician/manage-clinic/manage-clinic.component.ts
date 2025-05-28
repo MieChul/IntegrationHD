@@ -60,7 +60,7 @@ export class ManageClinicComponent implements OnInit {
     });
 
     this.clinicForm = this.fb.group({
-      id: [''],
+      id: [],
       name: ['', [Validators.required, Validators.maxLength(25), Validators.pattern(/^[a-zA-Z0-9@ ,\/\\'.-]+$/)]],
       flatNumber: ['', [Validators.maxLength(50), Validators.pattern(/^[a-zA-Z0-9@ ,\/\\'.-]+$/)]],
       building: ['', [Validators.maxLength(50), Validators.pattern(/^[a-zA-Z0-9@ ,\/\\'.-]+$/)]],
@@ -90,11 +90,11 @@ export class ManageClinicComponent implements OnInit {
 
   addSlot(slotData?: any): void {
     const slotGroup = this.fb.group({
-      id: [slotData ? slotData.id : ''],
+      id: [slotData ? slotData.id : null],
 
       name: [
         slotData ? slotData.name : '',
-        [Validators.required, Validators.maxLength(10), Validators.pattern('^[a-zA-Z0-9]+$')]
+        [Validators.required, Validators.maxLength(10), Validators.pattern('^[a-zA-Z0-9 ]+$')]
       ],
 
       timingFrom: [
@@ -117,11 +117,12 @@ export class ManageClinicComponent implements OnInit {
       this.clinicSlots.updateValueAndValidity();
     });
     this.clinicSlots.push(slotGroup);
+    this.clinicSlots.updateValueAndValidity();
   }
 
 
   parseTime12(timeStr: string): number | null {
-    const parts = timeStr.trim().split(' ');
+    const parts = timeStr?.trim().split(' ');
     if (parts.length < 2) return null; // Expecting "hh:mm AM/PM"
     const timePart = parts[0]; // e.g. "1:15" or "01:15"
     const period = parts[1].toUpperCase(); // AM or PM
@@ -142,54 +143,86 @@ export class ManageClinicComponent implements OnInit {
   validateTimeRange(group: FormGroup): ValidationErrors | null {
     const from = group.get('timingFrom')?.value;
     const to = group.get('timingTo')?.value;
-    if (!from || !to) {
-      return null;
-    }
+    if (!from || !to) return { timeRequired: true };
     const fromTotal = this.parseTime12(from);
     const toTotal = this.parseTime12(to);
     if (fromTotal === null || toTotal === null) {
       return { timeFormat: 'Invalid time format' };
     }
     if (toTotal < fromTotal) {
-      return { timeRange: 'Time difference cannot exceed 12 hours' };
+      return { timeRange: 'The clinic slot duration can not exceed 12 hours' };
     }
-    if (toTotal - fromTotal > 720) { // 9 hours = 540 minutes
-      return { timeRange: 'Time difference cannot exceed 12 hours' };
+    if (toTotal - fromTotal > 720) {
+      return { timeRange: 'The clinic slot duration can not exceed 12 hours' };
     }
     return null;
   }
 
-  // Update validateSlotOverlap:
   validateSlotOverlap(control: AbstractControl): ValidationErrors | null {
     const formArray = control as FormArray;
     const slots = formArray.controls;
+
+    const currentDays = this.days.filter(day => this.clinicForm.get('days')?.get(day)?.value);
+    const nameSet = new Set<string>();
+
     for (let i = 0; i < slots.length; i++) {
-      const slot1 = slots[i];
-      const from1 = slot1.get('timingFrom')?.value;
-      const to1 = slot1.get('timingTo')?.value;
-      if (!from1 || !to1) continue;
-      const start1 = this.parseTime12(from1);
-      const end1 = this.parseTime12(to1);
-      if (start1 === null || end1 === null) continue;
+      const slotA = slots[i];
+      const nameA = (slotA.get('name')?.value ?? '')?.trim().toLowerCase();
+      const startA = this.parseTime12(slotA.get('timingFrom')?.value);
+      const endA = this.parseTime12(slotA.get('timingTo')?.value);
+
+      if (startA == null || endA == null || startA >= endA) continue;
+
+      if (nameA) {
+        if (nameSet.has(nameA)) {
+          return { duplicateName: 'Slot names within the clinic must be unique' };
+        }
+        nameSet.add(nameA);
+      }
+
       for (let j = i + 1; j < slots.length; j++) {
-        const slot2 = slots[j];
-        const from2 = slot2.get('timingFrom')?.value;
-        const to2 = slot2.get('timingTo')?.value;
-        if (!from2 || !to2) continue;
-        const start2 = this.parseTime12(from2);
-        const end2 = this.parseTime12(to2);
-        if (start2 === null || end2 === null) continue;
-        // Check overlap: if slot1 starts before slot2 ends and slot2 starts before slot1 ends
-        if (start1 < end2 && start2 < end1) {
-          return { overlap: 'Slot timings cannot overlap' };
+        const slotB = slots[j];
+        const startB = this.parseTime12(slotB.get('timingFrom')?.value);
+        const endB = this.parseTime12(slotB.get('timingTo')?.value);
+
+        if (startB == null || endB == null || startB >= endB) continue;
+
+        if (startA < endB && startB < endA) {
+          return { overlap: 'Slots within this clinic cannot have overlapping timings' };
+        }
+      }
+
+      for (const clinic of this.clinics) {
+        if (this.isEditMode && clinic.id === this.currentClinicId) continue;
+
+        const otherDays = Array.isArray(clinic.days)
+          ? clinic.days
+          : (clinic.days || '').split(',').map((d: string) => d?.trim());
+
+        const overlappingDays = currentDays.filter(day => otherDays.includes(day));
+        if (!overlappingDays.length) continue;
+
+        for (const otherSlot of clinic.clinicSlots || []) {
+          const startB = this.parseTime12(otherSlot.timingFrom);
+          const endB = this.parseTime12(otherSlot.timingTo);
+
+          if (!startB || !endB || startB >= endB) continue;
+
+          if (startA < endB && startB < endA) {
+            return {
+              globalOverlap: `Timing conflict with another clinic on shared day(s): ${overlappingDays.join(', ')}`
+            };
+          }
         }
       }
     }
     return null;
   }
 
+
   removeSlot(index: number): void {
     this.clinicSlots.removeAt(index);
+    this.clinicSlots.updateValueAndValidity();
   }
 
   setupSearchFilters(): void {
@@ -310,7 +343,11 @@ export class ManageClinicComponent implements OnInit {
   saveClinic(): void {
     this.submitted = true;
     this.clinicForm.markAllAsTouched();
-    this.clinicForm.updateValueAndValidity();
+    setTimeout(() => {
+      this.clinicForm.updateValueAndValidity();
+      this.clinicSlots.controls.forEach(slot => slot.updateValueAndValidity());
+      this.clinicSlots.updateValueAndValidity();
+    });
 
     if (this.clinicForm.invalid) return;
 

@@ -208,7 +208,7 @@ namespace HealthDesk.API.Controllers
         }
 
         [HttpPost("{id}/medical-case")]
-        public async Task<IActionResult> SaveMedicalCase(string id,[FromBody] MedicalCaseDto dto)
+        public async Task<IActionResult> SaveMedicalCase(string id, [FromBody] MedicalCaseDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new { Success = false, Message = "Invalid data provided.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
@@ -220,7 +220,8 @@ namespace HealthDesk.API.Controllers
             var images = await _physicianService.SaveMedicalCaseAsync(dto);
             foreach (var img in images)
             {
-                await CreateFile(directoryPath, img.ImageName, dto.UserId, img.Image);
+                if (!string.IsNullOrEmpty(img.Image))
+                    await CreateFile(directoryPath, img.ImageName, dto.UserId, img.Image);
             }
 
             return Ok(new { Success = true, Message = "Saved successfully." });

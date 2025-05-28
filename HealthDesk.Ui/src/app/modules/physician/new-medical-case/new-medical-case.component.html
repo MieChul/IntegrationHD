@@ -92,12 +92,6 @@
         </mat-form-field>
 
       </div>
-      <div class="col-md-6">
-        <mat-form-field appearance="outline" class="w-100 mb-3">
-          <mat-label>Diagnosis</mat-label>
-          <textarea matInput formControlName="diagnosis" placeholder="Diagnosis." required></textarea>
-        </mat-form-field>
-      </div>
     </div>
     <div class="row mb-3">
       <div class="col-md-6">
@@ -141,9 +135,9 @@
               <th>Action</th>
             </tr>
           </thead>
-          <tbody>
-            <mat-error *ngIf="chiefComplaints?.hasError('noComplaints')">At least one complaints is required</mat-error>
-            <tr *ngFor="let complaint of chiefComplaints.controls; let i = index" [formGroupName]="i">
+          <tbody formArrayName="complaints">
+            <mat-error *ngIf="complaints?.hasError('noComplaints')">At least one complaints is required</mat-error>
+            <tr *ngFor="let complaint of complaints.controls; let i = index" [formGroupName]="i">
               <td>
                 <mat-form-field appearance="outline" style="width: 100%;">
                   <mat-label>Complaint</mat-label>
@@ -165,6 +159,19 @@
           </tbody>
         </table>
       </div>
+    </div>
+    <div class="form-floating mb-3">
+      <mat-form-field appearance="outline" class="w-100 mb-3">
+        <mat-label>Case Summary</mat-label>
+        <textarea matInput formControlName="caseSummary" matTextareaAutosize></textarea>
+      </mat-form-field>
+    </div>
+
+    <div lass="form-floating mb-3">
+      <mat-form-field appearance="outline" class="w-100 mb-3">
+        <mat-label>Diagnosis</mat-label>
+        <textarea matInput formControlName="diagnosis" placeholder="Diagnosis." required></textarea>
+      </mat-form-field>
     </div>
 
     <div class="form-floating mb-3">
@@ -191,12 +198,7 @@
         <textarea matInput formControlName="treatment" matTextareaAutosize></textarea>
       </mat-form-field>
     </div>
-    <div class="form-floating mb-3">
-      <mat-form-field appearance="outline" class="w-100 mb-3">
-        <mat-label>Case Summary</mat-label>
-        <textarea matInput formControlName="caseSummary" matTextareaAutosize></textarea>
-      </mat-form-field>
-    </div>
+
     <button type="submit" class="btn btn-primary w-100">Submit</button>
   </form>
 </div>

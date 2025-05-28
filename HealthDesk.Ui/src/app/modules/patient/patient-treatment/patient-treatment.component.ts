@@ -102,8 +102,8 @@ export class PatientTreatmentComponent implements OnInit {
         comment: this.fb.control('', Validators.maxLength(100)),
         price: this.fb.control('', [
           Validators.required,
-          Validators.pattern(/^\d+(\.\d{1,2})?$/)  // ➡️ positive decimal, max 2 decimal places
-        ])// Added maxLength validation for comments
+          Validators.pattern(/^\d{1,9}(\.\d{1,2})?$/)
+        ])
       },
       { validators: this.dateRangeValidator, updateOn: 'change' }
     );

@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { Modal, Tooltip } from 'bootstrap';
+import { map, Observable, startWith } from 'rxjs';
 import { DatabaseService } from '../../../shared/services/database.service';
 import { AccountService } from '../../services/account.service';
-import { FormControl } from '@angular/forms';
-import { map, Observable, startWith } from 'rxjs';
-import { OrganizationService } from '../../services/organization.service';
+import { PhysicianService } from '../../services/physician.service';
 
 @Component({
   selector: 'app-hospital-cases',
@@ -13,42 +15,71 @@ import { OrganizationService } from '../../services/organization.service';
 })
 export class HospitalCasesComponent implements OnInit {
 
+  ngAfterViewInit(): void {
+    const tooltipTriggerList = Array.from(
+      document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    );
+    tooltipTriggerList.forEach((tooltipTriggerEl) => {
+      new Tooltip(tooltipTriggerEl);
+    });
+  }
+
+  @ViewChild('commentModal') commentModal!: ElementRef;
+  @ViewChild('shareModal') shareModal!: ElementRef;
+
   userData: any;
-  searchValue: string = '';
+  shareLink: string = '';
+  searchValue: string[] = [];
   newPreference: string = '';
   preferences: string[] = [];
+  selectedPreferences: string[] = [];
   activeSubTab: string = 'home';
   specialities: any[] = [];
   specialityFilterCtrl = new FormControl();
   filteredSpecialities!: Observable<string[]>;
-  preferenceControl = new FormControl<string[]>([])
+  recommendedMedicalCases: any = [];
+  latestMedicalCases: any = [];
+  trendingMedicalCases: any = [];
+  otherMedicalCases: any = [];
+  yourMedicalCases: any = [];
+  case: any;
+  existingComment: any;
+  newCommentText: any;
+  isEditing: any;
 
-  latestHospitalCases: any = [];
-  trendingHospitalCases: any = [];
-  recommendedHospitalCases: any = [];
-  yourHospitalCases: any = [];
-  othersHospitalCases: any = [];
+  constructor(private router: Router, private modalService: NgbModal, private databaseService: DatabaseService, private accountService: AccountService, private physicianService: PhysicianService) { }
 
-  shareLink: string = '';
-
-  constructor(private router: Router, private databaseService: DatabaseService, private accountService: AccountService, private organizationService: OrganizationService) { }
-
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.accountService.getUserData().subscribe({
       next: async (data) => {
         this.userData = data;
-        await this.loadCases();
 
         this.specialities = await this.databaseService.getSpecialities();
-        this.filteredSpecialities = this.specialityFilterCtrl.valueChanges.pipe(
-          startWith(''),
-          map((search) => this.filterOptions(search, this.specialities))
-        );
-        this.filterHospitalCases();
+        await this.loadCases();
+        await this.loadInfo();
+        await this.initializeSearch();
+        this.filterMedicalCases();
       },
       error: (err) => console.error('Error fetching user data:', err)
     });
+  }
 
+  initializeSearch(): void {
+    this.filteredSpecialities = this.specialityFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.specialities))
+    );
+  }
+
+  savePreferences() {
+    this.physicianService.updatePreferences(this.userData.id, this.selectedPreferences).subscribe({
+      next: (res: any) => {
+        this.loadInfo();
+      },
+      error: (error) => {
+        console.error('Error Saving data:', error);
+      }
+    });
   }
 
   loadCases(): void {
@@ -57,12 +88,26 @@ export class HospitalCasesComponent implements OnInit {
       return;
     }
 
-    this.organizationService.getCases(this.userData.id).subscribe({
-      next: (data: any) => {
-
+    this.physicianService.getMedicalCases(this.userData.id).subscribe({
+      next: (cases: any) => {
+        this.otherMedicalCases = cases.data.others;
+        this.yourMedicalCases = cases.data.yours;
+        this.filterMedicalCases();
       },
       error: (error) => {
         console.error('Error loading history:', error);
+      }
+    });
+  }
+
+  loadInfo() {
+    this.physicianService.getPhysicianInfo(this.userData.id).subscribe({
+      next: info => {
+        this.selectedPreferences = info.data.preferences || [];
+        this.filterMedicalCases();
+      },
+      error: (error) => {
+
       }
     });
   }
@@ -72,51 +117,160 @@ export class HospitalCasesComponent implements OnInit {
     return options.filter(option => option.toLowerCase().includes(filterValue));
   }
 
-  filterHospitalCases() { }
+  onPreferencesChange(newPrefs: string[]) {
+    this.selectedPreferences = newPrefs;
+  }
 
-  searchHospitalCases(): void {
+  createNewCase(): void {
+    this.router.navigate(['/physician/new-medical-case']);
+  }
 
+  toggleLike(user: string, id: string,): void {
+    this.physicianService.toggleLike(user, id, this.userData.id).subscribe({
+      next: (com: any) => {
+        this.loadCases();
+      },
+      error: (error) => {
+        console.error('Error Saving data:', error);
+      }
+    });
+  }
+
+  shareCase(caseId: string): void {
+    this.shareLink = `https://HealthDesk.com/physician/view-medical/${caseId}`;
+    const modalInstance = new Modal(this.shareModal.nativeElement);
+    modalInstance.show();
+  }
+
+
+  viewCase(caseId: string): void {
+    this.router.navigate(['/physician/view-medical-case', caseId]);
   }
 
   setActiveSubTab(tab: string): void {
     this.activeSubTab = tab;
+    this.filterMedicalCases();
   }
 
-  viewCase(caseId: number): void {
-    this.router.navigate(['organization/hospital/view-case', caseId]);
-  }
+  filterMedicalCases(): void {
+    const limit = this.getDisplayLimit();
 
-  likeCase(caseId: number): void {
-    const updateLike = (cases: any) => {
-      const foundCase = cases.find((c: any) => c.id === caseId);
-      if (foundCase) {
-        foundCase.likeCount++;
-      }
+    const searchVals = (Array.isArray(this.searchValue) ? this.searchValue : [])
+      .map(val => val.trim().toLowerCase())
+      .filter(val => val);
+
+    const matchesSearch = (cases: any): boolean => {
+      return Array.isArray(cases.speciality) &&
+        cases.speciality.some((rf: string) =>
+          searchVals.some(search => rf.toLowerCase().includes(search))
+        );
     };
 
-    updateLike(this.latestHospitalCases);
-    updateLike(this.trendingHospitalCases);
-    updateLike(this.recommendedHospitalCases);
-    updateLike(this.yourHospitalCases);
+    const filteredCases = searchVals.length
+      ? this.otherMedicalCases.filter(matchesSearch)
+      : [...this.otherMedicalCases];
+
+    this.latestMedicalCases = filteredCases
+      .sort((a: any, b: any) => new Date(b.createDate).getTime() - new Date(a.createDate).getTime())
+      .slice(0, limit);
+
+    this.trendingMedicalCases = filteredCases
+      .sort((a: any, b: any) => b.likedCount - a.likedCount)
+      .slice(0, limit);
+
+    this.filterRecommended();
   }
 
-  viewComments(caseId: number): void {
-  }
+  filterRecommended(): void {
+    const limit = this.getDisplayLimit();
 
-  shareCase(caseId: number): void {
-    this.shareLink = `https://HealthDesk.com/organization/hospital/view-case/${caseId}`;
-    // Add your share logic here (e.g. copy to clipboard, open modal, etc.)
-    console.log('Share link:', this.shareLink);
-  }
+    const prefs = (this.selectedPreferences || [])
+      .map(p => p.toLowerCase().trim())
+      .filter(p => p);
 
-  createNewCase(): void {
-    this.router.navigate(['organization/hospital/new-case']);
-  }
-
-  addPreference(): void {
-    if (this.newPreference.trim()) {
-      this.preferences.push(this.newPreference.trim());
-      this.newPreference = '';
+    if (!prefs.length) {
+      this.recommendedMedicalCases = [];
+      return;
     }
+
+    this.recommendedMedicalCases = this.otherMedicalCases
+      .filter((cases: any) => {
+        const rfArr = Array.isArray(cases.speciality)
+          ? cases.speciality
+          : [cases.speciality];
+
+        return rfArr
+          .map((rf: any) => (rf || '').toLowerCase().trim())
+          .some((rf: string) => prefs.includes(rf));
+      })
+      .sort((a: any, b: any) =>
+        new Date(b.createDate).getTime() - new Date(a.createDate).getTime()
+      )
+      .slice(0, limit);
+  }
+
+  private getDisplayLimit(): number {
+    return ['latest', 'trending', 'mychoice'].includes(this.activeSubTab) ? 30 : 5;
+  }
+
+  hasLiked(cases: any): boolean {
+    return cases?.likedBy?.includes(this.userData.id);
+  }
+
+  copyLink(): void {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(this.shareLink)
+        .then(() => console.log('Link copied!'))
+        .catch(err => console.error('Copy failed', err));
+    } else {
+      const dummy = document.createElement('textarea');
+      dummy.value = this.shareLink;
+      document.body.appendChild(dummy);
+      dummy.select();
+      document.execCommand('copy');
+      document.body.removeChild(dummy);
+      console.log('Link copied (fallback)!');
+    }
+  }
+
+  enableEdit(): void {
+    this.isEditing = true;
+  }
+
+  postComment(): void {
+    const trimmedText = this.newCommentText.trim();
+    if (!trimmedText) return;
+
+    const comment = {
+      id: this.existingComment?.id,
+      userId: this.userData.id,
+      text: trimmedText,
+      itemType: "Medical Case"
+    };
+
+    this.physicianService.saveComment(this.case.userId, this.case.id, comment).subscribe({
+      next: (com: any) => {
+        this.loadCases();
+        this.newCommentText = '';
+        this.isEditing = false;
+      },
+      error: (error) => {
+        console.error('Error Saving data:', error);
+      }
+    });
+  }
+
+  viewComments(selectedCase: any) {
+    if (!selectedCase) return;
+
+    this.case = selectedCase;
+    this.existingComment = selectedCase.comments?.find(
+      (c: any) => c.userId === this.userData.id
+    );
+    this.newCommentText = this.existingComment?.text || '';
+    this.isEditing = false;
+
+    const modalInstance = new Modal(this.commentModal.nativeElement);
+    modalInstance.show();
   }
 }

@@ -65,7 +65,7 @@ export class PharmacyLandingComponent implements OnInit {
       drugClass: ['', Validators.required],
       dosageForm: ['', Validators.required],
       strength: ['', Validators.required],
-      price: [null, Validators.required],
+      price: [null, [Validators.required, Validators.pattern(/^\d{1,9}(\.\d{1,2})?$/)]],
       discount: [null, Validators.required],
       comment: ['']
     });
@@ -136,7 +136,7 @@ export class PharmacyLandingComponent implements OnInit {
     this.brandImportErrors = [];
     this.importedBrands = [];
     this.brandFileName = '';
-  
+
     const modal = new bootstrap.Modal(this.brandImportModal.nativeElement);
     modal.show();
   }
@@ -144,10 +144,10 @@ export class PharmacyLandingComponent implements OnInit {
   onBrandFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
-    
+
     const file = input.files[0];
     this.brandFileName = file.name;
-  
+
     const reader = new FileReader();
     reader.onload = () => {
       const wb = XLSX.read(reader.result as ArrayBuffer, { type: 'array' });
@@ -161,19 +161,19 @@ export class PharmacyLandingComponent implements OnInit {
   private processBrandRows(rows: any[][]): void {
     this.brandImportErrors = [];
     this.importedBrands = [];
-  
+
     if (!rows.length) {
       this.brandImportErrors.push({ row: 0, errors: ['Excel is empty'] });
       return;
     }
-  
+
     const header = rows[0].map(h => (h || '').toString().trim());
     const expectedHeader = [
-      'Brand Owner', 'Brand Name', 'Generic Name', 
-      'Drug Class', 'Dosage Form', 'Strength', 
+      'Brand Owner', 'Brand Name', 'Generic Name',
+      'Drug Class', 'Dosage Form', 'Strength',
       'Price', 'Discount', 'Comment'
     ];
-  
+
     if (expectedHeader.some((h, i) => h !== header[i])) {
       this.brandImportErrors.push({
         row: 0,
@@ -181,7 +181,7 @@ export class PharmacyLandingComponent implements OnInit {
       });
       return;
     }
-  
+
     rows.slice(1).forEach((row, idx) => {
       const rowNum = idx + 2;
       const brand = {
@@ -195,9 +195,9 @@ export class PharmacyLandingComponent implements OnInit {
         discount: Number(row[7]),
         comment: row[8]?.toString().trim() || ''
       };
-  
+
       const errors: string[] = [];
-  
+
       if (!brand.brandOwner) errors.push('brandOwner is required');
       if (!brand.brandName) errors.push('brandName is required');
       if (!brand.genericName) errors.push('genericName is required');
@@ -206,7 +206,7 @@ export class PharmacyLandingComponent implements OnInit {
       if (!brand.strength) errors.push('strength is required');
       if (isNaN(brand.price)) errors.push('price must be a number');
       if (isNaN(brand.discount)) errors.push('discount must be a number');
-  
+
       if (errors.length) {
         this.brandImportErrors.push({ row: rowNum, errors });
       } else {
@@ -217,7 +217,7 @@ export class PharmacyLandingComponent implements OnInit {
 
   submitBrandImport(): void {
     if (!this.userData?.id || this.brandImportErrors.length || !this.importedBrands.length) return;
-  
+
     this.organizationService.saveMedicine(this.userData.id, this.importedBrands)
       .subscribe({
         next: () => {
@@ -227,6 +227,6 @@ export class PharmacyLandingComponent implements OnInit {
         error: (error) => console.error('Error importing brands:', error)
       });
   }
-  
-  
+
+
 }

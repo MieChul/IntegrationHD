@@ -571,7 +571,7 @@ export class CustomizePrescriptionComponent implements OnInit {
       }
 
       doc.setFontSize(7);
-      doc.setFont('Times');
+      doc.setFont('helvetica');
       doc.setDrawColor(0, 0, 0);  // Set black color
       doc.line(5, headerHeight, 200, headerHeight);  // Separator after header
       startY = 60;
@@ -619,7 +619,7 @@ export class CustomizePrescriptionComponent implements OnInit {
       },
       startY: startY,
       styles: {
-        font: 'Times',
+        font: 'helvetica',
         fontSize: 8, lineColor: [0, 0, 0], lineWidth: 0.1
       }
     });
@@ -658,7 +658,7 @@ export class CustomizePrescriptionComponent implements OnInit {
         fontStyle: 'normal'         // Plain font style
       },
       styles: {
-        font: 'Times',
+        font: 'helvetica',
         fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       startY: startY
@@ -694,7 +694,7 @@ export class CustomizePrescriptionComponent implements OnInit {
       },
       body: rxData,
       styles: {
-        font: 'Times',
+        font: 'helvetica',
         fontSize: 8, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       startY: startY
@@ -715,7 +715,7 @@ export class CustomizePrescriptionComponent implements OnInit {
       body: signatureData,
       theme: 'plain',
       styles: {
-        font: 'Times',
+        font: 'helvetica',
         fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1
       },
       columnStyles: {

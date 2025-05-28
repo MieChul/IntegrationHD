@@ -51,10 +51,13 @@ export class PatientHistoryComponent implements OnInit {
   initializeForm(): void {
     this.historyForm = this.fb.group({
       id: this.fb.control(''),
+      price: this.fb.control('',
+        Validators.pattern(/^\d{1,9}(\.\d{1,2})?$/)
+      ),
       dateOfDiagnosis: this.fb.control('', [Validators.required, this.futureDateValidator]),
       disease: this.fb.control('', Validators.required),
       start: this.fb.control('', [Validators.required, this.futureDateValidator]),
-      end: this.fb.control('', [this.futureDateValidator])
+      end: this.fb.control('', [this.futureDateValidator],)
     }, { validators: this.dateOrderValidator });  // Attach cross-field validator
 
 
@@ -76,7 +79,7 @@ export class PatientHistoryComponent implements OnInit {
     const diag = formGroup.get('dateOfDiagnosis')?.value;
     const end = formGroup.get('end')?.value;
     const errors: any = {};
-  
+
     if (start && diag) {
       if (new Date(diag) < new Date(start)) {
         errors.dateDiagnosisBeforeStart = true;
@@ -92,10 +95,10 @@ export class PatientHistoryComponent implements OnInit {
         errors.endBeforeDiagnosis = true;
       }
     }
-  
+
     return Object.keys(errors).length ? errors : null;
   }
-  
+
   initializeSearch(): void {
     this.filteredDiseases = this.diseaseFilterCtrl.valueChanges.pipe(
       startWith(''),
@@ -181,7 +184,7 @@ export class PatientHistoryComponent implements OnInit {
 
   saveHistory(): void {
     this.historyForm.markAllAsTouched();
-    this.historyForm.updateValueAndValidity(); 
+    this.historyForm.updateValueAndValidity();
     if (this.historyForm.invalid) return;
 
     const historyData = this.historyForm.value;

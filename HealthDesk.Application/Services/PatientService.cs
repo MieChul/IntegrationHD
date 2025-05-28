@@ -1103,12 +1103,15 @@ public class PatientService : IPatientService
         var count = 0;
         foreach (var img in dto.Images)
         {
-            img.ImageName = $@"{remedy.Id}_image{count++}.png";
-            remedy.Images.Add(new CaseImage
+            if (!string.IsNullOrEmpty(img.Image))
             {
-                ImageUrl = $@"/assets/documents/{dto.UserId}/remedies/{img.ImageName}",
-                IsDefault = img.IsDefault
-            });
+                img.ImageName = $@"{remedy.Id}_image{count++}.png";
+                remedy.Images.Add(new CaseImage
+                {
+                    ImageUrl = $@"/assets/documents/{dto.UserId}/remedies/{img.ImageName}",
+                    IsDefault = img.IsDefault
+                });
+            }
         }
 
         remedy.SubmittedBy = user.FirstName + " " + user.LastName;

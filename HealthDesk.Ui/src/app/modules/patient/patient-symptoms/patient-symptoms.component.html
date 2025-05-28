@@ -40,13 +40,13 @@
         <table class="table table-hover table-modern">
             <thead>
                 <tr>
-                    <th (click)="sortTable('dateOfOnset')">Date of Onset</th>
-                    <th (click)="sortTable('timeOfOnset')">Time of Onset</th>
-                    <th (click)="sortTable('endDate')">End Date</th>
-                    <th (click)="sortTable('symptomType')">Symptom</th>
-                    <th (click)="sortTable('description')">Description</th>
-                    <th (click)="sortTable('severity')">Severity</th>
-                    <th (click)="sortTable('comment')">Comment</th>
+                    <th (click)="sortTable('dateOfOnset')" style="width: 15%;">Date of Onset</th>
+                    <th (click)="sortTable('timeOfOnset')" style="width: 15%;">Time of Onset</th>
+                    <th (click)="sortTable('endDate')" style="width: 15%;">End Date</th>
+                    <th (click)="sortTable('symptomType')" style="width: 20%;">Symptom</th>
+                    <th (click)="sortTable('description')" style="width: 20%;">Description</th>
+                    <th (click)="sortTable('severity')" style="width: 15%;">Severity</th>
+                    <th (click)="sortTable('comment')" style="width: 10%;">Comment</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -78,8 +78,8 @@
 </div>
 
 <!-- Add/Edit Symptom Modal -->
-<div class="modal fade" data-bs-backdrop='static' data-bs-focus="false" id="symptomModal" tabindex="-1" aria-labelledby="symptomModalLabel"
-    aria-hidden="true" #symptomModal>
+<div class="modal fade" data-bs-backdrop='static' data-bs-focus="false" id="symptomModal" tabindex="-1"
+    aria-labelledby="symptomModalLabel" aria-hidden="true" #symptomModal>
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -111,18 +111,20 @@
                                 <ngx-mat-timepicker-toggle [for]="timePickertimeOfOnset"
                                     matSuffix></ngx-mat-timepicker-toggle>
                                 <ngx-mat-timepicker #timePickertimeOfOnset></ngx-mat-timepicker>
-                                <mat-error *ngIf="submitted && symptomForm.get('timeOfOnset')?.hasError('required')">Time Of
+                                <mat-error
+                                    *ngIf="submitted && symptomForm.get('timeOfOnset')?.hasError('required')">Time Of
                                     Onset is
                                     required</mat-error>
-                                <mat-error *ngIf="submitted && symptomForm.get('timeOfOnset')?.hasError('pattern')">Invalid
+                                <mat-error
+                                    *ngIf="submitted && symptomForm.get('timeOfOnset')?.hasError('pattern')">Invalid
                                     Time Of Onset
                                     format. Use HH:mm.</mat-error>
                             </mat-form-field>
                         </div>
                     </div>
                     <div class="row">
-                         <!-- End Date -->
-                         <div class="col-md-6">
+                        <!-- End Date -->
+                        <div class="col-md-6">
                             <mat-form-field appearance="outline" class="w-100">
                                 <mat-label>End Date (If Ongoing then blank) </mat-label>
                                 <input matInput [matDatepicker]="endDatePicker" formControlName="endDate" />
