@@ -187,7 +187,7 @@ public class PhysicianService : IPhysicianService
                 LastName = dto.LastName,
                 MiddleName = dto.MiddleName,
                 Gender = dto.Gender,
-                DOB = dto.DateOfBirth
+                DOB = dto.DateOfBirth.Date
             };
             var id = await _userService.Register(user);
             dto.UserId = id;

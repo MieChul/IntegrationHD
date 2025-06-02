@@ -163,7 +163,8 @@
     <div class="form-floating mb-3">
       <mat-form-field appearance="outline" class="w-100 mb-3">
         <mat-label>Case Summary</mat-label>
-        <textarea matInput formControlName="caseSummary" matTextareaAutosize></textarea>
+        <textarea matInput formControlName="caseSummary" matTextareaAutosize required></textarea>
+         <mat-error *ngIf="caseForm.get('caseSummary')?.hasError('required')">Case Summary is required.</mat-error>
       </mat-form-field>
     </div>
 
@@ -171,6 +172,7 @@
       <mat-form-field appearance="outline" class="w-100 mb-3">
         <mat-label>Diagnosis</mat-label>
         <textarea matInput formControlName="diagnosis" placeholder="Diagnosis." required></textarea>
+            <mat-error *ngIf="caseForm.get('diagnosis')?.hasError('required')">Diagnosis is required.</mat-error>
       </mat-form-field>
     </div>
 

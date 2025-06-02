@@ -87,6 +87,11 @@ public class UserService : IUserService
             user.AdditionalQualification = new G { Name = userDto.AdditionalQualification };
         }
 
+        if (userDto.DOB != null && userDto.DOB != DateTime.MinValue)
+        {
+            user.BirthDate = Convert.ToString(userDto.DOB.Value.Date);
+        }
+
         // Step 2: Create a role-specific entry
         var role = (Role)userDto.RoleId;
         string roleId = string.Empty;

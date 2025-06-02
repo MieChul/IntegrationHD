@@ -51,7 +51,7 @@ export class NewMedicalCaseComponent {
       examination: [''],
       investigations: [''],
       treatment: [''],
-      caseSummary: ['']
+      caseSummary: ['', Validators.required]
     });
   }
 
