@@ -763,4 +763,14 @@ export class InfoComponent {
 
     return null; // Validation passes
   }
+
+  additionalRows: any[] = [];
+
+  addAdditionalRow() {
+    this.additionalRows.push({});
+  }
+
+  removeAdditionalRow(index: number) {
+    this.additionalRows.splice(index, 1);
+  }
 }

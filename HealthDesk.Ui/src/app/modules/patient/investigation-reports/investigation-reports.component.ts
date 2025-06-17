@@ -67,9 +67,8 @@ export class InvestigationReportsComponent implements OnInit {
         this.futureDateValidator
       ]),
       time: this.fb.control('', Validators.required),
-      typeOfAssessment: this.fb.control('', Validators.required),
-      assessmentParameters: this.fb.control('', Validators.required),
-      results: [''],
+      type: this.fb.control('', Validators.required),
+      assessment: this.fb.control('', Validators.required),
       comment: [''],
       price: this.fb.control('', [
         Validators.required,
@@ -146,54 +145,39 @@ export class InvestigationReportsComponent implements OnInit {
     modal.show();
   }
 
-  saveReport(): void {
-    this.reportForm.markAllAsTouched();
-    if (this.reportForm.invalid || !this.userData.id) return;
 
-    if (this.isEditMode) {
-      this.patientService.saveReport(this.userData.id, this.reportForm.value).subscribe({
-        next: (response: any) => {
-          this.loadRecords();
-        },
-        error: (error: any) => {
-          console.error('Error updating symptoms:', error);
-        },
-      });
-    } else {
-      // Add new medical symptom
-      this.patientService
-        .saveReport(this.userData.id, this.reportForm.value)
-        .subscribe({
-          next: (response) => {
-            this.loadRecords();
-          },
-          error: (error) => {
-            console.error('Error adding symptoms:', error);
-          },
-        });
+
+  saveReport(): void {
+    this.submitted = true;
+    if (this.reportForm.invalid || !this.userData?.id) return;
+
+    const dto = { ...this.reportForm.value };
+
+    // Convert date to ISO format
+    if (dto.date instanceof Date) {
+      dto.date = dto.date.toISOString().split('T')[0];
     }
 
+    const patientId = this.userData.id;
+    const formData = new FormData();
+    Object.keys(dto).forEach(key => formData.append(key, dto[key] ?? ''));
+
+    if (this.selectedFile) {
+      formData.append('file', this.selectedFile, this.selectedFile.name);
+    }
+
+    this.patientService.saveReportFormData(patientId, formData).subscribe({
+      next: () => this.loadRecords(),
+      error: err => console.error(err)
+    });
+
     bootstrap.Modal.getInstance(this.reportModal.nativeElement)?.hide();
-
   }
 
-  saveFile(file: File, fileName: string): void {
-    const filePath = `src/assets/investigations/${fileName}`;
-    const reader = new FileReader();
-    reader.onload = function () {
-      const blob = new Blob([reader.result as ArrayBuffer], { type: 'application/pdf' });
-      const link = document.createElement('a');
-      link.href = window.URL.createObjectURL(blob);
-      link.download = fileName;
-      link.click();
-    };
-    reader.readAsArrayBuffer(file);
-  }
 
-  viewReport(index: number): void {
-    const fileName = this.investigationReports[index].reportFileName;
-    const filePath = `assets/investigations/${fileName}`;
-    window.open(filePath, '_blank');
+  viewReport(report: any): void {
+    if (!report.filePath) return;
+    window.open(`/${report.filePath}`, '_blank');
   }
 
   deleteReport(report: any): void {

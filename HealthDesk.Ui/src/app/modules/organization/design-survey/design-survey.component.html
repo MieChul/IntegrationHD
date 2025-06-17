@@ -1,126 +1,134 @@
-<div class="container my-5">
-    <!-- Survey Header Image Upload -->
-    <h1 class="animated-heading">
-      <i class="bi bi-box-seam me-2"></i>Create Survey
-    </h1>
-    <div class="col-sm-1 text-start">
-      <button type="button" class="btn btn-secondary" (click)="goBack()" data-bs-toggle="tooltip"
-        data-bs-placement="right" title="Back">
-        <i class="bi bi-arrow-left"></i>
-      </button>
+<div class="container">
+  <button type="button" class="btn btn-secondary" (click)="goBack()" data-bs-toggle="tooltip" data-bs-placement="right"
+    title="Back">
+    <i class="bi bi-arrow-left"></i>
+  </button>
+
+  <h1 class="animated-heading">
+    <i class="bi bi-box-seam me-2"></i>Create Survey
+  </h1>
+  <form (ngSubmit)="saveSurvey()">
+    <h3 for="image" class="form-label mt-3">Upload Survey Header Image</h3>
+    <div class="form-group text-center mb-4">
+      <div class="survey-image-preview mb-3" *ngIf="surveyForm.image">
+        <img [src]="surveyForm.image" alt="Survey Header Image" class="img-fluid rounded header-image shadow-sm" />
+      </div>
+      <input type="file" class="form-control input-modern" id="image" (change)="onFileChange($event)">
     </div>
-    
-    <form (ngSubmit)="saveSurvey()">
-      <h3 for="image" class="form-label mt-3">Upload Survey Header Image</h3>
-      <div class="form-group text-center mb-4">
-        <div class="survey-image-preview mb-3" *ngIf="surveyForm.image">
-          <img [src]="surveyForm.image" alt="Survey Header Image" class="img-fluid rounded header-image shadow-sm" />
+
+    <!-- Survey Form Name and Author Name -->
+    <h3 for="image" class="form-label mt-3">Survey Details</h3>
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="form-group mb-3">
+          <label for="formName">Form Name</label>
+          <input type="text" class="form-control input-modern" id="formName" [(ngModel)]="surveyForm.name"
+            name="formName" required>
+          <span class="text-danger mt-1" *ngIf="formNameError">This field is required.</span>
         </div>
-        <input type="file" class="form-control input-modern" id="image" (change)="onFileChange($event)">
-      </div>
-  
-      <!-- Survey Form Name and Author Name -->
-      <h3 for="image" class="form-label mt-3">Survey Details</h3>
-      <div class="card mb-4">
-        <div class="card-body">
-          <div class="form-group mb-3">
-            <label for="formName">Form Name</label>
-            <input type="text" class="form-control input-modern" id="formName" [(ngModel)]="surveyForm.name" name="formName" required>
-            <span class="text-danger mt-1" *ngIf="formNameError">This field is required.</span>
-          </div>
-  
-          <div class="form-group mb-3">
-            <label for="authorName">Author Name</label>
-            <input type="text" class="form-control input-modern" id="authorName" [(ngModel)]="surveyForm.author" name="authorName" required>
-            <span class="text-danger mt-1" *ngIf="formNameError">This field is required.</span>
-          </div>
-  
-          <div class="form-group mb-3">
-            <label for="title">Survey Title</label>
-            <input type="text" class="form-control input-modern" id="title" [(ngModel)]="surveyForm.title" name="title" required>
-          </div>
-  
-          <div class="form-group">
-            <label for="description">Survey Description</label>
-            <textarea class="form-control input-modern" id="description" [(ngModel)]="surveyForm.description" name="description"></textarea>
-          </div>
+
+        <div class="form-group mb-3">
+          <label for="authorName">Author Name</label>
+          <input type="text" class="form-control input-modern" id="authorName" [(ngModel)]="surveyForm.author"
+            name="authorName" required>
+          <span class="text-danger mt-1" *ngIf="formNameError">This field is required.</span>
+        </div>
+
+        <div class="form-group mb-3">
+          <label for="title">Survey Title</label>
+          <input type="text" class="form-control input-modern" id="title" [(ngModel)]="surveyForm.title" name="title"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Survey Description</label>
+          <textarea class="form-control input-modern" id="description" [(ngModel)]="surveyForm.description"
+            name="description"></textarea>
         </div>
       </div>
-      <h3 for="image" class="form-label mt-3">Survey Questions</h3>
-      <span class="text-danger mt-1" *ngIf="formQuestionError">At least one question is required.</span>
-      <!-- Survey Questions Section -->
-      <div class="card mb-3" *ngFor="let question of surveyForm.questions; let i = index">
-        <div class="card-header d-flex justify-content-between align-items-center bg-light">
-          <span>Question {{ i + 1 }}</span>
-          <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeQuestion(i)">Remove Question</button>
+    </div>
+    <h3 for="image" class="form-label mt-3">Survey Questions</h3>
+    <span class="text-danger mt-1" *ngIf="formQuestionError">At least one question is required.</span>
+    <!-- Survey Questions Section -->
+    <div class="card mb-3" *ngFor="let question of surveyForm.questions; let i = index">
+      <div class="card-header d-flex justify-content-between align-items-center bg-light">
+        <span>Question {{ i + 1 }}</span>
+        <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeQuestion(i)">Remove Question</button>
+      </div>
+      <div class="card-body">
+        <div class="form-group mb-3">
+          <label>Question Text</label>
+          <input type="text" class="form-control input-modern" [(ngModel)]="question.text" name="questionText{{i}}"
+            required>
         </div>
-        <div class="card-body">
-          <div class="form-group mb-3">
-            <label>Question Text</label>
-            <input type="text" class="form-control input-modern" [(ngModel)]="question.text" name="questionText{{i}}" required>
+
+        <div class="form-group mb-3">
+          <label>Question Description (Optional)</label>
+          <textarea class="form-control input-modern" [(ngModel)]="question.description"
+            name="questionDescription{{i}}"></textarea>
+        </div>
+
+        <div class="form-group mb-3">
+          <label>Question Type</label>
+          <select class="form-control input-modern" [(ngModel)]="question.type" name="questionType{{i}}"
+            (change)="onQuestionTypeChange(i)">
+            <option value="text">Text</option>
+            <option value="radio">Multiple Choice (Radio)</option>
+            <option value="checkbox">Multiple Choice (Checkbox)</option>
+            <option value="date">Date</option>
+            <option value="number">Number</option>
+          </select>
+        </div>
+
+        <!-- Options for radio and checkbox types -->
+        <div *ngIf="question.type === 'radio' || question.type === 'checkbox'">
+          <div *ngFor="let option of question.options; let j = index" class="form-group mb-2 d-flex align-items-center">
+            <input type="text" class="form-control input-modern me-2" [(ngModel)]="option.text"
+              name="optionText{{i}}{{j}}">
+            <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeOption(i, j)">Remove</button>
           </div>
-  
-          <div class="form-group mb-3">
-            <label>Question Description (Optional)</label>
-            <textarea class="form-control input-modern" [(ngModel)]="question.description" name="questionDescription{{i}}"></textarea>
-          </div>
-  
-          <div class="form-group mb-3">
-            <label>Question Type</label>
-            <select class="form-control input-modern" [(ngModel)]="question.type" name="questionType{{i}}" (change)="onQuestionTypeChange(i)">
-              <option value="text">Text</option>
-              <option value="radio">Multiple Choice (Radio)</option>
-              <option value="checkbox">Multiple Choice (Checkbox)</option>
-              <option value="date">Date</option>
-              <option value="number">Number</option>
-            </select>
-          </div>
-  
-          <!-- Options for radio and checkbox types -->
-          <div *ngIf="question.type === 'radio' || question.type === 'checkbox'">
-            <div *ngFor="let option of question.options; let j = index" class="form-group mb-2 d-flex align-items-center">
-              <input type="text" class="form-control input-modern me-2" [(ngModel)]="option.text" name="optionText{{i}}{{j}}">
-              <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeOption(i, j)">Remove</button>
-            </div>
-            <div class="text-end">
-              <button type="button" class="btn btn-outline-primary btn-sm" (click)="addOption(i)">Add Option</button>
-            </div>
-          </div>
-  
-          <!-- Date validation -->
-          <div *ngIf="question.type === 'date'" class="form-group mb-3">
-            <label>Date Range (Optional)</label>
-            <div class="d-flex">
-              <input type="date" class="form-control input-modern me-2" placeholder="Min Date" [(ngModel)]="question.minDate" name="minDate{{i}}">
-              <input type="date" class="form-control input-modern" placeholder="Max Date" [(ngModel)]="question.maxDate" name="maxDate{{i}}">
-            </div>
-          </div>
-  
-          <!-- Add validations (required, number only) -->
-          <div class="form-group mb-3">
-            <label>Add Validations</label>
-            <div class="form-check">
-              <input class="form-check-input stylish-checkbox" type="checkbox" [(ngModel)]="question.required" name="required{{i}}">
-              <label class="form-check-label">Required</label>
-            </div>
-            <div class="form-check" *ngIf="question.type === 'number'">
-              <input class="form-check-input stylish-checkbox" type="checkbox" [(ngModel)]="question.numbersOnly" name="numberOnly{{i}}">
-              <label class="form-check-label">Number Only</label>
-            </div>
+          <div class="text-end">
+            <button type="button" class="btn btn-outline-primary btn-sm" (click)="addOption(i)">Add Option</button>
           </div>
         </div>
+
+        <!-- Date validation -->
+        <div *ngIf="question.type === 'date'" class="form-group mb-3">
+          <label>Date Range (Optional)</label>
+          <div class="d-flex">
+            <input type="date" class="form-control input-modern me-2" placeholder="Min Date"
+              [(ngModel)]="question.minDate" name="minDate{{i}}">
+            <input type="date" class="form-control input-modern" placeholder="Max Date" [(ngModel)]="question.maxDate"
+              name="maxDate{{i}}">
+          </div>
+        </div>
+
+        <!-- Add validations (required, number only) -->
+        <div class="form-group mb-3">
+          <label>Add Validations</label>
+          <div class="form-check">
+            <input class="form-check-input stylish-checkbox" type="checkbox" [(ngModel)]="question.required"
+              name="required{{i}}">
+            <label class="form-check-label">Required</label>
+          </div>
+          <div class="form-check" *ngIf="question.type === 'number'">
+            <input class="form-check-input stylish-checkbox" type="checkbox" [(ngModel)]="question.numbersOnly"
+              name="numberOnly{{i}}">
+            <label class="form-check-label">Number Only</label>
+          </div>
+        </div>
       </div>
-  
-      <!-- Add Question Button -->
-      <div class="text-center mb-4">
-        <button type="button" class="btn btn-outline-primary btn-sm" (click)="addQuestion()">Add Question</button>
-      </div>
-  
-      
-      <!-- Submit Button -->
-      <div class="text-center">
-        <button type="submit" class="btn btn-success btn-modern">Save Survey</button>
-      </div>
-    </form>
-  </div>
-  
+    </div>
+
+    <!-- Add Question Button -->
+    <div class="text-center mb-4">
+      <button type="button" class="btn btn-outline-primary btn-sm" (click)="addQuestion()">Add Question</button>
+    </div>
+
+
+    <!-- Submit Button -->
+    <div class="text-center">
+      <button type="submit" class="btn btn-success btn-modern">Save Survey</button>
+    </div>
+  </form>
+</div>

@@ -19,6 +19,7 @@ export class RateComponent implements OnInit {
   currentTab: string = 'physician';
   sortOrder: string = 'highest';
   entities: any[] = [];
+  servicesOffered: any[] = [];
   filteredEntities: any[] = [];
   selectedEntity: any = null;
   userReview: any = null;
@@ -37,7 +38,9 @@ export class RateComponent implements OnInit {
   detailsType: string = '';
   specialities: any[] = [];
   specialityFilterCtrl = new FormControl();
+  servicesOfferedCtrl = new FormControl();
   filteredSpecialities!: Observable<string[]>;
+  filteredServicesOffered!: Observable<string[]>;
 
   constructor(
     private fb: FormBuilder,
@@ -55,9 +58,15 @@ export class RateComponent implements OnInit {
         this.userData = data;
         await this.loadEntities();
         this.specialities = await this.databaseService.getSpecialities();
+        this.servicesOffered = await this.databaseService.getHospitalServcies();
         this.filteredSpecialities = this.specialityFilterCtrl.valueChanges.pipe(
           startWith(''),
           map((search) => this.filterOptions(search, this.specialities))
+        );
+
+        this.filteredServicesOffered = this.servicesOfferedCtrl.valueChanges.pipe(
+          startWith(''),
+          map((search) => this.filterOptions(search, this.servicesOffered))
         );
       },
       error: (err) => console.error('Error fetching user data:', err)
@@ -76,11 +85,13 @@ export class RateComponent implements OnInit {
     this.filterForm = this.fb.group({
       location: [''],
       speciality: [''],
-      from: [''],  // add new
-      to: [''],    // add new
+      from: [''],
+      to: [''],
       physician: [''],
       testName: [''],
-      pharmacy: ['']
+      pharmacy: [''],
+      service: [''],
+      drugName: ['']
     });
 
     this.filterForm.valueChanges.subscribe(() => {
@@ -228,57 +239,70 @@ export class RateComponent implements OnInit {
 
     this.filteredPhysicians = this.physicians.filter(p => {
       let matches = true;
+
       if (location) matches = matches && p.location?.toLowerCase().includes(location.toLowerCase());
       if (speciality) matches = matches && p.speciality?.toLowerCase().includes(speciality.toLowerCase());
 
-      if (from && to) {
-        matches = matches &&
-          p.from &&
-          p.to &&
-          p.from >= from && p.to <= to;
+      // Parse p.timing to get from and to times
+      const timingMatch = p.timing?.match(/^(.+?)\s*-\s*(.+)$/);
+      if (timingMatch) {
+        const [_, timeFrom, timeTo] = timingMatch;
+        const physicianFrom = this.filteringService['parseDateTime'](timeFrom);
+        const physicianTo = this.filteringService['parseDateTime'](timeTo);
+
+        const selectedFrom = from ? this.filteringService['parseDateTime'](from) : null;
+        const selectedTo = to ? this.filteringService['parseDateTime'](to) : null;
+
+        if (selectedFrom && (physicianFrom < selectedFrom)) matches = false;
+        if (selectedTo && (physicianTo > selectedTo)) matches = false;
       }
 
       return matches;
     });
   }
 
+
   applyFiltersHospitals(): void {
     this.filteredHospitals = this.filteringService.filter(
-      this.hospitals,
+      this.hospitals.map(h => ({
+        ...h,
+        serviceNames: h.services?.map((s: any) => s.name).join(', ') || '',
+        physicianNames: h.physicians?.map((p: any) => `${p.firstName} ${p.lastName}`.trim()).join(', ') || ''
+      })),
       {
         location: this.filterForm.value.location,
-        speciality: this.filterForm.value.speciality,
-        timing: this.filterForm.value.timing
-      },
-      []
+        serviceNames: this.filterForm.value.service,
+        physicianNames: this.filterForm.value.physician
+      }
     );
+
   }
-
-
 
   applyFiltersPharma(): void {
     this.filteredPharmacies = this.filteringService.filter(
-      this.pharmacies,
+      this.pharmacies.map(p => ({
+        ...p,
+        drugNames: p.drugName?.map((d: any) => d.brandName).join(', ') || ''
+      })),
       {
         location: this.filterForm.value.location,
-        pharmacy: this.filterForm.value.pharmacy,
-      },
-      []
+        drugNames: this.filterForm.value.drugName
+      }
     );
   }
-
 
   applyFiltersLaboratory(): void {
     this.filteredLaboratories = this.filteringService.filter(
-      this.laboratories,
+      this.laboratories.map(lab => ({
+        ...lab,
+        testNames: lab.testname?.map((t: any) => t.name).join(', ') || ''
+      })),
       {
         location: this.filterForm.value.location,
-        testName: this.filterForm.value.testName
-      },
-      []
+        testNames: this.filterForm.value.testName
+      }
     );
   }
-
 
   /**
    * Sorts entities by rating in ascending or descending order

@@ -37,6 +37,7 @@ export class DatabaseService {
     Specializations: string[];
     Specialities: string[];
     Graduations: string[];
+    HospitalServices: string[];
     PostGraduations: string[]; // Changed to object array
   } = {
       Drugs: [],
@@ -59,7 +60,8 @@ export class DatabaseService {
       Specializations: [],
       Specialities: [],
       Graduations: [],
-      PostGraduations: []
+      PostGraduations: [],
+      HospitalServices: []
     };
 
   private drugData: DrugEntry[] = [];
@@ -269,7 +271,7 @@ export class DatabaseService {
     });
   }
 
-  getSpecializations 
+  getSpecializations
     () {
     return this.database.Specializations;
   }
@@ -281,5 +283,9 @@ export class DatabaseService {
   }
   getSpecialities() {
     return this.database.Specialities;
+  }
+
+  getHospitalServcies() {
+    return this.database.HospitalServices;
   }
 }

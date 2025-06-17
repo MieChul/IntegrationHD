@@ -20,61 +20,61 @@ export class FilteringService {
     emptyMeansAll: boolean = false
   ): T[] {
     return data.filter(item => {
+      let matchedAny = false;
+      let hasFilter = false;
+
       // Apply generic filters
       for (const key in filters) {
         const filterValue = filters[key];
 
-        // Skip empty filters only if emptyMeansAll is true
-        if (emptyMeansAll && (filterValue == null || filterValue === '')) {
+        if (filterValue == null || filterValue === '') {
           continue;
         }
 
+        hasFilter = true;
+
+        const itemValue = item[key]?.toString().toLowerCase() || '';
         if (typeof filterValue === 'string') {
-          // Handle case-insensitive string matching
-          const itemValue = item[key]?.toString().toLowerCase() || '';
-          if (!itemValue.includes(filterValue.toLowerCase())) {
-            return false;
+          if (itemValue.includes(filterValue.toLowerCase())) {
+            matchedAny = true;
           }
         } else {
-          // Handle exact match for other types
-          if (item[key] !== filterValue) {
-            return false;
+          if (item[key] === filterValue) {
+            matchedAny = true;
           }
         }
       }
 
-      // Apply date and time filters
+      // Apply date filters if provided (still using AND logic here)
+      let matchedDateRange = true;
       for (const { field, range } of dateFields) {
         const [startDateStr, endDateStr] = range;
         const itemDateStr = item[field] as any;
 
-        // Convert input dates to comparable formats
         const itemDate = this.parseDateTime(itemDateStr);
         const startDate = startDateStr ? this.parseDateTime(startDateStr) : null;
         const endDate = endDateStr ? this.parseDateTime(endDateStr) : null;
 
         if (isNaN(itemDate.getTime())) {
-          return false; // Exclude invalid dates
+          matchedDateRange = false;
+          break;
         }
 
-        // Handle single date filtering when only one boundary is present
-        if (startDate && !endDate) {
-          if (itemDate.toDateString() !== startDate.toDateString()) {
-            return false;
-          }
-        } else if (!startDate && endDate) {
-          if (itemDate.toDateString() !== endDate.toDateString()) {
-            return false;
-          }
-        } else if (startDate && endDate) {
-          // Inclusive range filtering
-          if (itemDate < startDate || itemDate > endDate) {
-            return false;
-          }
+        if (startDate && itemDate < startDate) {
+          matchedDateRange = false;
+          break;
+        }
+        if (endDate && itemDate > endDate) {
+          matchedDateRange = false;
+          break;
         }
       }
 
-      return true;
+      // If no filters applied, include all
+      if (!hasFilter) return true;
+
+      // Return true if any basic filter matches and date filters (if any) also match
+      return matchedAny && matchedDateRange;
     });
   }
 

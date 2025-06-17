@@ -386,8 +386,8 @@
 </div>
 <!-- Add/Edit Service Modal -->
 
-<div class="modal fade" data-bs-backdrop='static' id="serviceModal" tabindex="-1" aria-labelledby="serviceModalLabel"
-    aria-hidden="true">
+<div class="modal fade" data-bs-backdrop='static' data-bs-focus="false" id="serviceModal" tabindex="-1"
+    aria-labelledby="serviceModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -398,8 +398,20 @@
                 <form [formGroup]="serviceForm">
                     <div class="mb-3">
                         <mat-form-field appearance="outline" class="w-100">
-                            <mat-label>Service Name</mat-label>
-                            <input matInput formControlName="name" placeholder="Enter Name" />
+                            <mat-label>Service Offered</mat-label>
+                            <mat-select formControlName="name" required
+                                [ngClass]="{ 'is-invalid': serviceForm.get('name')?.hasError('required') }" required>
+                                <mat-option>
+                                    <ngx-mat-select-search [formControl]="servicesOfferedCtrl"
+                                        placeholderLabel="Search Service"></ngx-mat-select-search>
+                                </mat-option>
+                                <mat-option *ngFor="let service of filteredServicesOffered | async" [value]="service">
+                                    {{ service }}
+                                </mat-option>
+                            </mat-select>
+                            <mat-error *ngIf="serviceForm.get('service')?.hasError('required')">
+                                Service Is Required
+                            </mat-error>
                         </mat-form-field>
                     </div>
                     <div class="mb-3">
@@ -416,11 +428,9 @@
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    Close
-                </button>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="saveService()">
+            <div class="modal-footer  d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" (click)="saveService()">
                     {{ isEditService ? 'Save Changes' : 'Add Service' }}
                 </button>
             </div>

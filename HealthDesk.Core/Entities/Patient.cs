@@ -412,14 +412,11 @@ public class Report : BaseEntity
     [BsonElement("assessment")]
     public string Assessment { get; set; }
 
-    [BsonElement("results")]
-    public string Results { get; set; }
-
     [BsonElement("comment")]
     public string Comment { get; set; }
 
     [BsonElement("report_url")]
-    public string ReportUrl { get; set; }
+    public string FilePath { get; set; }
 
     [BsonElement("price")]
     public decimal? Price { get; set; }

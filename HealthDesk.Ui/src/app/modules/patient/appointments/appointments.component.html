@@ -3,82 +3,61 @@
     <i class="bi bi-calendar-check me-2"></i>Manage Appointments
   </h1>
 
-  <button class="btn btn-primary mb-3" (click)="scheduleNewAppointment()">Schedule Appointment</button>
-  <div class="row mb-3 align-items-center">
-    <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
-        <div class="mb-2 me-3">
-            <form [formGroup]="dateForm" class="mb-4">
-                <div class="row">
-                    <!-- Start Date -->
-                    <div class="col-md-6">
-                        <mat-form-field appearance="outline" class="w-100">
-                            <mat-label>Start Date</mat-label>
-                            <input matInput [matDatepicker]="startDatePicker" formControlName="startDate" />
-                            <mat-datepicker-toggle matSuffix [for]="startDatePicker"></mat-datepicker-toggle>
-                            <mat-datepicker #startDatePicker></mat-datepicker>
-                        </mat-form-field>
-                    </div>
-    
-                    <!-- End Date -->
-                    <div class="col-md-6">
-                        <mat-form-field appearance="outline" class="w-100">
-                            <mat-label>End Date</mat-label>
-                            <input matInput [matDatepicker]="endDatePicker" formControlName="endDate" />
-                            <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
-                            <mat-datepicker #endDatePicker></mat-datepicker>
-                            <mat-error *ngIf="dateForm.get('endDate')?.hasError('invalidDateRange')" class="text-danger mt-2">
-                             Cannot be greater than start date.
-                            </mat-error>
-                          </mat-form-field>
-                    </div>
-                </div>
-            </form>
+  <div class="row mb-3 align-items-start">
+    <!-- Left: Date Filters -->
+    <div class="col-md-8 col-sm-12">
+      <form [formGroup]="dateForm" class="row g-3">
+        <!-- Start Date -->
+        <div class="col-md-6">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Start Date</mat-label>
+            <input matInput [matDatepicker]="startDatePicker" formControlName="startDate" />
+            <mat-datepicker-toggle matSuffix [for]="startDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #startDatePicker></mat-datepicker>
+          </mat-form-field>
         </div>
-    </div>
-    <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
-      <div class="legend me-3 mb-2">
-        <span class="legend-color upcoming-appointment"></span> Accepted
-      </div>
-      <div class="legend me-3 mb-2">
-        <span class="legend-color past-appointment"></span> Rejected
-      </div>
-      <div class="legend mb-2">
-        <span class="legend-color proposed-time"></span> Proposed
-      </div>
-    </div>
-</div>
-  <ul class="nav nav-tabs mb-3">
-    <li class="nav-item">
-        <a class="nav-link pointer-cursor" 
-           [ngClass]="{'active': activeTab === 'pending'}" 
-           (click)="filterAppointments('pending')">
-           Upcoming
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link pointer-cursor" 
-           [ngClass]="{'active': activeTab === 'past'}" 
-           (click)="filterAppointments('past')">
-           Past
-        </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link pointer-cursor" 
-         [ngClass]="{'active': activeTab === 'cancelled'}" 
-         (click)="filterAppointments('cancelled')">Cancelled
-      </a>
-  </li>
-</ul>
 
+        <!-- End Date -->
+        <div class="col-md-6">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>End Date</mat-label>
+            <input matInput [matDatepicker]="endDatePicker" formControlName="endDate" />
+            <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #endDatePicker></mat-datepicker>
+            <mat-error *ngIf="dateForm.get('endDate')?.hasError('invalidDateRange')" class="text-danger mt-2">
+              Cannot be greater than start date.
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </form>
+    </div>
+
+    <!-- Right: Button + Legends -->
+    <div class="col-md-4 col-sm-12 d-flex flex-column align-items-md-end align-items-start mt-3 mt-md-0">
+      <button class="btn btn-primary mb-2" (click)="scheduleNewAppointment()">Schedule Appointment</button>
+
+      <div class="d-flex flex-wrap justify-content-md-end">
+        <div class="legend me-3 mb-2">
+          <span class="legend-color upcoming-appointment"></span> Accepted
+        </div>
+        <div class="legend me-3 mb-2">
+          <span class="legend-color past-appointment"></span> Rejected
+        </div>
+        <div class="legend mb-2">
+          <span class="legend-color proposed-time"></span> Proposed
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="table-responsive mt-3">
     <table class="table table-hover table-modern">
       <thead>
         <tr>
-          <th  (click)="sortTable('physicianName')">Physician</th>
-          <th  (click)="sortTable('date')">Appointment Date</th>
-          <th  (click)="sortTable('time')">Appointment Time</th>
-          <th  (click)="sortTable('clinicName')">Clinic</th>
-          <th >Status</th>
+          <th (click)="sortTable('physicianName')">Physician</th>
+          <th (click)="sortTable('date')">Appointment Date</th>
+          <th (click)="sortTable('time')">Appointment Time</th>
+          <th (click)="sortTable('clinicName')">Clinic</th>
+          <th>Status</th>
           <th *ngIf="filteredAppointments[0]?.status === 'cancelled' || filteredAppointments[0]?.status === 'rejected'">
             Reason</th>
           <th>
@@ -118,8 +97,8 @@
   </div>
 
   <!-- Appointment Modal -->
-  <div class="modal fade animate__animated animate__fadeIn" data-bs-backdrop='static' data-bs-focus="false" id="appointmentModal" tabindex="-1"
-    aria-labelledby="appointmentModalLabel" aria-hidden="true" #appointmentModal>
+  <div class="modal fade animate__animated animate__fadeIn" data-bs-backdrop='static' data-bs-focus="false"
+    id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel" aria-hidden="true" #appointmentModal>
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content shadow-sm rounded">
         <div class="modal-header text-white">
@@ -137,17 +116,19 @@
               <div class="col-md-6">
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label><i class="bi bi-person"></i> Select Physician</mat-label>
-                  <mat-select formControlName="physicianId" (selectionChange)="onPhysicianChange($event.value)" required>
-                      <mat-option>
-                          <ngx-mat-select-search [formControl]="physicianFilterCtrl"
-                              placeholderLabel="Search Physician"></ngx-mat-select-search>
-                      </mat-option>
-                      <mat-option *ngFor="let physician of filteredPhysicians | async" [value]="physician.id">
-                          {{ physician.name }}
-                      </mat-option>
+                  <mat-select formControlName="physicianId" (selectionChange)="onPhysicianChange($event.value)"
+                    required>
+                    <mat-option>
+                      <ngx-mat-select-search [formControl]="physicianFilterCtrl"
+                        placeholderLabel="Search Physician"></ngx-mat-select-search>
+                    </mat-option>
+                    <mat-option *ngFor="let physician of filteredPhysicians | async" [value]="physician.id">
+                      {{ physician.name }}
+                    </mat-option>
                   </mat-select>
-                  <mat-error *ngIf="appointmentForm.get('physicianId')?.hasError('required') && submitted"> Physician is required.</mat-error>
-              </mat-form-field>
+                  <mat-error *ngIf="appointmentForm.get('physicianId')?.hasError('required') && submitted"> Physician is
+                    required.</mat-error>
+                </mat-form-field>
               </div>
               <div class="col-md-6">
                 <mat-form-field appearance="outline" class="w-100">
@@ -215,7 +196,7 @@
                 </h6>
                 <div *ngIf="!slot.subSlots || slot.subSlots.length === 0" class="text-center text-danger mb-3">
                   <i class="bi bi-exclamation-circle"></i> No appointment available for this slot.
-              </div>
+                </div>
                 <div class="subslot-container">
                   <div *ngFor="let subSlot of slot.subSlots"
                     class="tile-slot pointer-cursor position-relative text-center m-2 p-3" [ngClass]="[
@@ -251,7 +232,7 @@
             </div>
           </form>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer d-flex justify-content-between">
           <button type="button" class="btn btn-secondary pointer-cursor" data-bs-dismiss="modal">
             <i class="bi bi-x-circle"></i> Close
           </button>
@@ -264,8 +245,8 @@
   </div>
 
   <!-- Cancel Appointment Modal -->
-  <div class="modal fade" id="cancelModal" tabindex="-1" data-bs-backdrop='static' aria-labelledby="cancelModalLabel" aria-hidden="true"
-    #cancelModal>
+  <div class="modal fade" id="cancelModal" tabindex="-1" data-bs-backdrop='static' aria-labelledby="cancelModalLabel"
+    aria-hidden="true" #cancelModal>
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
@@ -289,23 +270,23 @@
     </div>
   </div>
 
-  <div class="modal fade" id="acceptModal" tabindex="-1" data-bs-backdrop='static' aria-labelledby="acceptModalLabel" aria-hidden="true"
-  #acceptModal>
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="acceptModalLabel">Accept Appointment</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p>Are you sure you want to accept the new proposed time?</p>
-      </div>
-      <div class="modal-footer  d-flex justify-content-between">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-success" (click)="acceptAppointment()">
-          Confirm
-        </button>
+  <div class="modal fade" id="acceptModal" tabindex="-1" data-bs-backdrop='static' aria-labelledby="acceptModalLabel"
+    aria-hidden="true" #acceptModal>
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="acceptModalLabel">Accept Appointment</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to accept the new proposed time?</p>
+        </div>
+        <div class="modal-footer  d-flex justify-content-between">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-success" (click)="acceptAppointment()">
+            Confirm
+          </button>
+        </div>
       </div>
     </div>
   </div>
-</div>

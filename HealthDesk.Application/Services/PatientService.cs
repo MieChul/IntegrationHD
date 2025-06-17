@@ -275,26 +275,34 @@ public class PatientService : IPatientService
         return patient.LabInvestigations.Select(i => GenericMapper.Map<LabInvestigation, LabInvestigationDto>(i));
     }
 
-    public async Task SaveLabInvestigationAsync(string patientId, LabInvestigationDto dto)
+    public async Task<(Patient patient, Report investigation)> GetPatientAndPreparedInvestigationAsync(string patientId, ReportDto dto)
     {
         var patient = await GetPatientByIdAsync(patientId);
+        if (patient == null) throw new ArgumentException("Invalid patient ID.");
 
-        var investigation = new LabInvestigation();
-        GenericMapper.Map(dto, investigation);
+        Report investigation;
 
         if (string.IsNullOrEmpty(dto.Id))
         {
-            patient.LabInvestigations.Add(investigation);
+            investigation = new Report();
+            GenericMapper.Map(dto, investigation);
+            patient.Reports.Add(investigation);
         }
         else
         {
-            var existing = patient.LabInvestigations.FirstOrDefault(i => i.Id == dto.Id);
-            if (existing == null) throw new ArgumentException("Lab investigation not found.");
-            GenericMapper.Map(dto, existing);
+            investigation = patient.Reports.FirstOrDefault(i => i.Id == dto.Id)
+                            ?? throw new ArgumentException("Investigation not found.");
+            GenericMapper.Map(dto, investigation);
         }
 
+        return (patient, investigation);
+    }
+
+    public async Task SavePatientAsync(Patient patient)
+    {
         await _patientRepository.UpdateAsync(patient);
     }
+
 
     public async Task DeleteLabInvestigationAsync(string patientId, string investigationId)
     {

@@ -148,12 +148,36 @@ namespace HealthDesk.API.Controllers
             Ok(new { Success = true, Message = "Lab investigations retrieved successfully.", Data = await _patientService.GetLabInvestigationsAsync(patientId) });
 
         [HttpPost("{patientId}/lab-investigations")]
-        public async Task<IActionResult> SaveLabInvestigation(string patientId, [FromBody] LabInvestigationDto dto)
+        public async Task<IActionResult> SaveLabInvestigation(
+     string patientId,
+     [FromForm] ReportDto dto,
+     IFormFile? file)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new { Success = false, Message = "Invalid input.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
 
-            await _patientService.SaveLabInvestigationAsync(patientId, dto);
+            // Save and get back both patient and investigation reference
+            var (patient, investigation) = await _patientService.GetPatientAndPreparedInvestigationAsync(patientId, dto);
+
+            // Handle file upload, now that we have the real `investigation.Id`
+            if (file != null && file.Length > 0)
+            {
+                var basePath = Path.Combine("wwwroot/assets/documents", patientId, "investigations");
+                Directory.CreateDirectory(basePath);
+
+                var fileName = $"{investigation.Id}_report{Path.GetExtension(file.FileName)}";
+                var fullPath = Path.Combine(basePath, fileName);
+
+                using var fs = new FileStream(fullPath, FileMode.Create);
+                await file.CopyToAsync(fs);
+
+                var relativePath = Path.Combine("assets/documents", patientId, "investigations", fileName).Replace("\\", "/");
+                investigation.FilePath = relativePath;
+            }
+
+            // Save patient once — this includes updated investigation with FilePath
+            await _patientService.SavePatientAsync(patient);
+
             return Ok(new { Success = true, Message = "Lab investigation saved successfully." });
         }
 

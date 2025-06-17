@@ -41,16 +41,19 @@ export class HospitalManagementComponent implements OnInit {
   graduations: any[] = [];
   postGraduations: any[] = [];
   superSpecializations: any[] = [];
+  servicesOffered: any[] = [];
 
   specialityFilterCtrl = new FormControl();
   graduationFilterCtrl = new FormControl();
   postGraduationFilterCtrl = new FormControl();
   superSpecializationFilterCtrl = new FormControl();
+  servicesOfferedCtrl = new FormControl();
 
   filteredSpecialities!: Observable<string[]>;
   filteredGraduations!: Observable<string[]>;
   filteredPostGraduations!: Observable<string[]>;
   filteredSuperSpecializations!: Observable<string[]>;
+  filteredServicesOffered!: Observable<string[]>;
 
   days = ['Su', 'M', 'T', 'W', 'Th', 'F', 'S'];
 
@@ -77,6 +80,7 @@ export class HospitalManagementComponent implements OnInit {
           this.graduations = await this.databaseService.getGraduations();
           this.postGraduations = await this.databaseService.getPostGraduations();
           this.superSpecializations = await this.databaseService.getSpecializations();
+          this.servicesOffered = await this.databaseService.getHospitalServcies();
           this.loadData();
           this.initializeSearch();
         }
@@ -139,6 +143,11 @@ export class HospitalManagementComponent implements OnInit {
     this.filteredSuperSpecializations = this.superSpecializationFilterCtrl.valueChanges.pipe(
       startWith(''),
       map((search) => this.filterOptions(search, this.superSpecializations))
+    );
+
+    this.filteredServicesOffered = this.servicesOfferedCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.servicesOffered))
     );
   }
 
@@ -442,14 +451,14 @@ export class HospitalManagementComponent implements OnInit {
     const modal = new bootstrap.Modal(this.serviceImportModal.nativeElement);
     modal.show();
   }
-  
+
   // when user picks a file
   onServiceFileSelected(evt: Event) {
     const input = evt.target as HTMLInputElement;
     if (!input.files?.length) return;
     const file = input.files[0];
     this.serviceFileName = file.name;
-  
+
     const reader = new FileReader();
     reader.onload = () => {
       const wb = XLSX.read(reader.result as ArrayBuffer, { type: 'array' });
@@ -459,17 +468,17 @@ export class HospitalManagementComponent implements OnInit {
     };
     reader.readAsArrayBuffer(file);
   }
-  
+
   // validate header + rows
   private processServiceRawRows(raw: any[][]) {
     this.serviceImportErrors = [];
     this.importedServices = [];
-  
+
     if (!raw.length) {
       this.serviceImportErrors.push({ row: 0, errors: ['Excel is empty'] });
       return;
     }
-  
+
     const header = raw[0].map(h => (h || '').toString().trim());
     const expected = ['Facility/Service', 'Specification', 'Comment'];
     // require at least the first two columns
@@ -484,7 +493,7 @@ export class HospitalManagementComponent implements OnInit {
       });
       return;
     }
-  
+
     raw.slice(1).forEach((row, idx) => {
       const rowNum = idx + 2;
       const svc = {
@@ -497,11 +506,11 @@ export class HospitalManagementComponent implements OnInit {
       if (!svc.name) errs.push('name is required');
       else if (!/^[a-zA-Z][a-zA-Z \'-]{1,49}$/.test(svc.name))
         errs.push('name must start with a letter and be 2–50 chars');
-  
+
       if (!svc.specification) errs.push('specification is required');
       else if (!/^[a-zA-Z][a-zA-Z \'-]{1,49}$/.test(svc.specification))
         errs.push('specification must start with a letter and be 2–50 chars');
-  
+
       if (errs.length) {
         this.serviceImportErrors.push({ row: rowNum, errors: errs });
       } else {
@@ -509,12 +518,12 @@ export class HospitalManagementComponent implements OnInit {
       }
     });
   }
-  
+
 
   submitServiceImport(): void {
     if (this.serviceImportErrors.length || !this.importedServices.length) return;
     if (!this.userData?.id) return;
-  
+
     this.organizationService
       .saveService(this.userData.id, this.importedServices)
       .subscribe({

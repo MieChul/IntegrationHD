@@ -679,7 +679,7 @@
                                     </div>
                                 </div>
                                 <hr>
-                                <div class="row" formGroupName="additionalQualification">
+                                <div class="row mb-2" formGroupName="additionalQualification">
                                     <span class="text-success font-italic mb-2">Additional Qualifications</span>
                                     <div class="form-floating col">
                                         <input type="text" class="form-control" id="institute" placeholder="Institute"
@@ -692,8 +692,6 @@
                                             <option *ngFor="let year of yearsList" [value]="year">{{ year }}</option>
                                         </select>
                                     </div>
-
-
                                     <div class="form-floating col">
                                         <input type="text" class="form-control" id="institute" placeholder="Institute"
                                             autocomplete="off" formControlName="institute">
@@ -712,6 +710,38 @@
                                                     class="btn btn-primary"> View</div>
                                             </div>
                                         </div>
+                                    </div>
+                                    <div class="col-sm-1 d-flex align-items-center">
+                                        <button type="button" class="btn btn-outline-success"
+                                            (click)="addAdditionalRow()"><i class="bi bi-plus-lg"></i></button>
+                                    </div>
+                                </div>
+
+                                <!-- UI-only extra rows (not bound to form) -->
+                                <div class="row mb-2" *ngFor="let row of additionalRows; let i = index">
+                                    <div class="form-floating col">
+                                        <input type="text" class="form-control" placeholder="Qualification">
+                                        <label class="form-label-floating">Qualification</label>
+                                    </div>
+                                    <div class="form-floating col">
+                                        <select class="form-select">
+                                            <option value="" disabled selected>Select Year</option>
+                                            <option *ngFor="let year of yearsList" [value]="year">{{ year }}</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-floating col">
+                                        <input type="text" class="form-control" placeholder="Institute">
+                                        <label class="form-label-floating">Name Of Institute</label>
+                                    </div>
+                                    <div class="form-floating mb-3 col">
+                                        <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
+                                            style="height:56px">
+                                    </div>
+                                    <div class="col-sm-1 d-flex align-items-center">
+                                        <button type="button" class="btn btn-outline-danger"
+                                            (click)="removeAdditionalRow(i)">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
                                     </div>
                                 </div>
                                 <hr>

@@ -196,4 +196,8 @@ export class PatientService {
   updatePreferences(userId: string, preferences: string[]): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/${userId}/preference`, preferences);
   }
+
+  saveReportFormData(patientId: string, formData: FormData): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${patientId}/lab-investigations`, formData);
+  }
 }

@@ -22,8 +22,6 @@ public class MedicalHistoryDto
 
     [DataType(DataType.Date)]
     public DateTime? End { get; set; }
-
-    public decimal? Price { get; set; }
 }
 
 public class CurrentTreatmentDto
@@ -189,9 +187,8 @@ public class ReportDto
     public string Time { get; set; }
     public string Type { get; set; }
     public string Assessment { get; set; }
-    public string Results { get; set; }
     public string Comment { get; set; }
-    public string ReportUrl { get; set; }
+    public string? FilePath { get; set; }
     public decimal? Price { get; set; }
 }
 

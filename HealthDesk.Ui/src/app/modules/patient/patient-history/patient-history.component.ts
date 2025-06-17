@@ -51,9 +51,6 @@ export class PatientHistoryComponent implements OnInit {
   initializeForm(): void {
     this.historyForm = this.fb.group({
       id: this.fb.control(''),
-      price: this.fb.control('',
-        Validators.pattern(/^\d{1,9}(\.\d{1,2})?$/)
-      ),
       dateOfDiagnosis: this.fb.control('', [Validators.required, this.futureDateValidator]),
       disease: this.fb.control('', Validators.required),
       start: this.fb.control('', [Validators.required, this.futureDateValidator]),

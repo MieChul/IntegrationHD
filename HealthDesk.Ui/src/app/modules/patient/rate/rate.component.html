@@ -71,8 +71,16 @@
       </div>
       <div class="col-md-4">
         <mat-form-field appearance="outline" class="w-100">
-          <mat-label>Search by Service Type</mat-label>
-          <input matInput placeholder="Service Type" formControlName="service">
+          <mat-label>Search by Service Offered</mat-label>
+          <mat-select formControlName="service">
+            <mat-option>
+              <ngx-mat-select-search [formControl]="servicesOfferedCtrl"
+                placeholderLabel="Search Service"></ngx-mat-select-search>
+            </mat-option>
+            <mat-option *ngFor="let service of filteredServicesOffered | async" [value]="service">
+              {{ service }}
+            </mat-option>
+          </mat-select>
         </mat-form-field>
       </div>
       <div class="col-md-4">
