@@ -15,11 +15,11 @@ import {
   transition,
   trigger
 } from "./chunk-ZLWDEUY6.js";
+import "./chunk-DIOVROW2.js";
 import {
   MatButton,
   MatButtonModule
 } from "./chunk-GLKC3XVZ.js";
-import "./chunk-DIOVROW2.js";
 import {
   BreakpointObserver,
   Breakpoints,

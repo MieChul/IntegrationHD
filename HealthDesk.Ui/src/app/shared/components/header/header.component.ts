@@ -16,32 +16,25 @@ export class HeaderComponent implements OnInit {
   switchRole: string = '';
   currRole: string = '';
   dependentText: string = '';
+  isDarkMode: boolean = false;
   constructor(public router: Router, private authService: AuthService, private accountService: AccountService, private notificationService: NotificationService) {
 
   }
 
   ngOnInit(): void {
-    this.userData = this.accountService.getUserData().subscribe({
+    this.accountService.getUserData().subscribe({
       next: (data) => {
-        this.userData = data; // Assign the result to a variable
+        this.userData = data;
         this.currRole = this.userData.role;
-        this.profImg = this.userData.profImage || '/assets/defaultProfile.jpg'
+        this.profImg = this.userData.profImage || '/assets/defaultProfile.jpg';
         this.setSwitchRoleText();
         this.setDependentText();
-        const darkMode = localStorage.getItem('darkMode') === 'true';
-        if (darkMode) {
-          document.body.classList.add('dark-mode');
-          this.updateDarkModeLabel(true);
-        }
+
+        // Set dark mode state from localStorage
+        this.isDarkMode = localStorage.getItem('darkMode') === 'true';
+        this.applyDarkModeClass(this.isDarkMode);
       }
     });
-  }
-
-  toggleDarkMode(): void {
-    document.body.classList.toggle('dark-mode');
-    const isDarkMode = document.body.classList.contains('dark-mode');
-    localStorage.setItem('darkMode', isDarkMode.toString());
-    this.updateDarkModeLabel(isDarkMode);
   }
 
   updateDarkModeLabel(isDarkMode: boolean): void {
@@ -68,7 +61,7 @@ export class HeaderComponent implements OnInit {
       this.dependentText = 'Use App as ' + (this.userData.dependentName.trim() ? this.userData.dependentName : 'Dependent');
     } else {
       this.dependentText = 'Add Dependant';
-    } 
+    }
   }
 
 
@@ -118,6 +111,9 @@ export class HeaderComponent implements OnInit {
 
 
   logout(): void {
+    localStorage.removeItem('darkMode');
+    this.isDarkMode = false;
+    this.applyDarkModeClass(false);
     this.authService.logout();
   }
 
@@ -150,11 +146,25 @@ export class HeaderComponent implements OnInit {
     });
   }
 
-  navigateToUsers(){
+  navigateToUsers() {
     return `/admin/`;
   }
 
-  navigateToBrands(){
+  navigateToBrands() {
     return `/admin/brands`;
+  }
+
+  toggleDarkMode(): void {
+    this.isDarkMode = !this.isDarkMode;
+    localStorage.setItem('darkMode', this.isDarkMode.toString());
+    this.applyDarkModeClass(this.isDarkMode);
+  }
+
+  applyDarkModeClass(isDark: boolean): void {
+    if (isDark) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
   }
 }

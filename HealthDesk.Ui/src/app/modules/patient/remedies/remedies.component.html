@@ -99,6 +99,7 @@
                         <div>
                           <button class="btn btn-primary btn-sm me-1" (click)="viewCase(remedy.id)">View</button>
                           <button
+                          *ngIf="remedy?.userId !== userData?.id"
                             [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(remedy),'btn-info': hasLiked(remedy)}"
                             class="btn-sm me-1" (click)="toggleLike(remedy.userId, remedy.id)"
                             [attr.title]="hasLiked(remedy) ? 'Unlike' : 'Like'">
@@ -106,7 +107,7 @@
                               [ngClass]="hasLiked(remedy)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
                             <span class="ms-1">{{ remedy.likedBy?.length || 0 }}</span>
                           </button>
-                          <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
+                          <button  *ngIf="remedy?.userId !== userData?.id" class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
                             data-bs-placement="top" title="Comment" (click)="viewComments(remedy)">
                             <i class="bi bi-chat"></i>
                             <span class="ms-1">{{ remedy.comments?.length ?? 0 }}</span>
@@ -152,7 +153,7 @@
                         </p>
                         <div>
                           <button class="btn btn-primary btn-sm me-1" (click)="viewCase(remedy.id)">View</button>
-                          <button
+                          <button  *ngIf="remedy?.userId !== userData?.id"
                             [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(remedy),'btn-info': hasLiked(remedy)}"
                             class="btn-sm me-1" (click)="toggleLike(remedy.userId, remedy.id)"
                             [attr.title]="hasLiked(remedy) ? 'Unlike' : 'Like'">
@@ -160,7 +161,7 @@
                               [ngClass]="hasLiked(remedy)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
                             <span class="ms-1">{{ remedy.likedBy?.length || 0 }}</span>
                           </button>
-                          <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
+                          <button  *ngIf="remedy?.userId !== userData?.id" class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
                             data-bs-placement="top" title="Comment" (click)="viewComments(remedy)">
                             <i class="bi bi-chat"></i>
                             <span class="ms-1">{{ remedy.comments?.length ?? 0 }}</span>
@@ -214,7 +215,7 @@
                         </p>
                         <div>
                           <button class="btn btn-primary btn-sm me-1" (click)="viewCase(remedy.id)">View</button>
-                          <button
+                          <button  *ngIf="remedy?.userId !== userData?.id"
                             [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(remedy),'btn-info': hasLiked(remedy)}"
                             class="btn-sm me-1" (click)="toggleLike(remedy.userId, remedy.id)"
                             [attr.title]="hasLiked(remedy) ? 'Unlike' : 'Like'">
@@ -222,7 +223,7 @@
                               [ngClass]="hasLiked(remedy)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
                             <span class="ms-1">{{ remedy.likedBy?.length || 0 }}</span>
                           </button>
-                          <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
+                          <button  *ngIf="remedy?.userId !== userData?.id" class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
                             data-bs-placement="top" title="Comment" (click)="viewComments(remedy)">
                             <i class="bi bi-chat"></i>
                             <span class="ms-1">{{ remedy.comments?.length ?? 0 }}</span>
@@ -269,14 +270,14 @@
                   </p>
                   <div>
                     <button class="btn btn-primary btn-sm me-1" (click)="viewCase(remedy.id)">View</button>
-                    <button
+                    <button  *ngIf="remedy?.userId !== userData?.id"
                       [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(remedy),'btn-info': hasLiked(remedy)}"
                       class="btn-sm me-1" (click)="toggleLike(remedy.userId, remedy.id)"
                       [attr.title]="hasLiked(remedy) ? 'Unlike' : 'Like'">
                       <i class="bi" [ngClass]="hasLiked(remedy)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
                       <span class="ms-1">{{ remedy.likedBy?.length || 0 }}</span>
                     </button>
-                    <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
+                    <button  *ngIf="remedy?.userId !== userData?.id" class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
                       data-bs-placement="top" title="Comment" (click)="viewComments(remedy)">
                       <i class="bi bi-chat"></i>
                       <span class="ms-1">{{ remedy.comments?.length ?? 0 }}</span>
@@ -317,14 +318,14 @@
                   </p>
                   <div>
                     <button class="btn btn-primary btn-sm me-1" (click)="viewCase(remedy.id)">View</button>
-                    <button
+                    <button  *ngIf="remedy?.userId !== userData?.id"
                       [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(remedy),'btn-info': hasLiked(remedy)}"
                       class="btn-sm me-1" (click)="toggleLike(remedy.userId, remedy.id)"
                       [attr.title]="hasLiked(remedy) ? 'Unlike' : 'Like'">
                       <i class="bi" [ngClass]="hasLiked(remedy)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
                       <span class="ms-1">{{ remedy.likedBy?.length || 0 }}</span>
                     </button>
-                    <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
+                    <button  *ngIf="remedy?.userId !== userData?.id" class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
                       data-bs-placement="top" title="Comment" (click)="viewComments(remedy)">
                       <i class="bi bi-chat"></i>
                       <span class="ms-1">{{ remedy.comments?.length ?? 0 }}</span>
@@ -373,14 +374,14 @@
                   </p>
                   <div>
                     <button class="btn btn-primary btn-sm me-1" (click)="viewCase(remedy.id)">View</button>
-                    <button
+                    <button  *ngIf="remedy?.userId !== userData?.id"
                       [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(remedy),'btn-info': hasLiked(remedy)}"
                       class="btn-sm me-1" (click)="toggleLike(remedy.userId, remedy.id)"
                       [attr.title]="hasLiked(remedy) ? 'Unlike' : 'Like'">
                       <i class="bi" [ngClass]="hasLiked(remedy)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
                       <span class="ms-1">{{ remedy.likedBy?.length || 0 }}</span>
                     </button>
-                    <button class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
+                    <button  *ngIf="remedy?.userId !== userData?.id" class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
                       data-bs-placement="top" title="Comment" (click)="viewComments(remedy)">
                       <i class="bi bi-chat"></i>
                       <span class="ms-1">{{ remedy.comments?.length ?? 0 }}</span>

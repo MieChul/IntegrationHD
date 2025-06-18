@@ -61,6 +61,13 @@ export class HospitalManagementComponent implements OnInit {
   serviceImportErrors: { row: number; errors: string[] }[] = [];
   importedServices: Array<{ name: string; specification: string; comment?: string }> = [];
 
+  ngAfterViewInit(): void {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach((tooltipEl) => {
+      new bootstrap.Tooltip(tooltipEl);
+    });
+  }
+
   constructor(private fb: FormBuilder,
     private router: Router,
     private accountService: AccountService,
@@ -533,5 +540,14 @@ export class HospitalManagementComponent implements OnInit {
         },
         error: (err) => console.error('Error importing services:', err)
       });
+  }
+
+  downloadTemplate(): void {
+    const link = document.createElement('a');
+    link.href = 'assets/documents/import/service_template.xlsx';
+    link.download = 'service_template.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 }

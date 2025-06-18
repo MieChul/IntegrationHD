@@ -39,6 +39,11 @@ export class LabLandingComponent implements OnInit {
     private databaseService: DatabaseService
   ) { }
 
+  ngAfterViewInit(): void {
+    const tooltips = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltips.forEach(el => new bootstrap.Tooltip(el));
+  }
+
   ngOnInit(): void {
     this.initializeForms();
 
@@ -53,7 +58,7 @@ export class LabLandingComponent implements OnInit {
 
   initializeForms(): void {
     this.testForm = this.fb.group({
-      id:[],
+      id: [],
       name: ['', Validators.required],
       specimenRequirement: ['', Validators.required],
       precaution: ['', Validators.required],
@@ -184,10 +189,10 @@ export class LabLandingComponent implements OnInit {
       return;
     }
 
-    const header = raw[0].map(h => (h||'').toString().trim());
-    const expected = ['Laboratory Test Name','Specimen Requirement','Precaution','Reporting Time','Amount','Comment'];
+    const header = raw[0].map(h => (h || '').toString().trim());
+    const expected = ['Laboratory Test Name', 'Specimen Requirement', 'Precaution', 'Reporting Time', 'Amount', 'Comment'];
     if (header.length < expected.length ||
-        expected.some((col, i) => col !== header[i])) {
+      expected.some((col, i) => col !== header[i])) {
       this.importErrors.push({
         row: 0,
         errors: [`Header must be exactly: ${expected.join(', ')}`]
@@ -237,5 +242,25 @@ export class LabLandingComponent implements OnInit {
           console.error('Error importing lab tests:', err);
         }
       });
+  }
+
+  downloadLabTestTemplate(): void {
+    const link = document.createElement('a');
+    link.href = 'assets/documents/import/labtest_template.xlsx';
+    link.download = 'labtest_template.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  limitDecimalPlaces(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.value.includes('.')) {
+      const [integerPart, decimalPart] = input.value.split('.');
+      if (decimalPart.length > 2) {
+        input.value = `${integerPart}.${decimalPart.slice(0, 2)}`;
+        this.testForm.get('amount')?.setValue(parseFloat(input.value));
+      }
+    }
   }
 }

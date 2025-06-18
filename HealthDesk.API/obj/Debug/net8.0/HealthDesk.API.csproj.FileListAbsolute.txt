@@ -297,3 +297,4 @@ D:\IntegrationHD\HealthDesk.Api\obj\Debug\net8.0\refint\HealthDesk.API.dll
 D:\IntegrationHD\HealthDesk.Api\obj\Debug\net8.0\HealthDesk.API.pdb
 D:\IntegrationHD\HealthDesk.Api\obj\Debug\net8.0\HealthDesk.API.genruntimeconfig.cache
 D:\IntegrationHD\HealthDesk.Api\obj\Debug\net8.0\ref\HealthDesk.API.dll
+D:\IntegrationHD\HealthDesk.API\bin\Debug\net8.0\HealthDesk.API.staticwebassets.runtime.json

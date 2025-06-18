@@ -112,9 +112,9 @@
           <i class="bi bi-person-circle fs-4 me-2 text-secondary"></i>
           <div class="flex-grow-1">
             <textarea class="form-control mb-2" rows="2" [(ngModel)]="newCommentText"
-              placeholder="Write your comment...">
+              placeholder="Write your comment..." [disabled]="remedy?.userId === userData?.id">
           </textarea>
-            <div class="d-flex justify-content-end">
+            <div class="d-flex justify-content-end" *ngIf="remedy?.userId !== userData?.id">
               <button class="btn btn-sm btn-primary" (click)="postComment()" [disabled]="!newCommentText.trim()">
                 <i class="bi bi-send me-1"></i>{{ isEditing ? 'Update' : 'Post' }}
               </button>
@@ -144,7 +144,7 @@
   </section>
 
   <div class="d-flex justify-content-end gap-2">
-    <button [ngClass]="{
+    <button *ngIf="remedy?.userId !== userData?.id" [ngClass]="{
       'btn': true,
       'btn-outline-primary': !hasLiked(),
       'btn-primary': hasLiked()

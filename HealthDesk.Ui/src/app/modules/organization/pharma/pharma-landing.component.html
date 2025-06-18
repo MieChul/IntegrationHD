@@ -20,7 +20,7 @@
       <button class="btn btn-success" (click)="openBrandImportDialog()">
         Import
       </button>
-      
+
     </div>
   </div>
 
@@ -200,7 +200,15 @@
       </div>
       <div class="modal-body">
         <div class="mb-3">
-          <label class="form-label">Select Excel File</label>
+          <label class="form-label d-flex align-items-center">
+            Select Excel File
+            <i class="bi bi-info-circle ms-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Required header columns: Brand Name, Generic Name, Drug Class, Dosage Form,
+      Strength, Pack Shot, Approval Agency, Comment">
+            </i>
+            <button class="btn btn-sm btn-outline-secondary ms-3" type="button" (click)="downloadBrandTemplate()">
+              <i class="bi bi-download me-1"></i>Download Template
+            </button>
+          </label>
           <input type="file" accept=".xlsx,.xls" class="form-control" (change)="onBrandFileSelected($event)">
           <small *ngIf="brandFileName" class="form-text text-muted">{{ brandFileName }}</small>
         </div>
@@ -218,12 +226,10 @@
           <p class="text-success">{{ importedBrands.length }} brands ready to import.</p>
         </div>
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer  d-flex justify-content-between">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button"
-                class="btn btn-primary"
-                [disabled]="!importedBrands.length || importErrors.length"
-                (click)="submitBrandImport()">
+        <button type="button" class="btn btn-primary" [disabled]="!importedBrands.length || importErrors.length"
+          (click)="submitBrandImport()">
           Import
         </button>
       </div>

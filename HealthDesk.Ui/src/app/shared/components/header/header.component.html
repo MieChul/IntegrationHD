@@ -52,7 +52,7 @@
           </mat-menu>
         </li>
         <li class="nav-item" matTooltip="Toggle Dark/Light Mode">
-          <mat-slide-toggle (change)="toggleDarkMode()"></mat-slide-toggle>
+          <mat-slide-toggle [checked]="isDarkMode" (change)="toggleDarkMode()"> </mat-slide-toggle>
         </li>
       </ul>
     </div>

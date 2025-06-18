@@ -46,6 +46,11 @@ export class PharmaLandingComponent implements OnInit {
     private sortingService: SortingService
   ) { }
 
+  ngAfterViewInit(): void {
+    const tooltips = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltips.forEach(el => new bootstrap.Tooltip(el));
+  }
+
   ngOnInit(): void {
     this.initForm();
     this.accountService.getUserData().subscribe({
@@ -238,6 +243,12 @@ export class PharmaLandingComponent implements OnInit {
         error: (err) => console.error('Import failed', err)
       });
   }
-
-
+  downloadBrandTemplate(): void {
+    const link = document.createElement('a');
+    link.href = 'assets/documents/import/brand_template.xlsx';
+    link.download = 'brand_template.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 }

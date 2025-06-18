@@ -41,6 +41,11 @@ export class PharmacyLandingComponent implements OnInit {
     private sortingService: SortingService
   ) { }
 
+  ngAfterViewInit(): void {
+    const tooltips = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltips.forEach(el => new bootstrap.Tooltip(el));
+  }
+
   ngOnInit(): void {
     this.initForms();
     this.accountService.getUserData().subscribe({
@@ -171,7 +176,7 @@ export class PharmacyLandingComponent implements OnInit {
     const expectedHeader = [
       'Brand Owner', 'Brand Name', 'Generic Name',
       'Drug Class', 'Dosage Form', 'Strength',
-      'Price', 'Discount', 'Comment'
+      'Price', '% Discount', 'Comment'
     ];
 
     if (expectedHeader.some((h, i) => h !== header[i])) {
@@ -228,5 +233,12 @@ export class PharmacyLandingComponent implements OnInit {
       });
   }
 
-
+  downloadBrandsTemplate(): void {
+    const link = document.createElement('a');
+    link.href = 'assets/documents/import/pharmacybrands_template.xlsx';
+    link.download = 'pharmacybrands_template.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 }
