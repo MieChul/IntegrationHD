@@ -208,6 +208,9 @@ public class PatientRecord : BaseEntity
 
     [BsonElement("last_visited_date")]
     public DateTime LastVisitedDate { get; set; }
+
+    [BsonElement("IsDependent")]
+    public bool IsDependent { get; set; }
 }
 
 public class Prescription : BaseEntity

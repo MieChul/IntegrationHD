@@ -68,7 +68,7 @@ export class UserListComponent implements OnInit {
             'Phone/Email': user.contact || '',
             'City': user.city || '',
             'Role': this.titleCaseWord(user.role) || '',
-            'Dependant Name': this.titleCaseWord(user.dependentName) || '',
+            'Dependent Name': this.titleCaseWord(user.dependentName) || '',
             'Status': user.status || ''
         })) || [];
 

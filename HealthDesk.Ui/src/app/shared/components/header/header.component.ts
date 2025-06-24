@@ -60,7 +60,7 @@ export class HeaderComponent implements OnInit {
     if (this.userData.hasDependent || this.userData.dependentId) {
       this.dependentText = 'Use App as ' + (this.userData.dependentName.trim() ? this.userData.dependentName : 'Dependent');
     } else {
-      this.dependentText = 'Add Dependant';
+      this.dependentText = 'Add Dependent';
     }
   }
 

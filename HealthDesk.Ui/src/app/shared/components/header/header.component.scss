@@ -2,183 +2,190 @@ $primary-color: #d76745bc; // From logo
 $secondary-color: #a159ffd2; // From logo
 
 .mat-menu-item {
-    font-family: 'Roboto', sans-serif; // Modern font style
-    font-size: 1rem;
-    font-weight: 500;
-    padding: 0.75rem 1.5rem;
-    margin: 0.25rem 0;
-    border-radius: 8px; // Rounded corners
-    transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
-    display: flex; // Align icon and text
-    align-items: center;
-  
+  font-family: 'Roboto', sans-serif; // Modern font style
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  margin: 0.25rem 0;
+  border-radius: 8px; // Rounded corners
+  transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  display: flex; // Align icon and text
+  align-items: center;
+
+  mat-icon {
+    font-size: 1.2rem;
+    margin-right: 1rem;
+    color: $secondary-color; // Use your theme color
+    transition: transform 0.3s;
+  }
+
+  &:hover {
+    background-color: $secondary-color; // Your theme hover color
+    color: #fff; // White text on hover
+    transform: translateY(-2px); // Slight elevation
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+
     mat-icon {
-      font-size: 1.2rem;
-      margin-right: 1rem;
-      color: $secondary-color; // Use your theme color
-      transition: transform 0.3s;
-    }
-  
-    &:hover {
-      background-color: $secondary-color; // Your theme hover color
-      color: #fff; // White text on hover
-      transform: translateY(-2px); // Slight elevation
-      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-  
-      mat-icon {
-        transform: scale(1.2); // Slightly enlarge icon on hover
-      }
-    }
-  
-    &.mat-menu-item-disabled {
-      color: #b0b0b0; // Disabled color
-      pointer-events: none;
+      transform: scale(1.2); // Slightly enlarge icon on hover
     }
   }
 
-  .navbar {
-    background-color: rgba(255, 255, 255, 0.6);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-
-    .navbar-brand {
-      font-weight: bold;
-      font-size: 1.75rem;
-      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-      transition: transform 0.3s, text-shadow 0.3s;
-    }
-
-    .brand-text {
-      font-family: 'Roboto', sans-serif;
-      background: linear-gradient(to right, #d76745bc, #a159ffd2);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-size: 1.75rem;
-      font-weight: bold;
-      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-    }
-
-    .profile-img {
-      object-fit: cover;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-    }
-
-    .nav-link {
-      color: $secondary-color;
-      font-size: 1rem;
-      transition: color 0.3s, transform 0.3s;
-
-      &:hover {
-        color: darken($secondary-color, 10%);
-        transform: scale(1.1);
-      }
-    }
-
-    .form-check-input {
-      width: 50px;
-      height: 25px;
-      background-color: $primary-color;
-      border-radius: 15px;
-      cursor: pointer;
-
-      &:before {
-        content: '';
-        position: absolute;
-        top: 2.5px;
-        left: 2.5px;
-        width: 20px;
-        height: 20px;
-        background-color: #fff;
-        border-radius: 50%;
-      }
-
-      &.active {
-        background-color: $secondary-color;
-
-        &:before {
-          transform: translateX(25px);
-        }
-      }
-    }
-  }
-
-  .modal {
-    position: fixed;
-    z-index: 1000;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: opacity 0.3s ease;
-  }
-
-  .modal.show {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .modal.hide {
-    opacity: 0;
+  &.mat-menu-item-disabled {
+    color: #b0b0b0; // Disabled color
     pointer-events: none;
   }
+}
 
-  .capsule-container {
-    background: #fff;
-    padding: 20px 30px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    text-align: center;
-    width: 400px;
-  }
+.navbar {
+  background-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
-  .roles-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
-  }
-
-  .role-tile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 120px;
-    height: 120px;
-    border: 2px solid transparent;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background: #f9f9f9;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 10px;
-  }
-
-  .role-tile:hover {
-    background: #007bff;
-    color: #fff;
-    border-color: #0056b3;
-  }
-
-  .role-tile img {
-    width: 50px;
-    height: 50px;
-    margin-bottom: 10px;
-    transition: transform 0.3s ease;
-  }
-
-  .role-tile:hover img {
-    transform: scale(1.1);
-  }
-
-  .role-title {
-    font-size: 14px;
+  .navbar-brand {
     font-weight: bold;
-    text-align: center;
+    font-size: 1.75rem;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s, text-shadow 0.3s;
   }
+
+  .text-health {
+    color: #fe1292;
+    /* Pink */
+  }
+
+  .text-desk {
+    color: #00b5ee;
+    /* Blue */
+  }
+
+  .brand-text {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.75rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+  }
+
+  .profile-img {
+    object-fit: cover;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+  }
+
+  .nav-link {
+    color: $secondary-color;
+    font-size: 1rem;
+    transition: color 0.3s, transform 0.3s;
+
+    &:hover {
+      color: darken($secondary-color, 10%);
+      transform: scale(1.1);
+    }
+  }
+
+  .form-check-input {
+    width: 50px;
+    height: 25px;
+    background-color: $primary-color;
+    border-radius: 15px;
+    cursor: pointer;
+
+    &:before {
+      content: '';
+      position: absolute;
+      top: 2.5px;
+      left: 2.5px;
+      width: 20px;
+      height: 20px;
+      background-color: #fff;
+      border-radius: 50%;
+    }
+
+    &.active {
+      background-color: $secondary-color;
+
+      &:before {
+        transform: translateX(25px);
+      }
+    }
+  }
+}
+
+.modal {
+  position: fixed;
+  z-index: 1000;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 0.3s ease;
+}
+
+.modal.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.capsule-container {
+  background: #fff;
+  padding: 20px 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  width: 400px;
+}
+
+.roles-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.role-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #f9f9f9;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+}
+
+.role-tile:hover {
+  background: #007bff;
+  color: #fff;
+  border-color: #0056b3;
+}
+
+.role-tile img {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 10px;
+  transition: transform 0.3s ease;
+}
+
+.role-tile:hover img {
+  transform: scale(1.1);
+}
+
+.role-title {
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+}

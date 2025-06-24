@@ -153,6 +153,7 @@ public class PatientRecordDto
 {
     public string? Id { get; set; }
     public string? UserId { get; set; }
+    public bool? IsDependent { get; set; } = false;
 
     [Required(ErrorMessage = "First Name is required.")]
     [StringLength(25, ErrorMessage = "First Name cannot exceed 25 characters.")]

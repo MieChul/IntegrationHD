@@ -379,21 +379,36 @@ export class GeneratePrescriptionComponent implements OnInit {
     // --------------------
     // 1. Patient Info
     // --------------------
-    const patientInfoLines = [
-      `Barcode:`,
-      `Date: ${formatDate(new Date())}`,
-      `Patient's name: ${this.prescriptionForm.get('name')?.value || ''}`,
-      `Age: ${this.calculateAge(this.patientRecord?.dateOfBirth) || ''}`,
-      `Gender: ${this.prescriptionForm.get('gender')?.value || ''}`,
-      `OPD Registration: ${''}`
-    ];
-    const patientBlockHeight = patientInfoLines.length * 6;
-    checkPageBreak(patientBlockHeight);
-    doc.setFontSize(10);
-    patientInfoLines.forEach((line, i) => {
-      doc.text(line, 14, startY + i * 6);
-    });
-    startY += patientBlockHeight + 5;
+    const name = this.prescriptionForm.get('name')?.value || '';
+    const age = this.calculateAge(this.patientRecord?.dateOfBirth) || '';
+    const gender = this.prescriptionForm.get('gender')?.value || '';
+    const date = formatDate(new Date());
+
+    checkPageBreak(18);
+    doc.setFontSize(10).setFont('helvetica', 'bold');
+    doc.text('Barcode:', 14, startY);
+    doc.setFont('helvetica', 'normal').text('', 38, startY); // Placeholder for barcode if needed
+
+    doc.setFont('helvetica', 'bold').text('Date:', pageWidth - 70, startY, { align: 'left' });
+    doc.setFont('helvetica', 'normal').text(date, pageWidth - 28, startY, { align: 'right' });
+
+    startY += 6;
+
+    doc.setFont('helvetica', 'bold').text("Patient's Name:", 14, startY);
+    doc.setFont('helvetica', 'normal').text(name, 48, startY);
+
+    startY += 6;
+    doc.setFont('helvetica', 'bold').text('Age:', 14, startY);
+    doc.setFont('helvetica', 'normal').text(age.toString(), 30, startY);
+
+    doc.setFont('helvetica', 'bold').text('Gender:', pageWidth - 70, startY, { align: 'left' });
+    doc.setFont('helvetica', 'normal').text(gender, pageWidth - 35, startY, { align: 'right' });
+
+    startY += 6;
+    doc.setFont('helvetica', 'bold').text('OPD Registration:', 14, startY);
+    doc.setFont('helvetica', 'normal').text('', 55, startY); // Placeholder
+
+    startY += 8;
 
     // --------------------
     // 2. Chief Complaints
@@ -403,19 +418,33 @@ export class GeneratePrescriptionComponent implements OnInit {
       .filter(c => (c.value.text || '').trim())
       .map((c, i) => `${i + 1}. ${c.value.text.trim()} (${c.value.duration || ''} days)`);
     if (complaintStrings.length) {
-      const complaintText = `Chief Complaints: ${complaintStrings.join(', ')}`;
+      const complaintText = `${complaintStrings.join(', ')}`;
       const wrapped = doc.splitTextToSize(complaintText, pageWidth - 28);
       const complaintHeight = wrapped.length * 6;
       checkPageBreak(complaintHeight);
-      doc.setFontSize(10).text(wrapped, 14, startY);
+      doc.setFont('helvetica', 'bold').text('Chief Complaints:', 14, startY);
+      doc.setFont('helvetica', 'normal').text(wrapped, 50, startY);
       startY += complaintHeight + 5;
     }
 
+     // --------------------
+    // 3. History
     // --------------------
-    // 3. Vitals
+    const significientHistory = this.prescriptionForm.get('pastHistory')?.value?.trim();
+    if (significientHistory) {
+      doc.setFont('helvetica', 'bold').text('Significant history:', 14, startY);
+      const localLines = doc.splitTextToSize(`${significientHistory}`, pageWidth - 28);
+      const localHeight = localLines.length * 6;
+      checkPageBreak(localHeight);
+      doc.setFont('helvetica', 'normal').text(localLines, 50, startY);
+      startY += localHeight + 5;
+    }
+
     // --------------------
+    // 4. Vitals
+    // --------------------
+    doc.setFont('helvetica', 'bold').text('Vital Signs:', 14, startY);
     const vitalsLines = [
-      `Vitals:`,
       `Pulse (per min): ${this.prescriptionForm.get('pulseRate')?.value || ''}`,
       `Respiratory rate (per min): ${this.prescriptionForm.get('respiratoryRate')?.value || ''}`,
       `Blood pressure (mm Hg): ${this.prescriptionForm.get('bloodPressure')?.value || ''}`,
@@ -425,33 +454,23 @@ export class GeneratePrescriptionComponent implements OnInit {
     checkPageBreak(vitalsHeight);
     doc.setFontSize(10);
     vitalsLines.forEach((line, i) => {
-      doc.text(line, 14 + (i === 0 ? 0 : 36), startY + i * 6);
+      doc.text(line, 40, startY + i * 6);
     });
     startY += vitalsHeight + 5;
 
     // --------------------
-    // 4. Local Examination
+    // 5. Local Examination
     // --------------------
     const localExam = this.prescriptionForm.get('localExamination')?.value?.trim();
     if (localExam) {
-      const localLines = doc.splitTextToSize(`Local examination: ${localExam}`, pageWidth - 28);
+      doc.setFont('helvetica', 'bold').text('Local examination:', 14, startY);
+      const localLines = doc.splitTextToSize(`${localExam}`, pageWidth - 28);
       const localHeight = localLines.length * 6;
       checkPageBreak(localHeight);
-      doc.setFontSize(10).text(localLines, 14, startY);
+      doc.setFont('helvetica', 'normal').text(localLines, 50, startY);
       startY += localHeight + 5;
     }
 
-    // --------------------
-    // 5. Investigations
-    // --------------------
-    if (this.selectedProfiles?.length) {
-      const invText = `Investigations: ${this.selectedProfiles.join(', ')}`;
-      const invLines = doc.splitTextToSize(invText, pageWidth - 28);
-      const invHeight = invLines.length * 6;
-      checkPageBreak(invHeight);
-      doc.setFontSize(10).text(invLines, 14, startY);
-      startY += invHeight + 5;
-    }
 
     // --------------------
     // 6. Physical Examination
@@ -461,11 +480,12 @@ export class GeneratePrescriptionComponent implements OnInit {
       .filter(c => (c.value.name || '').trim())
       .map((c, i) => `${i + 1}. ${c.value.name.trim()}: ${c.value.findings || ''}`);
     if (systemStrings.length) {
-      const sysText = `Physical Examination: ${systemStrings.join(', ')}`;
+      doc.setFont('helvetica', 'bold').text('Physical Examination:', 14, startY);
+      const sysText = `${systemStrings.join(', ')}`;
       const sysLines = doc.splitTextToSize(sysText, pageWidth - 28);
       const sysHeight = sysLines.length * 6;
       checkPageBreak(sysHeight);
-      doc.setFontSize(10).text(sysLines, 14, startY);
+       doc.setFont('helvetica', 'normal').text(sysLines, 50, startY);
       startY += sysHeight + 5;
     }
 
@@ -474,15 +494,29 @@ export class GeneratePrescriptionComponent implements OnInit {
     // --------------------
     const diag = this.prescriptionForm.get('pastHistory')?.value?.trim();
     if (diag) {
-      const diagLine = `Provisional Diagnosis: ${diag}`;
+      doc.setFont('helvetica', 'bold').text('Provisional Diagnosis:', 14, startY);
+      const diagLine = `${diag}`;
       const diagHeight = doc.splitTextToSize(diagLine, pageWidth - 28).length * 6;
       checkPageBreak(diagHeight);
-      doc.setFontSize(10).text(diagLine, 14, startY);
+      doc.setFont('helvetica', 'normal').text(diagLine, 55, startY);
       startY += diagHeight + 5;
     }
 
     // --------------------
-    // 8. Prescription (Rx) Table
+    // 8. Investigations
+    // --------------------
+    if (this.selectedProfiles?.length) {
+      doc.setFont('helvetica', 'bold').text('Investigations:', 14, startY);
+      const invText = `${this.selectedProfiles.join(', ')}`;
+      const invLines = doc.splitTextToSize(invText, pageWidth - 28);
+      const invHeight = invLines.length * 6;
+      checkPageBreak(invHeight);
+      doc.setFont('helvetica', 'normal').text(invLines, 40, startY);
+      startY += invHeight + 5;
+    }
+
+    // --------------------
+    // 9. Prescription (Rx) Table
     // --------------------
     const rxArray = this.prescriptionForm.get('rx') as FormArray;
     const rxBody = rxArray.controls.map((c, i) => [
@@ -496,53 +530,46 @@ export class GeneratePrescriptionComponent implements OnInit {
     ]);
     if (rxBody.length) {
       checkPageBreak(10 + rxBody.length * 8);
-      doc.setFontSize(10).text('Prescription (Rx):', 14, startY);
+      doc.setFont('helvetica', 'bold').text('Prescription (Rx):', 14, startY);
       startY += 5;
       (doc as any).autoTable({
         head: [['Sr.', 'Form', 'Drug', 'Strength', 'Freq', 'Dur', 'Instr']],
         body: rxBody,
         startY,
         styles: { font: 'helvetica', fontSize: 8, lineColor: [0, 0, 0], lineWidth: 0.1 },
-        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'normal' }
+        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' }
       });
       startY = (doc as any).autoTable.previous.finalY + 5;
     }
 
     // --------------------
-    // 9. Other Instructions & Follow-Up
+    // 10. Other Instructions & Follow-Up
     // --------------------
     const otherInst = this.prescriptionForm.get('otherInstructions')?.value?.trim();
     if (otherInst) {
-      const oiLines = doc.splitTextToSize(`Other Instructions: ${otherInst}`, pageWidth - 28);
+      doc.setFont('helvetica', 'bold').text('Other Instructions:', 14, startY);
+      const oiLines = doc.splitTextToSize(`${otherInst}`, pageWidth - 28);
       checkPageBreak(oiLines.length * 6);
-      doc.setFontSize(10).text(oiLines, 14, startY);
+      doc.setFont('helvetica', 'normal').text(oiLines, 50, startY);
       startY += oiLines.length * 6 + 5;
     }
 
     const followUp = this.prescriptionForm.get('nextFollowUp')?.value;
     if (followUp) {
+      doc.setFont('helvetica', 'bold').text('Next Follow-up:', 14, startY);
       const fuDate = new Date(followUp);
-      const fuLine = `Next Follow-up: ${String(fuDate.getDate()).padStart(2, '0')}/${String(fuDate.getMonth() + 1).padStart(2, '0')}/${fuDate.getFullYear()}`;
+      const fuLine = `${String(fuDate.getDate()).padStart(2, '0')}/${String(fuDate.getMonth() + 1).padStart(2, '0')}/${fuDate.getFullYear()}`;
       checkPageBreak(6);
-      doc.setFontSize(10).text(fuLine, 14, startY);
-      startY += 6 + 5;
+     doc.setFont('helvetica', 'normal').text(fuLine, 50, startY);
+      startY += 20;
     }
 
     // --------------------
-    // 10. Signature Section
+    // 11. Signature Section
     // --------------------
-    const sigData = [['Physician Signature', 'Stamp']];
-    checkPageBreak(10 + 20);
-    (doc as any).autoTable({
-      body: sigData,
-      theme: 'plain',
-      columnStyles: { 0: { cellWidth: (pageWidth - 28) / 2 }, 1: { cellWidth: (pageWidth - 28) / 2 } },
-      styles: { font: 'helvetica', fontSize: 6, lineColor: [0, 0, 0], lineWidth: 0.1 },
-      didParseCell: (data: any) => {
-        if (data.row.index === 0) data.cell.styles.minCellHeight = 20;
-      },
-      startY
-    });
+    checkPageBreak(10);
+    doc.setFont('helvetica', 'bold').text("Physician's Signature and Stamp", 14, startY);
+    startY += 10;
 
     // Output PDF
     const pdfBlob = doc.output('blob');
@@ -625,9 +652,6 @@ export class GeneratePrescriptionComponent implements OnInit {
       this.selectedProfiles.push(selectedInvestigation);
     }
   }
-
-
-
 
 
   addInvestigation(name: string = ''): void {

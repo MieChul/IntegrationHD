@@ -52,11 +52,19 @@ export class PhysicianService {
     return this.http.get<any[]>(`${this.apiUrl}/${id}/patients`);
   }
 
-  getPhysicianByMobile(mobile: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/physicians/by-mobile/${mobile}`);
+  getPhysicianByMobile(physicianId: string, mobile: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${physicianId}/patients/by-mobile/${mobile}`);
+  }
+
+  getDependentByMobile(mobile: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/dependents/by-mobile/${mobile}`);
   }
 
   savePatient(id: string, patient: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/patients`, patient);
+  }
+
+  saveDependent(id: string, patient: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/${id}/patients`, patient);
   }
 

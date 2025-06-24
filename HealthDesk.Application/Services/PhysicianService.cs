@@ -215,6 +215,84 @@ public class PhysicianService : IPhysicianService
         await _physicianRepository.UpdateAsync(physician);
     }
 
+    public async Task AddDependent(string physicianId, PatientRecordDto dto)
+    {
+
+        var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
+        // Fetch the parent user by ID
+        var userEntity = await _userRepository.GetByIdAsync(dto.UserId);
+        if (userEntity == null)
+            throw new KeyNotFoundException("User not found");
+
+        // Check if a Dependent already exists for this user
+        User existingDependent = null;
+        if (!string.IsNullOrEmpty(userEntity.DependentId))
+            existingDependent = await _userRepository.GetByIdAsync(userEntity.DependentId);
+        else
+            existingDependent = await _userRepository.GetByDynamicPropertyAsync("DependentId", userEntity.Id);
+
+        if (existingDependent == null)
+        {
+            var user = new User
+            {
+                PasswordHash = userEntity.PasswordHash,
+                Mobile = userEntity.Mobile,
+                Email = userEntity.Email,
+                Username = userEntity.Username,
+                DependentId = userEntity.Id,
+                DependentName = $"{userEntity.FirstName} {userEntity.LastName}",
+                HasDependent = false,
+                CanSwitch = false
+            };
+
+            await _userRepository.AddAsync(user);
+
+            if (string.IsNullOrEmpty(user.Id))
+                throw new InvalidOperationException("Failed to retrieve the generated ID for the new user.");
+            var roleId = string.Empty;
+            var patient = new Patient
+            {
+                UserId = user.Id,
+                MedicalHistory = new List<MedicalHistory>(),
+                CurrentTreatments = new List<Treatment>(),
+                Appointments = new List<Appointment>(),
+                SelfRecords = new List<SelfRecord>(),
+                Symptoms = new List<Symptom>(),
+                LabInvestigations = new List<LabInvestigation>(),
+                Immunizations = new List<Immunization>(),
+                Compliance = new List<Compliance>(),
+                Activities = new List<Activity>(),
+                PatientInfo = new PatientInfo(),
+                HomeRemedies = new List<Remedy>(),
+                Reports = new List<Report>()
+            };
+            await _patientRepository.AddAsync(patient);
+            roleId = patient.Id;
+            user.Roles = new List<UserRole> { new UserRole { Id = roleId, Role = Role.Patient, Status = "New" } };
+            await _userRepository.UpdateAsync(user);
+            userEntity.HasDependent = true;
+            userEntity.DependentName = $"{user.FirstName} {user.LastName}";
+            await _userRepository.UpdateAsync(userEntity);
+
+        }
+
+        var patientPhy = GenericMapper.Map<PatientRecordDto, PatientRecord>(dto);
+
+        if (string.IsNullOrEmpty(dto.Id))
+        {
+            patientPhy.LastVisitedDate = DateTime.Now;
+            physician.Patients.Add(patientPhy);
+        }
+
+        else
+        {
+            var existing = physician.Patients.FirstOrDefault(p => p.Id == dto.Id);
+            if (existing != null) GenericMapper.Map(dto, existing);
+        }
+
+        await _physicianRepository.UpdateAsync(physician);
+    }
+
     public async Task DeletePatientAsync(string physicianId, string patientId)
     {
         var physician = await _physicianRepository.GetByIdAsync(physicianId);
@@ -236,7 +314,6 @@ public class PhysicianService : IPhysicianService
             var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
             var patient = physician.Patients.FirstOrDefault(p => p.UserId == patientId);
             return patient?.Prescriptions.Select(p => GenericMapper.Map<Prescription, PrescriptionDto>(p));
-
         }
     }
 
@@ -446,6 +523,42 @@ public class PhysicianService : IPhysicianService
         // Return null if user does not exist or does not have the Patient role
         return null;
     }
+
+    public async Task<dynamic> GetDependentByMobileAsync(string mobile)
+    {
+        // Retrieve user based on the mobile number
+        var user = await _userRepository.GetByDynamicPropertyAsync("Mobile", mobile);
+        if (user == null)
+            throw new InvalidOperationException("Patient is not registered. Please register patient first to add dependent.");
+        if (!user.Roles.Any(r => r.Role == Role.Patient))
+            throw new InvalidOperationException("User is not a patient. Please register as a Patient.");
+
+        User existingDependent = null;
+        if (!string.IsNullOrEmpty(user.DependentId))
+            existingDependent = await _userRepository.GetByIdAsync(user.DependentId);
+        else
+            existingDependent = await _userRepository.GetByDynamicPropertyAsync("DependentId", user.Id);
+
+        if (existingDependent != null)
+        {
+            if (user != null && user.Roles.Any(r => r.Role == Role.Patient))
+            {
+                // Return patient details if found
+                return new
+                {
+                    UserId = existingDependent.Id,
+                    FirstName = existingDependent.FirstName,
+                    MiddleName = existingDependent.MiddleName,
+                    LastName = existingDependent.LastName,
+                    Gender = existingDependent.Gender,
+                    DateOfBirth = existingDependent.BirthDate
+                };
+            }
+        }
+
+        return null;
+    }
+
 
     public async Task<dynamic> GetPhysicianByMobileAsync(string mobile)
     {

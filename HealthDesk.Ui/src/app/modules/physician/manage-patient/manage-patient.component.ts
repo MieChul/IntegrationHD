@@ -16,6 +16,7 @@ export class ManagePatientComponent implements OnInit {
   patients: any[] = [];
   filteredPatients: any[] = [];
   patientForm!: FormGroup;
+  dependentForm!: FormGroup;
   showModel = false;
   searchValue = '';
   searchValueDate: any;
@@ -80,8 +81,21 @@ export class ManagePatientComponent implements OnInit {
       lastName: [{ value: '', disabled: true }, [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z .'’-]{1,25}$/)]],
       gender: [{ value: '', disabled: true }, Validators.required],
       dateOfBirth: [Validators.required, (control: AbstractControl) => this.validateAge(control)],
-      abhaid: ['', Validators.pattern(/^[a-zA-Z0-9]*$/)], // Optional with pattern validation
-      secondaryId: ['', Validators.pattern(/^[a-zA-Z0-9]*$/)], // Optional with pattern validation
+      abhaid: ['', Validators.pattern(/^[a-zA-Z0-9]*$/)],
+      secondaryId: ['', Validators.pattern(/^[a-zA-Z0-9]*$/)],
+    });
+
+    this.dependentForm = this.fb.group({
+      id: [''],
+      userId: [''],
+      mobile: ['', [Validators.required, Validators.pattern(/^[789]\d{9}$/)]],
+      firstName: [{ value: '', disabled: true }, [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z .'’-]{1,25}$/), Validators.minLength(2)]],
+      middleName: [{ value: '', disabled: true }, [Validators.pattern(/^[a-zA-Z][a-zA-Z .'’-]{1,25}$/)],],
+      lastName: [{ value: '', disabled: true }, [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z .'’-]{1,25}$/)]],
+      gender: [{ value: '', disabled: true }, Validators.required],
+      dateOfBirth: [Validators.required, (control: AbstractControl) => this.validateAge(control)],
+      abhaid: ['', Validators.pattern(/^[a-zA-Z0-9]*$/)],
+      secondaryId: ['', Validators.pattern(/^[a-zA-Z0-9]*$/)],
     });
   }
 
@@ -127,6 +141,13 @@ export class ManagePatientComponent implements OnInit {
     }
   }
 
+    onDependentMobileInputChange(): void {
+    const mobile = this.dependentForm.get('mobile')?.value;
+    if (mobile.length === 10) {
+      this.checkDependentExists(mobile);
+    }
+  }
+
   checkPatientExists(mobile: string): void {
     this.physicianService.getPatientByMobile('physicianId', mobile).subscribe((response: any) => {
       if (response.success && response.data) {
@@ -156,6 +177,35 @@ export class ManagePatientComponent implements OnInit {
     });
   }
 
+   checkDependentExists(mobile: string): void {
+    this.physicianService.getDependentByMobile(mobile).subscribe((response: any) => {
+      if (response.success && response.data) {
+        const patient = response.data;
+        this.dependentForm.patchValue({
+          userId: patient.userId,
+          firstName: patient.firstName,
+          middleName: patient.middleName,
+          lastName: patient.lastName,
+          gender: patient.gender,
+          dateOfBirth: patient.dateOfBirth,
+        });
+        this.dependentForm.get('firstName')?.disable();
+        this.dependentForm.get('lastName')?.disable();
+        this.dependentForm.get('middleName')?.disable();
+        this.dependentForm.get('gender')?.disable();
+        this.dependentForm.get('dateOfBirth')?.disable();
+      } else {
+        this.dependentForm.reset({ mobile });
+        this.dependentForm.get('mobile')?.disable();
+        this.dependentForm.get('firstName')?.enable();
+        this.dependentForm.get('middleName')?.enable();
+        this.dependentForm.get('lastName')?.enable();
+        this.dependentForm.get('gender')?.enable();
+        this.dependentForm.get('dateOfBirth')?.enable();
+      }
+    });
+  }
+
   openAddPatientPopup(): void {
     this.isEditMode = false;
     this.patientForm.reset();
@@ -170,6 +220,22 @@ export class ManagePatientComponent implements OnInit {
     this.showModel = true;
     const addPatientModal = new bootstrap.Modal(document.getElementById('addPatientModal')!);
     addPatientModal.show();
+  }
+
+  openAddDependentPopup(): void {
+    this.isEditMode = false;
+    this.dependentForm.reset();
+    this.dependentForm.get('mobile')?.enable();
+    this.dependentForm.get('firstName')?.disable();
+    this.dependentForm.get('middleName')?.disable();
+    this.dependentForm.get('lastName')?.disable();
+    this.dependentForm.get('gender')?.disable();
+    this.dependentForm.get('dateOfBirth')?.disable();
+    this.dependentForm.get('gender')?.disable();
+    this.dependentForm.get('dateOfBirth')?.disable();
+    this.showModel = true;
+    const addDependentModal = new bootstrap.Modal(document.getElementById('addDependentModal')!);
+    addDependentModal.show();
   }
 
 
@@ -217,6 +283,27 @@ export class ManagePatientComponent implements OnInit {
     this.showModel = true;
     const addPatientModal = new bootstrap.Modal(document.getElementById('addPatientModal')!);
     addPatientModal.show();
+  }
+
+    saveDependent(): void {
+    if (this.dependentForm.invalid) {
+      // Mark all controls as touched to trigger validation errors
+      this.dependentForm.markAllAsTouched();
+      return;
+    }
+    const dependent = this.dependentForm.getRawValue();
+
+    // Convert dateOfBirth to ISO string format if it exists
+    if (dependent.dateOfBirth) {
+      dependent.dateOfBirth = new Date(dependent.dateOfBirth).toISOString();
+    }
+
+    this.physicianService.saveDependent(this.userData.id, dependent).subscribe(() => {
+      this.loadPatients();
+    });
+
+    const addPatientModal = bootstrap.Modal.getInstance(document.getElementById('addPatientModal')!);
+    addPatientModal?.hide();
   }
 
 

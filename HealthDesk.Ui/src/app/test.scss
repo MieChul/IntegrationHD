@@ -107,11 +107,18 @@ body {
     position: relative;
   }
 
+  .text-health {
+    color: #AA336A;
+    /* Pink */
+  }
+
+  .text-desk {
+    color: #1b81da;
+    /* Blue */
+  }
+
   .brand-text {
     font-family: 'Roboto', sans-serif;
-    background: linear-gradient(to right, #d76745bc, #a159ffd2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     font-size: 1.75rem;
     font-weight: bold;
     text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
@@ -317,6 +324,7 @@ main {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s, box-shadow 0.3s;
   margin: 0.5rem;
+
   &:hover {
     transform: translateY(-10px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
@@ -698,6 +706,7 @@ h6,
     opacity: 0;
     transform: translateY(-20px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -756,15 +765,18 @@ h6,
 }
 
 .proposed-time {
-  background-color: rgba(253, 230, 138, 0.6);  /* Light yellow for proposed time */
+  background-color: rgba(253, 230, 138, 0.6);
+  /* Light yellow for proposed time */
 }
 
 .upcoming-appointment {
-  background-color: rgba(167, 243, 208, 0.6);  /* Light green for upcoming appointment */
+  background-color: rgba(167, 243, 208, 0.6);
+  /* Light green for upcoming appointment */
 }
 
 .past-appointment {
-  background-color: rgba(253, 164, 175, 0.6);  /* Light pink for past appointment */
+  background-color: rgba(253, 164, 175, 0.6);
+  /* Light pink for past appointment */
 }
 
 .tab-content {
@@ -863,15 +875,18 @@ body.dark-mode .modal-content {
 }
 
 .light-green-row td {
-  background-color: #32ed5ea9 !important; /* Light green */
+  background-color: #32ed5ea9 !important;
+  /* Light green */
 }
 
 .light-red-row td {
-  background-color: #cf3c487b !important; /* Light red */
+  background-color: #cf3c487b !important;
+  /* Light red */
 }
 
 .light-yellow-row td {
-  background-color: #e6b71d8a !important; /* Light yellow */
+  background-color: #e6b71d8a !important;
+  /* Light yellow */
 }
 
 .pointer-cursor {
@@ -932,7 +947,7 @@ body.dark-mode .modal-content {
 .label-modern {
   font-size: 1.1rem;
   color: #0c0c0c;
-  background: linear-gradient(145deg,  #d8a8c0, #FF69B4);
+  background: linear-gradient(145deg, #d8a8c0, #FF69B4);
   padding: 0.25rem;
   border-radius: 0.25rem;
   transition: transform 0.3s, background-color 0.3s;

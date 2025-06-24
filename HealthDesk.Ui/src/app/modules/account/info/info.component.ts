@@ -361,7 +361,7 @@ export class InfoComponent {
       pincode: isPatientOrPhysician ? [Validators.required, Validators.pattern(/^[1-9][0-9]{5}$/)] : [],
 
       speciality: isPhysician ? [Validators.required] : [],
-      clinicName: isPhysician ? [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z0-9@_ .'’-]{1,25}$/)] : [],
+      clinicName: isPhysician ? [Validators.required, Validators.pattern(/^[a-zA-Z0-9@_ .'’-]{2,26}$/)] : [],
       clinicArea: isNonPatient ? [Validators.required] : [],
       clinicCity: isNonPatient ? [Validators.required] : [],
       clinicState: isNonPatient ? [Validators.required] : [],

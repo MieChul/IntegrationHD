@@ -416,11 +416,31 @@ button.login-button {
 }
 
 .disabled-bold {
-  font-weight: bold; /* Makes the text bold */
-  color: #333; /* Adjust color for better readability */
-  background-color: #f9f9f9; /* Light background to differentiate */
-  border: 1px solid #ccc; /* Optional: adds a border for better visibility */
-  pointer-events: none; /* Prevents interaction for disabled fields */
+  font-weight: bold;
+  /* Makes the text bold */
+  color: #333;
+  /* Adjust color for better readability */
+  background-color: #f9f9f9;
+  /* Light background to differentiate */
+  border: 1px solid #ccc;
+  /* Optional: adds a border for better visibility */
+  pointer-events: none;
+  /* Prevents interaction for disabled fields */
 }
 
+.text-health {
+  color: #AA336A;
+  /* Pink */
+}
 
+.text-desk {
+  color: #1b81da;
+  /* Blue */
+}
+
+.brand-text {
+  font-family: 'Roboto', sans-serif;
+  font-size: 1.75rem;
+  font-weight: bold;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+}

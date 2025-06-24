@@ -16,7 +16,8 @@
       </div>
     </div>
     <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap pointer-cursor">
-      <button class="btn btn-primary " (click)="openAddPatientPopup()">Add New Patient</button>
+      <button class="btn btn-primary me-2" (click)="openAddPatientPopup()">Add New Patient</button>
+      <button class="btn btn-primary" (click)="openAddDependentPopup()">Add New Dependent</button>
     </div>
   </div>
 </div>
@@ -240,6 +241,141 @@
           <div class="button-container">
             <button type="button" class="btn btn-primary" (click)="verifyOtp()" [disabled]="!areAllOtpFilled()">
               Verify OTP
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" data-bs-backdrop='static' id="addDependentModal" tabindex="-1"
+  aria-labelledby="addDependentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add/Edit Dependent</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="dependentForm" (ngSubmit)="saveDependent()">
+          <div class="row">
+            <!-- Mobile -->
+            <div class="col-md-6 mb-3">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Mobile</mat-label>
+                <input matInput formControlName="mobile" placeholder="Enter Mobile Number"
+                  (input)="onDependentMobileInputChange()" />
+                <mat-error *ngIf="dependentForm.get('mobile')?.hasError('required')">
+                  Mobile number is required.
+                </mat-error>
+                <mat-error *ngIf="dependentForm.get('mobile')?.hasError('pattern')">
+                  Enter a valid 10-digit Indian mobile number.
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <!-- Name -->
+            <div class="col-md-6 mb-3">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>First Name</mat-label>
+                <input matInput formControlName="firstName" placeholder="Enter First Name" />
+                <mat-error *ngIf="dependentForm.get('firstName')?.hasError('required')">
+                  First Name is required.
+                </mat-error>
+                <mat-error *ngIf="dependentForm.get('firstName')?.hasError('pattern')">Please enter a valid first
+                  name.
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Middle Name</mat-label>
+                <input matInput formControlName="middleName" placeholder="Enter Middle Name" />
+                <mat-error *ngIf="dependentForm.get('middleName')?.hasError('pattern')">Please enter a valid middle
+                  name.
+                </mat-error>
+              </mat-form-field>
+            </div>
+            <div class="col-md-6 mb-3">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Last Name</mat-label>
+                <input matInput formControlName="lastName" placeholder="Enter Name" />
+                <mat-error *ngIf="dependentForm.get('lastName')?.hasError('required')">
+                  Last Name is required.
+                </mat-error>
+                <mat-error *ngIf="dependentForm.get('lastName')?.hasError('pattern')">Please enter a valid last
+                  name.
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <div class="row">
+            <!-- Gender -->
+            <div class="col-md-6 mb-3">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Gender</mat-label>
+                <mat-select formControlName="gender">
+                  <mat-option value="Male">Male</mat-option>
+                  <mat-option value="Female">Female</mat-option>
+                </mat-select>
+                <mat-error *ngIf="dependentForm.get('gender')?.hasError('required')">
+                  Gender is required.
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <!-- Date of Birth -->
+            <div class="col-md-6 mb-3">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Date of Birth</mat-label>
+                <input matInput [matDatepicker]="dobPickerDependent" formControlName="dateOfBirth"
+                  placeholder="Enter Date of Birth" />
+                <mat-datepicker-toggle matSuffix [for]="dobPickerDependent"></mat-datepicker-toggle>
+                <mat-datepicker #dobPickerDependent></mat-datepicker>
+                <mat-error *ngIf="dependentForm.get('dateOfBirth')?.hasError('required')">
+                  Date of Birth is required.
+                </mat-error>
+                <mat-error *ngIf="dependentForm.get('dateOfBirth')?.hasError('minAge')">
+                  Must be 18+ years
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <div class="row">
+            <!-- ABHA ID -->
+            <div class="col-md-6 mb-3">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>ABHA ID</mat-label>
+                <input matInput formControlName="abhaid" placeholder="Enter ABHA ID" />
+                <mat-error *ngIf="dependentForm.get('abhaid')?.hasError('pattern')">
+                  ABHA ID must be alphanumeric.
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <!-- Secondary ID -->
+            <div class="col-md-6 mb-3">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Secondary ID</mat-label>
+                <input matInput formControlName="secondaryId" placeholder="Enter Secondary ID" />
+                <mat-error *ngIf="dependentForm.get('secondaryId')?.hasError('pattern')">
+                  Secondary ID must be alphanumeric.
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Save Button -->
+          <div class="modal-footer d-flex justify-content-between">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" (click)="saveDependent()">
+              {{ isEditMode ? 'Save Changes' : 'Add Dependent' }}
             </button>
           </div>
         </form>

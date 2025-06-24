@@ -141,6 +141,16 @@ namespace HealthDesk.API.Controllers
             return Ok(new { Success = true, Message = "Patient saved successfully." });
         }
 
+        [HttpPost("{id}/dependents")]
+        public async Task<IActionResult> SaveDependent(string id, [FromBody] PatientRecordDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { Success = false, Message = "Invalid data provided.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+
+            await _physicianService.SavePatientAsync(id, dto);
+            return Ok(new { Success = true, Message = "Patient saved successfully." });
+        }
+
         [HttpDelete("{id}/patients/{patientId}")]
         public async Task<IActionResult> DeletePatient(string id, string patientId)
         {
@@ -279,6 +289,17 @@ namespace HealthDesk.API.Controllers
             return Ok(new { Success = true, Data = patient });
         }
 
+        [HttpGet("dependents/by-mobile/{mobile}")]
+        public async Task<IActionResult> GetDependentByMobile(string mobile)
+        {
+            var patient = await _physicianService.GetDependentByMobileAsync(mobile);
+            if (patient == null)
+            {
+                return Ok(new { Success = false, Message = "Patient not found." });
+            }
+            return Ok(new { Success = true, Data = patient });
+        }
+
         [HttpGet("physicians/by-mobile/{mobile}")]
         public async Task<IActionResult> GetPhysicianByMobile(string id, string mobile)
         {
@@ -372,7 +393,9 @@ namespace HealthDesk.API.Controllers
             await _physicianService.UpdatePreferencesAsync(userId, preferences);
             return Ok(new { Success = true, Message = "Preferences updated." });
         }
+
     }
+
 }
 
 
