@@ -1,5 +1,5 @@
 export const environment = {
     production: true,
-    apiUrl: 'http://localhost:90/api'
+    apiUrl: 'https://www.healthdeskapp.in/api'
   };
   

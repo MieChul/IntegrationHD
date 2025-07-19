@@ -5,6 +5,9 @@ D:\Publish\HealthDesk.API.dll
 D:\Publish\HealthDesk.API.deps.json
 D:\Publish\HealthDesk.API.runtimeconfig.json
 D:\Publish\HealthDesk.API.pdb
+D:\Publish\AspNetCoreRateLimit.dll
+D:\Publish\AWSSDK.Core.dll
+D:\Publish\AWSSDK.SecurityToken.dll
 D:\Publish\BCrypt.Net-Next.dll
 D:\Publish\DnsClient.dll
 D:\Publish\FluentValidation.dll
@@ -12,8 +15,11 @@ D:\Publish\FluentValidation.AspNetCore.dll
 D:\Publish\FluentValidation.DependencyInjectionExtensions.dll
 D:\Publish\Microsoft.AspNetCore.OpenApi.dll
 D:\Publish\Microsoft.Bcl.TimeProvider.dll
+D:\Publish\Microsoft.Extensions.Configuration.Abstractions.dll
+D:\Publish\Microsoft.Extensions.Configuration.Binder.dll
 D:\Publish\Microsoft.Extensions.Configuration.FileExtensions.dll
 D:\Publish\Microsoft.Extensions.Configuration.Json.dll
+D:\Publish\Microsoft.Extensions.Primitives.dll
 D:\Publish\Microsoft.IdentityModel.Abstractions.dll
 D:\Publish\Microsoft.IdentityModel.JsonWebTokens.dll
 D:\Publish\Microsoft.IdentityModel.Logging.dll
@@ -21,6 +27,8 @@ D:\Publish\Microsoft.IdentityModel.Tokens.dll
 D:\Publish\Microsoft.OpenApi.dll
 D:\Publish\MongoDB.Bson.dll
 D:\Publish\MongoDB.Driver.dll
+D:\Publish\MongoDB.Driver.Core.dll
+D:\Publish\MongoDB.Libmongocrypt.dll
 D:\Publish\Newtonsoft.Json.dll
 D:\Publish\SharpCompress.dll
 D:\Publish\Snappier.dll
@@ -30,6 +38,9 @@ D:\Publish\Swashbuckle.AspNetCore.SwaggerUI.dll
 D:\Publish\System.IdentityModel.Tokens.Jwt.dll
 D:\Publish\Twilio.dll
 D:\Publish\ZstdSharp.dll
+D:\Publish\runtimes\linux\native\libmongocrypt.so
+D:\Publish\runtimes\osx\native\libmongocrypt.dylib
+D:\Publish\runtimes\win\native\mongocrypt.dll
 D:\Publish\HealthDesk.Application.dll
 D:\Publish\HealthDesk.Core.dll
 D:\Publish\HealthDesk.Infrastructure.dll

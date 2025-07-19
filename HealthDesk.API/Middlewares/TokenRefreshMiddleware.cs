@@ -5,6 +5,7 @@ using HealthDesk.Application;
 using Microsoft.IdentityModel.Tokens;
 
 namespace HealthDesk.API;
+
 public class TokenRefreshMiddleware
 {
     private readonly RequestDelegate _next;
@@ -25,23 +26,24 @@ public class TokenRefreshMiddleware
         {
             try
             {
-                // Validate the access token
-                tokenHandler.ValidateToken(accessToken, new TokenValidationParameters
+                var validationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["Jwt:Key"])),
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                                  Encoding.ASCII.GetBytes(_configuration["Jwt:Key"])
+                                ),
+                    ValidateIssuer = true,
+                    ValidIssuer = _configuration["Jwt:Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = _configuration["Jwt:Audience"],
                     ClockSkew = TimeSpan.Zero
-                }, out _);
-
-                // Token is valid, proceed to next middleware
+                };
+                tokenHandler.ValidateToken(accessToken, validationParameters, out _);
                 await _next(context);
                 return;
             }
             catch (SecurityTokenExpiredException)
             {
-                // Access token expired, refresh it
                 var refreshToken = context.Request.Cookies["RefreshToken"];
                 if (string.IsNullOrEmpty(refreshToken))
                 {
@@ -62,10 +64,10 @@ public class TokenRefreshMiddleware
                     context.Response.Cookies.Append("AccessToken", newAccessToken, new CookieOptions
                     {
                         HttpOnly = true,
-                        Secure = false,
+                        Secure = true,
                         SameSite = SameSiteMode.None,
-                        Path = "/",
-                        Expires = DateTime.UtcNow.AddMinutes(15)
+                        Expires = DateTime.UtcNow
+                        .AddMinutes(_configuration.GetValue<int>("Jwt:ExpirationMinutes"))
                     });
 
                     await _next(context);
@@ -80,7 +82,6 @@ public class TokenRefreshMiddleware
             }
         }
 
-        // Proceed to the next middleware if no token is provided
         await _next(context);
     }
 }

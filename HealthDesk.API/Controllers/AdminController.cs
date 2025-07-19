@@ -1,11 +1,13 @@
 using HealthDesk.Application.DTO;
 using HealthDesk.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HealthDesk.API.Controllers;
+
 [ApiController]
 [Route("api/[controller]")]
-//[Authorize(Roles = "Admin")] // Restrict access to Admins only
+[Authorize(Policy = "AdminOnly")]
 public class AdminController : ControllerBase
 {
     private IAdminService _adminService;

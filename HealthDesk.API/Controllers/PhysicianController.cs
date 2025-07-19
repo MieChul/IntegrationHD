@@ -1,5 +1,6 @@
 using HealthDesk.Application;
 using HealthDesk.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 
@@ -7,6 +8,7 @@ namespace HealthDesk.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Policy = "PatientPhysician_Approved")]
     public class PhysicianController : ControllerBase
     {
         private readonly IAccountService _accountService;

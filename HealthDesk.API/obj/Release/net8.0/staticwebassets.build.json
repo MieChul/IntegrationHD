@@ -1,11 +1,39 @@
 {
   "Version": 1,
-  "Hash": "0zWMAC+/fHwu7o0WSRPlsBBhRHMXAiBt0IVzmYkEjeU=",
+  "Hash": "vGkDIX31Pw2Co6eX+n1VzFIXeXr1fxC/LxVkCKXCxDI=",
   "Source": "HealthDesk.API",
   "BasePath": "_content/HealthDesk.API",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": []
+  "DiscoveryPatterns": [
+    {
+      "Name": "HealthDesk.API\\wwwroot",
+      "Source": "HealthDesk.API",
+      "ContentRoot": "D:\\IntegrationHD\\HealthDesk.Api\\wwwroot\\",
+      "BasePath": "_content/HealthDesk.API",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "D:\\IntegrationHD\\HealthDesk.Api\\wwwroot\\assets\\documents\\6850d46fe9789525659a7eac\\investigations\\685166692a10faabd4ddd28f_report.pdf",
+      "SourceId": "HealthDesk.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\IntegrationHD\\HealthDesk.Api\\wwwroot\\",
+      "BasePath": "_content/HealthDesk.API",
+      "RelativePath": "assets/documents/6850d46fe9789525659a7eac/investigations/685166692a10faabd4ddd28f_report.pdf",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\assets\\documents\\6850d46fe9789525659a7eac\\investigations\\685166692a10faabd4ddd28f_report.pdf"
+    }
+  ]
 }

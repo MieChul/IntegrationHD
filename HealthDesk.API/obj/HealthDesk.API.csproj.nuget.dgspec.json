@@ -47,6 +47,10 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "AspNetCoreRateLimit": {
+              "target": "Package",
+              "version": "[5.0.0, )"
+            },
             "FluentValidation.AspNetCore": {
               "target": "Package",
               "version": "[11.3.0, )"
@@ -141,6 +145,10 @@
               "target": "Package",
               "version": "[8.0.0, )"
             },
+            "Microsoft.Extensions.Configuration.Binder": {
+              "target": "Package",
+              "version": "[9.0.7, )"
+            },
             "Microsoft.Extensions.Configuration.Json": {
               "target": "Package",
               "version": "[8.0.1, )"
@@ -215,7 +223,7 @@
           "dependencies": {
             "MongoDB.Driver": {
               "target": "Package",
-              "version": "[3.0.0, )"
+              "version": "[2.25.0, )"
             }
           },
           "imports": [
@@ -287,7 +295,7 @@
             },
             "MongoDB.Driver": {
               "target": "Package",
-              "version": "[3.0.0, )"
+              "version": "[2.25.0, )"
             }
           },
           "imports": [

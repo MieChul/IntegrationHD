@@ -1,10 +1,12 @@
 using HealthDesk.Application;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HealthDesk.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Policy = "AnyAuthenticated")]
 public class CommonController : ControllerBase
 {
     private readonly ICommonService _commonService;

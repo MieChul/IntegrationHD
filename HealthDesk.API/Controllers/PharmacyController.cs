@@ -1,11 +1,13 @@
 using HealthDesk.Application;
 using HealthDesk.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HealthDesk.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Policy = "HospitalLabPharm_Approved")]
     public class PharmacyController : ControllerBase
     {
         private readonly IAccountService _accountService;

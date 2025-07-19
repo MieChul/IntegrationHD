@@ -1,10 +1,12 @@
 using HealthDesk.Application;
 using HealthDesk.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HealthDesk.API.Controllers;
+
 [ApiController]
-//[Authorize]
+[Authorize(Policy = "AnyAuthenticated")]
 [Route("api/[controller]")]
 public class AccountController : ControllerBase
 {

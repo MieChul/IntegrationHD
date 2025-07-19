@@ -27,13 +27,16 @@ public class ErrorHandlingMiddleware
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        var logRepository = context.RequestServices.GetService<ILogRepository>();
+        var logRepository = context.RequestServices.GetRequiredService<ILogRepository>();
         var trace = new StackTrace(exception, true);
         var frame = trace.GetFrames()?.FirstOrDefault(f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("HealthDesk") == true);
         var method = frame?.GetMethod();
         var className = method?.DeclaringType?.FullName ?? "UnknownClass";
         var methodName = method?.Name ?? "UnknownMethod";
-        var message = exception.Message ?? " " + exception.InnerException?.Message ?? "";
+        var message = exception.InnerException != null
+         ? $"{exception.Message} → {exception.InnerException.Message}"
+         : exception.Message;
+
 
         var logMessage = $@"[EXCEPTION] Message: {message} Class: {className} Method: {methodName} StackTrace: {exception.StackTrace}";
         if (logRepository != null)

@@ -37,7 +37,7 @@ public class MessageService : IMessageService
     {
         var smtpClient = new SmtpClient(_configuration["Gmail:SmtpServer"], int.Parse(_configuration["Gmail:SmtpPort"]))
         {
-            Credentials = new NetworkCredential(_configuration["Gmail:Email"], _configuration["Gmail:Password"]),
+                        Credentials = new NetworkCredential(_configuration["Gmail:Email"], _configuration["Gmail:Password"]),
             EnableSsl = true
         };
 

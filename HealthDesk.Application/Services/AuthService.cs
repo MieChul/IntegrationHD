@@ -120,7 +120,7 @@ public class AuthService : IAuthService
     private string GenerateAccessToken(UserDto user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+       var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
 
         var claims = new List<Claim>
         {
@@ -128,16 +128,22 @@ public class AuthService : IAuthService
             new Claim(ClaimTypes.NameIdentifier, user.Id)
         };
 
-        foreach (var role in user.Roles)
+        foreach (var userRole in user.Roles)
         {
-            claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
+            claims.Add(new Claim(ClaimTypes.Role, userRole.Role.ToString()));
+            claims.Add(new Claim("status", userRole.Status));
         }
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddMinutes(15),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            Expires = DateTime.UtcNow.AddMinutes(_configuration.GetValue<int>("Jwt:ExpirationMinutes")),
+            Issuer = _configuration["Jwt:Issuer"],
+            Audience = _configuration["Jwt:Audience"],
+            SigningCredentials = new SigningCredentials(
+                             new SymmetricSecurityKey(key),
+                             SecurityAlgorithms.HmacSha256Signature
+                         )
         };
 
         var token = tokenHandler.CreateToken(tokenDescriptor);

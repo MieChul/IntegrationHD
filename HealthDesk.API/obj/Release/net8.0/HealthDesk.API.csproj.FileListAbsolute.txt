@@ -58,3 +58,15 @@ D:\IntegrationHD\healthdesk.Api\obj\Release\net8.0\refint\HealthDesk.API.dll
 D:\IntegrationHD\healthdesk.Api\obj\Release\net8.0\HealthDesk.API.pdb
 D:\IntegrationHD\healthdesk.Api\obj\Release\net8.0\HealthDesk.API.genruntimeconfig.cache
 D:\IntegrationHD\healthdesk.Api\obj\Release\net8.0\ref\HealthDesk.API.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\HealthDesk.API.staticwebassets.runtime.json
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\AspNetCoreRateLimit.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\Microsoft.Extensions.Configuration.Abstractions.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\Microsoft.Extensions.Configuration.Binder.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\Microsoft.Extensions.Primitives.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\AWSSDK.Core.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\AWSSDK.SecurityToken.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\MongoDB.Driver.Core.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\MongoDB.Libmongocrypt.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\runtimes\linux\native\libmongocrypt.so
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\runtimes\osx\native\libmongocrypt.dylib
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\runtimes\win\native\mongocrypt.dll
