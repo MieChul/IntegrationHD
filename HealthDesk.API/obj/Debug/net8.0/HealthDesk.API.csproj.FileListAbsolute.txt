@@ -250,7 +250,6 @@ D:\IntegrationHD\HealthDesk.Api\bin\Debug\net8.0\FluentValidation.dll
 D:\IntegrationHD\HealthDesk.Api\bin\Debug\net8.0\FluentValidation.AspNetCore.dll
 D:\IntegrationHD\HealthDesk.Api\bin\Debug\net8.0\FluentValidation.DependencyInjectionExtensions.dll
 D:\IntegrationHD\HealthDesk.Api\bin\Debug\net8.0\Microsoft.AspNetCore.OpenApi.dll
-D:\IntegrationHD\HealthDesk.Api\bin\Debug\net8.0\Microsoft.Bcl.TimeProvider.dll
 D:\IntegrationHD\HealthDesk.Api\bin\Debug\net8.0\Microsoft.Extensions.Configuration.FileExtensions.dll
 D:\IntegrationHD\HealthDesk.Api\bin\Debug\net8.0\Microsoft.Extensions.Configuration.Json.dll
 D:\IntegrationHD\HealthDesk.Api\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
@@ -311,3 +310,5 @@ D:\IntegrationHD\HealthDesk.Api\bin\Debug\net8.0\runtimes\win\native\mongocrypt.
 D:\IntegrationHD\HealthDesk.Api\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 D:\IntegrationHD\HealthDesk.Api\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
 D:\IntegrationHD\HealthDesk.Api\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Debug\net8.0\Microsoft.Bcl.Memory.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Debug\net8.0\Twilio.dll
