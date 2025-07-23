@@ -13,6 +13,7 @@ D:\Publish\DnsClient.dll
 D:\Publish\FluentValidation.dll
 D:\Publish\FluentValidation.AspNetCore.dll
 D:\Publish\FluentValidation.DependencyInjectionExtensions.dll
+D:\Publish\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 D:\Publish\Microsoft.AspNetCore.OpenApi.dll
 D:\Publish\Microsoft.Bcl.TimeProvider.dll
 D:\Publish\Microsoft.Extensions.Configuration.Abstractions.dll
@@ -23,6 +24,8 @@ D:\Publish\Microsoft.Extensions.Primitives.dll
 D:\Publish\Microsoft.IdentityModel.Abstractions.dll
 D:\Publish\Microsoft.IdentityModel.JsonWebTokens.dll
 D:\Publish\Microsoft.IdentityModel.Logging.dll
+D:\Publish\Microsoft.IdentityModel.Protocols.dll
+D:\Publish\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 D:\Publish\Microsoft.IdentityModel.Tokens.dll
 D:\Publish\Microsoft.OpenApi.dll
 D:\Publish\MongoDB.Bson.dll
@@ -36,7 +39,6 @@ D:\Publish\Swashbuckle.AspNetCore.Swagger.dll
 D:\Publish\Swashbuckle.AspNetCore.SwaggerGen.dll
 D:\Publish\Swashbuckle.AspNetCore.SwaggerUI.dll
 D:\Publish\System.IdentityModel.Tokens.Jwt.dll
-D:\Publish\Twilio.dll
 D:\Publish\ZstdSharp.dll
 D:\Publish\runtimes\linux\native\libmongocrypt.so
 D:\Publish\runtimes\osx\native\libmongocrypt.dylib

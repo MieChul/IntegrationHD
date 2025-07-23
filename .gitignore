@@ -1,0 +1,91 @@
+cat << EOF > .gitignore
+# Created by Gemini - https://gemini.google.com/
+# This .gitignore is for a combined .NET Core and Angular project.
+
+## General
+# Log files
+*.log
+
+# IDE-specific folders
+.idea/
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# ==================================================================================
+
+## .NET Core / Visual Studio
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Build results of an old SciTech.NET project
+[Dd]ebug[Ss]erial/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+/packages/
+
+# Local configuration files that may contain secrets
+appsettings.Development.json
+secrets.json
+
+# Visual Studio cache files
+.vs/
+# ReSharper is a common extension
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.[Pp]ublish.xml
+*.[Pp]ublish[Pp]rofile
+
+# ==================================================================================
+
+## Angular / Node.js
+# Dependencies
+/node_modules/
+
+# Build output and temporary files
+/dist/
+/tmp/
+/.angular/
+*.tsbuildinfo
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test reports
+/coverage/
+
+# Environment files (if they contain secrets)
+.env
+.env.local
+.env.*.local
+EOF

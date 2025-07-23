@@ -34,6 +34,7 @@ public class OtpController : ControllerBase
         var otpToken = _otpService.GenerateOtpToken(otp, request.Contact);
 
         // Send OTP via messaging service
+        //await _otpService.SendNotification(request.Contact, $"Your OTP is {otp}. It will expire in 5 minutes.", "Your OTP Code");
         _otpService.SendNotification(request.Contact, $"Your OTP is {otp}. It will expire in 5 minutes.", "Your OTP Code");
 
         return Ok(new { OtpToken = otpToken });
@@ -53,8 +54,9 @@ public class OtpController : ControllerBase
         var otpToken = _otpService.GenerateOtpToken(otp, request.Contact);
 
         // Send OTP via messaging service
+        //await _otpService.SendNotification(request.Contact, $"Your OTP is {otp}. It will expire in 5 minutes.", "Your OTP Code");
         _otpService.SendNotification(request.Contact, $"Your OTP is {otp}. It will expire in 5 minutes.", "Your OTP Code");
-
+        
         return Ok(new { OtpToken = otpToken });
     }
 

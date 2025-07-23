@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "vGkDIX31Pw2Co6eX+n1VzFIXeXr1fxC/LxVkCKXCxDI=",
+  "Hash": "MUSICvnK2rMW1kUauPSzWslJZH6fXWtNKdQ/peER3mU=",
   "Source": "HealthDesk.API",
   "BasePath": "_content/HealthDesk.API",
   "Mode": "Default",
@@ -10,7 +10,7 @@
     {
       "Name": "HealthDesk.API\\wwwroot",
       "Source": "HealthDesk.API",
-      "ContentRoot": "D:\\IntegrationHD\\HealthDesk.Api\\wwwroot\\",
+      "ContentRoot": "D:\\IntegrationHD\\HealthDesk.API\\wwwroot\\",
       "BasePath": "_content/HealthDesk.API",
       "Pattern": "**"
     }
@@ -20,7 +20,7 @@
       "Identity": "D:\\IntegrationHD\\HealthDesk.Api\\wwwroot\\assets\\documents\\6850d46fe9789525659a7eac\\investigations\\685166692a10faabd4ddd28f_report.pdf",
       "SourceId": "HealthDesk.API",
       "SourceType": "Discovered",
-      "ContentRoot": "D:\\IntegrationHD\\HealthDesk.Api\\wwwroot\\",
+      "ContentRoot": "D:\\IntegrationHD\\HealthDesk.API\\wwwroot\\",
       "BasePath": "_content/HealthDesk.API",
       "RelativePath": "assets/documents/6850d46fe9789525659a7eac/investigations/685166692a10faabd4ddd28f_report.pdf",
       "AssetKind": "All",

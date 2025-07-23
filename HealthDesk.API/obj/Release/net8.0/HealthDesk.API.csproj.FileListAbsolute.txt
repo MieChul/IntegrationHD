@@ -28,7 +28,6 @@ D:\IntegrationHD\healthdesk.Api\bin\Release\net8.0\Swashbuckle.AspNetCore.Swagge
 D:\IntegrationHD\healthdesk.Api\bin\Release\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 D:\IntegrationHD\healthdesk.Api\bin\Release\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
 D:\IntegrationHD\healthdesk.Api\bin\Release\net8.0\System.IdentityModel.Tokens.Jwt.dll
-D:\IntegrationHD\healthdesk.Api\bin\Release\net8.0\Twilio.dll
 D:\IntegrationHD\healthdesk.Api\bin\Release\net8.0\ZstdSharp.dll
 D:\IntegrationHD\healthdesk.Api\bin\Release\net8.0\HealthDesk.Application.dll
 D:\IntegrationHD\healthdesk.Api\bin\Release\net8.0\HealthDesk.Core.dll
@@ -70,3 +69,6 @@ D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\MongoDB.Libmongocrypt.dll
 D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\runtimes\linux\native\libmongocrypt.so
 D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\runtimes\osx\native\libmongocrypt.dylib
 D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\runtimes\win\native\mongocrypt.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\Microsoft.IdentityModel.Protocols.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll

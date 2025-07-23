@@ -75,6 +75,18 @@ public class OtpService : IOtpService
     }
 
     // Implementation of SendNotification for generic message sending
+    // public async Task SendNotification(string contact, string message, string subject = "HealthDesk Notification")
+    // {
+    //     if (IsValidEmail(contact))
+    //     {
+    //         _messageService.SendEmail(contact, subject, message);
+    //     }
+    //     else
+    //     {
+    //        await _messageService.SendSms(contact, message);
+    //     }
+    // }
+
     public void SendNotification(string contact, string message, string subject = "HealthDesk Notification")
     {
         if (IsValidEmail(contact))
@@ -86,7 +98,7 @@ public class OtpService : IOtpService
             _messageService.SendSms(contact, message);
         }
     }
-
+    
     // Method to determine if the contact is an email
     private bool IsValidEmail(string email)
     {

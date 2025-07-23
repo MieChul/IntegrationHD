@@ -1,4 +1,4 @@
 export const environment = {
     production: false,
-    apiUrl: 'https://www.healthdeskapp.in/api'
+    apiUrl: 'http://localhost:5148/api'
   };

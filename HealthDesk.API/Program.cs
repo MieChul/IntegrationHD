@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,30 +55,40 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 builder.Services.AddResponseCompression();
+builder.Services.AddHttpClient();
 
 
-if (prerelease)
+// ADD THIS SINGLE BLOCK IN THEIR PLACE
+builder.Services.AddAuthentication(options =>
 {
-    builder.Services
-        .AddAuthentication("BasicAuth")
-        .AddScheme<AuthenticationSchemeOptions, BasicAuthHandler>(
-            "BasicAuth", options => { });
-}
-
-// ----- Cookie Auth -----
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(opts =>
+    // Set JWT as the default scheme for the main application
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddScheme<AuthenticationSchemeOptions, BasicAuthHandler>("BasicAuth", _ => { }) // Add BasicAuth as an available scheme
+.AddJwtBearer(options => // Add JWT as an available scheme
+{
+    // --- Paste your existing JWT bearer options here ---
+    options.Events = new JwtBearerEvents
     {
-        opts.Cookie.HttpOnly = true;
-        opts.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-        opts.Cookie.SameSite = SameSiteMode.None;
-        opts.ExpireTimeSpan = TimeSpan.FromMinutes(config.GetValue<int>("Jwt:ExpirationMinutes"));
-        opts.SlidingExpiration = true;
-        opts.LoginPath = "/api/auth/redirect-to-login";
-        opts.LogoutPath = "/api/auth/redirect-to-login";
-        opts.AccessDeniedPath = "/api/auth/redirect-to-login";
-    });
+        OnMessageReceived = context =>
+        {
+            context.Token = context.Request.Cookies["AccessToken"];
+            return Task.CompletedTask;
+        }
+    };
 
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
+});
 
 builder.Services.AddAuthorization(options =>
 {

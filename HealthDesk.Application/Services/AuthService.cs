@@ -90,37 +90,40 @@ public class AuthService : IAuthService
         return GenerateAccessToken(userDto);
     }
 
-    public async Task SetTokenCookies(HttpContext context, UserDto user)
+public async Task SetTokenCookies(HttpContext context, UserDto user, bool isDev)
+{
+    var accessToken = GenerateAccessToken(user);
+    var refreshToken = await GenerateRefreshToken(user.Id);
+
+    // Determine the settings based on the environment
+    var isSecure = !isDev;
+    var sameSiteMode = isSecure ? SameSiteMode.None : SameSiteMode.Lax;
+
+    // Set the AccessToken cookie
+    context.Response.Cookies.Append("AccessToken", accessToken, new CookieOptions
     {
-        // Generate access and refresh tokens
-        var accessToken = GenerateAccessToken(user);
-        var refreshToken = await GenerateRefreshToken(user.Id);
+        HttpOnly = true,
+        Secure = isSecure,
+        SameSite = sameSiteMode,
+        Path = "/",
+        Expires = DateTime.UtcNow.AddMinutes(15) // Set expiration directly
+    });
 
-        // Set access token cookie
-        context.Response.Cookies.Append("AccessToken", accessToken, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = false, // Use true in production
-            SameSite = SameSiteMode.None,
-            Path = "/",
-            Expires = DateTime.UtcNow.AddMinutes(15) // Short-lived access token
-        });
-
-        // Set refresh token cookie
-        context.Response.Cookies.Append("RefreshToken", refreshToken, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = false, // Use true in production
-            SameSite = SameSiteMode.None,
-            Path = "/",
-            Expires = DateTime.UtcNow.AddDays(1) // Long-lived refresh token
-        });
-    }
+    // Set the RefreshToken cookie
+    context.Response.Cookies.Append("RefreshToken", refreshToken, new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = isSecure,
+        SameSite = sameSiteMode,
+        Path = "/",
+        Expires = DateTime.UtcNow.AddDays(1) // Set expiration directly
+    });
+}
 
     private string GenerateAccessToken(UserDto user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-       var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+        var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
 
         var claims = new List<Claim>
         {
@@ -130,7 +133,9 @@ public class AuthService : IAuthService
 
         foreach (var userRole in user.Roles)
         {
-            claims.Add(new Claim(ClaimTypes.Role, userRole.Role.ToString()));
+            string roleName = ((HealthDesk.Core.Enum.Role)userRole.Role).ToString();
+            claims.Add(new Claim(ClaimTypes.Role, roleName));
+
             claims.Add(new Claim("status", userRole.Status));
         }
 
