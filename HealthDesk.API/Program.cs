@@ -1,8 +1,6 @@
 using AspNetCoreRateLimit;
 using HealthDesk.API;
 using HealthDesk.Application.Extensions;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -16,7 +14,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 var config = builder.Configuration;
-var prerelease = config.GetValue<bool>("PreReleaseAuth:Enabled");
 var origins = config.GetSection("Cors:AllowedOrigins").Get<string[]>();
 const string CorsPolicyName = "_allowedOrigins";
 
@@ -57,38 +54,29 @@ builder.Services.AddHealthChecks();
 builder.Services.AddResponseCompression();
 builder.Services.AddHttpClient();
 
-
-// ADD THIS SINGLE BLOCK IN THEIR PLACE
-builder.Services.AddAuthentication(options =>
-{
-    // Set JWT as the default scheme for the main application
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddScheme<AuthenticationSchemeOptions, BasicAuthHandler>("BasicAuth", _ => { }) // Add BasicAuth as an available scheme
-.AddJwtBearer(options => // Add JWT as an available scheme
-{
-    // --- Paste your existing JWT bearer options here ---
-    options.Events = new JwtBearerEvents
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        OnMessageReceived = context =>
+        options.Events = new JwtBearerEvents
         {
-            context.Token = context.Request.Cookies["AccessToken"];
-            return Task.CompletedTask;
-        }
-    };
+            OnMessageReceived = context =>
+            {
+                context.Token = context.Request.Cookies["AccessToken"];
+                return Task.CompletedTask;
+            }
+        };
 
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-    };
-});
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
 
 builder.Services.AddAuthorization(options =>
 {
@@ -136,10 +124,9 @@ builder.Services.Configure<IISServerOptions>(o => o.MaxRequestBodySize = 50 * 10
 builder.Services.Configure<KestrelServerOptions>(o => o.Limits.MaxRequestBodySize = 50 * 1024 * 1024);
 
 builder.Services.AddMemoryCache();
-builder.Services.Configure<IpRateLimitOptions>(config.GetSection("IpRateLimiting"));
+builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
 builder.Services.AddInMemoryRateLimiting();
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
-
 
 var app = builder.Build();
 
@@ -162,28 +149,20 @@ app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseRouting();
 app.UseIpRateLimiting();
 app.UseCors(CorsPolicyName);
+
+
+var prerelease = app.Configuration.GetValue<bool>("PreReleaseAuth:Enabled");
+if (prerelease)
+{
+    app.UseMiddleware<PreReleaseAuthMiddleware>();
+}
+
 app.UseMiddleware<TokenRefreshMiddleware>();
 app.UseMiddleware<AntiMaliciousDataMiddleware>();
 
 app.UseAuthentication();
-if (prerelease)
-{
-    app.Use(async (ctx, next) =>
-    {
-        if (ctx.User?.Identity?.IsAuthenticated != true)
-        {
-            ctx.Response.Headers["WWW-Authenticate"] = "Basic realm=\"PreRelease\"";
-            ctx.Response.StatusCode = 401;
-            await ctx.Response.WriteAsync("Authentication required.");
-            return;
-        }
-        await next();
-    });
-}
-
 app.UseAuthorization();
 
-// ----- Routes -----
 app.MapControllers();
 app.MapFallbackToFile("index.html");
 

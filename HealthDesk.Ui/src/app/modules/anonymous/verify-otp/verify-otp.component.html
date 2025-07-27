@@ -29,7 +29,7 @@
     <!-- Show reCAPTCHA only before OTP is sent -->
     <div *ngIf="!isOtpSent" class="captcha-container">
       <re-captcha (resolved)="onCaptchaResolved($event)"
-        siteKey="6LfKHokrAAAAAHDyZqs4FBJXNDZMaL0hN88JBvgK"></re-captcha>
+        siteKey="6Lf_vowrAAAAALsIviayH9I2yAj9xITVDQQ1k1Um"></re-captcha>
     </div>
 
     <div class="resend-otp-message" *ngIf="isOtpSent && !isResendAvailable">

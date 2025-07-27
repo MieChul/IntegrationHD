@@ -1,4 +1,4 @@
 export const environment = {
-    production: false,
-    apiUrl: 'https://healthdeskapp.in/api'
-  };
+  production: false,
+  apiUrl: 'https://www.healthdeskapp.in/api'
+};

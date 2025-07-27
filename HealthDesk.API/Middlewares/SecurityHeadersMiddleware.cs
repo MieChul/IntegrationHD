@@ -13,6 +13,7 @@ public class SecurityHeadersMiddleware
     {
 
         var csp = "default-src 'self'; " +
+                  "connect-src 'self' https://www.healthdeskapp.in https://www.google.com; " +
                   "img-src 'self' data:; " +
                   "font-src 'self' https://fonts.gstatic.com; " +
                   "script-src 'self' 'unsafe-inline' www.google.com www.gstatic.com; " +
