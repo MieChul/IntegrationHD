@@ -64,6 +64,7 @@ export class PharmacyLandingComponent implements OnInit {
 
   initForms(): void {
     this.brandForm = this.fb.group({
+      id: [''],
       brandOwner: ['', Validators.required],
       brandName: ['', Validators.required],
       genericName: ['', Validators.required],

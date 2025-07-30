@@ -2,99 +2,118 @@
   <h1 class="animated-heading">
     Welcome!! How can I help you today?
   </h1>
-  <div *ngIf="userData.status !== 'Approved'" class=" blink-message alert bg-danger fade show mt-3" role="alert">
-    <strong>Complete Your Profile!</strong> To access HealthDesk utilities, please complete your profile. Clicking any button will redirect you to the profile page.<a href="account/" class="btn btn-primary">Click Here</a>
-  </div>
-    <div class="row justify-content-center mb-2">
-      <div class="col card small">
-        <div class="h-100 fade-in">
-          <img src="assets/medical_history.jpg" class="card-img-top" alt="">
-          <div class="card-body">
-            <h5 class="card-title">Medical History</h5>
-            <p class="card-text">Access and update medical history.</p>
-            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
-            <a *ngIf="userData.status === 'Approved'" href="/patient/history" class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
-          </div>
-        </div>
-      </div>
-      <div class="col card small">
-        <div class="h-100 fade-in">
-          <img src="assets/patient_treatments.jpg" class="card-img-top" alt="">
-          <div class="card-body">
-            <h5 class="card-title">Treatments</h5>
-            <p class="card-text">Access and update treatments.</p>
-            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
-            <a *ngIf="userData.status === 'Approved'" href="/patient/treatment" class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
-          </div>
-        </div>
-      </div>
-      <div class="col card small">
-        <div class="h-100 fade-in">
-          <img src="assets/patient_appointments.jpg" class="card-img-top" alt="">
-          <div class="card-body">
-            <h5 class="card-title">Appointments</h5>
-            <p class="card-text">Schedule and manage appointments.</p>
-            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
-            <a *ngIf="userData.status === 'Approved'" href="/patient/appointments" class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
-          </div>
-        </div>
-      </div>
-      <div class="col card small">
-        <div class="h-100 fade-in">
-          <img src="assets/self_records.jpg" class="card-img-top" alt="">
-          <div class="card-body">
-            <h5 class="card-title">Self Records</h5>
-            <p class="card-text">Access and update self records.</p>
-            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
-            <a *ngIf="userData.status === 'Approved'" href="/patient/self-recording" class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
-          </div>
+  <ng-container *ngIf="userData && userData.status">
+    <div *ngIf="userData.status !== 'Approved'" class=" blink-message alert bg-danger fade show mt-3" role="alert">
+      <strong>Complete Your Profile!</strong> To access HealthDesk utilities, please complete your profile. Clicking any
+      button will redirect you to the profile page.<a href="account/" class="btn btn-primary">Click Here</a>
+    </div>
+  </ng-container>
+  <div class="row justify-content-center mb-2">
+    <div class="col card small">
+      <div class="h-100 fade-in">
+        <img src="assets/medical_history.jpg" class="card-img-top" alt="">
+        <div class="card-body">
+          <h5 class="card-title">Medical History</h5>
+          <p class="card-text">Access and update medical history.</p>
+          <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Click here to visit <i
+              class="bi bi-arrow-right"></i></a>
+          <a *ngIf="userData.status === 'Approved'" href="/patient/history" class="btn btn-primary">Click here to visit
+            <i class="bi bi-arrow-right"></i></a>
         </div>
       </div>
     </div>
-    <div class="row justify-content-center">
-      <div class="col card small">
-        <div class="h-100 fade-in">
-          <img src="assets/medicine_refill.jpg" class="card-img-top" alt="">
-          <div class="card-body">
-            <h5 class="card-title">Medicine Refill and Compliance</h5>
-            <p class="card-text">Access and update medicine refill and compliance.</p>
-            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
-            <a *ngIf="userData.status === 'Approved'" href="/patient/refill" class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
-          </div>
+    <div class="col card small">
+      <div class="h-100 fade-in">
+        <img src="assets/patient_treatments.jpg" class="card-img-top" alt="">
+        <div class="card-body">
+          <h5 class="card-title">Treatments</h5>
+          <p class="card-text">Access and update treatments.</p>
+          <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Click here to visit <i
+              class="bi bi-arrow-right"></i></a>
+          <a *ngIf="userData.status === 'Approved'" href="/patient/treatment" class="btn btn-primary">Click here to
+            visit <i class="bi bi-arrow-right"></i></a>
         </div>
       </div>
-      <div class="col card small">
-        <div class="h-100 fade-in">
-          <img src="assets/activity.jpg" class="card-img-top" alt="">
-          <div class="card-body">
-            <h5 class="card-title">Diet and Physical Activity</h5>
-            <p class="card-text">Access and update diet and physicial activity.</p>
-            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
-            <a *ngIf="userData.status === 'Approved'" href="/patient/daily-activity" class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
-          </div>
+    </div>
+    <div class="col card small">
+      <div class="h-100 fade-in">
+        <img src="assets/patient_appointments.jpg" class="card-img-top" alt="">
+        <div class="card-body">
+          <h5 class="card-title">Appointments</h5>
+          <p class="card-text">Schedule and manage appointments.</p>
+          <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Click here to visit <i
+              class="bi bi-arrow-right"></i></a>
+          <a *ngIf="userData.status === 'Approved'" href="/patient/appointments" class="btn btn-primary">Click here to
+            visit <i class="bi bi-arrow-right"></i></a>
         </div>
       </div>
-      <div class="col card small">
-        <div class="h-100 fade-in">
-          <img src="assets/rate.jpg" class="card-img-top" alt="">
-          <div class="card-body">
-            <h5 class="card-title">Search and Rate</h5>
-            <p class="card-text">Search and rate doctor, hospital, laboratory or pharmacy.</p>
-            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
-            <a *ngIf="userData.status === 'Approved'" href="/patient/rate" class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
-          </div>
-        </div>
-      </div>
-      <div class="col card small">
-        <div class="h-100 fade-in">
-          <img src="assets/remedies.jpg" class="card-img-top" alt="">
-          <div class="card-body">
-            <h5 class="card-title">Home Remidies</h5>
-            <p class="card-text">Access or add home remidies.</p>
-            <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
-            <a *ngIf="userData.status === 'Approved'" href="/patient/remidies" class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
-          </div>
+    </div>
+    <div class="col card small">
+      <div class="h-100 fade-in">
+        <img src="assets/self_records.jpg" class="card-img-top" alt="">
+        <div class="card-body">
+          <h5 class="card-title">Self Records</h5>
+          <p class="card-text">Access and update self records.</p>
+          <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Click here to visit <i
+              class="bi bi-arrow-right"></i></a>
+          <a *ngIf="userData.status === 'Approved'" href="/patient/self-recording" class="btn btn-primary">Click here to
+            visit <i class="bi bi-arrow-right"></i></a>
         </div>
       </div>
     </div>
   </div>
+  <div class="row justify-content-center">
+    <div class="col card small">
+      <div class="h-100 fade-in">
+        <img src="assets/medicine_refill.jpg" class="card-img-top" alt="">
+        <div class="card-body">
+          <h5 class="card-title">Medicine Refill and Compliance</h5>
+          <p class="card-text">Access and update medicine refill and compliance.</p>
+          <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Click here to visit <i
+              class="bi bi-arrow-right"></i></a>
+          <a *ngIf="userData.status === 'Approved'" href="/patient/refill" class="btn btn-primary">Click here to visit
+            <i class="bi bi-arrow-right"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="col card small">
+      <div class="h-100 fade-in">
+        <img src="assets/activity.jpg" class="card-img-top" alt="">
+        <div class="card-body">
+          <h5 class="card-title">Diet and Physical Activity</h5>
+          <p class="card-text">Access and update diet and physicial activity.</p>
+          <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Click here to visit <i
+              class="bi bi-arrow-right"></i></a>
+          <a *ngIf="userData.status === 'Approved'" href="/patient/daily-activity" class="btn btn-primary">Click here to
+            visit <i class="bi bi-arrow-right"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="col card small">
+      <div class="h-100 fade-in">
+        <img src="assets/rate.jpg" class="card-img-top" alt="">
+        <div class="card-body">
+          <h5 class="card-title">Search and Rate</h5>
+          <p class="card-text">Search and rate doctor, hospital, laboratory or pharmacy.</p>
+          <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Click here to visit <i
+              class="bi bi-arrow-right"></i></a>
+          <a *ngIf="userData.status === 'Approved'" href="/patient/rate" class="btn btn-primary">Click here to visit <i
+              class="bi bi-arrow-right"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="col card small">
+      <div class="h-100 fade-in">
+        <img src="assets/remedies.jpg" class="card-img-top" alt="">
+        <div class="card-body">
+          <h5 class="card-title">Home Remidies</h5>
+          <p class="card-text">Access or add home remidies.</p>
+          <a *ngIf="userData.status !== 'Approved'" href="account/" class="btn btn-primary">Click here to visit <i
+              class="bi bi-arrow-right"></i></a>
+          <a *ngIf="userData.status === 'Approved'" href="/patient/remidies" class="btn btn-primary">Click here to visit
+            <i class="bi bi-arrow-right"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -23,20 +23,6 @@ export class PatientTreatmentComponent implements OnInit {
   activeTab = 'ongoing'; // Default tab
   userData: any = [];
 
-  diseaseFilterCtrl = new FormControl();
-  drugFilterCtrl = new FormControl();
-  dosageFormFilterCtrl = new FormControl();
-  strengthUnitFilterCtrl = new FormControl();
-  frequencyFilterCtrl = new FormControl();
-  brandFilterCtrl = new FormControl();
-
-  filteredDiseases!: Observable<string[]>;
-  filteredDrugs!: Observable<string[]>;
-  filteredDosageForms!: Observable<string[]>;
-  filteredStrengthUnits!: Observable<string[]>;
-  filteredFrequencies!: Observable<string[]>;
-  filteredBrands!: Observable<string[]>;
-
   // Dropdowns
   drugs: string[] = [];
   dosageForms: string[] = [];
@@ -71,7 +57,6 @@ export class PatientTreatmentComponent implements OnInit {
 
         // Load treatments
         await this.loadTreatments();
-        await this.initializeSearch();
 
       },
       error: (err) => console.error('Error fetching user data:', err)
@@ -119,63 +104,22 @@ export class PatientTreatmentComponent implements OnInit {
     this.filterForm.valueChanges.subscribe(() => this.applyDateFilter());
   }
 
-  initializeSearch(): void {
-    this.filteredDiseases = this.diseaseFilterCtrl.valueChanges.pipe(
-      startWith(''),
-      map((search) => this.filterOptions(search, this.diseases))
-    );
-
-    this.filteredDrugs = this.drugFilterCtrl.valueChanges.pipe(
-      startWith(''),
-      map((search) => this.filterOptions(search, this.drugs))
-    );
-
-    this.filteredDosageForms = this.dosageFormFilterCtrl.valueChanges.pipe(
-      startWith(''),
-      map((search) => this.filterOptions(search, this.dosageForms))
-    );
-
-    this.filteredStrengthUnits = this.strengthUnitFilterCtrl.valueChanges.pipe(
-      startWith(''),
-      map((search) => this.filterOptions(search, this.strengthUnits))
-    );
-
-    this.filteredFrequencies = this.frequencyFilterCtrl.valueChanges.pipe(
-      startWith(''),
-      map((search) => this.filterOptions(search, this.frequencies))
-    );
-
-    this.filteredBrands = this.brandFilterCtrl.valueChanges.pipe(
-      startWith(''),
-      map((search) => this.filterOptions(search, this.brands))
-    );
-
-  }
-
-  filterOptions(search: string, options: string[]): string[] {
-    const filterValue = search.toLowerCase();
-    return options.filter(option => option.toLowerCase().includes(filterValue));
-  }
 
   async onDrugChange() {
     const selectedDrug = this.treatmentForm.get('treatmentDrug')?.value;
 
-    // Disable dependent dropdowns while data is loading
     this.treatmentForm.get('dosageForm')?.disable();
     this.treatmentForm.get('strengthUnit')?.disable();
-
-    // Fetch new dosage forms
-    this.dosageForms = [];
-    this.strengthUnits = [];
-    if (selectedDrug) {
-      this.dosageForms = await this.databaseService.getForms(selectedDrug);
-    }
-
-    // Reset and enable dosage form dropdown if data is available
     this.treatmentForm.patchValue({ dosageForm: '', strengthUnit: '' });
 
-    if (this.dosageForms.length > 0) {
-      this.treatmentForm.get('dosageForm')?.enable();
+    this.dosageForms = [];
+    this.strengthUnits = [];
+
+    if (selectedDrug) {
+      this.dosageForms = await this.databaseService.getForms(selectedDrug);
+      if (this.dosageForms.length > 0) {
+        this.treatmentForm.get('dosageForm')?.enable();
+      }
     }
   }
 
@@ -183,20 +127,16 @@ export class PatientTreatmentComponent implements OnInit {
     const selectedDrug = this.treatmentForm.get('treatmentDrug')?.value;
     const selectedDosageForm = this.treatmentForm.get('dosageForm')?.value;
 
-    // Disable strength unit dropdown while loading
     this.treatmentForm.get('strengthUnit')?.disable();
-
-    // Fetch new strength units
-    this.strengthUnits = [];
-    if (selectedDrug && selectedDosageForm) {
-      this.strengthUnits = await this.databaseService.getStrengths(selectedDrug, selectedDosageForm);
-    }
-
-    // Reset and enable strength unit dropdown if data is available
     this.treatmentForm.patchValue({ strengthUnit: '' });
 
-    if (this.strengthUnits.length > 0) {
-      this.treatmentForm.get('strengthUnit')?.enable();
+    this.strengthUnits = [];
+
+    if (selectedDrug && selectedDosageForm) {
+      this.strengthUnits = await this.databaseService.getStrengths(selectedDrug, selectedDosageForm);
+      if (this.strengthUnits.length > 0) {
+        this.treatmentForm.get('strengthUnit')?.enable();
+      }
     }
   }
 

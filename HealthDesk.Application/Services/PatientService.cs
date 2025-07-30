@@ -303,6 +303,27 @@ public class PatientService : IPatientService
         await _patientRepository.UpdateAsync(patient);
     }
 
+    public async Task SaveLabInvestigationsAsync(string patientId, LabInvestigationDto dto)
+    {
+        var patient = await GetPatientByIdAsync(patientId);
+
+        var investigation = new LabInvestigation();
+        GenericMapper.Map(dto, investigation);
+
+        if (string.IsNullOrEmpty(dto.Id))
+        {
+            patient.LabInvestigations.Add(investigation);
+        }
+        else
+        {
+            var existing = patient.LabInvestigations.FirstOrDefault(s => s.Id == dto.Id);
+            if (existing == null) throw new ArgumentException("Symptom not found.");
+            GenericMapper.Map(dto, existing);
+        }
+
+        await _patientRepository.UpdateAsync(patient);
+    }
+
 
     public async Task DeleteLabInvestigationAsync(string patientId, string investigationId)
     {

@@ -39,16 +39,20 @@
           <td>{{ survey.is_active ? 'Yes' : 'No' }}</td>
           <td>{{ survey.responses.length || 0 }}</td>
           <td>
-            <button class="btn btn-secondary btn-sm me-1" (click)="shareSurvey(survey)">
+            <button class="btn btn-secondary btn-sm me-1" (click)="shareSurvey(survey)" data-bs-toggle="tooltip"
+              data-bs-placement="top" title="Share">
               <i class="bi bi-share"></i>
             </button>
-            <button class="btn btn-success btn-sm me-1" (click)="viewResponses(survey)">
+            <button class="btn btn-success btn-sm me-1" (click)="viewResponses(survey)" data-bs-toggle="tooltip"
+              data-bs-placement="top" title="View Response">
               <i class="bi bi-eye"></i>
             </button>
-            <button class="btn btn-warning btn-sm me-1" (click)="editSurvey(survey)">
+            <button class="btn btn-warning btn-sm me-1" (click)="editSurvey(survey)" data-bs-toggle="tooltip"
+              data-bs-placement="top" title="Edit">
               <i class="bi bi-pencil"></i>
             </button>
-            <button class="btn btn-danger btn-sm" (click)="deleteSurvey(survey)">
+            <button class="btn btn-danger btn-sm" (click)="openDeleteConfirmation(survey)" data-bs-toggle="tooltip"
+              data-bs-placement="top" title="Delete">
               <i class="bi bi-trash"></i>
             </button>
           </td>
@@ -57,6 +61,25 @@
     </table>
     <div *ngIf="filteredSurveys?.length === 0" class="alert alert-info">
       No history found. Click "Add History" to get started.
+    </div>
   </div>
+</div>
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete the survey: <strong>{{ surveyToDelete?.name }}</strong>?</p>
+        <p class="text-danger small">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" (click)="confirmDelete()">Delete</button>
+      </div>
+    </div>
   </div>
 </div>

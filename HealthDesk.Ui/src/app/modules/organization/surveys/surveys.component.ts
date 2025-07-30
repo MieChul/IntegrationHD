@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import * as bootstrap from 'bootstrap';
+import { Tooltip } from 'bootstrap';
 import { AccountService } from '../../services/account.service';
 import { DatabaseService } from '../../../shared/services/database.service';
 import { SortingService } from '../../../shared/services/sorting.service';
@@ -27,6 +28,8 @@ export class SurveysComponent implements OnInit {
   isLinkCopied: boolean = false;
   userData: any;
   sortDirection: { [key: string]: 'asc' | 'desc' } = {};
+  surveyToDelete: any;
+  private deleteModal: bootstrap.Modal | undefined;
   constructor(
     private organizationService: OrganizationService,
     private router: Router,
@@ -47,12 +50,33 @@ export class SurveysComponent implements OnInit {
     });
   }
 
+  ngAfterViewInit(): void {
+    // Initialize Bootstrap tooltips
+    const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(tooltipTriggerEl => new Tooltip(tooltipTriggerEl));
+
+    // Initialize the delete confirmation modal
+    const modalElement = document.getElementById('deleteConfirmationModal');
+    if (modalElement) {
+      this.deleteModal = new bootstrap.Modal(modalElement);
+    }
+  }
+
+  private initializeTooltips(): void {
+    const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(tooltipTriggerEl => new Tooltip(tooltipTriggerEl));
+  }
+
   loadSurveys() {
+    this.disposeTooltips();
     this.organizationService.getSurveys().then((surveys) => {
       this.surveys = surveys?.map((records: any) => ({
         ...records
       })).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
       this.filteredSurveys = [...this.surveys];
+      setTimeout(() => {
+        this.initializeTooltips();
+      }, 0);
     });
   }
 
@@ -110,5 +134,38 @@ export class SurveysComponent implements OnInit {
       },
       []
     );
+  }
+
+  openDeleteConfirmation(survey: any): void {
+    this.surveyToDelete = survey; // Store the survey to be deleted
+    if (this.deleteModal) {
+      this.deleteModal.show(); // Show the confirmation modal
+    }
+  }
+
+  confirmDelete(): void {
+    if (this.surveyToDelete && this.surveyToDelete.id) {
+      this.organizationService.deleteSurvey(this.surveyToDelete.id).then(() => {
+        this.loadSurveys(); // Reload surveys after successful deletion
+        this.closeDeleteConfirmation();
+      });
+    }
+  }
+
+  closeDeleteConfirmation(): void {
+    if (this.deleteModal) {
+      this.deleteModal.hide(); // Hide the modal
+      this.surveyToDelete = null; // Clear the stored survey
+    }
+  }
+
+  private disposeTooltips(): void {
+    const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(tooltipTriggerEl => {
+      const tooltipInstance = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
+      if (tooltipInstance) {
+        tooltipInstance.dispose();
+      }
+    });
   }
 }

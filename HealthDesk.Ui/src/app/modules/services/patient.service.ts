@@ -198,6 +198,6 @@ export class PatientService {
   }
 
   saveReportFormData(patientId: string, formData: FormData): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${patientId}/lab-investigations`, formData);
+    return this.http.post(`${this.apiUrl}/${patientId}/reports`, formData);
   }
 }

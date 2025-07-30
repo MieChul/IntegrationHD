@@ -24,7 +24,7 @@ public class UserController : ControllerBase
 
         }
 
-        if (await _userService.IsTaken("username", user.Username))
+        if (await _userService.IsTaken("username", user.Username, true))
         {
             return BadRequest("Username is already taken.");
         }

@@ -33,13 +33,13 @@ public interface IPatientService
 
     // 6. Lab Investigations
     Task<IEnumerable<LabInvestigationDto>> GetLabInvestigationsAsync(string patientId);
-    Task<(Patient patient, Report investigation)> GetPatientAndPreparedInvestigationAsync(string patientId, ReportDto dto);
-    Task SavePatientAsync(Patient patient);
+    Task SaveLabInvestigationsAsync(string patientId, LabInvestigationDto dto);
     Task DeleteLabInvestigationAsync(string patientId, string investigationId);
 
     // 7. Reports
     Task<IEnumerable<ReportDto>> GetReportsAsync(string patientId);
-    Task SaveReportAsync(string patientId, ReportDto dto);
+    Task<(Patient patient, Report investigation)> GetPatientAndPreparedInvestigationAsync(string patientId, ReportDto dto);
+    Task SavePatientAsync(Patient patient);
     Task DeleteReportAsync(string patientId, string reportId);
 
     // 8. Immunizations

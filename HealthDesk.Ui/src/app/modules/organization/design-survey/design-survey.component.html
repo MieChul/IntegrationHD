@@ -21,14 +21,14 @@
     <div class="card mb-4">
       <div class="card-body">
         <div class="form-group mb-3">
-          <label for="formName">Form Name</label>
+          <label for="formName">Form Name<i class="text-danger">*</i></label>
           <input type="text" class="form-control input-modern" id="formName" [(ngModel)]="surveyForm.name"
             name="formName" required>
           <span class="text-danger mt-1" *ngIf="formNameError">This field is required.</span>
         </div>
 
         <div class="form-group mb-3">
-          <label for="authorName">Author Name</label>
+          <label for="authorName">Author Name<i class="text-danger">*</i></label>
           <input type="text" class="form-control input-modern" id="authorName" [(ngModel)]="surveyForm.author"
             name="authorName" required>
           <span class="text-danger mt-1" *ngIf="formNameError">This field is required.</span>

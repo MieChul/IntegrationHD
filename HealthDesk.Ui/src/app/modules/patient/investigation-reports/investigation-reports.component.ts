@@ -203,7 +203,7 @@ export class InvestigationReportsComponent implements OnInit {
       {},
       [
         {
-          field: 'dateOfOnset',
+          field: 'date',
           range: [f_startDate || null, f_endDate || null]
         }
       ]

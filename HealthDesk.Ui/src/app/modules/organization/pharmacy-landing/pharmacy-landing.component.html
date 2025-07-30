@@ -146,7 +146,7 @@
             <div class="col-md-6">
               <mat-form-field appearance="outline" class="w-100 mb-3">
                 <mat-label>Strength</mat-label>
-                <input matInput type="text" formControlName="strength" />
+                <input matInput formControlName="strength" />
                 <mat-error *ngIf="brandForm.get('strength')?.hasError('required')">
                   Strength is required.
                 </mat-error>

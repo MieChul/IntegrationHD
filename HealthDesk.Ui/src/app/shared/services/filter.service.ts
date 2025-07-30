@@ -4,6 +4,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class FilteringService {
+
   /**
    * Filters an array of objects based on multiple criteria, including date and time.
    *
@@ -19,104 +20,90 @@ export class FilteringService {
     dateFields: { field: keyof T; range: [string | null, string | null] }[] = [],
     emptyMeansAll: boolean = false
   ): T[] {
+
+    // First, determine if any filter has actually been provided
+    const hasGenericFilters = Object.values(filters).some(v => v != null && v !== '');
+    const hasDateFilters = dateFields.some(df => df.range[0] != null || df.range[1] != null);
+    const hasAnyFilter = hasGenericFilters || hasDateFilters;
+
+    // If no filters are provided and emptyMeansAll is true, return the original data
+    if (!hasAnyFilter && emptyMeansAll) {
+      return data;
+    }
+
     return data.filter(item => {
-      let matchedAny = false;
-      let hasFilter = false;
-
-      // Apply generic filters
-      for (const key in filters) {
+      // 1. Apply generic filters (AND logic: must match all provided filters)
+      const matchesGenericFilters = Object.keys(filters).every(key => {
         const filterValue = filters[key];
-
+        // If the filter is empty, it doesn't fail the condition
         if (filterValue == null || filterValue === '') {
-          continue;
+          return true;
         }
-
-        hasFilter = true;
 
         const itemValue = item[key]?.toString().toLowerCase() || '';
         if (typeof filterValue === 'string') {
-          if (itemValue.includes(filterValue.toLowerCase())) {
-            matchedAny = true;
-          }
+          return itemValue.includes(filterValue.toLowerCase());
         } else {
-          if (item[key] === filterValue) {
-            matchedAny = true;
-          }
+          return item[key] === filterValue;
         }
+      });
+
+      // If a generic filter was applied and it failed, we can stop here
+      if (hasGenericFilters && !matchesGenericFilters) {
+        return false;
       }
 
-      // Apply date filters if provided (still using AND logic here)
-      let matchedDateRange = true;
-      for (const { field, range } of dateFields) {
+      // 2. Apply date filters (AND logic: must match all provided date ranges)
+      const matchesDateFilters = dateFields.every(dateFilter => {
+        const { field, range } = dateFilter;
         const [startDateStr, endDateStr] = range;
-        const itemDateStr = item[field] as any;
 
+        const itemDateStr = item[field] as string;
         const itemDate = this.parseDateTime(itemDateStr);
+
+        // If the date in the item is invalid, it fails the filter
+        if (!itemDate) return false;
+
         const startDate = startDateStr ? this.parseDateTime(startDateStr) : null;
-        const endDate = endDateStr ? this.parseDateTime(endDateStr) : null;
+        let endDate = endDateStr ? this.parseDateTime(endDateStr) : null;
 
-        if (isNaN(itemDate.getTime())) {
-          matchedDateRange = false;
-          break;
+        // Adjust the end date to include the entire day
+        if (endDate) {
+          endDate.setHours(23, 59, 59, 999);
         }
 
-        if (startDate && itemDate < startDate) {
-          matchedDateRange = false;
-          break;
-        }
-        if (endDate && itemDate > endDate) {
-          matchedDateRange = false;
-          break;
-        }
-      }
+        const afterStartDate = !startDate || itemDate >= startDate;
+        const beforeEndDate = !endDate || itemDate <= endDate;
 
-      // If no filters applied, include all
-      if (!hasFilter) return true;
+        return afterStartDate && beforeEndDate;
+      });
 
-      // Return true if any basic filter matches and date filters (if any) also match
-      return matchedAny && matchedDateRange;
+      return matchesGenericFilters && matchesDateFilters;
     });
   }
 
   /**
-   * Parses a date string into a JavaScript Date object, supporting:
-   * - ISO 8601 (YYYY-MM-DDTHH:mm:ssZ)
-   * - Standard formats (MM/DD/YYYY, DD/MM/YYYY)
-   * - 12-hour (hh:mm AM/PM) and 24-hour (HH:mm) time formats
+   * Corrected and robust date parsing function.
+   * Prioritizes ISO format and explicitly handles dd-MM-yyyy.
    */
-  private parseDateTime(dateStr: string): Date {
-    if (!dateStr) return new Date(NaN); // Return invalid date
-
-    // Attempt ISO format parsing
-    if (!isNaN(Date.parse(dateStr))) {
-      return new Date(dateStr);
+  private parseDateTime(dateStr: string): Date | null {
+    if (!dateStr) {
+      return null;
     }
 
-    // Handle 12-hour and 24-hour time formats
-    const timeRegex = /^(\d{1,2}):(\d{2})\s?(AM|PM)?$/i;
-    const match = dateStr.match(timeRegex);
-
-    if (match) {
-      let hours = parseInt(match[1], 10);
-      const minutes = parseInt(match[2], 10);
-      const period = match[3];
-
-      if (period) {
-        // Convert 12-hour to 24-hour format
-        if (period.toUpperCase() === 'PM' && hours !== 12) {
-          hours += 12;
-        } else if (period.toUpperCase() === 'AM' && hours === 12) {
-          hours = 0;
-        }
-      }
-
-      const date = new Date();
-      date.setHours(hours, minutes, 0, 0);
-      return date;
+    // Most reliable method: Parse ISO 8601 string (e.g., "2025-07-27T10:30:00.000Z")
+    const isoDate = new Date(dateStr);
+    if (!isNaN(isoDate.getTime())) {
+      return isoDate;
     }
 
-    // Attempt parsing as standard date format (e.g., MM/DD/YYYY or DD/MM/YYYY)
-    const standardDate = new Date(dateStr);
-    return isNaN(standardDate.getTime()) ? new Date(NaN) : standardDate;
+    // Fallback for dd-MM-yyyy format
+    const parts = dateStr.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+    if (parts) {
+      // Month is 0-indexed in JavaScript Date objects
+      return new Date(parseInt(parts[3]), parseInt(parts[2]) - 1, parseInt(parts[1]));
+    }
+
+    return null; // Return null for any other invalid format
   }
 }

@@ -68,6 +68,7 @@ export class PharmaLandingComponent implements OnInit {
 
   initForm() {
     this.brandForm = this.fb.group({
+      id: [''],
       brandName: ['', Validators.required],
       genericName: ['', Validators.required],
       drugClass: ['', Validators.required],
@@ -141,7 +142,7 @@ export class PharmaLandingComponent implements OnInit {
 
   deleteBrand(brand: any) {
     this.organizationService
-      .deleteBrandLibrary(this.userData.id, brand.brandName)
+      .deleteBrandLibrary(this.userData.id, brand.id)
       .subscribe({
         next: () => this.loadBrands(),
         error: err => console.error('Delete failed', err)

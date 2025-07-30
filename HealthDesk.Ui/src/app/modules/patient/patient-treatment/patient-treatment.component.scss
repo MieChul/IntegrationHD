@@ -1,0 +1,34 @@
+// Define your custom sky-blue color
+$sky-blue-500: #005cbb;
+
+// ---
+// 1. DEFAULT STATE: Floating label when a value is selected.
+// This rule makes the label float when the select has a value (is not the empty option), but keeps it the default grey color.
+// This is the core logic that was missing from your previous attempt.
+// ---
+
+.form-floating>.form-select:not([value=""])~label {
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+    color: #6c757d; // Default label color
+}
+
+// ---
+// 2. FOCUS STATE: The blue outline and label color.
+// These styles are applied ONLY when the select element is focused.
+// They will override the default styles and the "has a value" styles from above.
+// ---
+
+.form-floating>.form-select:focus {
+    border-color: $sky-blue-500;
+}
+
+.form-floating>.form-select:focus~label {
+    color: $sky-blue-500;
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem); // Ensure the label is floated on focus
+}
+
+// Optional: Add a subtle border to the select for a cleaner look when not focused.
+.form-floating .form-select {
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+}

@@ -253,8 +253,8 @@ export class RateComponent implements OnInit {
         const selectedFrom = from ? this.filteringService['parseDateTime'](from) : null;
         const selectedTo = to ? this.filteringService['parseDateTime'](to) : null;
 
-        if (selectedFrom && (physicianFrom < selectedFrom)) matches = false;
-        if (selectedTo && (physicianTo > selectedTo)) matches = false;
+        if (selectedFrom && physicianFrom && (physicianFrom < selectedFrom)) matches = false;
+        if (selectedTo && physicianTo && (physicianTo > selectedTo)) matches = false;
       }
 
       return matches;

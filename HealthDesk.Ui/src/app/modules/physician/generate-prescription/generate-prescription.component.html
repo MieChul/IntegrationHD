@@ -380,77 +380,58 @@
                 <tbody formArrayName="rx">
                   <tr *ngFor="let rxControl of rx.controls; let i = index" [formGroupName]="i">
                     <td>
-                      <mat-form-field appearance="outline" class="small-field">
-                        <mat-label>Brand</mat-label>
-                        <mat-select formControlName="brand">
-                          <mat-option>
-                            <ngx-mat-select-search [formControl]="brandFilterCtrl"
-                              placeholderLabel="Search Brand"></ngx-mat-select-search>
-                          </mat-option>
-                          <mat-option *ngFor="let brand of filteredBrands | async" [value]="brand">
-                            {{ brand }}
-                          </mat-option>
-                        </mat-select>
-                      </mat-form-field>
+                      <div class="mb-3 form-floating small-field">
+                        <select formControlName="brand" class="form-select" id="brand-{{i}}">
+                          <option value="" disabled>-- Select Brand --</option>
+                          <option *ngFor="let brand of brands" [value]="brand">{{ brand }}</option>
+                        </select>
+                        <label for="brand-{{i}}">Brand</label>
+                        <!-- Add validation error display if needed -->
+                      </div>
                     </td>
                     <td>
-                      <mat-form-field appearance="outline" class="small-field">
-                        <mat-label>Drug</mat-label>
-                        <mat-select formControlName="drugName" (selectionChange)="onRxDrugChange(i)">
-                          <mat-option>
-                            <ngx-mat-select-search [formControl]="drugFilterCtrl"
-                              placeholderLabel="Search treatment drug">
-                            </ngx-mat-select-search>
-                          </mat-option>
-                          <mat-option *ngFor="let drug of filteredDrugs | async" [value]="drug">
-                            {{ drug }}
-                          </mat-option>
-                        </mat-select>
-                      </mat-form-field>
+                      <div class="mb-3 form-floating small-field">
+                        <select formControlName="drugName" class="form-select" id="drugName-{{i}}"
+                          (change)="onRxDrugChange(i)">
+                          <option value="" disabled>-- Select Drug --</option>
+                          <option *ngFor="let drug of drugs" [value]="drug">{{ drug }}</option>
+                        </select>
+                        <label for="drugName-{{i}}">Drug</label>
+                        <!-- Add validation error display if needed -->
+                      </div>
                     </td>
                     <td>
-                      <mat-form-field appearance="outline" class="small-field">
-                        <mat-label>Form</mat-label>
-                        <mat-select formControlName="dosageForm" (selectionChange)="onRxDosageFormChange(i)">
-                          <mat-option>
-                            <ngx-mat-select-search [formControl]="fromFilterCtrl" placeholderLabel="Search dosage form">
-                            </ngx-mat-select-search>
-                          </mat-option>
-                          <mat-option *ngFor="let form of filteredFroms | async" [value]="form">
-                            {{ form }}
-                          </mat-option>
-                        </mat-select>
-                      </mat-form-field>
+                      <div class="mb-3 form-floating small-field">
+                        <select formControlName="dosageForm" class="form-select" id="dosageForm-{{i}}"
+                          (change)="onRxDosageFormChange(i)"
+                          [attr.disabled]="rxControl.get('dosageForm')?.disabled ? true : null">
+                          <option value="" disabled>-- Select Form --</option>
+                          <option *ngFor="let form of forms" [value]="form">{{ form }}</option>
+                        </select>
+                        <label for="dosageForm-{{i}}">Form</label>
+                        <!-- Add validation error display if needed -->
+                      </div>
                     </td>
                     <td>
-                      <mat-form-field appearance="outline" class="small-field">
-                        <mat-label>Strength</mat-label>
-                        <mat-select formControlName="strength">
-                          <mat-option>
-                            <ngx-mat-select-search [formControl]="strengthFilterCtrl"
-                              placeholderLabel="Search strength unit">
-                            </ngx-mat-select-search>
-                          </mat-option>
-                          <mat-option *ngFor="let unit of filteredStrengths | async" [value]="unit">
-                            {{ unit }}
-                          </mat-option>
-                        </mat-select>
-                      </mat-form-field>
+                      <div class="mb-3 form-floating small-field">
+                        <select formControlName="strength" class="form-select" id="strength-{{i}}"
+                          [attr.disabled]="rxControl.get('strength')?.disabled ? true : null">
+                          <option value="" disabled>-- Select Strength --</option>
+                          <option *ngFor="let strength of strengths" [value]="strength">{{ strength }}</option>
+                        </select>
+                        <label for="strength-{{i}}">Strength</label>
+                        <!-- Add validation error display if needed -->
+                      </div>
                     </td>
                     <td>
-                      <mat-form-field appearance="outline" class="small-field">
-                        <mat-label>Frequency</mat-label>
-                        <mat-select formControlName="times">
-                          <mat-option>
-                            <ngx-mat-select-search [formControl]="frequencyFilterCtrl"
-                              placeholderLabel="Search frequency">
-                            </ngx-mat-select-search>
-                          </mat-option>
-                          <mat-option *ngFor="let unit of filteredFrequencies | async" [value]="unit">
-                            {{ unit }}
-                          </mat-option>
-                        </mat-select>
-                      </mat-form-field>
+                      <div class="mb-3 form-floating small-field">
+                        <select formControlName="times" class="form-select" id="times-{{i}}">
+                          <option value="" disabled>-- Select Times --</option>
+                          <option *ngFor="let frequency of frequencies" [value]="frequency">{{ frequency }}</option>
+                        </select>
+                        <label for="times-{{i}}">Times</label>
+                        <!-- Add validation error display if needed -->
+                      </div>
                     </td>
                     <td>
                       <mat-form-field appearance="outline" class="small-field">
@@ -468,10 +449,12 @@
                       </mat-form-field>
                     </td>
                     <td>
-                      <mat-form-field appearance="outline" class="small-field">
-                        <mat-label>Instructions</mat-label>
-                        <input matInput formControlName="instruction" />
-                      </mat-form-field>
+                      <div class="mb-3 form-floating small-field">
+                        <input type="text" formControlName="instruction" class="form-control" id="instruction-{{i}}"
+                          placeholder=" " />
+                        <label for="instruction-{{i}}">Instructions</label>
+                        <!-- Add validation error display if needed -->
+                      </div>
                     </td>
                     <td>
                       <button class="btn btn-danger pointer-cursor" (click)="removeRx(i)" data-bs-toggle="tooltip"
@@ -484,7 +467,6 @@
               </table>
             </div>
           </div>
-
         </div>
         <div class="d-flex justify-content-between align-items-center mt-4">
           <!-- Back Button - Left -->

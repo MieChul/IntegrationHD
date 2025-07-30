@@ -46,7 +46,7 @@ foreach(var dto in dtos)
         else
         {
             // Updating an existing medicine
-            var existingMedicine = pharmacy.Medicines.FirstOrDefault(m => m.BrandName == dto.BrandName);
+            var existingMedicine = pharmacy.Medicines.FirstOrDefault(m => m.Id == dto.Id);
             if (existingMedicine == null)
                 throw new ArgumentException("Medicine not found.");
 

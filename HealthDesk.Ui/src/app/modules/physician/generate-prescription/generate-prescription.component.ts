@@ -40,10 +40,6 @@ export class GeneratePrescriptionComponent implements OnInit {
   filteredInvestigations!: Observable<string[]>;
   investigationFilterCtrl = new FormControl();
   profileDatas: string[] = [];
-  filteredFroms!: Observable<string[]>;
-  filteredDrugs!: Observable<string[]>;
-  filteredStrengths!: Observable<string[]>;
-  filteredFrequencies!: Observable<string[]>;
   filteredDurations!: Observable<string[]>;
   filteredBodySystems!: Observable<string[]>;
   filteredProfileDatas!: Observable<string[]>;
@@ -128,31 +124,6 @@ export class GeneratePrescriptionComponent implements OnInit {
       map((search) => this.filterOptions(search, this.bodySystems))
     );
 
-    this.filteredDrugs = this.drugFilterCtrl.valueChanges.pipe(
-      startWith(''),
-      map((search) => this.filterOptions(search, this.drugs))
-    );
-
-    this.filteredDurations = this.durationFilterCtrl.valueChanges.pipe(
-      startWith(''),
-      map((search) => this.filterOptions(search, this.durations))
-    );
-
-    this.filteredFroms = this.fromFilterCtrl.valueChanges.pipe(
-      startWith(''),
-      map((search) => this.filterOptions(search, this.forms))
-    );
-
-    this.filteredFrequencies = this.frequencyFilterCtrl.valueChanges.pipe(
-      startWith(''),
-      map((search) => this.filterOptions(search, this.frequencies))
-    );
-
-    this.filteredStrengths = this.strengthFilterCtrl.valueChanges.pipe(
-      startWith(''),
-      map((search) => this.filterOptions(search, this.strengths))
-    );
-
     this.filteredProfileDatas = this.profileDatasFilterCtrl.valueChanges.pipe(
       startWith(''),
       map((search) => this.filterOptions(search, this.profileDatas))
@@ -166,6 +137,11 @@ export class GeneratePrescriptionComponent implements OnInit {
     this.filteredBrands = this.brandFilterCtrl.valueChanges.pipe(
       startWith(''),
       map((search) => this.filterOptions(search, this.brands))
+    );
+
+    this.filteredDurations = this.durationFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.durations))
     );
   }
 
@@ -427,7 +403,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       startY += complaintHeight + 5;
     }
 
-     // --------------------
+    // --------------------
     // 3. History
     // --------------------
     const significientHistory = this.prescriptionForm.get('pastHistory')?.value?.trim();
@@ -485,7 +461,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       const sysLines = doc.splitTextToSize(sysText, pageWidth - 28);
       const sysHeight = sysLines.length * 6;
       checkPageBreak(sysHeight);
-       doc.setFont('helvetica', 'normal').text(sysLines, 50, startY);
+      doc.setFont('helvetica', 'normal').text(sysLines, 50, startY);
       startY += sysHeight + 5;
     }
 
@@ -560,7 +536,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       const fuDate = new Date(followUp);
       const fuLine = `${String(fuDate.getDate()).padStart(2, '0')}/${String(fuDate.getMonth() + 1).padStart(2, '0')}/${fuDate.getFullYear()}`;
       checkPageBreak(6);
-     doc.setFont('helvetica', 'normal').text(fuLine, 50, startY);
+      doc.setFont('helvetica', 'normal').text(fuLine, 50, startY);
       startY += 20;
     }
 
@@ -738,56 +714,55 @@ export class GeneratePrescriptionComponent implements OnInit {
     const rxArray = this.prescriptionForm.get('rx') as FormArray;
     const rxGroup = rxArray.at(index) as FormGroup;
 
-    // Disable dependent dropdowns while loading new data
     rxGroup.get('dosageForm')?.disable();
     rxGroup.get('strength')?.disable();
 
-    // Clear any previously loaded data if you are storing these locally
-    // For example: this.rxDosageForms[index] = [];
-    //              this.rxStrengths[index] = [];
+    this.forms = [];
+    this.strengths = [];
 
-    // Get the selected drug from the rx group
+
     const selectedDrug = rxGroup.get('drugName')?.value;
 
     if (selectedDrug) {
-      // Fetch new dosage forms for the selected drug
+
       this.forms = await this.databaseService.getForms(selectedDrug);
     }
 
-    // Reset the dosageForm and strength values
+
     rxGroup.patchValue({ dosageForm: '', strength: '' });
 
-    // Enable dosageForm dropdown if dosage forms are available
+
     if (this.forms.length > 0) {
       rxGroup.get('dosageForm')?.enable();
+    } else {
+      rxGroup.get('dosageForm')?.disable();
     }
   }
 
-  // Called when the dosage form in a specific rx item changes
   async onRxDosageFormChange(index: number): Promise<void> {
     const rxArray = this.prescriptionForm.get('rx') as FormArray;
     const rxGroup = rxArray.at(index) as FormGroup;
 
-    // Disable the strength control while fetching new data
     rxGroup.get('strength')?.disable();
 
-    // Retrieve the selected drug and dosage form values
+    this.strengths = [];
+
     const selectedDrug = rxGroup.get('drugName')?.value;
     const selectedDosageForm = rxGroup.get('dosageForm')?.value;
+
     if (selectedDrug && selectedDosageForm) {
-      // Fetch available strengths for the selected drug and dosage form
       this.strengths = await this.databaseService.getStrengths(selectedDrug, selectedDosageForm);
     }
 
     // Reset the strength field
     rxGroup.patchValue({ strength: '' });
 
-    // Enable strength dropdown if strengths are available
     if (this.strengths.length > 0) {
       rxGroup.get('strength')?.enable();
+    } else {
+      rxGroup.get('strength')?.disable();
     }
   }
-
 
   gotToHome() {
     this.router.navigate(['/physician/patient-record']);

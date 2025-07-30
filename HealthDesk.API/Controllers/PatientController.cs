@@ -152,6 +152,31 @@ namespace HealthDesk.API.Controllers
         [HttpPost("{patientId}/lab-investigations")]
         public async Task<IActionResult> SaveLabInvestigation(
      string patientId,
+     [FromBody] LabInvestigationDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { Success = false, Message = "Invalid input.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+
+            await _patientService.SaveLabInvestigationsAsync(patientId, dto);
+
+            return Ok(new { Success = true, Message = "Lab investigation saved successfully." });
+        }
+
+        [HttpDelete("{patientId}/lab-investigations/{investigationId}")]
+        public async Task<IActionResult> DeleteLabInvestigation(string patientId, string investigationId)
+        {
+            await _patientService.DeleteLabInvestigationAsync(patientId, investigationId);
+            return Ok(new { Success = true, Message = "Lab investigation deleted successfully." });
+        }
+
+        // 7. Reports
+        [HttpGet("{patientId}/reports")]
+        public async Task<IActionResult> GetReports(string patientId) =>
+            Ok(new { Success = true, Message = "Reports retrieved successfully.", Data = await _patientService.GetReportsAsync(patientId) });
+
+        [HttpPost("{patientId}/reports")]
+        public async Task<IActionResult> SaveReport(
+     string patientId,
      [FromForm] ReportDto dto,
      IFormFile? file)
         {
@@ -181,28 +206,6 @@ namespace HealthDesk.API.Controllers
             await _patientService.SavePatientAsync(patient);
 
             return Ok(new { Success = true, Message = "Lab investigation saved successfully." });
-        }
-
-        [HttpDelete("{patientId}/lab-investigations/{investigationId}")]
-        public async Task<IActionResult> DeleteLabInvestigation(string patientId, string investigationId)
-        {
-            await _patientService.DeleteLabInvestigationAsync(patientId, investigationId);
-            return Ok(new { Success = true, Message = "Lab investigation deleted successfully." });
-        }
-
-        // 7. Reports
-        [HttpGet("{patientId}/reports")]
-        public async Task<IActionResult> GetReports(string patientId) =>
-            Ok(new { Success = true, Message = "Reports retrieved successfully.", Data = await _patientService.GetReportsAsync(patientId) });
-
-        [HttpPost("{patientId}/reports")]
-        public async Task<IActionResult> SaveReport(string patientId, [FromBody] ReportDto dto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(new { Success = false, Message = "Invalid input.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
-
-            await _patientService.SaveReportAsync(patientId, dto);
-            return Ok(new { Success = true, Message = "Report saved successfully." });
         }
 
         [HttpDelete("{patientId}/reports/{reportId}")]

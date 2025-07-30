@@ -111,105 +111,84 @@
                     <form [formGroup]="treatmentForm">
                         <div class="row">
                             <div class="col-md-6">
-                                <mat-form-field appearance="outline" class="w-100">
-                                    <mat-label>Drug Brand Name</mat-label>
-                                    <mat-select formControlName="brand" required>
-                                        <mat-option>
-                                            <ngx-mat-select-search [formControl]="brandFilterCtrl"
-                                                placeholderLabel="Search Brand"></ngx-mat-select-search>
-                                        </mat-option>
-                                        <mat-option *ngFor="let brand of filteredBrands | async" [value]="brand">
-                                            {{ brand }}
-                                        </mat-option>
-                                    </mat-select>
-                                    <mat-error *ngIf="treatmentForm.get('brand')?.hasError('required')">
+                                <div class="mb-3 form-floating">
+                                    <select formControlName="brand" class="form-select" id="brandSelect">
+                                        <option value="" disabled>-- Select Brand --</option>
+                                        <option *ngFor="let brand of brands" [value]="brand">{{ brand }}</option>
+                                    </select>
+                                    <label for="brandSelect">Drug Brand Name</label>
+                                    <div *ngIf="treatmentForm.get('brand')?.hasError('required') && treatmentForm.get('brand')?.touched"
+                                        class="text-danger small">
                                         Drug Brand is required.
-                                    </mat-error>
-                                </mat-form-field>
+                                    </div>
+                                </div>
                             </div>
                             <!-- Treatment Drug -->
                             <div class="col-md-6">
-                                <mat-form-field appearance="outline" class="w-100">
-                                    <mat-label>Drug Generic Name</mat-label>
-                                    <mat-select formControlName="treatmentDrug" (selectionChange)="onDrugChange()"
-                                        required>
-                                        <mat-option>
-                                            <ngx-mat-select-search [formControl]="drugFilterCtrl"
-                                                placeholderLabel="Search treatment drug"></ngx-mat-select-search>
-                                        </mat-option>
-                                        <mat-option *ngFor="let drug of filteredDrugs | async" [value]="drug">
-                                            {{ drug }}
-                                        </mat-option>
-                                    </mat-select>
-                                    <mat-error *ngIf="treatmentForm.get('treatmentDrug')?.hasError('required')">
+                                <div class="mb-3 form-floating">
+                                    <select formControlName="treatmentDrug" class="form-select" id="treatmentSelect"
+                                        (change)="onDrugChange()">
+                                        <option value="" disabled>-- Select Drug --</option>
+                                        <option *ngFor="let drug of drugs" [value]="drug">{{ drug }}</option>
+                                    </select>
+                                    <label for="treatmentSelect">Drug Generic Name</label>
+                                    <div *ngIf="treatmentForm.get('treatmentDrug')?.hasError('required') && treatmentForm.get('treatmentDrug')?.touched"
+                                        class="text-danger small">
                                         Treatment drug is required.
-                                    </mat-error>
-                                </mat-form-field>
+                                    </div>
+                                </div>
                             </div>
-
-
-
                         </div>
 
                         <div class="row">
                             <div class="col-md-6">
-                                <mat-form-field appearance="outline" class="w-100">
-                                    <mat-label>Dosage Form</mat-label>
-                                    <mat-select formControlName="dosageForm" (selectionChange)="onDosageFormChange()"
-                                        required [disabled]="!!treatmentForm.get('dosageForm')?.disabled">
-                                        <mat-option>
-                                            <ngx-mat-select-search [formControl]="dosageFormFilterCtrl"
-                                                placeholderLabel="Search dosage form"></ngx-mat-select-search>
-                                        </mat-option>
-                                        <mat-option *ngFor="let form of filteredDosageForms | async" [value]="form">
-                                            {{ form }}
-                                        </mat-option>
-                                    </mat-select>
-                                    <mat-error *ngIf="treatmentForm.get('dosageForm')?.hasError('required')">
+                                <div class="mb-3 form-floating">
+                                    <select formControlName="dosageForm" class="form-select" id="dosageSelect"
+                                        (change)="onDosageFormChange()"
+                                        [attr.disabled]="treatmentForm.get('dosageForm')?.disabled ? true : null">
+                                        <option value="" disabled>-- Select Dosage Form --</option>
+                                        <option *ngFor="let form of dosageForms" [value]="form">{{ form }}</option>
+                                    </select>
+                                    <label for="dosageSelect">Dosage Form</label>
+                                    <div *ngIf="treatmentForm.get('dosageForm')?.hasError('required') && treatmentForm.get('dosageForm')?.touched"
+                                        class="text-danger small">
                                         Dosage form is required.
-                                    </mat-error>
-                                </mat-form-field>
+                                    </div>
+                                </div>
                             </div>
                             <!-- Strength Unit -->
                             <div class="col-md-6">
-                                <mat-form-field appearance="outline" class="w-100">
-                                    <mat-label>Strength</mat-label>
-                                    <mat-select formControlName="strengthUnit" required
-                                        [disabled]="!!treatmentForm.get('strengthUnit')?.disabled">
-                                        <mat-option>
-                                            <ngx-mat-select-search [formControl]="strengthUnitFilterCtrl"
-                                                placeholderLabel="Search strength"></ngx-mat-select-search>
-                                        </mat-option>
-                                        <mat-option *ngFor="let unit of filteredStrengthUnits | async" [value]="unit">
-                                            {{ unit }}
-                                        </mat-option>
-                                    </mat-select>
-                                    <mat-error *ngIf="treatmentForm.get('strengthUnit')?.hasError('required')">
+                                <div class="mb-3 form-floating">
+                                    <select formControlName="strengthUnit" id="strengthSelect" class="form-select"
+                                        [attr.disabled]="treatmentForm.get('strengthUnit')?.disabled ? true : null">
+                                        <option value="" disabled>-- Select Strength --</option>
+                                        <option *ngFor="let unit of strengthUnits" [value]="unit">{{ unit }}</option>
+                                    </select>
+                                    <label for="strengthSelect">Strength</label>
+                                    <div *ngIf="treatmentForm.get('strengthUnit')?.hasError('required') && treatmentForm.get('strengthUnit')?.touched"
+                                        class="text-danger small">
                                         Strength is required.
-                                    </mat-error>
-                                </mat-form-field>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <div class="row">
                             <!-- Frequency -->
                             <div class="col-md-6">
-                                <mat-form-field appearance="outline" class="w-100">
-                                    <mat-label>Frequency</mat-label>
-                                    <mat-select formControlName="frequency" required>
-                                        <mat-option>
-                                            <ngx-mat-select-search [formControl]="frequencyFilterCtrl"
-                                                placeholderLabel="Search frequency"></ngx-mat-select-search>
-                                        </mat-option>
-                                        <mat-option *ngFor="let frequency of filteredFrequencies | async"
-                                            [value]="frequency">
+                                <div class="mb-3 form-floating">
+                                    <select formControlName="frequency" id="frequencySelect" class="form-select">
+                                        <option value="" disabled>-- Select Frequency --</option>
+                                        <option *ngFor="let frequency of frequencies" [value]="frequency">
                                             {{ frequency }}
-                                        </mat-option>
-                                    </mat-select>
-                                    <mat-error *ngIf="treatmentForm.get('frequency')?.hasError('required')">
+                                        </option>
+                                    </select>
+                                    <label for="frequencySelect">Frequency</label>
+                                    <div *ngIf="treatmentForm.get('frequency')?.hasError('required') && treatmentForm.get('frequency')?.touched"
+                                        class="text-danger small">
                                         Frequency is required.
-                                    </mat-error>
-                                </mat-form-field>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Start Date -->

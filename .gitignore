@@ -67,12 +67,14 @@ _ReSharper*/
 
 ## Angular / Node.js
 # Dependencies
-/node_modules/
+# Removed leading '/' to match 'node_modules' in any subdirectory
+node_modules/
 
 # Build output and temporary files
-/dist/
-/tmp/
-/.angular/
+# Removed leading '/' to match these folders in any subdirectory
+dist/
+tmp/
+.angular/
 *.tsbuildinfo
 
 # Log files
@@ -82,10 +84,10 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Test reports
-/coverage/
+# Removed leading '/' to match 'coverage' in any subdirectory
+coverage/
 
 # Environment files (if they contain secrets)
 .env
 .env.local
 .env.*.local
-EOF
