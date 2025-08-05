@@ -22,14 +22,10 @@ export class LabDataComponent implements OnInit {
   selectedLabData!: any;
   userData: any = [];
 
-  diseaseFilterCtrl = new FormControl();
-  strengthUnitFilterCtrl = new FormControl();
+  investigationFilterCtrl = new FormControl();
+  filteredInvestigations!: Observable<string[]>;
 
-  filteredDiseases!: Observable<string[]>;
-  filteredStrengthUnits!: Observable<string[]>;
-
-  strengthUnits: string[] = [];
-  diseases: string[] = [];
+  investigations: string[] = [];
   sortDirection: { [key: string]: 'asc' | 'desc' } = {};
 
   filterForm!: FormGroup;
@@ -52,8 +48,7 @@ export class LabDataComponent implements OnInit {
     this.accountService.getUserData().subscribe({
       next: async (data) => {
         this.userData = data;
-        this.strengthUnits = await this.databaseService.getUnits();
-        this.diseases = await this.databaseService.getInvestigations();
+        this.investigations = this.databaseService.getInvestigations();
 
         // Load treatments
         await this.loadLabRecords();
@@ -63,6 +58,7 @@ export class LabDataComponent implements OnInit {
       error: (err) => console.error('Error fetching user data:', err)
     });
   }
+
 
   initializeForms(): void {
     this.labDataForm = this.fb.group({
@@ -75,11 +71,20 @@ export class LabDataComponent implements OnInit {
       time: this.fb.control('', Validators.required),
       labTest: this.fb.control('', Validators.required),
       value: this.fb.control('', Validators.required),
-      unit: this.fb.control('', Validators.required),
+      unit: this.fb.control({ value: '', disabled: true }, Validators.required),
       price: this.fb.control('', [
         Validators.required,
         Validators.pattern(/^\d{1,9}(\.\d{1,2})?$/)
       ])
+    });
+
+    this.labDataForm.get('labTest')?.valueChanges.subscribe(investigationName => {
+      if (investigationName) {
+        const unit = this.databaseService.getInvestigationUnit(investigationName);
+        this.labDataForm.get('unit')?.setValue(unit || '', { emitEvent: false });
+      } else {
+        this.labDataForm.get('unit')?.setValue('', { emitEvent: false });
+      }
     });
 
     this.filterForm = this.fb.group(
@@ -102,7 +107,7 @@ export class LabDataComponent implements OnInit {
       next: (data: any) => {
         this.labDataRecords = data?.data.map((symptomsData: any) => ({
           ...symptomsData
-        })).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.dateOfDiagnosis).getTime());;
+        })).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());;
         this.filteredLabDataRecords = [...this.labDataRecords];
       },
       error: (error) => {
@@ -112,17 +117,10 @@ export class LabDataComponent implements OnInit {
   }
 
   initializeSearch(): void {
-    this.filteredDiseases = this.diseaseFilterCtrl.valueChanges.pipe(
+    this.filteredInvestigations = this.investigationFilterCtrl.valueChanges.pipe(
       startWith(''),
-      map((search) => this.filterOptions(search, this.diseases))
+      map((search) => this.filterOptions(search, this.investigations))
     );
-
-    this.filteredStrengthUnits = this.strengthUnitFilterCtrl.valueChanges.pipe(
-      startWith(''),
-      map((search) => this.filterOptions(search, this.strengthUnits))
-    );
-
-
   }
 
   filterOptions(search: string, options: string[]): string[] {
@@ -148,9 +146,9 @@ export class LabDataComponent implements OnInit {
   saveLabData(): void {
     this.labDataForm.markAllAsTouched();
     if (this.labDataForm.invalid || !this.userData.id) return;
-
+    const formData = this.labDataForm.getRawValue();
     if (this.isEditMode) {
-      this.patientService.saveLabInvestigation(this.userData.id, this.labDataForm.value).subscribe({
+      this.patientService.saveLabInvestigation(this.userData.id, formData).subscribe({
         next: (response: any) => {
           this.loadLabRecords();
         },
@@ -161,7 +159,7 @@ export class LabDataComponent implements OnInit {
     } else {
       // Add new medical lab data
       this.patientService
-        .saveLabInvestigation(this.userData.id, this.labDataForm.value)
+        .saveLabInvestigation(this.userData.id, formData)
         .subscribe({
           next: (response) => {
             this.loadLabRecords();

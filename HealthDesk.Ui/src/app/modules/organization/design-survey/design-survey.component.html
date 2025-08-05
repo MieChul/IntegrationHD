@@ -5,21 +5,33 @@
   </button>
 
   <h1 class="animated-heading">
-    <i class="bi bi-box-seam me-2"></i>Create Survey
+    <i class="bi bi-box-seam me-2"></i>
+    {{ surveyForm.id ? 'Edit Survey' : 'Create Survey' }}
   </h1>
   <form (ngSubmit)="saveSurvey()">
-    <h3 for="image" class="form-label mt-3">Upload Survey Header Image</h3>
+    <h3 class="form-label mt-3">Upload Survey Header Image</h3>
     <div class="form-group text-center mb-4">
-      <div class="survey-image-preview mb-3" *ngIf="surveyForm.image">
-        <img [src]="surveyForm.image" alt="Survey Header Image" class="img-fluid rounded header-image shadow-sm" />
+      <div class="survey-image-preview mb-3" *ngIf="surveyForm.headerImageUrl">
+        <img [src]="surveyForm.headerImageUrl" alt="Survey Header Image"
+          class="img-fluid rounded header-image shadow-sm" />
       </div>
-      <input type="file" class="form-control input-modern" id="image" (change)="onFileChange($event)">
+      <input type="file" class="form-control input-modern" id="image" (change)="onFileChange($event)" accept="image/*">
+      <div *ngIf="imageError" class="text-danger mt-2">
+        {{ imageError }}
+      </div>
     </div>
 
-    <!-- Survey Form Name and Author Name -->
-    <h3 for="image" class="form-label mt-3">Survey Details</h3>
+    <h3 class="form-label mt-3">Survey Details</h3>
     <div class="card mb-4">
       <div class="card-body">
+
+        <!-- Added Is Active Toggle Switch -->
+        <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" role="switch" id="isActiveSwitch"
+            [(ngModel)]="surveyForm.is_active" name="isActiveSwitch">
+          <label class="form-check-label" for="isActiveSwitch">Set Active</label>
+        </div>
+
         <div class="form-group mb-3">
           <label for="formName">Form Name<i class="text-danger">*</i></label>
           <input type="text" class="form-control input-modern" id="formName" [(ngModel)]="surveyForm.name"
@@ -27,11 +39,11 @@
           <span class="text-danger mt-1" *ngIf="formNameError">This field is required.</span>
         </div>
 
+        <!-- Author field is now always visible and editable -->
         <div class="form-group mb-3">
-          <label for="authorName">Author Name<i class="text-danger">*</i></label>
+          <label for="authorName">Author Name</label>
           <input type="text" class="form-control input-modern" id="authorName" [(ngModel)]="surveyForm.author"
-            name="authorName" required>
-          <span class="text-danger mt-1" *ngIf="formNameError">This field is required.</span>
+            name="authorName">
         </div>
 
         <div class="form-group mb-3">
@@ -47,9 +59,8 @@
         </div>
       </div>
     </div>
-    <h3 for="image" class="form-label mt-3">Survey Questions</h3>
+    <h3 class="form-label mt-3">Survey Questions</h3>
     <span class="text-danger mt-1" *ngIf="formQuestionError">At least one question is required.</span>
-    <!-- Survey Questions Section -->
     <div class="card mb-3" *ngFor="let question of surveyForm.questions; let i = index">
       <div class="card-header d-flex justify-content-between align-items-center bg-light">
         <span>Question {{ i + 1 }}</span>
@@ -57,9 +68,10 @@
       </div>
       <div class="card-body">
         <div class="form-group mb-3">
-          <label>Question Text</label>
+          <label>Question Text<i class="text-danger">*</i></label>
           <input type="text" class="form-control input-modern" [(ngModel)]="question.text" name="questionText{{i}}"
             required>
+          <span class="text-danger mt-1" *ngIf="questionErrors[i]?.text">This field is required.</span>
         </div>
 
         <div class="form-group mb-3">
@@ -80,19 +92,19 @@
           </select>
         </div>
 
-        <!-- Options for radio and checkbox types -->
         <div *ngIf="question.type === 'radio' || question.type === 'checkbox'">
           <div *ngFor="let option of question.options; let j = index" class="form-group mb-2 d-flex align-items-center">
             <input type="text" class="form-control input-modern me-2" [(ngModel)]="option.text"
-              name="optionText{{i}}{{j}}">
+              name="optionText{{i}}{{j}}" required>
             <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeOption(i, j)">Remove</button>
           </div>
           <div class="text-end">
             <button type="button" class="btn btn-outline-primary btn-sm" (click)="addOption(i)">Add Option</button>
           </div>
+          <span class="text-danger mt-1" *ngIf="questionErrors[i]?.options">At least one option is required for this
+            question type.</span>
         </div>
 
-        <!-- Date validation -->
         <div *ngIf="question.type === 'date'" class="form-group mb-3">
           <label>Date Range (Optional)</label>
           <div class="d-flex">
@@ -101,9 +113,9 @@
             <input type="date" class="form-control input-modern" placeholder="Max Date" [(ngModel)]="question.maxDate"
               name="maxDate{{i}}">
           </div>
+          <span class="text-danger mt-1" *ngIf="questionErrors[i]?.date">Min Date cannot be after Max Date.</span>
         </div>
 
-        <!-- Add validations (required, number only) -->
         <div class="form-group mb-3">
           <label>Add Validations</label>
           <div class="form-check">
@@ -120,13 +132,11 @@
       </div>
     </div>
 
-    <!-- Add Question Button -->
     <div class="text-center mb-4">
       <button type="button" class="btn btn-outline-primary btn-sm" (click)="addQuestion()">Add Question</button>
     </div>
 
 
-    <!-- Submit Button -->
     <div class="text-center">
       <button type="submit" class="btn btn-success btn-modern">Save Survey</button>
     </div>

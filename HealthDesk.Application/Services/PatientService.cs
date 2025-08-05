@@ -823,6 +823,7 @@ public class PatientService : IPatientService
                                 speciality = user.Speciality,
                                 timing = timings != null ? string.Join(", ", timings) : "",
                                 rating = averageRating,
+                                days = clinic.Days,
                                 reviews = physician.Reviews.Select(r => new
                                 {
                                     r.UserId,
@@ -866,6 +867,7 @@ public class PatientService : IPatientService
                             speciality = string.Empty,
                             timing = string.Empty,
                             rating = averageRating1,
+                            days = string.Empty,
                             reviews = hospital.Reviews.Select(r => new
                             {
                                 r.UserId,
@@ -900,6 +902,7 @@ public class PatientService : IPatientService
                             speciality = string.Empty,
                             timing = string.Empty,
                             rating = averageRating2,
+                            days = string.Empty,
                             reviews = pharmacy.Reviews.Select(r => new
                             {
                                 r.UserId,
@@ -934,6 +937,7 @@ public class PatientService : IPatientService
                             speciality = string.Empty,
                             timing = string.Empty,
                             rating = averageRating3,
+                            days = string.Empty,
                             reviews = laboratory.Reviews.Select(r => new
                             {
                                 r.UserId,

@@ -15,6 +15,7 @@ import { HospitalManagementComponent } from './hospital-management/hospital-mana
 import { HospitalCasesComponent } from './hospital-cases/hospital-cases.component';
 import { HospitalViewCaseComponent } from './hospital-view-case/hospital-view-case.component';
 import { HospitalNewCaseComponent } from './hospital-new-case/hospital-new-case.component';
+import { ViewSingleResponseComponent } from './view-single-response/view-single-response.component';
 
 const routes: Routes = [{ path: '', component: OrganizationComponent,
   children: [
@@ -27,6 +28,7 @@ const routes: Routes = [{ path: '', component: OrganizationComponent,
     { path: 'pharma/surveys', component: SurveysComponent },
     { path: 'pharma/survey/:id', component: SurveyFormComponent },
     { path: 'pharma/view-survey-response/:id', component: ViewSurveyResponseComponent },
+    { path: 'pharma/view-single-response/:surveyId/:userId', component: ViewSingleResponseComponent },
     { path: 'pharma/share-survey/:id', component: ShareSurveyComponent },
     { path: 'hospital/hospital-management', component: HospitalManagementComponent},
     { path: 'hospital/cases', component: HospitalCasesComponent},

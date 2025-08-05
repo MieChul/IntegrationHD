@@ -1,17 +1,19 @@
-<div class="container">
-  <div class="col-sm-1 text-start">
-    <button type="button" class="btn btn-secondary" (click)="goBack()" data-bs-toggle="tooltip"
+<div class="main-container">
+  <div class="d-flex align-items-center mb-4">
+    <button type="button" class="btn btn-secondary me-3" (click)="goBack()" data-bs-toggle="tooltip"
       data-bs-placement="right" title="Back">
       <i class="bi bi-arrow-left"></i>
     </button>
+    <h1 class="animated-heading mb-0">
+      <i class="bi bi-file-earmark-text me-2"></i>Survey Results
+    </h1>
   </div>
   <div class="card my-4">
     <div class="card-header">
-      <h2 class="mb-1">{{ title }}</h2>
+      <h2 class="mb-1">{{ name }}</h2>
       <small class="text-muted">
         {{ description }}<br />
-        <strong>By:</strong> {{ author }}
-        <span *ngIf="company">• {{ company }}</span><br />
+        <strong>By:</strong> {{ author }}<br />
         <strong>Taken on:</strong>
         {{ takenDate | date:'dd MMM yyyy, HH:mm' }}
       </small>
@@ -19,9 +21,9 @@
     <div class="card-body">
       <div *ngFor="let qa of qaList; let i = index" class="mb-4">
         <label class="form-label h5">{{ i + 1 }}. {{ qa.questionText }}</label>
-        <mat-form-field appearance="outline" class="w-100">
-          <input matInput [value]="qa.answer" readonly />
-        </mat-form-field>
+        <div class="input-group">
+          <input type="text" class="form-control" [value]="qa.answer" readonly />
+        </div>
       </div>
     </div>
   </div>

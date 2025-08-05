@@ -21,6 +21,9 @@ public class Hospital : BaseEntity
 
     [BsonElement("reviews")]
     public List<Reviews> Reviews { get; set; } = new();
+
+    [BsonElement("hospitalinfo")]
+    public HospitalInfo HospitalInfo { get; set; }
 }
 
 public class Service : BaseEntity
@@ -51,4 +54,11 @@ public class PhysicianRecord : BaseEntity
 
     [BsonElement("is_active")]
     public bool IsActive { get; set; }
+}
+
+
+public class HospitalInfo
+{
+    public List<string>? Preferences { get; set; } = new List<string>();
+
 }

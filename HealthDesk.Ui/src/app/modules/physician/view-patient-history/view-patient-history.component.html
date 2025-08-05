@@ -1,232 +1,257 @@
 <div class="container">
-    <!-- Heading -->
-    <h1 class="animated-heading mb-4">
-      <i class="bi bi-file-earmark-medical me-2"></i>Patient History
-    </h1>
-  
-    <!-- Tabs Navigation -->
-    <ul class="nav nav-tabs">
-      <li class="nav-item">
-        <a 
-          class="nav-link pointer-cursor" 
-          [ngClass]="{'active': selectedTab === 'prescriptions'}" 
-          (click)="selectTab('prescriptions')">
-          Prescriptions
-        </a>
-      </li>
-      <li class="nav-item">
-        <a 
-          class="nav-link pointer-cursor" 
-          [ngClass]="{'active': selectedTab === 'selfRecord'}" 
-          (click)="selectTab('selfRecord')">
-          Self Record
-        </a>
-      </li>
-      <li class="nav-item">
-        <a 
-          class="nav-link pointer-cursor" 
-          [ngClass]="{'active': selectedTab === 'symptoms'}" 
-          (click)="selectTab('symptoms')">
-          Symptoms
-        </a>
-      </li>
-      <li class="nav-item">
-        <a 
-          class="nav-link pointer-cursor" 
-          [ngClass]="{'active': selectedTab === 'labInvestigation'}" 
-          (click)="selectTab('labInvestigation')">
-          Lab Investigation
-        </a>
-      </li>
-      <li class="nav-item">
-        <a 
-          class="nav-link pointer-cursor" 
-          [ngClass]="{'active': selectedTab === 'investigations'}" 
-          (click)="selectTab('investigations')">
-          Investigations
-        </a>
-      </li>
-      <li class="nav-item">
-        <a 
-          class="nav-link pointer-cursor" 
-          [ngClass]="{'active': selectedTab === 'immunizations'}" 
-          (click)="selectTab('immunizations')">
-          Immunizations
-        </a>
-      </li>
-    </ul>
-  
-    <!-- Tabs Content -->
-    <div class="tab-content mt-3">
-      <!-- Prescriptions Tab -->
-      <div class="tab-pane fade" [ngClass]="{'show active': selectedTab === 'prescriptions'}" *ngIf="selectedTab === 'prescriptions'">
-        <div class="table-responsive">
-          <table class="table table-hover table-modern">
-            <thead>
-              <tr>
-                <th>Date of Diagnosis</th>
-                <th>Illness</th>
-                <th>Prescription URL</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of prescriptions">
-                <td>{{ item.dateOfDiagnosis | date: 'dd-MM-yyyy' }}</td>
-                <td>{{ item.illness }}</td>
-                <td>
-                  <a *ngIf="item.prescriptionUrl" [href]="item.prescriptionUrl" target="_blank">View PDF</a>
-                  <span *ngIf="!item.prescriptionUrl">N/A</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div *ngIf="prescriptions?.length === 0" class="alert alert-info">
-            No prescriptions found.
-          </div>
+  <!-- Heading -->
+  <h1 class="animated-heading mb-4">
+    <i class="bi bi-file-earmark-medical me-2"></i>Patient History
+  </h1>
+
+  <!-- Tabs Navigation -->
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <a class="nav-link pointer-cursor" [ngClass]="{'active': selectedTab === 'prescriptions'}"
+        (click)="selectTab('prescriptions')">
+        Prescriptions
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link pointer-cursor" [ngClass]="{'active': selectedTab === 'selfRecord'}"
+        (click)="selectTab('selfRecord')">
+        Self Record
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link pointer-cursor" [ngClass]="{'active': selectedTab === 'symptoms'}"
+        (click)="selectTab('symptoms')">
+        Symptoms
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link pointer-cursor" [ngClass]="{'active': selectedTab === 'labInvestigation'}"
+        (click)="selectTab('labInvestigation')">
+        Lab Investigation
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link pointer-cursor" [ngClass]="{'active': selectedTab === 'investigations'}"
+        (click)="selectTab('investigations')">
+        Investigations
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link pointer-cursor" [ngClass]="{'active': selectedTab === 'immunizations'}"
+        (click)="selectTab('immunizations')">
+        Immunizations
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link pointer-cursor" [ngClass]="{'active': selectedTab === 'history'}"
+        (click)="selectTab('history')">
+        Medical History
+      </a>
+    </li>
+  </ul>
+
+  <!-- Tabs Content -->
+  <div class="tab-content mt-3">
+    <!-- Prescriptions Tab -->
+    <div class="tab-pane fade" [ngClass]="{'show active': selectedTab === 'prescriptions'}"
+      *ngIf="selectedTab === 'prescriptions'">
+      <div class="table-responsive">
+        <table class="table table-hover table-modern">
+          <thead>
+            <tr>
+              <th>Date of Diagnosis</th>
+              <th>Illness</th>
+              <th>Prescription URL</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of prescriptions">
+              <td>{{ item.dateOfDiagnosis | date: 'dd-MM-yyyy' }}</td>
+              <td>{{ item.illness }}</td>
+              <td>
+                <a *ngIf="item.prescriptionUrl" [href]="item.prescriptionUrl" target="_blank">View PDF</a>
+                <span *ngIf="!item.prescriptionUrl">N/A</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="prescriptions?.length === 0" class="alert alert-info">
+          No prescriptions found.
         </div>
       </div>
-  
-      <!-- Self Record Tab -->
-      <div class="tab-pane fade" [ngClass]="{'show active': selectedTab === 'selfRecord'}" *ngIf="selectedTab === 'selfRecord'">
-        <div class="table-responsive">
-          <table class="table table-hover table-modern">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Record Type</th>
-                <th>Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let record of selfRecords">
-                <td>{{ record.date | date: 'dd-MM-yyyy' }}</td>
-                <td>{{ record.type }}</td>
-                <td>
-                  <ng-container *ngIf="record.type === 'Blood Pressure'; else normalValue">
-                    {{ record.value1 }} / {{ record.value2 }} {{ record.unit }}
-                  </ng-container>
-                  <ng-template #normalValue>
-                    {{ record.value1 }} {{ record.unit }}
-                  </ng-template>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div *ngIf="selfRecords?.length === 0" class="alert alert-info">
-            No self records found.
-          </div>
+    </div>
+
+    <!-- Self Record Tab -->
+    <div class="tab-pane fade" [ngClass]="{'show active': selectedTab === 'selfRecord'}"
+      *ngIf="selectedTab === 'selfRecord'">
+      <div class="table-responsive">
+        <table class="table table-hover table-modern">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Record Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let record of selfRecords">
+              <td>{{ record.date | date: 'dd-MM-yyyy' }}</td>
+              <td>{{ record.type }}</td>
+              <td>
+                <ng-container *ngIf="record.type === 'Blood Pressure'; else normalValue">
+                  {{ record.value1 }} / {{ record.value2 }} {{ record.unit }}
+                </ng-container>
+                <ng-template #normalValue>
+                  {{ record.value1 }} {{ record.unit }}
+                </ng-template>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="selfRecords?.length === 0" class="alert alert-info">
+          No self records found.
         </div>
       </div>
-  
-      <!-- Symptoms Tab -->
-      <div class="tab-pane fade" [ngClass]="{'show active': selectedTab === 'symptoms'}" *ngIf="selectedTab === 'symptoms'">
-        <div class="table-responsive">
-          <table class="table table-hover table-modern">
-            <thead>
-              <tr>
-                <th>Date of Onset</th>
-                <th>Symptom</th>
-                <th>Severity</th>
-                <th>Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let s of symptoms">
-                <td>{{ s.dateOfOnset | date: 'dd-MM-yyyy' }}</td>
-                <td>{{ s.symptomType }}</td>
-                <td>{{ s.severity }}</td>
-                <td>{{ s.description }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <div *ngIf="symptoms?.length === 0" class="alert alert-info">
-            No symptoms recorded.
-          </div>
+    </div>
+
+    <!-- Symptoms Tab -->
+    <div class="tab-pane fade" [ngClass]="{'show active': selectedTab === 'symptoms'}"
+      *ngIf="selectedTab === 'symptoms'">
+      <div class="table-responsive">
+        <table class="table table-hover table-modern">
+          <thead>
+            <tr>
+              <th>Date of Onset</th>
+              <th>Symptom</th>
+              <th>Severity</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of symptoms">
+              <td>{{ s.dateOfOnset | date: 'dd-MM-yyyy' }}</td>
+              <td>{{ s.symptomType }}</td>
+              <td>{{ s.severity }}</td>
+              <td>{{ s.description }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="symptoms?.length === 0" class="alert alert-info">
+          No symptoms recorded.
         </div>
       </div>
-  
-      <!-- Lab Investigation Tab -->
-      <div class="tab-pane fade" [ngClass]="{'show active': selectedTab === 'labInvestigation'}" *ngIf="selectedTab === 'labInvestigation'">
-        <div class="table-responsive">
-          <table class="table table-hover table-modern">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Test</th>
-                <th>Value</th>
-                <th>Unit</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let lab of labInvestigations">
-                <td>{{ lab.date | date: 'dd-MM-yyyy' }}</td>
-                <td>{{ lab.labTest }}</td>
-                <td>{{ lab.value }}</td>
-                <td>{{ lab.unit }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <div *ngIf="labInvestigations?.length === 0" class="alert alert-info">
-            No lab investigations recorded.
-          </div>
+    </div>
+
+    <!-- Lab Investigation Tab -->
+    <div class="tab-pane fade" [ngClass]="{'show active': selectedTab === 'labInvestigation'}"
+      *ngIf="selectedTab === 'labInvestigation'">
+      <div class="table-responsive">
+        <table class="table table-hover table-modern">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Test</th>
+              <th>Value</th>
+              <th>Unit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let lab of labInvestigations">
+              <td>{{ lab.date | date: 'dd-MM-yyyy' }}</td>
+              <td>{{ lab.labTest }}</td>
+              <td>{{ lab.value }}</td>
+              <td>{{ lab.unit }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="labInvestigations?.length === 0" class="alert alert-info">
+          No lab investigations recorded.
         </div>
       </div>
-  
-      <!-- Investigations Tab -->
-      <div class="tab-pane fade" [ngClass]="{'show active': selectedTab === 'investigations'}" *ngIf="selectedTab === 'investigations'">
-        <div class="table-responsive">
-          <table class="table table-hover table-modern">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Investigation</th>
-                <th>Result</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let inv of investigations">
-                <td>{{ inv.date | date: 'dd-MM-yyyy' }}</td>
-                <td>{{ inv.name }}</td>
-                <td>{{ inv.result }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <div *ngIf="investigations?.length === 0" class="alert alert-info">
-            No investigations recorded.
-          </div>
+    </div>
+
+    <!-- Investigations Tab -->
+    <div class="tab-pane fade" [ngClass]="{'show active': selectedTab === 'investigations'}"
+      *ngIf="selectedTab === 'investigations'">
+      <div class="table-responsive">
+        <table class="table table-hover table-modern">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Investigation</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let inv of investigations">
+              <td>{{ inv.date | date: 'dd-MM-yyyy' }}</td>
+              <td>{{ inv.name }}</td>
+              <td>{{ inv.result }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="investigations?.length === 0" class="alert alert-info">
+          No investigations recorded.
         </div>
       </div>
-  
-      <!-- Immunizations Tab -->
-      <div class="tab-pane fade" [ngClass]="{'show active': selectedTab === 'immunizations'}" *ngIf="selectedTab === 'immunizations'">
-        <div class="table-responsive">
-          <table class="table table-hover table-modern">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Vaccine</th>
-                <th>Disease</th>
-                <th>Route</th>
-                <th>Dosage</th>
-                <th>Details</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let imm of immunizations">
-                <td>{{ imm.date | date: 'dd-MM-yyyy' }}</td>
-                <td>{{ imm.vaccine }}</td>
-                <td>{{ imm.disease }}</td>
-                <td>{{ imm.route }}</td>
-                <td>{{ imm.dosageForm }}</td>
-                <td>{{ imm.details }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <div *ngIf="immunizations?.length === 0" class="alert alert-info">
-            No immunizations recorded.
-          </div>
+    </div>
+
+    <!-- Immunizations Tab -->
+    <div class="tab-pane fade" [ngClass]="{'show active': selectedTab === 'immunizations'}"
+      *ngIf="selectedTab === 'immunizations'">
+      <div class="table-responsive">
+        <table class="table table-hover table-modern">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Vaccine</th>
+              <th>Disease</th>
+              <th>Route</th>
+              <th>Dosage</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let imm of immunizations">
+              <td>{{ imm.date | date: 'dd-MM-yyyy' }}</td>
+              <td>{{ imm.vaccine }}</td>
+              <td>{{ imm.disease }}</td>
+              <td>{{ imm.route }}</td>
+              <td>{{ imm.dosageForm }}</td>
+              <td>{{ imm.details }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="immunizations?.length === 0" class="alert alert-info">
+          No immunizations recorded.
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane fade" [ngClass]="{'show active': selectedTab === 'history'}" *ngIf="selectedTab === 'history'">
+      <div class="table-responsive">
+        <table class="table table-hover table-modern">
+          <thead>
+            <tr>
+              <th>Date of Diagnosis</th>
+              <th>Disease</th>
+              <th>Start Date (Symptoms)</th>
+              <th>End Date (Symptoms)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let his of medicalHistories">
+              <td>{{ his.dateOfDiagnosis | date: 'dd-MM-yyyy' }}</td>
+              <td>{{ his.disease }}</td>
+              <td>{{ his.start | date: 'dd-MM-yyyy' }}</td>
+              <td>{{ his.end ? (his.end | date: 'dd-MM-yyyy') : 'Ongoing' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="immunizations?.length === 0" class="alert alert-info">
+          No medical history recorded.
         </div>
       </div>
     </div>
   </div>
-  
+</div>

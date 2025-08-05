@@ -126,7 +126,7 @@ export class HospitalManagementComponent implements OnInit {
     this.serviceForm = this.fb.group({
       id: [],
       name: ['', [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,49}$/)]],
-      specification: ['', [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z '-]{1,49}$/)]],
+      specification: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9][a-zA-Z0-9\s.,'()&\-/\\]{1,49}$/)]],
       comment: ['']
     });
   }
@@ -285,6 +285,13 @@ export class HospitalManagementComponent implements OnInit {
   openPhysicianDialog(physician?: any): void {
     this.isEditPhysician = !!physician;
     if (physician) {
+
+      const daysFormValue = this.days.reduce((acc: { [key: string]: boolean }, day: string) => {
+        acc[day] = physician.days.includes(day);
+        return acc;
+      }, {});
+
+
       this.physicianForm.patchValue({
         id: physician.id,
         userId: physician.userId,
@@ -301,7 +308,7 @@ export class HospitalManagementComponent implements OnInit {
         additionalQualification: physician.additionalQualification,
         from: physician.from,
         to: physician.to,
-        days: physician.days,
+        days: daysFormValue,
         isActive: physician.isActive
       });
       this.physicianForm.get('firstName')?.disable();

@@ -1,85 +1,170 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { ValidationService } from '../../../shared/services/validator.service';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { map, Observable, startWith } from 'rxjs';
+import { AccountService } from '../../services/account.service';
+import { DatabaseService } from '../../../shared/services/database.service';
+import { OrganizationService } from '../../services/organization.service';
 
 @Component({
   selector: 'app-hospital-new-case',
   templateUrl: './hospital-new-case.component.html',
-  styleUrl: './hospital-new-case.component.scss'
+  styleUrls: ['./hospital-new-case.component.scss']
 })
 export class HospitalNewCaseComponent {
-  speciality = '';
-  diagnosis = '';
-  patientInitials = '';
-  age: number | null = null;
-  chiefComplaints: string[] = [''];
-  pastHistory = '';
-  examination = '';
-  investigation = '';
-  treatment = '';
-  caseSummary = '';
-  images: File[] = [];
-  validInitials: boolean = true;
-  ageError: string | null = null;
+  caseForm!: FormGroup;
+  imageFiles: (File | null)[] = [null, null, null];
+  imagePreviewUrls: (string | null)[] = [null, null, null];
+  displayImageIndex: number | null = null;
+  specialities: string[] = [];
+  specialitiesFilterCtrl = new FormControl();
+  filteredSpecialitiesOptions!: Observable<string[]>;
+  userData: any;
 
-  constructor(private router: Router) { }
+  constructor(private fb: FormBuilder, private router: Router, private validationService: ValidationService, private orgnizationService: OrganizationService, private accountService: AccountService, private databaseService: DatabaseService) { }
 
-  submitCase() {
-    this.validInitials = /^[A-Za-z.']{3}$/.test(this.patientInitials);
-    if (!this.validInitials) return;
-    if (!this.validateAge()) return;
-    // Logic to handle form submission
-    console.log({
-      speciality: this.speciality,
-      diagnosis: this.diagnosis,
-      patientInitials: this.patientInitials,
-      age: this.age,
-      chiefComplaints: this.chiefComplaints,
-      pastHistory: this.pastHistory,
-      examination: this.examination,
-      investigation: this.investigation,
-      treatment: this.treatment,
-      caseSummary: this.caseSummary,
-      images: this.images
+  ngOnInit(): void {
+    this.initializeForm();
+    this.accountService.getUserData().subscribe({
+      next: async (data) => {
+        this.userData = data;
+        this.specialities = await this.databaseService.getSpecialities();
+        await this.initializeSearch();
+      },
+      error: (err) => console.error('Error fetching user data:', err)
     });
-    this.router.navigate(['organization/hospital/cases']);
   }
 
-  goBack() {
-    this.router.navigate(['organization/hospital/cases']);
+  initializeForm() {
+    this.caseForm = this.fb.group({
+      id: [],
+      userId: ['', Validators.required],
+      speciality: [[], Validators.required, Validators.minLength(1)],
+      name: ['', Validators.required],
+      diagnosis: ['', Validators.required],
+      patientInitials: ['', [Validators.required, Validators.minLength(2), Validators.pattern(/^[A-Za-z\-]{2,}$/)]],
+      age: ['', [Validators.min(0.09), Validators.max(150)]],
+      images: this.fb.array([this.createImage(), this.createImage(), this.createImage()], [this.atLeastOneDefaultImageValidator()]),
+      complaints: this.fb.array([this.createComplaint()], [this.atLeastOneComplaintValidator()]),
+      pastHistory: [''],
+      examination: [''],
+      investigations: [''],
+      treatment: [''],
+      caseSummary: ['', Validators.required]
+    });
   }
 
-  addImage() {
-    if (this.images.length < 3) {
-      this.images.push(null as any); // Allow null as a placeholder for a File type
-    }
-  }
-  removeImage(index: number) {
-    this.images.splice(index, 1);
+  initializeSearch(): void {
+    this.filteredSpecialitiesOptions = this.specialitiesFilterCtrl.valueChanges.pipe(
+      startWith(''),
+      map((search) => this.filterOptions(search, this.specialities))
+    );
   }
 
-  onFileSelected(event: any, index: number) {
-    const file = event.target.files[0];
-    if (file) {
-      this.images[index] = file;
-    }
+  filterOptions(search: string, options: string[]): string[] {
+    const filterValue = search.toLowerCase();
+    return options.filter(option => option.toLowerCase().includes(filterValue));
+  }
+
+
+  get images(): FormArray {
+    return this.caseForm?.get('images') as FormArray;
+  }
+
+  get complaints(): FormArray {
+    return this.caseForm?.get('complaints') as FormArray;
+  }
+
+  createImage(): FormGroup {
+    return this.fb.group({
+      image: ['',],
+      isDefault: [false]
+    });
+  }
+
+  atLeastOneDefaultImageValidator(): ValidatorFn {
+    return (formArray: AbstractControl): ValidationErrors | null => {
+      const images = (formArray as FormArray).controls;
+      const hasDefault = images.some(ctrl => ctrl.get('isDefault')?.value === true);
+      return hasDefault ? null : { noDefaultImage: true };
+    };
+  }
+
+  atLeastOneComplaintValidator(): ValidatorFn {
+    return (formArray: AbstractControl): ValidationErrors | null => {
+      const array = formArray as FormArray;
+      return array && array.length > 0 ? null : { noComplaints: true };
+    };
+  }
+
+  createComplaint(): FormGroup {
+
+    return this.fb.group({
+      id: [],
+      name: ['', Validators.required],
+      days: [0, Validators.min(1)]
+    })
+
   }
 
   addComplaint() {
-    this.chiefComplaints.push('');
-  }
-
-  validateAge(): boolean {
-    if ((this.age ?? 0) < 1 || (this.age ?? 0) > 150) {
-      this.ageError = 'Age must be between 1 and 150.';
-      return false;
-    }
-
-    this.ageError = null;
-    return true;
+    const newComplaint = this.createComplaint();
+    newComplaint.reset({ id: null, name: '', days: 0 });
+    this.complaints.push(newComplaint);
   }
 
   removeComplaint(index: number) {
-    this.chiefComplaints.splice(index, 1);
+    this.complaints.removeAt(index);
+  }
+
+  triggerFileInput(inputId: string) {
+    const input = document.getElementById(inputId) as HTMLInputElement;
+    input?.click();
+  }
+
+  onFileChange(event: any, index: number) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(',')[1];
+      this.images.at(index).get('image')?.setValue(base64);
+      this.imagePreviewUrls[index] = 'data:image/png;base64,' + base64;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  selectDisplayImage(index: number) {
+    this.images.controls.forEach((ctrl, i) =>
+      ctrl.get('isDefault')?.setValue(i === index)
+    );
+  }
+
+  submitCase() {
+    this.caseForm.markAllAsTouched();
+    if (this.caseForm.invalid) return;
+
+    this.caseForm.get('userId')?.setValue(this.userData.id);
+    this.orgnizationService
+      .saveMedicalCase(this.userData.id, this.caseForm.value)
+      .subscribe({
+        next: (response) => {
+          this.router.navigate(['/organization/hospital/cases']);
+        },
+        error: (error) => {
+          console.error('Error Saving case:', error);
+        },
+      });
+  }
+
+  showDefaultImageError(): boolean {
+    return this.images?.hasError('noDefaultImage') &&
+      this.images.controls.some(c => c.touched || c.get('file')?.value);
+  }
+
+  goBack() {
+    this.router.navigate(['/organization/hospital/cases']);
   }
 }
-

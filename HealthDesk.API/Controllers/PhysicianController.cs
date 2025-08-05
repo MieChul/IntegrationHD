@@ -396,8 +396,37 @@ namespace HealthDesk.API.Controllers
             return Ok(new { Success = true, Message = "Preferences updated." });
         }
 
-    }
+        [HttpGet("{physicianId}/surveys")]
+        public async Task<IActionResult> GetSharedSurveys(string physicianId)
+        {
+            var surveys = await _physicianService.GetSurveysSharedWithPhysicianAsync(physicianId);
+            return Ok(new { Success = true, Data = surveys });
+        }
 
+        [HttpGet("surveys/{surveyId}")]
+        public async Task<IActionResult> GetSurveyById(string surveyId)
+        {
+            var survey = await _physicianService.GetSurveyByIdAsync(surveyId);
+            if (survey == null)
+            {
+                return NotFound(new { Success = false, Message = "Survey not found." });
+            }
+            return Ok(new { Success = true, Data = survey });
+        }
+
+        [HttpPost("surveys/{surveyId}/responses")]
+        public async Task<IActionResult> SaveSurveyResponse(string surveyId, [FromBody] SurveyResponseDto responseDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Success = false, Message = "Invalid data provided." });
+            }
+
+            await _physicianService.SaveSurveyResponseAsync(surveyId, responseDto);
+            return Ok(new { Success = true, Message = "Survey response submitted successfully." });
+        }
+
+    }
 }
 
 

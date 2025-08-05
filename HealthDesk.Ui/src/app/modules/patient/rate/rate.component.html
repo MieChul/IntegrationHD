@@ -168,6 +168,10 @@
             <i class="bi bi-clock me-1 icon-timing"></i>
             <span>{{ entity.timing }}</span>
           </p>
+          <p class="card-text mb-3">
+            <i class="bi bi-calendar-day me-1 icon-days"></i>
+            <span>{{ entity.days?.join(', ') }}</span>
+          </p>
 
           <!-- Buttons -->
           <div class="d-flex">
@@ -409,7 +413,7 @@
             <tbody>
               <tr *ngFor="let test of selectedDetails.testname">
                 <td>{{ test.name }}</td>
-                <td>{{ test.amount | currency }}</td>
+                <td>{{ test.amount | currency:'INR' }}</td>
               </tr>
             </tbody>
           </table>
@@ -426,7 +430,7 @@
             <tbody>
               <tr *ngFor="let med of selectedDetails.drugName">
                 <td>{{ med.brandName }}</td>
-                <td>{{ med.price | currency }}</td>
+                <td>{{ med.price | currency:'INR' }}</td>
               </tr>
             </tbody>
           </table>

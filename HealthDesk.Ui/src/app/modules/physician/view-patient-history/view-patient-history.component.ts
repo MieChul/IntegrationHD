@@ -17,6 +17,7 @@ export class ViewPatientHistoryComponent implements OnInit {
   labInvestigations: any[] = [];
   investigations: any[] = [];
   immunizations: any[] = [];
+  medicalHistories: any[] = [];
   patientId: string = '';
 
 
@@ -32,6 +33,7 @@ export class ViewPatientHistoryComponent implements OnInit {
         this.labInvestigations = history.data.labInvestigations || [];
         this.investigations = history.data.reports || [];
         this.immunizations = history.data.immunizations || [];
+        this.medicalHistories = history.data.medicalHistories || [];
       }
     });
   }

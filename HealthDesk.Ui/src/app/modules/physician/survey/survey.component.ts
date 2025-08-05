@@ -1,71 +1,89 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { OrganizationService } from '../../services/organization.service';
+import { PhysicianService } from '../../services/physician.service';
 import { AccountService } from '../../services/account.service';
-import { Survey } from '../../organization/design-survey/design-survey.component';
-
-
+import { Subscription } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+import { SurveyForm } from '../../../shared/models/survey';
+import { FilteringService } from '../../../shared/services/filter.service';
 
 @Component({
   selector: 'app-survey',
   templateUrl: './survey.component.html',
   styleUrls: ['./survey.component.scss']
 })
-export class SurveyComponent implements OnInit {
-  surveys: Survey[] = [];
-  filteredSurveys: Survey[] = [];
+export class SurveyComponent implements OnInit, OnDestroy {
+  surveys: SurveyForm[] = [];
+  filteredSurveys: SurveyForm[] = [];
   searchTerm: string = '';
-  sortDirection: string = 'asc';
+  sortDirection: 'asc' | 'desc' = 'asc';
   userData: any;
+  private subscriptions = new Subscription();
 
-  constructor(private router: Router, private accountService: AccountService, private organizationService: OrganizationService) { }
+  constructor(
+    private router: Router,
+    private accountService: AccountService,
+    private physicianService: PhysicianService,
+    private filteringService: FilteringService
+  ) { }
 
   ngOnInit(): void {
-    this.accountService.getUserData().subscribe({
-      next: (data) => {
-        this.userData = data;
-
-        this.loadPhysicianSurveys();
-
-      },
-      error: (err) => console.error('Error fetching user data:', err)
-    });
-  }
-
-  private async loadPhysicianSurveys() {
-    const all = await this.organizationService.getSurveys();
-    // only surveys shared with me
-    this.surveys = all
-      .filter((s : any)=> s.sharedWith?.includes(this.userData.id))
-      .map((s : any) => {
-        const responded = s.responses?.some((r: any) => r.physicianId === this.userData.id);
-        return { ...s, isTaken: responded };
-      });
-    this.filteredSurveys = [...this.surveys];
-  }
-
-  filterSurveys(): void {
-    this.filteredSurveys = this.surveys.filter(survey =>
-      survey.name.toLowerCase().includes(this.searchTerm.toLowerCase())
+    this.subscriptions.add(
+      this.accountService.getUserData().pipe(
+        switchMap(userData => {
+          this.userData = userData;
+          if (userData?.id) {
+            return this.physicianService.getSurveys(userData.id);
+          }
+          throw new Error('User data or ID not available.');
+        })
+      ).subscribe({
+        next: (surveysFromApi) => {
+          this.surveys = (surveysFromApi || []).map((s: any) => {
+            const responded = s.responses?.some((r: any) => r.userId === this.userData.id);
+            return { ...s, isTaken: responded };
+          });
+          this.filteredSurveys = [...this.surveys];
+        },
+        error: (err) => console.error('Error fetching surveys:', err)
+      })
     );
   }
 
-  sort(field: keyof Survey): void {
-
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
+  filterSurveys(): void {
+    this.filteredSurveys = this.filteringService.filter(
+      this.surveys,
+      {
+        title: this.searchTerm
+      },
+      []
+    );
+  }
 
-  viewSurvey(surveyId: any): void {
-    this.router.navigate(['/physician/view-survey', surveyId]);
+  sort(field: keyof SurveyForm): void {
+    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    const direction = this.sortDirection === 'asc' ? 1 : -1;
+
+    this.filteredSurveys.sort((a, b) => {
+      const aValue = (a as any)[field] ?? '';
+      const bValue = (b as any)[field] ?? '';
+
+      if (aValue < bValue) {
+        return -1 * direction;
+      }
+      if (aValue > bValue) {
+        return 1 * direction;
+      }
+      return 0;
+    });
   }
 
   takeSurvey(id: any) {
     const survey = this.surveys.find(s => s.id === id);
-    if (survey?.isTaken) {
-      // just in case someone re-enables the button
-      alert('You have already taken this survey.');
-      return;
-    }
     this.router.navigate(['/physician/take-survey', id]);
   }
 }

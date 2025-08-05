@@ -1,216 +1,292 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { OrganizationService } from '../../services/organization.service';
+import { AccountService } from '../../services/account.service';
+import { Subscription, of } from 'rxjs';
+import { switchMap, tap, catchError } from 'rxjs/operators';
+import { SurveyDto, SurveyForm, SurveyResponse } from '../../../shared/models/survey';
 
 @Component({
   selector: 'app-design-survey',
   templateUrl: './design-survey.component.html',
   styleUrls: ['./design-survey.component.scss']
 })
-export class DesignSurveyComponent implements OnInit {
-  // Initialize surveyForm with correct structure
-  surveyForm: Survey = {
-    id: '',
+export class DesignSurveyComponent implements OnInit, OnDestroy {
+
+  surveyForm: SurveyForm = {
+    id: undefined,
     name: '',
     title: '',
     description: '',
     questions: [],
-    image: null,
+    headerImageUrl: undefined,
+    headerImage: undefined,
     is_active: true,
-    date: '',
-    author: '',
+    sharedWith: [],
     company: '',
     responses: [],
     isTaken: false
   };
 
-  questionErrors: any = [];
+  questionErrors: any[] = [];
   formNameError: boolean = false;
-  formAutherError: boolean = false;
   formQuestionError: boolean = false;
+  currentPharmaId: string | null = null;
+  imageError: string | null = null;
+  userData: any;
+
+  private subscriptions: Subscription = new Subscription();
 
   constructor(
     private router: Router,
-    private organizationService: OrganizationService
+    private organizationService: OrganizationService,
+    private accountService: AccountService
   ) { }
 
-  async ngOnInit() {
-    // Check if a surveyId was passed in history.state
-    const surveyId = history.state.surveyId;
-    if (surveyId) {
-      try {
-        const survey = await this.organizationService.getSurveyById(surveyId);
-        await this.initializeForm(survey);
-      } catch (error) {
-        console.error('Error fetching survey data:', error);
-        // If there's an error, initialize a blank form
-        await this.initializeForm();
-      }
-    } else {
-      // If no surveyId exists, keep the form blank
-      await this.initializeForm();
-    }
+  ngOnInit() {
+    this.subscriptions.add(
+      this.accountService.getUserData().pipe(
+        tap(data => {
+          this.userData = data;
+          if (!this.userData.id) {
+            console.error('Pharmaceutical ID not found. Cannot manage surveys.');
+            this.router.navigate(['/login']);
+          }
+        }),
+        switchMap(() => {
+          const surveyId = history.state.surveyId;
+          if (surveyId && this.userData.id) {
+            return this.organizationService.getSurveyById(this.userData.id, surveyId).pipe(
+              catchError(error => {
+                console.error('Error fetching survey data:', error);
+                return of(undefined);
+              })
+            );
+          } else {
+            return of(undefined);
+          }
+        })
+      ).subscribe({
+        next: (survey) => {
+          this.initializeForm(survey);
+        },
+        error: (err) => {
+          console.error('Unhandled error in ngOnInit stream:', err);
+          this.initializeForm();
+        }
+      })
+    );
   }
 
-  /**
-   * Initializes or patches the survey form.
-   * If a survey is provided, its values are used to patch the form.
-   * Otherwise, the form is reset to a blank state.
-   */
-  async initializeForm(survey?: Survey): Promise<void> {
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
+  }
+
+  initializeForm(survey?: SurveyResponse): void {
     if (survey) {
-      // Patch the form with the survey data
-      this.surveyForm = { ...survey };
+      this.surveyForm = {
+        id: survey.id,
+        name: survey.name,
+        title: survey.title,
+        description: survey.description,
+        questions: survey.questions.map(q => ({
+          id: q.id,
+          text: q.text,
+          type: q.type as 'text' | 'radio' | 'checkbox' | 'date' | 'dropdown' | 'number', // Type assertion here
+          options: q.options?.map((o:any) => ({ text: o.text })),
+          required: q.required,
+          numbersOnly: q.numbersOnly,
+          minDate: q.minDate ? new Date(q.minDate).toISOString().split('T')[0] : undefined,
+          maxDate: q.maxDate ? new Date(q.maxDate).toISOString().split('T')[0] : undefined,
+          description: q.description
+        })),
+        headerImageUrl: survey.headerImageUrl,
+        is_active: survey.isActive,
+        date: survey.date,
+        author: survey.author,
+        sharedWith: survey.sharedWith,
+        company: this.surveyForm.company,
+        responses: survey.responses || [],
+        isTaken: this.surveyForm.isTaken
+      };
     } else {
-      // Reset to default blank state
       this.surveyForm = {
         name: '',
         title: '',
         description: '',
         questions: [],
-        image: null,
+        headerImageUrl: undefined,
         is_active: true,
         date: '',
         author: '',
-        company: '',
         sharedWith: [],
+        company: '',
         responses: [],
         isTaken: false
       };
     }
   }
 
-  addQuestion() {
+  addQuestion(): void {
     this.surveyForm.questions.push({
       text: '',
       type: 'text',
       options: [],
       required: false,
       numbersOnly: false,
-      allowOther: false,
       description: ''
     });
     this.questionErrors.push({});
   }
 
-  addOption(questionIndex: number) {
+  addOption(questionIndex: number): void {
     this.surveyForm.questions[questionIndex].options?.push({ text: '' });
   }
 
-  removeQuestion(index: number) {
+  removeQuestion(index: number): void {
     this.surveyForm.questions.splice(index, 1);
     this.questionErrors.splice(index, 1);
   }
 
-  removeOption(questionIndex: number, optionIndex: number) {
+  removeOption(questionIndex: number, optionIndex: number): void {
     this.surveyForm.questions[questionIndex].options?.splice(optionIndex, 1);
   }
 
-  onFileChange(event: any) {
-    const reader = new FileReader();
+  onFileChange(event: any): void {
+    this.imageError = null;
     const file = event.target.files[0];
 
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      this.imageError = 'Invalid file type. Please upload an image.';
+      event.target.value = '';
+      return;
+    }
+
+    const maxSizeInBytes = 2 * 1024 * 1024;
+    if (file.size > maxSizeInBytes) {
+      this.imageError = 'File is too large. Maximum size is 2MB.';
+      event.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
     reader.onload = () => {
       if (reader.result && typeof reader.result === 'string') {
-        this.surveyForm.image = reader.result;
+        this.surveyForm.headerImage = reader.result;
+        this.surveyForm.headerImageUrl = reader.result;
       }
     };
-
-    if (file) {
-      reader.readAsDataURL(file);
-    }
+    reader.readAsDataURL(file);
   }
 
-  onQuestionTypeChange(index: number) {
+  onQuestionTypeChange(index: number): void {
     const question = this.surveyForm.questions[index];
-    if (question.type === 'text' || question.type === 'radio' || question.type === 'checkbox' || question.type === 'dropdown') {
+    if (question.type === 'text' || question.type === 'number' || question.type === 'date') {
       question.options = [];
+    } else {
+      if (!question.options) {
+        question.options = [];
+      }
     }
   }
 
-  validateSurvey() {
+  validateSurvey(): boolean {
     this.formNameError = !this.surveyForm.name;
-    this.formAutherError = !this.surveyForm.author;
     this.formQuestionError = !(this.surveyForm.questions.length > 0);
 
-    if (this.formNameError || this.formAutherError || this.formQuestionError) {
+    if (this.formNameError || this.formQuestionError) {
       return false;
     }
 
     this.questionErrors = [];
+    let isValid = true;
     this.surveyForm.questions.forEach((question, i) => {
       this.questionErrors[i] = {};
       if (!question.text) {
         this.questionErrors[i].text = true;
+        isValid = false;
       }
-      if (question.type === 'date' && question.minDate && question.maxDate && question.minDate > question.maxDate) {
+      if (question.type === 'date' && question.minDate && question.maxDate && new Date(question.minDate) > new Date(question.maxDate)) {
         this.questionErrors[i].date = true;
+        isValid = false;
+      }
+
+      if ((question.type === 'radio' || question.type === 'checkbox') && (!question.options || question.options.length === 0)) {
+        this.questionErrors[i].options = true;
+        isValid = false;
       }
     });
 
-    return !this.questionErrors.some((error: any) => Object.keys(error).length > 0);
+    return isValid;
   }
 
-  saveSurvey() {
+  saveSurvey(): void {
+    if (!this.userData.id) {
+      console.error('Cannot save survey: Pharmaceutical ID is missing.');
+      return;
+    }
+
     if (this.validateSurvey()) {
-      // Update the survey date to current timestamp
-      this.surveyForm.date = new Date().toISOString();
-      this.organizationService.saveSurvey(this.surveyForm).then(() => {
-        // Clear the form after saving
-        this.surveyForm = {
-          name: '',
-          title: '',
-          description: '',
-          questions: [],
-          image: null,
-          is_active: true,
-          date: '',
-          author: '',
-          company: '',
-          sharedWith: [],
-          responses: [],
-          isTaken: false
-        };
-        this.questionErrors = [];
+      const surveyDto: SurveyDto = {
+        id: this.surveyForm.id,
+        name: this.surveyForm.name,
+        title: this.surveyForm.title,
+        description: this.surveyForm.description,
+        headerImage: this.surveyForm.headerImage,
+        isActive: this.surveyForm.is_active,
+        sharedWith: this.surveyForm.sharedWith,
+        author: this.surveyForm.author,
+        questions: this.surveyForm.questions.map(q => ({
+          id: q.id,
+          text: q.text,
+          type: q.type,
+          description: q.description,
+          options: q.options?.map(o => ({ text: o.text })),
+          required: q.required,
+          numbersOnly: q.numbersOnly,
+          minDate: q.minDate ? new Date(q.minDate).toISOString() : undefined,
+          maxDate: q.maxDate ? new Date(q.maxDate).toISOString() : undefined
+        }))
+      };
+
+      this.organizationService.saveSurvey(this.userData.id, surveyDto).subscribe({
+        next: (response) => {
+          console.log('Survey saved successfully:', response);
+          this.resetForm();
+          this.router.navigate(['/organization/pharma/surveys']);
+        },
+        error: (error) => {
+          console.error('Error saving survey:', error);
+        }
       });
-      this.router.navigate(['/organization/pharma/surveys']);
     }
   }
 
-  goBack() {
+  private resetForm(): void {
+    this.surveyForm = {
+      id: undefined,
+      name: '',
+      title: '',
+      description: '',
+      questions: [],
+      headerImageUrl: undefined,
+      headerImage: undefined,
+      is_active: true,
+      date: '',
+      author: '',
+      sharedWith: [],
+      company: '',
+      responses: [],
+      isTaken: false
+    };
+    this.questionErrors = [];
+  }
 
+  goBack(): void {
     this.router.navigate(['/organization/pharma/surveys']);
   }
-}
-
-export interface Survey {
-  id?: string;
-  name: string;
-  title: string;
-  description: string;
-  questions: Question[];
-  image?: string | null;
-  is_active: boolean;
-  date: string;
-  author: string;
-  sharedWith?: string[];
-  company: string;
-  responses: any[];
-  isTaken: boolean;
-}
-
-export interface Question {
-  text: string;
-  type: 'text' | 'radio' | 'checkbox' | 'date' | 'dropdown' | 'number';
-  options?: Option[];
-  required: boolean;
-  numbersOnly?: boolean;
-  minDate?: string;
-  maxDate?: string;
-  allowOther?: boolean;
-  description: string;
-}
-
-export interface Option {
-  text: string;
 }

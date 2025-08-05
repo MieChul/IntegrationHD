@@ -138,7 +138,7 @@ export class RemediesComponent implements OnInit, AfterViewInit {
   }
 
   shareCase(caseId: string): void {
-    this.shareLink = `https://HealthDesk.com/physician/view-remedy/${caseId}`;
+    this.shareLink = `https://healthdeskapp.in/patient/view-remedy/${caseId}`;
     const modalInstance = new Modal(this.shareModal.nativeElement);
     modalInstance.show();
   }

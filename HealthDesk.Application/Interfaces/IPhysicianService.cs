@@ -47,4 +47,7 @@ public interface IPhysicianService
     Task SaveComment(string userId, string caseId, CommentDto dto);
     Task ToggleLikeAsync(string userId, string caseId, string likedUser);
     Task UpdatePreferencesAsync(string userId, List<string> preferences);
+    Task<IEnumerable<SurveyDto>> GetSurveysSharedWithPhysicianAsync(string physicianId);
+    Task<SurveyDto> GetSurveyByIdAsync(string surveyId);
+    Task SaveSurveyResponseAsync(string surveyId, SurveyResponseDto responseDto);
 }

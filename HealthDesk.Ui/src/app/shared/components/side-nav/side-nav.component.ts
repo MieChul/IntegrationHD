@@ -19,20 +19,6 @@ export class SidebarComponent implements OnInit {
   }
 
   ngOnInit(): void {
-  //   const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-  //   tooltipTriggerList.map(function (tooltipTriggerEl) {
-  //     return new Tooltip(tooltipTriggerEl);
-  //   });
-
-  //   this.router.events.pipe(
-  //     filter(event => event instanceof NavigationEnd)
-  //   ).subscribe((event: NavigationEnd) => {
-  //     this.activeUrl = event.urlAfterRedirects;
-  //   });
-  // }
-
-  // isActive(url: string): boolean {
-  //   return this.activeUrl === url;
  }
 
  toggleSidebar(): void {

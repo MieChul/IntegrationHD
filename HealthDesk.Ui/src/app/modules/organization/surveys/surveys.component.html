@@ -5,10 +5,12 @@
   <div class="row mb-3 align-items-center">
     <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
       <div class="mb-2 me-3">
-        <mat-form-field appearance="outline" class="w-100" class="w-100">
-          <mat-label>Search Surveys</mat-label>
-          <input matInput placeholder="Search by Name" [(ngModel)]="surveySearchText" (input)="applyFilters()" />
-        </mat-form-field>
+        <div class="input-group">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Search by Title</mat-label>
+            <input matInput placeholder="Search by title" [(ngModel)]="surveySearchText" (input)="applyFilters()" />
+          </mat-form-field>
+        </div>
       </div>
     </div>
     <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
@@ -23,6 +25,7 @@
         <tr>
           <th>Sr. No</th>
           <th (click)="sortTable('name')">Form Name</th>
+          <th (click)="sortTable('title')">Title</th>
           <th (click)="sortTable('author')">Author</th>
           <th (click)="sortTable('date')">Created Date</th>
           <th (click)="sortTable('is_active')">Active</th>
@@ -34,10 +37,11 @@
         <tr *ngFor="let survey of filteredSurveys; let i = index">
           <td>{{ i + 1 }}</td>
           <td>{{ survey.name }}</td>
+           <td>{{ survey.title }}</td>
           <td>{{ survey.author }}</td>
           <td>{{ survey.date | date }}</td>
-          <td>{{ survey.is_active ? 'Yes' : 'No' }}</td>
-          <td>{{ survey.responses.length || 0 }}</td>
+          <td>{{ survey.isActive ? 'Yes' : 'No' }}</td>
+          <td>{{ survey.responses?.length || 0 }}</td>
           <td>
             <button class="btn btn-secondary btn-sm me-1" (click)="shareSurvey(survey)" data-bs-toggle="tooltip"
               data-bs-placement="top" title="Share">

@@ -5,10 +5,12 @@
   <div class="row mb-3 align-items-center">
     <div class="col-md-6 d-flex justify-content-start flex-wrap">
       <div class="mb-2 me-3">
-        <mat-form-field appearance="outline" class="w-100" class="w-100">
-          <mat-label>Search Surveys</mat-label>
-          <input matInput placeholder="Search by Name" [(ngModel)]="searchTerm" (input)="filterSurveys()" />
-        </mat-form-field>
+        <div class="input-group">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Search by Title</mat-label>
+            <input matInput placeholder="Search by title" [(ngModel)]="searchTerm" (input)="filterSurveys()" />
+          </mat-form-field>
+        </div>
       </div>
     </div>
   </div>
@@ -17,11 +19,11 @@
       <thead>
         <tr>
           <th>Sr.No</th>
-          <th>Title </th>
-          <th>Description</th>
-          <th>Author </th>
-          <th>Date</th>
-          <th>Responded?</th>
+          <th (click)="sort('title')">Title</th>
+          <th (click)="sort('description')">Description</th>
+          <th (click)="sort('author')">Author</th>
+          <th (click)="sort('date')">Date</th>
+          <th (click)="sort('isTaken')">Responded?</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -34,14 +36,14 @@
           <td>{{ survey.date | date }}</td>
           <td>{{ survey.isTaken?'Yes': 'No' }}</td>
           <td>
-            <button *ngIf="survey.isTaken" class="btn btn-info btn-sm me-1" (click)="viewSurvey(survey.id)"
-              ngbTooltip="View Survey" tooltipClass="view-tooltip">
+            <button *ngIf="survey.isTaken" class="btn btn-info btn-sm me-1" (click)="takeSurvey(survey.id)"
+              data-bs-toggle="tooltip" data-bs-placement="top" title="View Survey">
               <i class="bi bi-eye"></i>
             </button>
 
             <!-- Take button only if NOT yet taken -->
             <button *ngIf="!survey.isTaken" class="btn btn-primary btn-sm" (click)="takeSurvey(survey.id)"
-              ngbTooltip="Take Survey" tooltipClass="take-tooltip">
+              data-bs-toggle="tooltip" data-bs-placement="top" title="Take Survey">
               <i class="bi bi-arrow-up-right-square"></i>
             </button>
           </td>

@@ -12,6 +12,11 @@ interface SelfRecordEntry {
   unit: string;
 }
 
+interface InvestigationEntry {
+  name: string;
+  unit: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -66,6 +71,7 @@ export class DatabaseService {
 
   private drugData: DrugEntry[] = [];
   private selfRecordData: SelfRecordEntry[] = [];
+  private investigationData: InvestigationEntry[] = [];
   private readonly CACHE_KEY = 'databaseCache';
   private isLoaded = false;
 
@@ -79,6 +85,7 @@ export class DatabaseService {
       this.database = parsedData.database;
       this.drugData = parsedData.drugData || [];
       this.selfRecordData = parsedData.selfRecordData || [];
+       this.investigationData = parsedData.investigationData || [];
       console.log('Loaded database from cache.');
       return;
     }
@@ -108,6 +115,20 @@ export class DatabaseService {
             this.drugData = entries;
             // Populate the Drugs array with unique drug names.
             this.database.Drugs = Array.from(
+              new Set(entries.map((entry) => entry.name))
+            ).filter(Boolean);
+          }
+          else if (sheetName === 'Investigations') {
+            const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            const entries: InvestigationEntry[] = data
+              .map((row: any) => ({
+                name: row[0] as string,
+                unit: row[1] as string,
+              }))
+              .filter((entry) => entry.name);
+
+            this.investigationData = entries;
+            this.database.Investigations = Array.from(
               new Set(entries.map((entry) => entry.name))
             ).filter(Boolean);
           }
@@ -152,8 +173,10 @@ export class DatabaseService {
       sessionStorage.setItem(this.CACHE_KEY, JSON.stringify({
         database: this.database,
         drugData: this.drugData,
-        selfRecordData: this.selfRecordData
+        selfRecordData: this.selfRecordData,
+        investigationData: this.investigationData
       }));
+
       this.isLoaded = true;
       console.log('Database loaded and cached successfully.');
     } catch (error) {
@@ -288,4 +311,12 @@ export class DatabaseService {
   getHospitalServcies() {
     return this.database.HospitalServices;
   }
+
+  getInvestigationUnit(investigationName: string): string | null {
+    const investigation = this.investigationData.find(
+      (entry) => entry.name === investigationName
+    );
+    return investigation ? investigation.unit : null;
+  }
+
 }

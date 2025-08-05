@@ -1,85 +1,94 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { OrganizationService } from '../../services/organization.service';
+import { PhysicianService } from '../../services/physician.service';
 import { AccountService } from '../../services/account.service';
-
-interface Question {
-  text: string;
-  type: string;
-  options: any[];
-  required: boolean;
-  numbersOnly: boolean;
-}
-
-interface Answer {
-  // whichever shape your DB stores—here we assume response text directly
-  response: string;
-}
+import { Subscription, of } from 'rxjs';
+import { switchMap, catchError } from 'rxjs/operators';
+import { QuestionResponse, SurveyResponse } from '../../../shared/models/survey';
 
 @Component({
   selector: 'app-view-survey',
   templateUrl: './view-survey.component.html',
   styleUrls: ['./view-survey.component.scss']
 })
-export class ViewSurveyComponent implements OnInit {
+export class ViewSurveyComponent implements OnInit, OnDestroy {
   loading = true;
-
-  // survey metadata
-  title = '';
+  name = '';
   description = '';
   author = '';
-  company = '';
   takenDate!: Date;
-
-  // questions + this physician's answers
+  questions: QuestionResponse[] = [];
   qaList: { questionText: string; answer: string }[] = [];
-
   private physicianId!: string;
+  private subscriptions = new Subscription();
 
   constructor(
     private route: ActivatedRoute,
-    private orgSvc: OrganizationService,
+    private physicianService: PhysicianService,
     private acctSvc: AccountService,
     private router: Router
   ) { }
 
   ngOnInit(): void {
-    // 1) get current physician ID
-    this.acctSvc.getUserData().subscribe((user: any) => {
-      this.physicianId = user.id;
-      this.loadSurvey();
-    });
+    const surveyId = this.route.snapshot.paramMap.get('id')!;
+    if (!surveyId) {
+      console.error('Survey ID not found in route parameters.');
+      this.loading = false;
+      return;
+    }
+
+    this.subscriptions.add(
+      this.acctSvc.getUserData().pipe(
+        switchMap((user: any) => {
+          this.physicianId = user.id;
+          if (!this.physicianId) {
+            console.error('User ID not available.');
+            return of(null);
+          }
+          return this.physicianService.getSurveyById(surveyId).pipe(
+            catchError(err => {
+              console.error('Error fetching survey:', err);
+              return of(null);
+            })
+          );
+        })
+      ).subscribe(survey => {
+        if (survey) {
+          this.processSurvey(survey);
+        } else {
+          this.loading = false;
+        }
+      })
+    );
   }
 
-  private async loadSurvey() {
-    const surveyId = this.route.snapshot.paramMap.get('id')!;
-    // 2) fetch from IndexedDB
-    const survey: any = await this.orgSvc.getSurveyById(surveyId);
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
 
-    // 3) pull metadata
-    this.title = survey.title;
-    this.description = survey.description;
-    this.author = survey.author;
-    this.company = survey.company || '';
+  private processSurvey(survey: SurveyResponse) {
+    this.name = survey.name;
+    this.description = survey.description || '';
+    this.author = survey.author || '';
+    this.questions = survey.questions;
 
-    // 4) find this physician’s response object
     const respObj = (survey.responses || [])
       .find((r: any) => r.physicianId === this.physicianId);
 
     if (respObj) {
       this.takenDate = new Date(respObj.submittedAt);
-      // 5) map each question to its corresponding answer by index
-      this.qaList = survey.questions.map((q: Question, idx: number) => ({
+      this.qaList = this.questions.map((q: QuestionResponse) => ({
         questionText: q.text,
-        answer: (respObj.answers[idx]?.response ?? '').toString()
+        answer: (respObj.responsesData[q.text] ?? '').toString()
       }));
+    } else {
+      console.warn('No response found for this physician on this survey.');
     }
 
     this.loading = false;
   }
 
   goBack() {
-
     this.router.navigate(['/physician/survey']);
   }
 }

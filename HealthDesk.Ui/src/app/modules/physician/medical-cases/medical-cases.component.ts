@@ -137,7 +137,7 @@ export class MedicalCasesComponent implements OnInit {
   }
 
   shareCase(caseId: string): void {
-    this.shareLink = `https://HealthDesk.com/physician/view-medical/${caseId}`;
+    this.shareLink = `https://healthdeskapp.in/physician/view-medical/${caseId}`;
     const modalInstance = new Modal(this.shareModal.nativeElement);
     modalInstance.show();
   }

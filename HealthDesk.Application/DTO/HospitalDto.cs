@@ -64,3 +64,10 @@ public class PhysicianRecordDto
     public bool IsActive { get; set; }
 }
 
+public class HospitalInfoDto
+{
+    public List<string>? Preferences { get; set; } = new List<string>();
+}
+
+
+

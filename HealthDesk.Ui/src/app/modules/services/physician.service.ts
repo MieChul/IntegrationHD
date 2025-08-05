@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
+import { SurveyForm, SurveyResponseDto } from '../../shared/models/survey';
 
 @Injectable({
   providedIn: 'root'
@@ -195,5 +196,19 @@ export class PhysicianService {
     };
 
     return this.http.post<any>(`${this.apiUrl}/multi-appointments`, payload);
+  }
+
+  getSurveys(physicianId: string): Observable<SurveyForm[]> {
+    return this.http.get<any>(`${this.apiUrl}/${physicianId}/surveys`)
+      .pipe(map(response => response.data));
+  }
+
+  getSurveyById(surveyId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/surveys/${surveyId}`)
+      .pipe(map(response => response.data));
+  }
+
+  saveSurveyResponse(surveyId: string, responseData: SurveyResponseDto): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/surveys/${surveyId}/responses`, responseData);
   }
 }

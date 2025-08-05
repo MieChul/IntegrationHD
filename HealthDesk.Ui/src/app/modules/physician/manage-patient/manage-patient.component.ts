@@ -141,7 +141,7 @@ export class ManagePatientComponent implements OnInit {
     }
   }
 
-    onDependentMobileInputChange(): void {
+  onDependentMobileInputChange(): void {
     const mobile = this.dependentForm.get('mobile')?.value;
     if (mobile.length === 10) {
       this.checkDependentExists(mobile);
@@ -177,7 +177,7 @@ export class ManagePatientComponent implements OnInit {
     });
   }
 
-   checkDependentExists(mobile: string): void {
+  checkDependentExists(mobile: string): void {
     this.physicianService.getDependentByMobile(mobile).subscribe((response: any) => {
       if (response.success && response.data) {
         const patient = response.data;
@@ -285,7 +285,7 @@ export class ManagePatientComponent implements OnInit {
     addPatientModal.show();
   }
 
-    saveDependent(): void {
+  saveDependent(): void {
     if (this.dependentForm.invalid) {
       // Mark all controls as touched to trigger validation errors
       this.dependentForm.markAllAsTouched();
@@ -410,6 +410,9 @@ export class ManagePatientComponent implements OnInit {
     this.otpService.verifyOtp(this.currentPatient.mobile, otp, this.otpToken).subscribe({
       next: (response) => {
         if (response.valid) {
+          const storageKey = `otpVerified_${this.currentPatient.mobile}`;
+          const verificationData = { timestamp: Date.now() };
+          localStorage.setItem(storageKey, JSON.stringify(verificationData));
           const otpModal = bootstrap.Modal.getInstance(document.getElementById('otpModal')!);
           otpModal?.hide();
 
@@ -440,8 +443,25 @@ export class ManagePatientComponent implements OnInit {
       const prevInput = target.previousElementSibling as HTMLInputElement;
       if (prevInput) {
         prevInput.focus();
-        prevInput.value = ''; // Clear the previous input field
+        prevInput.value = '';
       }
     }
+  }
+
+  viewPatientHistory(patient: any): void {
+    const storageKey = `otpVerified_${patient.mobile}`;
+    const storedData = localStorage.getItem(storageKey);
+
+    if (storedData) {
+      const verificationData = JSON.parse(storedData);
+      const lastVerifiedTime = verificationData.timestamp;
+      const twentyFourHoursInMillis = 24 * 60 * 60 * 1000;
+
+      if (Date.now() - lastVerifiedTime < twentyFourHoursInMillis) {
+        this.router.navigate(['physician/view-patient-history', patient.userId]);
+        return;
+      }
+    }
+    this.openOtpPopup(patient);
   }
 }

@@ -1,68 +1,98 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { OrganizationService } from '../../services/organization.service';
+import { AccountService } from '../../services/account.service';
+import { Subscription, of } from 'rxjs';
+import { switchMap, tap, catchError } from 'rxjs/operators';
+
 @Component({
   selector: 'app-survey-form',
   templateUrl: './survey-form.component.html',
   styleUrls: ['./survey-form.component.scss']
 })
-export class SurveyFormComponent implements OnInit {
+export class SurveyFormComponent implements OnInit, OnDestroy {
   surveyForm: any;
   responses: any = {};
   questionErrors: any = [];
-  captcha: string = '';
-  userCaptchaInput: string = '';
-  captchaMatched: boolean = false;
-  captchaError : string ='';
+  userData: any;
 
-  constructor(private route: ActivatedRoute, private organizationService: OrganizationService) { }
+  private subscriptions: Subscription = new Subscription();
+
+  constructor(
+    private route: ActivatedRoute,
+    private organizationService: OrganizationService,
+    private accountService: AccountService
+  ) { }
 
   ngOnInit(): void {
     const surveyId = this.route.snapshot.paramMap.get('id');
-    this.loadSurvey(surveyId ?? '');
-    // this.captcha = this.captchaService.generateCaptcha();
+
+    if (surveyId) {
+      this.subscriptions.add(
+        this.accountService.getUserData().pipe(
+          tap(userData => {
+            this.userData = userData;
+            if (!this.userData.id) {
+              console.error('Pharmaceutical ID not found. Cannot load survey.');
+            }
+          }),
+          switchMap(() => {
+            if (!this.userData.id) {
+              return of(null);
+            }
+            return this.organizationService.getSurveyById(this.userData.id, surveyId).pipe(
+              catchError(err => {
+                console.error('Error loading survey:', err);
+                return of(null);
+              })
+            );
+          })
+        ).subscribe({
+          next: (survey) => {
+            if (survey) {
+              this.surveyForm = survey;
+              this.initializeResponses();
+            }
+          },
+          error: (err) => console.error('Unhandled error in ngOnInit stream:', err)
+        })
+      );
+    }
   }
 
-  loadSurvey(id: string) {
-    this.organizationService.getSurveyById(id).then((survey) => {
-      this.surveyForm = survey;
-      this.initializeResponses();
-    });
-  }
-
- 
-  validateCaptcha() {
-    // this.captchaMatched = this.captchaService.validateCaptcha(this.userCaptchaInput, this.captcha);
-    // if(!this.captchaMatched)
-    //   this.captchaError="Captcha Mis Match."
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   initializeResponses() {
-    this.surveyForm.questions.forEach((question: any) => {
-      this.responses[question.text] = question.type === 'checkbox' ? [] : '';
-    });
+    if (this.surveyForm && this.surveyForm.questions) {
+      this.surveyForm.questions.forEach((question: any) => {
+        this.responses[question.text] = question.type === 'checkbox' ? [] : '';
+      });
+    }
   }
 
   validateResponses(): boolean {
     this.questionErrors = [];
     let isValid = true;
 
+    if (!this.surveyForm || !this.surveyForm.questions) {
+      return false;
+    }
+
     this.surveyForm.questions.forEach((question: any, index: number) => {
       this.questionErrors[index] = {};
-      
-      // Required validation
-      if (question.required && !this.responses[question.text]) {
+
+      if (question.required && (!this.responses[question.text] || (Array.isArray(this.responses[question.text]) && this.responses[question.text].length === 0))) {
         this.questionErrors[index].required = true;
         isValid = false;
       }
 
-      // Numbers only validation
-      if (question.numbersOnly && isNaN(this.responses[question.text])) {
+      if (question.numbersOnly && this.responses[question.text] !== '' && isNaN(this.responses[question.text])) {
         this.questionErrors[index].numbersOnly = true;
         isValid = false;
       }
 
-      // Date range validation
       if (question.type === 'date' && question.minDate && question.maxDate) {
         const responseDate = new Date(this.responses[question.text]);
         const minDate = new Date(question.minDate);
@@ -78,20 +108,26 @@ export class SurveyFormComponent implements OnInit {
   }
 
   submitResponse() {
-    if ( this.validateResponses()) {
-      const responseWithDate = {
-        ...this.responses,
-        Date: new Date().toLocaleString()  // Save the current date with time
+    if (this.validateResponses()) {
+      const responsePayload = {
+        responsesData: {
+          ...this.responses,
+          submitted_at: new Date().toLocaleString()
+        }
       };
-      this.organizationService.saveResponse(this.surveyForm.id, responseWithDate).then(() => {
-        // Handle successful response submission
-        alert('Thank you for submitting the survey!');
-      }).catch(error => {
-        console.error('Failed to save response:', error);
-        alert('There was an error submitting your response.');
-      });
+
+      this.subscriptions.add(
+        this.organizationService.saveResponse(this.surveyForm.id, responsePayload).subscribe({
+          next: () => {
+            console.log('Thank you for submitting the survey!');
+          },
+          error: (error) => {
+            console.error('Failed to save response:', error);
+          }
+        })
+      );
     } else {
-      alert('Please correct the errors before submitting.');
+      console.log('Please correct the errors before submitting.');
     }
   }
 }

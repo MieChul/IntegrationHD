@@ -31,14 +31,7 @@ public class BasicAuthHandler : AuthenticationHandler<AuthenticationSchemeOption
 
         string encoded = header.Substring("Basic ".Length).Trim();
         string decoded;
-        try
-        {
-            decoded = Encoding.UTF8.GetString(Convert.FromBase64String(encoded));
-        }
-        catch
-        {
-            return Task.FromResult(AuthenticateResult.Fail("Invalid Base64"));
-        }
+        decoded = Encoding.UTF8.GetString(Convert.FromBase64String(encoded));
 
         var parts = decoded.Split(':', 2);
         if (parts.Length != 2)

@@ -199,6 +199,8 @@ public class PatientHistoryDto
     public List<ImmunizationDto> Immunizations { get; set; }
     public List<SymptomDto> Symptoms { get; set; }
 
+    public List<MedicalHistoryDto> MedicalHistories { get; set; }
+
 }
 
 public class MedicalCaseDto

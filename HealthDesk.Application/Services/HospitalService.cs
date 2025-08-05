@@ -39,14 +39,15 @@ public class HospitalService : IHospitalService
                 Gender = user.Gender,
                 Mobile = user.Mobile,
                 Speciality = user.Speciality,
-                Graduation = user.Graduation.Name,
-                PostGraduation = user.PostGraduation.Name ?? string.Empty,
-                SuperSpecialization = user.SuperSpecialization.Name ?? string.Empty,
-                AdditionalQualification = user.AdditionalQualification.Name ?? string.Empty,
+                Graduation = user.Graduation?.Name ?? string.Empty,
+                PostGraduation = user.PostGraduation?.Name ?? string.Empty,
+                SuperSpecialization = user.SuperSpecialization?.Name ?? string.Empty,
+                AdditionalQualification = user.AdditionalQualification?.Name ?? string.Empty,
                 From = p.From,
                 To = p.To,
                 Days = p.Days,
-                IsActive = p.IsActive
+                IsActive = p.IsActive,
+                DateOfBirth = user.BirthDate
             };
             physicians.Add(physician);
         }
@@ -223,4 +224,157 @@ public class HospitalService : IHospitalService
             throw new InvalidOperationException("Cannot remove item(s) as they were created more than 1 hour ago. Please contact admin.");
         }
     }
+
+    public async Task<dynamic> GetAllMedicalCasesAsync(string hospitalId)
+    {
+        var medicalCases = _hospitalRepository.GetAllCases();
+        var medicalCasesWithThumbnail = medicalCases.Select(r => new
+        {
+            r.Id,
+            r.Name,
+            r.CaseSummary,
+            r.UserId,
+            r.CaseImages,
+            r.Comments,
+            r.CreateDate,
+            r.Speciality,
+            r.Diagnosis,
+            r.PatientInitials,
+            r.Age,
+            r.Complaints,
+            r.PastHistory,
+            r.Examination,
+            r.Investigations,
+            r.Treatment,
+            r.SubmittedBy,
+            r.LikedBy,
+            ThumbnailUrl = r.CaseImages.FirstOrDefault(i => i.IsDefault)?.ImageUrl,
+            LikedCount = r.LikedBy?.Count ?? 0
+        });
+
+        var yourmedicalCases = medicalCasesWithThumbnail.Where(r => r.UserId == hospitalId);
+
+        return new
+        {
+            Others = medicalCasesWithThumbnail,
+            Yours = yourmedicalCases
+        };
+    }
+
+    public async Task<List<ImageDto>> SaveMedicalCaseAsync(MedicalCaseDto dto)
+    {
+        var hospital = await _hospitalRepository.GetByDynamicPropertyAsync("UserId", dto.UserId);
+        var user = await _userRepository.GetByIdAsync(dto.UserId);
+        var medicalCase = new MedicalCase();
+        if (!string.IsNullOrEmpty(dto.Id))
+            medicalCase = hospital.MedicalCases.FirstOrDefault(mc => mc.Id == dto.Id);
+
+        GenericMapper.Map<MedicalCaseDto, MedicalCase>(dto, medicalCase);
+
+        medicalCase.CaseImages = new List<CaseImage>();
+        var count = 0;
+        foreach (var img in dto.Images)
+        {
+            if (!string.IsNullOrEmpty(img.Image))
+            {
+                img.ImageName = $@"{medicalCase.Id}_image{count++}.png";
+                medicalCase.CaseImages.Add(new CaseImage
+                {
+                    ImageUrl = $@"/assets/documents/{dto.UserId}/medical_cases/{img.ImageName}",
+                    IsDefault = img.IsDefault
+                });
+            }
+
+        }
+
+        medicalCase.SubmittedBy = user.OrgName;
+        if (string.IsNullOrEmpty(dto.Id))
+            hospital.MedicalCases.Add(medicalCase);
+
+        await _hospitalRepository.UpdateAsync(hospital);
+        return dto.Images;
+    }
+
+    public async Task DeleteMedicalCaseAsync(string hospitalId, string caseId)
+    {
+        var hospital = await _hospitalRepository.GetByIdAsync(hospitalId);
+        RemoveIfNotExpired(hospital.MedicalCases, r => r.Id == caseId);
+        await _hospitalRepository.UpdateAsync(hospital);
+    }
+
+    public async Task<MedicalCase> GetMedicalCase(string userId, string id)
+    {
+        var hospital = await _hospitalRepository.GetByDynamicPropertyAsync("UserId", userId);
+        if (hospital == null)
+            throw new ArgumentException("hospital not found.");
+
+        return hospital.MedicalCases.Where(h => h.Id == id).FirstOrDefault();
+    }
+
+    public async Task<HospitalInfoDto> GetHospitalInfoAsync(string hospitalId)
+    {
+        var hospital = await _hospitalRepository.GetByDynamicPropertyAsync("UserId", hospitalId);
+        if (hospital.HospitalInfo == null)
+            hospital.HospitalInfo = new HospitalInfo() { Preferences = new List<string>() };
+
+        return GenericMapper.Map<HospitalInfo, HospitalInfoDto>(hospital.HospitalInfo);
+    }
+
+    public async Task SaveComment(string userId, string medicalCaseId, CommentDto dto)
+    {
+        var hospital = await _hospitalRepository.GetByDynamicPropertyAsync("UserId", userId);
+        var user = await _userRepository.GetByIdAsync(dto.UserId);
+        if (hospital == null)
+            throw new ArgumentException("Hospital not found.");
+        var comment = new Comment();
+        if (!string.IsNullOrEmpty(dto.Id))
+            comment = hospital.MedicalCases?.FirstOrDefault(h => h.Id == medicalCaseId)?.Comments?.FirstOrDefault(c => c.Id == dto.Id) ?? new Comment();
+        GenericMapper.Map<CommentDto, Comment>(dto, comment);
+        comment.SubmittedBy = user.FirstName + " " + user.LastName;
+        if (string.IsNullOrEmpty(dto.Id))
+        {
+            var medicalCase = hospital.MedicalCases?.FirstOrDefault(h => h.Id == medicalCaseId);
+            if (medicalCase != null)
+            {
+                medicalCase.Comments ??= new List<Comment>();
+                medicalCase.Comments.Add(comment);
+
+            }
+
+        }
+        await _hospitalRepository.UpdateAsync(hospital);
+    }
+
+    public async Task ToggleLikeAsync(string medicalCaseUserId, string medicalCaseId, string userId)
+    {
+        var hospital = await _hospitalRepository.GetByDynamicPropertyAsync("UserId", medicalCaseUserId);
+        if (hospital == null)
+            throw new ArgumentException("Hospital not found.");
+
+        var medicalCase = hospital.MedicalCases?.FirstOrDefault(h => h.Id == medicalCaseId);
+        if (medicalCase == null)
+            throw new ArgumentException("Medical Case not found.");
+
+        medicalCase.LikedBy ??= new List<string>();
+
+        if (medicalCase.LikedBy.Contains(userId))
+            medicalCase.LikedBy.Remove(userId);
+        else
+            medicalCase.LikedBy.Add(userId);
+
+        await _hospitalRepository.UpdateAsync(hospital);
+    }
+
+    public async Task UpdatePreferencesAsync(string userId, List<string> preferences)
+    {
+        var hospital = await _hospitalRepository.GetByDynamicPropertyAsync("UserId", userId);
+        if (hospital == null)
+            throw new ArgumentException("Patient not found.");
+        if (hospital.HospitalInfo == null)
+            hospital.HospitalInfo = new HospitalInfo();
+        hospital.HospitalInfo.Preferences = new List<string>();
+        hospital.HospitalInfo.Preferences.AddRange(preferences);
+        await _hospitalRepository.UpdateAsync(hospital);
+    }
+
 }

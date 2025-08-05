@@ -12,31 +12,29 @@
                                 <input type="file" accept="image/*" (change)="upload($event, 'profileImage')"
                                     style="display: none" #fileInput />
                             </div>
-                            <div class="form-floating mb-3"
-                                *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
-                                <input type="text" formControlName="username" class="form-control" id="floatingInput"
-                                    placeholder="User Name" autocomplete="off"
-                                    [ngClass]="{ 'is-invalid': submitted && f['username'].errors }">
-                                <div *ngIf="submitted && f['username'].errors" class="invalid-feedback">
-                                    <div *ngIf="f['username'].errors['required']">User Name is required</div>
-                                    <div *ngIf="f['username'].errors['pattern']">Please enter a valid user
-                                        name.</div>
-                                </div>
-                                <label for="floatingInput" class="form-label-floating">User Name<i
-                                        class="danger">*</i></label>
+                            <div class="mb-3" *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
+                                <mat-form-field appearance="outline" class="w-100">
+                                    <mat-label>User Name</mat-label>
+                                    <input matInput formControlName="username" placeholder="User Name"
+                                        autocomplete="off">
+                                    <mat-error *ngIf="submitted && f['username'].errors">
+                                        <div *ngIf="f['username'].errors['required']">User Name is required</div>
+                                        <div *ngIf="f['username'].errors['pattern']">Please enter a valid user name.
+                                        </div>
+                                    </mat-error>
+                                </mat-form-field>
                             </div>
-                            <div class="form-floating"
-                                *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
-                                <input type="text" formControlName="displayName" class="form-control" id="floatingInput"
-                                    placeholder="Display Name" autocomplete="off"
-                                    [ngClass]="{ 'is-invalid': submitted && f['displayName'].errors }">
-                                <div *ngIf="submitted && f['displayName'].errors" class="invalid-feedback">
-                                    <div *ngIf="f['displayName'].errors['required']">Display Name is required</div>
-                                    <div *ngIf="f['displayName'].errors['pattern']">Please enter a valid display
-                                        name.</div>
-                                </div>
-                                <label for="floatingInput" class="form-label-floating">Display Name<i
-                                        class="danger">*</i></label>
+                            <div *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
+                                <mat-form-field appearance="outline" class="w-100">
+                                    <mat-label>Display Name</mat-label>
+                                    <input matInput formControlName="displayName" placeholder="Display Name"
+                                        autocomplete="off">
+                                    <mat-error *ngIf="submitted && f['displayName'].errors">
+                                        <div *ngIf="f['displayName'].errors['required']">Display Name is required</div>
+                                        <div *ngIf="f['displayName'].errors['pattern']">Please enter a valid display
+                                            name.</div>
+                                    </mat-error>
+                                </mat-form-field>
                             </div>
                         </div>
                         <div class="row mb-3" *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
@@ -48,21 +46,18 @@
                                         (dateChange)="calculateAge()" />
                                     <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                                     <mat-datepicker #picker></mat-datepicker>
+                                    <mat-error *ngIf="form.get('birthDate')?.hasError('required') && submitted">
+                                        Birth Date is required
+                                    </mat-error>
+                                    <mat-error *ngIf="form.get('birthDate')?.hasError('minAge') && submitted">
+                                        Must be 18+ years
+                                    </mat-error>
                                 </mat-form-field>
-                                <div class="invalid-feedback d-block"
-                                    *ngIf="form.get('birthDate')?.hasError('required') && submitted">
-                                    Birth Date is required
-                                </div>
-                                <div class="invalid-feedback d-block"
-                                    *ngIf="form.get('birthDate')?.hasError('minAge') && submitted">
-                                    Must be 18+ years
-                                </div>
-
                             </div>
-                            <div class="form-floating col-sm-4">
+                            <div class="col-sm-4">
                                 <mat-form-field appearance="outline" class="w-100">
                                     <mat-label>Age</mat-label>
-                                    <input matInput readonly formControlName="age" id="floatingInput" placeholder="Age"
+                                    <input matInput readonly formControlName="age" placeholder="Age"
                                         autocomplete="off" />
                                 </mat-form-field>
                             </div>
@@ -108,10 +103,10 @@
                         </div>
                         <div class="row" *ngIf="this.user.role == 'patient'">
                             <mat-label>Relative Details</mat-label>
-                            <div class="form-floating col-sm-6">
+                            <div class="col-sm-6">
                                 <mat-form-field appearance="outline" class="w-100 mb-3">
                                     <mat-label>Relationship</mat-label>
-                                    <mat-select formControlName="bloodGroup" placeholder="Select Blood Group">
+                                    <mat-select formControlName="relationship" placeholder="Select Relationship">
                                         <mat-option value="Mother">Mother</mat-option>
                                         <mat-option value="Father">Father</mat-option>
                                         <mat-option value="Brother">Brother</mat-option>
@@ -121,10 +116,12 @@
                                     </mat-select>
                                 </mat-form-field>
                             </div>
-                            <div class="form-floating col-sm-6">
-                                <input class="form-control" id="floatingInput" placeholder="Blood Group"
-                                    autocomplete="off" formControlName="relationId">
-                                <label for="floatingInput" class="form-label-floating">Mobile</label>
+                            <div class="col-sm-6">
+                                <mat-form-field appearance="outline" class="w-100">
+                                    <mat-label>Mobile</mat-label>
+                                    <input matInput placeholder="Mobile" autocomplete="off"
+                                        formControlName="relationId">
+                                </mat-form-field>
                             </div>
                         </div>
                     </div>
@@ -182,7 +179,7 @@
                             Information' : 'Basic
                             Information'}}</div>
                     </li>
-                    <li class="nav-item" *ngIf="this.user.role != 'physician' &&  this.user.role != 'patient' ">
+                    <li class="nav-item" *ngIf="this.user.role != 'physician' &&  this.user.role != 'patient' ">
                         <div class="nav-link" id="auth_per" #auth_per (click)="changeTab('auth_per',auth_per)"><i
                                 class="bi bi-person"></i>Authorized Person Information</div>
                     </li>
@@ -194,110 +191,112 @@
                                 <p class="mb-4"><span class="text-primary font-italic me-1">Personal Information</span>
                                 </p>
                                 <div class="row">
-                                    <div class="form-floating mb-3 col-sm-4">
-                                        <input type="text" class="form-control" formControlName="firstName"
-                                            id="firtNames" placeholder="First Name" autocomplete="off"
-                                            [ngClass]="{ 'is-invalid': submitted && f['firstName'].errors }">
-                                        <div *ngIf="submitted && f['firstName'].errors" class="invalid-feedback">
-                                            <div *ngIf="f['firstName'].errors['required']">First Name is required</div>
-                                            <div *ngIf="f['firstName'].errors['pattern']">Please enter a valid first
-                                                name.</div>
-                                        </div>
-                                        <label for="firtsNames" class="form-label-floating">First Name<i
-                                                class="danger">*</i></label>
+                                    <div class="col-sm-4">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>First Name</mat-label>
+                                            <input matInput formControlName="firstName" placeholder="First Name"
+                                                autocomplete="off">
+                                            <mat-error *ngIf="submitted && f['firstName'].errors">
+                                                <div *ngIf="f['firstName'].errors['required']">First Name is required
+                                                </div>
+                                                <div *ngIf="f['firstName'].errors['pattern']">Please enter a valid first
+                                                    name.</div>
+                                            </mat-error>
+                                        </mat-form-field>
                                     </div>
-                                    <div class="form-floating mb-3 col-sm-4">
-                                        <input type="text" class="form-control" id="middleName"
-                                            placeholder="Middle Name" autocomplete="off" formControlName="middleName"
-                                            [ngClass]="{ 'is-invalid': submitted && f['middleName'].errors }">
-                                        <div *ngIf="submitted && f['middleName'].errors" class="invalid-feedback">
-                                            <div>Please enter a valid middle name.</div>
-                                        </div>
-                                        <label for="middleName" class="form-label-floating">Middle Name</label>
+                                    <div class="col-sm-4">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Middle Name</mat-label>
+                                            <input matInput placeholder="Middle Name" autocomplete="off"
+                                                formControlName="middleName">
+                                            <mat-error *ngIf="submitted && f['middleName'].errors">
+                                                <div>Please enter a valid middle name.</div>
+                                            </mat-error>
+                                        </mat-form-field>
                                     </div>
-
-                                    <div class="form-floating mb-3 col-sm-4">
-                                        <input type="text" class="form-control" formControlName="lastName" id="lastName"
-                                            placeholder="Last Name" autocomplete="off"
-                                            [ngClass]="{ 'is-invalid': submitted && f['lastName'].errors }">
-                                        <div *ngIf="submitted && f['lastName'].errors" class="invalid-feedback">
-                                            <div *ngIf="f['lastName'].errors['required']">Last Name is required</div>
-                                            <div *ngIf="f['lastName'].errors['pattern']">Please enter a valid last name.
-                                            </div>
-                                        </div>
-                                        <label for="lastName" class="form-label-floating">Last Name<i
-                                                class="danger">*</i></label>
-                                    </div>
-                                </div>
-                                <hr>
-                                <div class="row">
-                                    <div class="form-floating mb-3 col-sm-6">
-                                        <input type="text" [readOnly]="true" formControlName="mobile1"
-                                            class="form-control" id="mobile" placeholder="Mobile" value="f.mobile1"
-                                            autocomplete="off">
-                                        <label for="mobile" class="form-label-floating">Mobile<i
-                                                class="danger">*</i></label>
-                                    </div>
-
-                                    <div class="form-floating mb-3 col-sm-6">
-                                        <input formControlName="mobile2" type="text" class="form-control" id="mobile1"
-                                            placeholder="Mobile 1" autocomplete="off"
-                                            [ngClass]="{ 'is-invalid': submitted && f['mobile2'].errors }">
-                                        <div *ngIf="submitted && f['mobile2'].errors" class="invalid-feedback">
-                                            <div *ngIf="f['mobile2'].invalid">Mobile number is invalid</div>
-                                        </div>
-                                        <div *ngIf="submitted && mobileSameError">
-                                            <span class="danger">Both mobile numbers are same. Please correct.</span>
-                                        </div>
-                                        <label for="mobile1" class="form-label-floating">Mobile 2</label>
-
+                                    <div class="col-sm-4">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Last Name</mat-label>
+                                            <input matInput formControlName="lastName" placeholder="Last Name"
+                                                autocomplete="off">
+                                            <mat-error *ngIf="submitted && f['lastName'].errors">
+                                                <div *ngIf="f['lastName'].errors['required']">Last Name is required
+                                                </div>
+                                                <div *ngIf="f['lastName'].errors['pattern']">Please enter a valid last
+                                                    name.</div>
+                                            </mat-error>
+                                        </mat-form-field>
                                     </div>
                                 </div>
                                 <hr>
                                 <div class="row">
-                                    <div class="form-floating mb-3 col-sm-6">
-                                        <input type="text" formControlName="email1" class="form-control" id="email1"
-                                            placeholder="Email" value="f.email1" autocomplete="off"
-                                            [ngClass]="{ 'is-invalid': submitted && f['email1'].errors }">
-                                        <div *ngIf="submitted && f['email1'].errors" class="invalid-feedback">
-                                            <div *ngIf="f['email1'].invalid">Email is invalid</div>
-                                        </div>
-                                        <label for="mobile" class="form-label-floating">Email</label>
+                                    <div class="col-sm-6">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Mobile</mat-label>
+                                            <input matInput [readOnly]="true" formControlName="mobile1"
+                                                placeholder="Mobile" autocomplete="off">
+                                        </mat-form-field>
                                     </div>
-
-                                    <div class="form-floating mb-3 col-sm-6">
-                                        <input type="text" formControlName="email2" class="form-control" id="email1"
-                                            placeholder="Email2" autocomplete="off"
-                                            [ngClass]="{ 'is-invalid': submitted && f['email2'].errors }">
-                                        <div *ngIf="submitted && f['email2'].errors" class="invalid-feedback">
-                                            <div *ngIf="f['email2'].invalid">Email is invalid</div>
-                                        </div>
-                                        <div *ngIf="submitted && emailSameError">
-                                            <span class="danger">Both email ids are same. Please correct.</span>
-                                        </div>
-                                        <label for="email1" class="form-label-floating">Email 2</label>
+                                    <div class="col-sm-6">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Mobile 2</mat-label>
+                                            <input matInput formControlName="mobile2" placeholder="Mobile 2"
+                                                autocomplete="off">
+                                            <mat-error *ngIf="submitted && f['mobile2'].errors">
+                                                <div *ngIf="f['mobile2'].invalid">Mobile number is invalid</div>
+                                            </mat-error>
+                                            <mat-error *ngIf="submitted && mobileSameError">
+                                                Both mobile numbers are same.
+                                            </mat-error>
+                                        </mat-form-field>
                                     </div>
                                 </div>
                                 <hr>
                                 <div class="row">
-                                    <div class="form-floating mb-3 col-sm-6">
-                                        <input type="text" formControlName="aadhar" class="form-control" id="aadhar"
-                                            placeholder="Aadhar Number" autocomplete="off"
-                                            [ngClass]="{ 'is-invalid': submitted && f['aadhar'].errors }">
-                                        <div *ngIf="submitted && f['aadhar'].errors" class="invalid-feedback">
-                                            <div *ngIf="f['aadhar'].invalid">Aadhar is invalid</div>
-                                        </div>
-                                        <label for="aadhar" class="form-label-floating">Aadhar Number</label>
+                                    <div class="col-sm-6">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Email</mat-label>
+                                            <input matInput formControlName="email1" placeholder="Email"
+                                                autocomplete="off">
+                                            <mat-error *ngIf="submitted && f['email1'].errors">
+                                                <div *ngIf="f['email1'].invalid">Email is invalid</div>
+                                            </mat-error>
+                                        </mat-form-field>
                                     </div>
-
-                                    <div class="form-floating mb-3 col-sm-6">
-                                        <input type="text" formControlName="pan" class="form-control" id="Pan"
-                                            placeholder="Pan" autocomplete="off"
-                                            [ngClass]="{ 'is-invalid': submitted && f['pan'].errors }">
-                                        <div *ngIf="submitted && f['pan'].errors" class="invalid-feedback">
-                                            <div *ngIf="f['pan'].invalid">Pan is invalid</div>
-                                        </div>
-                                        <label for="Pan" class="form-label-floating">PAN</label>
+                                    <div class="col-sm-6">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Email 2</mat-label>
+                                            <input matInput formControlName="email2" placeholder="Email 2"
+                                                autocomplete="off">
+                                            <mat-error *ngIf="submitted && f['email2'].errors">
+                                                <div *ngIf="f['email2'].invalid">Email is invalid</div>
+                                            </mat-error>
+                                            <mat-error *ngIf="submitted && emailSameError">
+                                                Both email ids are same.
+                                            </mat-error>
+                                        </mat-form-field>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Aadhar Number</mat-label>
+                                            <input matInput formControlName="aadhar" placeholder="Aadhar Number"
+                                                autocomplete="off">
+                                            <mat-error *ngIf="submitted && f['aadhar'].errors">
+                                                <div *ngIf="f['aadhar'].invalid">Aadhar is invalid</div>
+                                            </mat-error>
+                                        </mat-form-field>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>PAN</mat-label>
+                                            <input matInput formControlName="pan" placeholder="PAN" autocomplete="off">
+                                            <mat-error *ngIf="submitted && f['pan'].errors">
+                                                <div *ngIf="f['pan'].invalid">Pan is invalid</div>
+                                            </mat-error>
+                                        </mat-form-field>
                                     </div>
                                 </div>
                             </div>
@@ -309,60 +308,59 @@
                                 <p class="mb-4"><span class="text-primary font-italic me-1">Address Details</span>
                                 </p>
                                 <div class="row">
-                                    <div class="form-floating mb-3 col-sm-6">
-                                        <input type="text" formControlName="address1" class="form-control" id="address1"
-                                            placeholder="House / Flat Number" autocomplete="off"
-                                            [ngClass]="{ 'is-invalid': submitted && f['address1'].errors }">
-                                        <div *ngIf="submitted && f['address1'].errors" class="invalid-feedback">
-                                            <div *ngIf="f['address1'].errors['required']">House / Flat Number is
-                                                required
-                                            </div>
-                                        </div>
-                                        <label for="address1" class="form-label-floating">House / Flat Number<i
-                                                class="danger">*</i></label>
+                                    <div class="col-sm-6">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>House / Flat Number</mat-label>
+                                            <input matInput formControlName="address1" placeholder="House / Flat Number"
+                                                autocomplete="off">
+                                            <mat-error *ngIf="submitted && f['address1'].errors">
+                                                <div *ngIf="f['address1'].errors['required']">House / Flat Number is
+                                                    required</div>
+                                            </mat-error>
+                                        </mat-form-field>
                                     </div>
-
-                                    <div class="form-floating mb-3 col-sm-6">
-                                        <input formControlName="address2" type="text" class="form-control" id="address2"
-                                            placeholder="Building / Society" autocomplete="off"
-                                            [ngClass]="{ 'is-invalid': submitted && f['address2'].errors }">
-                                        <div *ngIf="submitted && f['address2'].errors" class="invalid-feedback">
-                                            <div *ngIf="f['address2'].errors['required']">Building / Society is required
-                                            </div>
-                                        </div>
-                                        <label for="address2" class="form-label-floating">Building / Society<i
-                                                class="danger">*</i></label>
+                                    <div class="col-sm-6">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Building / Society</mat-label>
+                                            <input matInput formControlName="address2" placeholder="Building / Society"
+                                                autocomplete="off">
+                                            <mat-error *ngIf="submitted && f['address2'].errors">
+                                                <div *ngIf="f['address2'].errors['required']">Building / Society is
+                                                    required</div>
+                                            </mat-error>
+                                        </mat-form-field>
                                     </div>
                                 </div>
                                 <hr>
                                 <div class="row">
-                                    <div class="form-floating mb-3 ">
-                                        <textarea type="text" class="form-control" id="area" placeholder="Area"
-                                            autocomplete="off" formControlName="area"
-                                            [ngClass]="{ 'is-invalid': submitted && f['area'].errors }"></textarea>
-                                        <div *ngIf="submitted && f['area'].errors" class="invalid-feedback">
-                                            <div *ngIf="f['area'].errors['required']">Area / Locality is required</div>
-                                        </div>
-                                        <label for="area" class="form-label-floating">Area / Locality<i
-                                                class="danger">*</i></label>
+                                    <div class="col-12">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Area / Locality</mat-label>
+                                            <textarea matInput formControlName="area" placeholder="Area / Locality"
+                                                autocomplete="off"></textarea>
+                                            <mat-error *ngIf="submitted && f['area'].errors">
+                                                <div *ngIf="f['area'].errors['required']">Area / Locality is required
+                                                </div>
+                                            </mat-error>
+                                        </mat-form-field>
                                     </div>
                                 </div>
                                 <hr>
                                 <div class="row">
-                                    <div class="form-floating mb-3 col">
-                                        <input type="text" formControlName="pincode" class="form-control" id="pincode"
-                                            placeholder="Pin Code" autocomplete="off"
-                                            [ngClass]="{ 'is-invalid': submitted && f['pincode'].errors }">
-                                        <div *ngIf="submitted && f['pincode'].errors" class="invalid-feedback">
-                                            <div *ngIf="f['pincode'].errors['required']">Pincode is required</div>
-                                            <div *ngIf="f['pincode'].errors['pattern']">Please enter a valid 6-digit
-                                                Indian pincode.</div>
-                                        </div>
-                                        <label for="pincode" class="form-label-floating">Pin Code<i
-                                                class="danger">*</i></label>
+                                    <div class="col">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Pin Code</mat-label>
+                                            <input matInput formControlName="pincode" placeholder="Pin Code"
+                                                autocomplete="off">
+                                            <mat-error *ngIf="submitted && f['pincode'].errors">
+                                                <div *ngIf="f['pincode'].errors['required']">Pincode is required</div>
+                                                <div *ngIf="f['pincode'].errors['pattern']">Please enter a valid 6-digit
+                                                    Indian pincode.</div>
+                                            </mat-error>
+                                        </mat-form-field>
                                     </div>
                                     <div class="col">
-                                        <mat-form-field appearance="outline" class="full-width">
+                                        <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Select State</mat-label>
                                             <mat-select formControlName="state"
                                                 (selectionChange)="onStateChange($event)">
@@ -375,15 +373,12 @@
                                                     {{ state.name }}
                                                 </mat-option>
                                             </mat-select>
+                                            <mat-error *ngIf="submitted && f['state'].errors">State is
+                                                required</mat-error>
                                         </mat-form-field>
-                                        <div class="invalid-feedback d-block" *ngIf="submitted && f['state'].errors">
-                                            State is
-                                            required
-                                        </div>
                                     </div>
-
                                     <div class="col">
-                                        <mat-form-field appearance="outline" class="full-width">
+                                        <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Select City</mat-label>
                                             <mat-select formControlName="city">
                                                 <mat-option>
@@ -395,11 +390,9 @@
                                                     {{ city.name }}
                                                 </mat-option>
                                             </mat-select>
+                                            <mat-error *ngIf="submitted && f['city'].errors">City is
+                                                required</mat-error>
                                         </mat-form-field>
-                                        <div class="invalid-feedback d-block" *ngIf="submitted && f['city'].errors">City
-                                            is
-                                            required
-                                        </div>
                                     </div>
                                 </div>
                                 <hr>
@@ -412,8 +405,7 @@
                                 <div class="row col-sm-4">
                                     <mat-form-field appearance="outline" class="w-100">
                                         <mat-label>Speciality</mat-label>
-                                        <mat-select formControlName="speciality" required
-                                            [ngClass]="{ 'is-invalid': submitted && f['speciality'].errors }" required>
+                                        <mat-select formControlName="speciality" required>
                                             <mat-option>
                                                 <ngx-mat-select-search [formControl]="specialityFilterCtrl"
                                                     placeholderLabel="Search Speciality"></ngx-mat-select-search>
@@ -423,24 +415,23 @@
                                                 {{ speciality }}
                                             </mat-option>
                                         </mat-select>
+                                        <mat-error *ngIf="submitted && f['speciality'].errors">Speciality is
+                                            required</mat-error>
                                     </mat-form-field>
-                                    <div *ngIf="submitted && f['speciality'].errors" class="invalid-feedback d-flex">
-                                        <div>Speciality is required</div>
-                                    </div>
                                 </div>
                                 <hr>
                                 <p class="mb-4"><span class="text-primary font-italic me-1">Medical Registration</span>
                                 </p>
                                 <div class="row" formGroupName="medicalRegistration">
                                     <mat-form-field appearance="outline" class="col-sm-4" style="height: 30px;">
-                                        <mat-label>MRC Number<i class="danger">*</i></mat-label>
-                                        <input matInput formControlName="certificateNumber" placeholder="MRC Number"
-                                            [ngClass]="{'is-invalid': submitted && (certificateNumberError || f['medicalRegistration'].get('certificateNumber')?.errors)}">
+                                        <mat-label>MRC Number</mat-label>
+                                        <input matInput formControlName="certificateNumber" placeholder="MRC Number">
                                         <button mat-icon-button matSuffix
                                             matTooltip="Medical Registration Certificate Number">
                                             <mat-icon>info</mat-icon>
                                         </button>
-                                        <mat-error *ngIf="submitted && certificateNumberError">
+                                        <mat-error
+                                            *ngIf="submitted && (certificateNumberError || f['medicalRegistration'].get('certificateNumber')?.errors)">
                                             Certificate Number is required
                                         </mat-error>
                                         <mat-error
@@ -448,12 +439,10 @@
                                             Please enter a valid Certificate Number.
                                         </mat-error>
                                     </mat-form-field>
-                                    <div class="form-floating col-sm-4">
+                                    <div class="col-sm-4">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Medical Council Name</mat-label>
-                                            <mat-select formControlName="councilName"
-                                                [ngClass]="{ 'is-invalid': submitted && (councilError || f['medicalRegistration'].get('councilName')?.errors) }"
-                                                required>
+                                            <mat-select formControlName="councilName" required>
                                                 <mat-option>
                                                     <ngx-mat-select-search [formControl]="councilFilterCtrl"
                                                         placeholderLabel="Search Council"></ngx-mat-select-search>
@@ -463,26 +452,24 @@
                                                     {{ council }}
                                                 </mat-option>
                                             </mat-select>
+                                            <mat-error *ngIf="submitted && councilError">Council Name is
+                                                required</mat-error>
                                         </mat-form-field>
-                                        <div *ngIf="submitted && councilError" class="invalid-feedback d-flex">
-                                            <div>Council Name is required</div>
-                                        </div>
                                     </div>
-                                    <div class="form-floating mb-3 col-sm-4">
-                                        <div class="row">
-                                            <div class="col-sm-9">
-                                                <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
-                                                    id="formFile" (change)="upload($event, 'medicalRegistration')"
-                                                    [ngClass]="{ 'is-invalid': submitted && docError }"
-                                                    style="height:56px">
-                                                <div *ngIf="submitted && docError" class="invalid-feedback d-flex">
-                                                    <div> Document is required</div>
-                                                </div>
-                                            </div>
-                                            <div *ngIf="user.medicalRegistration?.document"
-                                                class="form-floating mb-3 col-sm-3">
-                                                <div (click)="view(user.medicalRegistration?.document)"
-                                                    class="btn btn-primary"> View</div>
+                                    <div class="col-sm-4">
+                                        <div class="input-group">
+                                            <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
+                                                id="formFile" (change)="upload($event, 'medicalRegistration')"
+                                                [ngClass]="{ 'is-invalid': submitted && docError }" style="height:56px">
+
+                                            <button *ngIf="user.medicalRegistration?.document"
+                                                (click)="view(user.medicalRegistration?.document)"
+                                                class="btn btn-primary" type="button">
+                                                View
+                                            </button>
+
+                                            <div *ngIf="submitted && docError" class="invalid-feedback d-flex">
+                                                <div> Document is required</div>
                                             </div>
                                         </div>
                                     </div>
@@ -498,7 +485,7 @@
                                 </mat-checkbox>
                                 <div class="row mb-1" formGroupName="graduation">
                                     <span class="text-success font-italic mb-2">Graduation<i class="danger">*</i></span>
-                                    <div class="mb-3 col">
+                                    <div class="col">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Qualification</mat-label>
                                             <mat-select formControlName="name">
@@ -511,28 +498,24 @@
                                                     {{ graduation }}
                                                 </mat-option>
                                             </mat-select>
+                                            <mat-error *ngIf="submitted && gNameError">Qualification is
+                                                required</mat-error>
                                         </mat-form-field>
-                                        <div *ngIf="submitted && gNameError" class="invalid-feedback d-flex">
-                                            <div>Qualification is required</div>
-                                        </div>
                                     </div>
-                                    <div class="form-floating mb-3 col">
+                                    <div class="col">
                                         <select class="form-select" id="year" formControlName="year"
-                                            [ngClass]="{ 'is-invalid': submitted && (gYearError || f['graduation'].get('year')?.errors) }">
+                                            style="height:56px">
                                             <option value="" disabled selected>Select Year</option>
                                             <option *ngFor="let year of yearsList" [value]="year">{{ year }}</option>
                                         </select>
                                         <div *ngIf="submitted && gYearError" class="invalid-feedback d-flex">
                                             <div>Year is required</div>
                                         </div>
-                                        <label for="year" class="form-label-floating">Year Of passing</label>
                                     </div>
-
-                                    <div class="form-floating mb-3 col">
+                                    <div class="col">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Institute Name</mat-label>
-                                            <mat-select formControlName="institute"
-                                                [ngClass]="{ 'is-invalid': submitted && (gInstituteError ||  f['graduation'].get('institute')?.errors) }">
+                                            <mat-select formControlName="institute">
                                                 <mat-option>
                                                     <ngx-mat-select-search [formControl]="collegeFilterCtrl"
                                                         placeholderLabel="Search Institute"></ngx-mat-select-search>
@@ -542,34 +525,33 @@
                                                     {{ college }}
                                                 </mat-option>
                                             </mat-select>
+                                            <mat-error *ngIf="submitted && gInstituteError">Institute is
+                                                required</mat-error>
                                         </mat-form-field>
-                                        <div *ngIf="submitted && gInstituteError" class="invalid-feedback d-flex">
-                                            <div>Institute is required</div>
-                                        </div>
                                     </div>
-                                    <div class="form-floating mb-3 col">
-                                        <div class="row">
-                                            <div class="col-sm-9">
-                                                <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
-                                                    id="formFile" (change)="upload($event, 'graduation')"
-                                                    [ngClass]="{ 'is-invalid': submitted && gDocError }"
-                                                    style="height:56px">
-                                                <div *ngIf="submitted && gDocError" class="invalid-feedback d-flex">
-                                                    <div>Give consent by checking above or Document is required</div>
-                                                </div>
-                                            </div>
-                                            <div *ngIf="user.graduation?.document" class="form-floating mb-3 col-sm-3">
-                                                <div (click)="view(user.graduation?.document)" class="btn btn-primary">
-                                                    View</div>
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
+                                                id="formFile" (change)="upload($event, 'graduation')"
+                                                [ngClass]="{ 'is-invalid': submitted && gDocError }"
+                                                style="height:56px">
+
+                                            <button *ngIf="user.graduation?.document"
+                                                (click)="view(user.graduation?.document)" class="btn btn-primary"
+                                                type="button">
+                                                View
+                                            </button>
+
+                                            <div *ngIf="submitted && gDocError" class="invalid-feedback d-flex">
+                                                <div>Give consent by checking above or Document is required</div>
                                             </div>
                                         </div>
-
                                     </div>
                                 </div>
                                 <hr>
                                 <div class="row" formGroupName="postGraduation">
                                     <span class="text-success font-italic mb-2">Post Graduation</span>
-                                    <div class="mb-3 col">
+                                    <div class="col">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Qualification</mat-label>
                                             <mat-select formControlName="name">
@@ -584,14 +566,14 @@
                                             </mat-select>
                                         </mat-form-field>
                                     </div>
-                                    <div class="form-floating col">
-                                        <select class="form-select" id="year" formControlName="year">
+                                    <div class="col">
+                                        <select class="form-select" id="year" formControlName="year"
+                                            style="height:56px">
                                             <option value="" disabled selected>Select Year</option>
                                             <option *ngFor="let year of yearsList" [value]="year">{{ year }}</option>
                                         </select>
                                     </div>
-
-                                    <div class="form-floating col">
+                                    <div class="col">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Institute Name</mat-label>
                                             <mat-select formControlName="institute">
@@ -606,26 +588,23 @@
                                             </mat-select>
                                         </mat-form-field>
                                     </div>
-                                    <div class="form-floating mb-3 col">
-                                        <div class="row">
-                                            <div class="col-sm-9">
-                                                <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
-                                                    id="formFile" (change)="upload($event, 'postGraduation')"
-                                                    style="height:56px">
-                                            </div>
-                                            <div *ngIf="user.postGraduation?.document"
-                                                class="form-floating mb-3 col-sm-3">
-                                                <div (click)="view(user.postGraduation?.document)"
-                                                    class="btn btn-primary"> View</div>
-                                            </div>
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
+                                                id="formFile" (change)="upload($event, 'postGraduation')"
+                                                style="height:56px">
+                                            <button *ngIf="user.postGraduation?.document"
+                                                (click)="view(user.postGraduation?.document)" class="btn btn-primary"
+                                                type="button">
+                                                View
+                                            </button>
                                         </div>
-
                                     </div>
                                 </div>
                                 <hr>
                                 <div class="row" formGroupName="superSpecialization">
                                     <span class="text-success font-italic mb-2">Super Specialization</span>
-                                    <div class="mb-3 col">
+                                    <div class="col">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Qualification</mat-label>
                                             <mat-select formControlName="name">
@@ -641,14 +620,14 @@
                                             </mat-select>
                                         </mat-form-field>
                                     </div>
-                                    <div class="form-floating col">
-                                        <select class="form-select" id="year" formControlName="year">
+                                    <div class="col">
+                                        <select class="form-select" id="year" formControlName="year"
+                                            style="height:56px">
                                             <option value="" disabled selected>Select Year</option>
                                             <option *ngFor="let year of yearsList" [value]="year">{{ year }}</option>
                                         </select>
                                     </div>
-
-                                    <div class="form-floating col">
+                                    <div class="col">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Institute Name</mat-label>
                                             <mat-select formControlName="institute">
@@ -663,49 +642,51 @@
                                             </mat-select>
                                         </mat-form-field>
                                     </div>
-                                    <div class="form-floating mb-3 col">
-                                        <div class="row">
-                                            <div class="col-sm-9">
-                                                <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
-                                                    id="formFile" (change)="upload($event, 'superSpecialization')"
-                                                    style="height:56px">
-                                            </div>
-                                            <div *ngIf="user.superSpecialization?.document"
-                                                class="form-floating mb-3 col-sm-3">
-                                                <div (click)="view(user.superSpecialization?.document)"
-                                                    class="btn btn-primary"> View</div>
-                                            </div>
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
+                                                id="formFile" (change)="upload($event, 'superSpecialization')"
+                                                style="height:56px">
+                                            <button *ngIf="user.superSpecialization?.document"
+                                                (click)="view(user.superSpecialization?.document)"
+                                                class="btn btn-primary" type="button">
+                                                View
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
                                 <hr>
                                 <div class="row mb-2" formGroupName="additionalQualification">
                                     <span class="text-success font-italic mb-2">Additional Qualifications</span>
-                                    <div class="form-floating col">
-                                        <input type="text" class="form-control" id="institute" placeholder="Institute"
-                                            autocomplete="off" formControlName="name">
-                                        <label for="institute" class="form-label-floating">Qualification</label>
+                                    <div class="col">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Qualification</mat-label>
+                                            <input matInput placeholder="Qualification" autocomplete="off"
+                                                formControlName="name">
+                                        </mat-form-field>
                                     </div>
-                                    <div class="form-floating col">
-                                        <select class="form-select" id="year" formControlName="year">
+                                    <div class="col">
+                                        <select class="form-select" id="year" formControlName="year"
+                                            style="height:56px">
                                             <option value="" disabled selected>Select Year</option>
                                             <option *ngFor="let year of yearsList" [value]="year">{{ year }}</option>
                                         </select>
                                     </div>
-                                    <div class="form-floating col">
-                                        <input type="text" class="form-control" id="institute" placeholder="Institute"
-                                            autocomplete="off" formControlName="institute">
-                                        <label for="institute" class="form-label-floating">Name Of Institute</label>
+                                    <div class="col">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Name Of Institute</mat-label>
+                                            <input matInput placeholder="Institute" autocomplete="off"
+                                                formControlName="institute">
+                                        </mat-form-field>
                                     </div>
-                                    <div class="form-floating mb-3 col">
+                                    <div class="col">
                                         <div class="row">
-                                            <div class="col-sm-9">
+                                            <div class="col">
                                                 <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
                                                     id="formFile" (change)="upload($event, 'additionalQualification')"
                                                     style="height:56px">
                                             </div>
-                                            <div *ngIf="user.additionalQualification?.document"
-                                                class="form-floating mb-3 col-sm-3">
+                                            <div *ngIf="user.additionalQualification?.document" class="col-sm-3">
                                                 <div (click)="view(user.additionalQualification?.document)"
                                                     class="btn btn-primary"> View</div>
                                             </div>
@@ -716,24 +697,26 @@
                                             (click)="addAdditionalRow()"><i class="bi bi-plus-lg"></i></button>
                                     </div>
                                 </div>
-
-                                <!-- UI-only extra rows (not bound to form) -->
                                 <div class="row mb-2" *ngFor="let row of additionalRows; let i = index">
-                                    <div class="form-floating col">
-                                        <input type="text" class="form-control" placeholder="Qualification">
-                                        <label class="form-label-floating">Qualification</label>
+                                    <div class="col">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Qualification</mat-label>
+                                            <input matInput placeholder="Qualification">
+                                        </mat-form-field>
                                     </div>
-                                    <div class="form-floating col">
-                                        <select class="form-select">
+                                    <div class="col">
+                                        <select class="form-select" style="height:56px">
                                             <option value="" disabled selected>Select Year</option>
                                             <option *ngFor="let year of yearsList" [value]="year">{{ year }}</option>
                                         </select>
                                     </div>
-                                    <div class="form-floating col">
-                                        <input type="text" class="form-control" placeholder="Institute">
-                                        <label class="form-label-floating">Name Of Institute</label>
+                                    <div class="col">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Name Of Institute</mat-label>
+                                            <input matInput placeholder="Institute">
+                                        </mat-form-field>
                                     </div>
-                                    <div class="form-floating mb-3 col">
+                                    <div class="col">
                                         <input class="form-control" accept=".pdf,.jpg, .png,.jpeg" type="file"
                                             style="height:56px">
                                     </div>
@@ -759,81 +742,82 @@
                                     class="text-primary font-italic me-1">Basic Information</span>
                             </p>
                             <div class="row">
-                                <div *ngIf="user.role=='physician'" class="form-floating mb-3 col-sm-6">
-                                    <input type="text" class="form-control" id="email" formControlName="clinicName"
-                                        placeholder="Hospital Clinic Name" autocomplete="off"
-                                        [ngClass]="{ 'is-invalid': submitted && f['clinicName'].errors }">
-                                    <div *ngIf="submitted && f['clinicName']?.errors?.['required']"
-                                        class="invalid-feedback">
-                                        <div>Hospital / Clinic Name is required</div>
-                                    </div>
-                                    <div *ngIf="submitted && f['clinicName']?.errors?.['pattern']"
-                                        class="invalid-feedback">
-                                        <div>Enter valid Hospital / Clinic Name</div>
-                                    </div>
-                                    <label for="mobile" class="form-label-floating">Hospital / Clinic Name<i
-                                            class="danger">*</i></label>
+                                <div *ngIf="user.role=='physician'" class="col-sm-6">
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>Hospital / Clinic Name</mat-label>
+                                        <input matInput formControlName="clinicName" placeholder="Hospital Clinic Name"
+                                            autocomplete="off">
+                                        <mat-error *ngIf="submitted && f['clinicName']?.errors?.['required']">
+                                            Hospital / Clinic Name is required
+                                        </mat-error>
+                                        <mat-error *ngIf="submitted && f['clinicName']?.errors?.['pattern']">
+                                            Enter valid Hospital / Clinic Name
+                                        </mat-error>
+                                    </mat-form-field>
                                 </div>
-                                <div *ngIf="user.role!='physician'" class="form-floating mb-3 col-sm-6">
-                                    <input type="text" formControlName="orgName" class="form-control" id="email"
-                                        placeholder="Organization Name" autocomplete="off"
-                                        [ngClass]="{ 'is-invalid': submitted && f['orgName'].errors }">
-                                    <div *ngIf="submitted && f['orgName'].errors" class="invalid-feedback">
-                                        <div>Organization Name is required</div>
-                                    </div>
-                                    <label for="mobile" class="form-label-floating">Organization Name<i
-                                            class="danger">*</i></label>
+                                <div *ngIf="user.role!='physician'" class="col-sm-6">
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>Organization Name</mat-label>
+                                        <input matInput formControlName="orgName" placeholder="Organization Name"
+                                            autocomplete="off">
+                                        <mat-error *ngIf="submitted && f['orgName'].errors">
+                                            Organization Name is required
+                                        </mat-error>
+                                    </mat-form-field>
                                 </div>
-                                <div *ngIf="user.role!='physician'" class="form-floating mb-3 col-sm-6">
-                                    <input type="text" class="form-control" id="city" autocomplete="off"
-                                        value="{{user.role | titlecase}}" [readOnly]="true">
-                                    <label for="mobile" class="form-label-floating">Organization Type<i
-                                            class="danger">*</i></label>
+                                <div *ngIf="user.role!='physician'" class="col-sm-6">
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>Organization Type</mat-label>
+                                        <input matInput value="{{user.role | titlecase}}" [readOnly]="true">
+                                    </mat-form-field>
                                 </div>
                             </div>
                             <hr>
                             <div class="row">
-                                <div class="form-floating mb-3 col-sm-6">
-                                    <input type="text" class="form-control" id="email" placeholder="Email"
-                                        autocomplete="off" formControlName="clinicAddress1">
-                                    <label for="mobile" class="form-label-floating">House/ Flat Number</label>
+                                <div class="col-sm-6">
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>House/ Flat Number</mat-label>
+                                        <input matInput placeholder="House/ Flat Number" autocomplete="off"
+                                            formControlName="clinicAddress1">
+                                    </mat-form-field>
                                 </div>
-
-                                <div class="form-floating mb-3 col-sm-6">
-                                    <input type="text" class="form-control" id="email1" placeholder="Email; 1"
-                                        autocomplete="off" formControlName="clinicAddress2">
-                                    <label for="lastName" class="form-label-floating">Building / Society</label>
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="row">
-                                <div class="form-floating mb-3 ">
-                                    <textarea type="text" class="form-control" id="area" placeholder="Area"
-                                        autocomplete="off" formControlName="clinicArea"
-                                        [ngClass]="{ 'is-invalid': submitted && f['clinicArea'].errors }"></textarea>
-                                    <div *ngIf="submitted && f['clinicArea'].errors" class="invalid-feedback">
-                                        <div>Area / Locality is required</div>
-                                    </div>
-                                    <label for="mobile" class="form-label-floating">Area / Locality<i
-                                            class="danger">*</i></label>
+                                <div class="col-sm-6">
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>Building / Society</mat-label>
+                                        <input matInput placeholder="Building / Society" autocomplete="off"
+                                            formControlName="clinicAddress2">
+                                    </mat-form-field>
                                 </div>
                             </div>
                             <hr>
                             <div class="row">
-                                <div class="form-floating mb-3 col-sm-6">
-                                    <input type="text" class="form-control" id="email" placeholder="Pin Code"
-                                        autocomplete="off" formControlName="clinicPincode"
-                                        [ngClass]="{ 'is-invalid': submitted && f['clinicPincode'].errors }">
-                                    <div *ngIf="submitted && f['clinicPincode'].errors" class="invalid-feedback">
-                                        <div *ngIf="f['clinicPincode'].errors['required']">Pincode is required</div>
-                                        <div *ngIf="f['clinicPincode'].errors['pattern']">Please enter a valid 6-digit
-                                            Indian pincode.</div>
-                                    </div>
-                                    <label for="mobile" class="form-label-floating">Pin Code<i
-                                            class="danger">*</i></label>
+                                <div class="col-12">
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>Area / Locality</mat-label>
+                                        <textarea matInput placeholder="Area" autocomplete="off"
+                                            formControlName="clinicArea"></textarea>
+                                        <mat-error *ngIf="submitted && f['clinicArea'].errors">
+                                            Area / Locality is required
+                                        </mat-error>
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col">
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>Pin Code</mat-label>
+                                        <input matInput placeholder="Pin Code" autocomplete="off"
+                                            formControlName="clinicPincode">
+                                        <mat-error *ngIf="submitted && f['clinicPincode'].errors">
+                                            <div *ngIf="f['clinicPincode'].errors['required']">Pincode is required</div>
+                                            <div *ngIf="f['clinicPincode'].errors['pattern']">Please enter a valid
+                                                6-digit Indian pincode.</div>
+                                        </mat-error>
+                                    </mat-form-field>
                                 </div>
                                 <div class="col">
-                                    <mat-form-field appearance="outline" class="full-width">
+                                    <mat-form-field appearance="outline" class="w-100">
                                         <mat-label>Select State</mat-label>
                                         <mat-select formControlName="clinicState"
                                             (selectionChange)="onClinicStateChange($event)">
@@ -846,15 +830,13 @@
                                                 {{ clinicState.name }}
                                             </mat-option>
                                         </mat-select>
+                                        <mat-error *ngIf="submitted && f['clinicState'].errors">
+                                            State is required
+                                        </mat-error>
                                     </mat-form-field>
-                                    <div class="invalid-feedback d-block" *ngIf="submitted && f['clinicState'].errors">
-                                        State is
-                                        required
-                                    </div>
                                 </div>
-
                                 <div class="col">
-                                    <mat-form-field appearance="outline" class="full-width">
+                                    <mat-form-field appearance="outline" class="w-100">
                                         <mat-label>Select City</mat-label>
                                         <mat-select formControlName="clinicCity">
                                             <mat-option>
@@ -869,10 +851,6 @@
                                         <mat-error *ngIf="submitted && f['clinicCity'].errors">City is
                                             required</mat-error>
                                     </mat-form-field>
-                                    <div class="invalid-feedback d-block" *ngIf="submitted && f['clinicCity'].errors">
-                                        City is
-                                        required
-                                    </div>
                                 </div>
                             </div>
                             <hr>
@@ -885,83 +863,88 @@
                             <p class="mb-4"><span class="text-primary font-italic me-1">Personal Information</span>
                             </p>
                             <div class="row">
-                                <div class="form-floating mb-3 col-sm-4">
-                                    <input type="text" class="form-control" id="firtName" placeholder="First Name"
-                                        autocomplete="off" formControlName="authFirstName"
-                                        [ngClass]="{ 'is-invalid': submitted && f['authFirstName'].errors }">
-                                    <div *ngIf="submitted && f['authFirstName'].errors" class="invalid-feedback">
-                                        <div *ngIf="f['authFirstName'].errors['required']">First Name is required</div>
-                                        <div *ngIf="f['authFirstName'].errors['pattern']">Please enter a valid first
-                                            name.</div>
-                                    </div>
-                                    <label for="firtsName" class="form-label-floating">First Name<i
-                                            class="danger">*</i></label>
+                                <div class="col-sm-4">
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>First Name</mat-label>
+                                        <input matInput placeholder="First Name" autocomplete="off"
+                                            formControlName="authFirstName">
+                                        <mat-error *ngIf="submitted && f['authFirstName'].errors">
+                                            <div *ngIf="f['authFirstName'].errors['required']">First Name is required
+                                            </div>
+                                            <div *ngIf="f['authFirstName'].errors['pattern']">Please enter a valid first
+                                                name.</div>
+                                        </mat-error>
+                                    </mat-form-field>
                                 </div>
-                                <div class="form-floating mb-3 col-sm-4">
-                                    <input type="text" class="form-control" id="middle" placeholder="Middle Name"
-                                        autocomplete="off" formControlName="authMiddleName">
-                                    <label for="middle" class="form-label-floating">Middle Name</label>
+                                <div class="col-sm-4">
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>Middle Name</mat-label>
+                                        <input matInput placeholder="Middle Name" autocomplete="off"
+                                            formControlName="authMiddleName">
+                                    </mat-form-field>
                                 </div>
-
-                                <div class="form-floating mb-3 col-sm-4">
-                                    <input type="text" class="form-control" id="lastName" placeholder="Last Name"
-                                        autocomplete="off" formControlName="authLastName"
-                                        [ngClass]="{ 'is-invalid': submitted && f['authLastName'].errors }">
-                                    <div *ngIf="submitted && f['authLastName'].errors" class="invalid-feedback">
-                                        <div *ngIf="f['authLastName'].errors['required']">Last Name is required</div>
-                                        <div *ngIf="f['authLastName'].errors['pattern']">Please enter a valid last name.
-                                        </div>
-                                    </div>
-                                    <label for="lastName" class="form-label-floating">Last Name<i
-                                            class="danger">*</i></label>
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="row">
-                                <div class="form-floating mb-3 col-sm-6">
-                                    <input type="text" class="form-control" id="designation" placeholder="Designation"
-                                        autocomplete="off" formControlName="authDesignation"
-                                        [ngClass]="{ 'is-invalid': submitted && f['authDesignation'].errors }">
-                                    <div *ngIf="submitted && f['authDesignation'].errors" class="invalid-feedback">
-                                        <div>Designation is required</div>
-                                    </div>
-                                    <label for="designation" class="form-label-floating">Designation<i
-                                            class="danger">*</i></label>
-                                </div>
-
-                                <div class="form-floating mb-3 col-sm-6">
-                                    <input type="text" class="form-control" id="department" placeholder="Department"
-                                        autocomplete="off" formControlName="authDept">
-                                    <label for="department" class="form-label-floating">Department</label>
+                                <div class="col-sm-4">
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>Last Name</mat-label>
+                                        <input matInput placeholder="Last Name" autocomplete="off"
+                                            formControlName="authLastName">
+                                        <mat-error *ngIf="submitted && f['authLastName'].errors">
+                                            <div *ngIf="f['authLastName'].errors['required']">Last Name is required
+                                            </div>
+                                            <div *ngIf="f['authLastName'].errors['pattern']">Please enter a valid last
+                                                name.</div>
+                                        </mat-error>
+                                    </mat-form-field>
                                 </div>
                             </div>
                             <hr>
                             <div class="row">
-                                <div class="form-floating mb-3 col-sm-3">
-                                    <input type="text" class="form-control" id="landline" placeholder="Landline"
-                                        autocomplete="off" formControlName="landLine">
-                                    <label for="landline" class="form-label-floating">Landline</label>
+                                <div class="col-sm-6">
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>Designation</mat-label>
+                                        <input matInput placeholder="Designation" autocomplete="off"
+                                            formControlName="authDesignation">
+                                        <mat-error *ngIf="submitted && f['authDesignation'].errors">
+                                            <div>Designation is required</div>
+                                        </mat-error>
+                                    </mat-form-field>
                                 </div>
-                                <div class="form-floating mb-3 col-sm-3">
-                                    <input type="text" class="form-control" id="mobile" placeholder="Mobile"
-                                        autocomplete="off" formControlName="authMob"
-                                        [ngClass]="{ 'is-invalid': submitted && f['authMob'].errors }">
-                                    <div *ngIf="submitted && f['authMob'].errors" class="invalid-feedback">
-                                        <div>Mobile is required</div>
-                                    </div>
-                                    <label for="mobile" class="form-label-floating">Mobile<i
-                                            class="danger">*</i></label>
+                                <div class="col-sm-6">
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>Department</mat-label>
+                                        <input matInput placeholder="Department" autocomplete="off"
+                                            formControlName="authDept">
+                                    </mat-form-field>
                                 </div>
-
-                                <div class="form-floating mb-3 col-sm-3">
-                                    <input type="text" class="form-control" id="email1" placeholder="Email"
-                                        autocomplete="off" formControlName="authEmail"
-                                        [ngClass]="{ 'is-invalid': submitted && f['authEmail'].errors }"
-                                        [readOnly]="true">
-                                    <div *ngIf="submitted && f['authEmail'].errors" class="invalid-feedback">
-                                        <div *ngIf="f['authEmail'].invalid">Email is invalid</div>
-                                    </div>
-                                    <label for="email1" class="form-label-floating">Email </label>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>Landline</mat-label>
+                                        <input matInput placeholder="Landline" autocomplete="off"
+                                            formControlName="landLine">
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-sm-3">
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>Mobile</mat-label>
+                                        <input matInput placeholder="Mobile" autocomplete="off"
+                                            formControlName="authMob">
+                                        <mat-error *ngIf="submitted && f['authMob'].errors">
+                                            <div>Mobile is required</div>
+                                        </mat-error>
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-sm-3">
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>Email</mat-label>
+                                        <input matInput placeholder="Email" autocomplete="off"
+                                            formControlName="authEmail" [readOnly]="true">
+                                        <mat-error *ngIf="submitted && f['authEmail'].errors">
+                                            <div *ngIf="f['authEmail'].invalid">Email is invalid</div>
+                                        </mat-error>
+                                    </mat-form-field>
                                 </div>
                             </div>
                             <hr>

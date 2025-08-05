@@ -1,73 +1,112 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PatientService } from '../../services/patient.service';
 import { FilteringService } from '../../../shared/services/filter.service';
 import { OrganizationService } from '../../services/organization.service';
+import { AccountService } from '../../services/account.service';
+import { Subscription, forkJoin, of } from 'rxjs';
+import { switchMap, tap, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-share-survey',
   templateUrl: './share-survey.component.html',
   styleUrls: ['./share-survey.component.scss'],
 })
-export class ShareSurveyComponent implements OnInit {
-  surveyId: string = ''; // Survey ID from route
-  surveyTitle: string = ''; // Survey title
-  surveyShareLink: string = ''; // Survey share link
-  isLinkCopied: boolean = false; // Link copied flag
-  searchValue: string = ''; // Search input value
+export class ShareSurveyComponent implements OnInit, OnDestroy {
+  surveyId: string = '';
+  surveyTitle: string = '';
+  surveyShareLink: string = '';
+  isLinkCopied: boolean = false;
+  searchValue: string = '';
   specialitySearchText: string = '';
   citySearchText: string = '';
 
-  doctors: any[] = []; // All doctors list
-  filteredDoctors: any[] = []; // Filtered list for display
+  doctors: any[] = [];
+  filteredDoctors: any[] = [];
 
-  // Flag to disable checkboxes once survey is shared
   isSurveyShared: boolean = false;
+  currentPharmaId: string | null = null;
+
+  private subscriptions = new Subscription();
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private patientService: PatientService,
     private filteringService: FilteringService,
-    private organizationService: OrganizationService
+    private organizationService: OrganizationService,
+    private accountService: AccountService
   ) { }
 
   ngOnInit(): void {
-    // Get survey ID from route and mock survey details
     this.surveyId = this.route.snapshot.paramMap.get('id') || '';
-    this.surveyTitle = `Survey ${this.surveyId}`; // Mock survey title
-    this.surveyShareLink = `https://your-survey-platform.com/survey/${this.surveyId}`;
+    if (!this.surveyId) {
+      console.error('Survey ID not found in route.');
+      this.router.navigate(['/organization/pharma/surveys']);
+      return;
+    }
 
-    // Check if survey is already shared
-    this.organizationService.getSurveyById(this.surveyId).then((survey) => {
-      if (survey && survey.sharedWith && survey.sharedWith.length > 0) {
-        this.isSurveyShared = true;
-      }
-    });
+    this.surveyTitle = `${this.surveyId}`;
+    this.surveyShareLink = `https://www.healthdeskapp.in/physician/take-survey/${this.surveyId}`;
 
-    this.patientService.getEntities().subscribe({
-      next: (data: any) => {
-        this.doctors = data
-          .filter((entity: any) => entity.entityType === "physician")
-          .map((entity: any) => ({
-            ...entity,
-            reviews: entity.reviews || []
-          }));
+    this.subscriptions.add(
+      this.accountService.getUserData().pipe(
+        tap(userData => {
+          this.currentPharmaId = userData?.id;
+          if (!this.currentPharmaId) {
+            console.error('User data not available. Cannot fetch surveys.');
+            this.router.navigate(['/login']);
+          }
+        }),
+        switchMap(() => {
+          if (!this.currentPharmaId) {
+            return of(null);
+          }
+          return forkJoin({
+            survey: this.organizationService.getSurveyById(this.currentPharmaId, this.surveyId),
+            entities: this.patientService.getEntities()
+          }).pipe(
+            catchError(error => {
+              console.error('Error fetching data:', error);
+              return of({ survey: null, entities: [] });
+            })
+          );
+        })
+      ).subscribe({
+        next: (result) => {
+          if (!result) {
+            return;
+          }
+          const { survey, entities } = result;
 
-        // Filter unique doctors based on userId:
-        this.doctors = Array.from(
-          new Map(this.doctors.map((doctor: any) => [doctor.userId, doctor])).values()
-        );
+          if (survey && survey.sharedWith && survey.sharedWith.length > 0) {
+            this.isSurveyShared = true;
+          }
 
-        this.filteredDoctors = [...this.doctors]; // Copy to filteredDoctors
-      },
-      error: (error) => {
-        console.error('Error loading entities:', error);
-      }
-    });
+          this.doctors = entities
+            .filter((entity: any) => entity.entityType === "physician")
+            .map((entity: any) => ({
+              ...entity,
+              reviews: entity.reviews || []
+            }));
+
+          this.doctors = Array.from(
+            new Map(this.doctors.map((doctor: any) => [doctor.userId, doctor])).values()
+          );
+
+          this.filteredDoctors = [...this.doctors];
+        },
+        error: (err) => {
+          console.error('Unhandled error in ngOnInit stream:', err);
+        }
+      })
+    );
   }
 
-  // Copy survey link to clipboard
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+
   copyLink(): void {
     navigator.clipboard.writeText(this.surveyShareLink).then(() => {
       this.isLinkCopied = true;
@@ -75,42 +114,33 @@ export class ShareSurveyComponent implements OnInit {
     });
   }
 
-  filterDoctors(): void {
-    this.filteredDoctors = this.doctors.filter(doc => {
-      const matchesName = this.searchValue
-        ? doc.name.toLowerCase().includes(this.searchValue.toLowerCase())
-        : true;
+  
 
-      const matchesSpeciality = this.specialitySearchText
-        ? doc.speciality.toLowerCase().includes(this.specialitySearchText.toLowerCase())
-        : true;
-
-      const matchesOpdTiming = this.citySearchText
-        ? doc.city.toLowerCase().includes(this.citySearchText.toLowerCase())
-        : true;
-
-      return matchesName && matchesSpeciality && matchesOpdTiming;
-    });
-  }
-
-  // Send survey to selected doctors
   sendSurvey(): void {
-    // Use doctor ids (assuming each doctor has a 'userId' property)
+    if (!this.currentPharmaId) {
+      console.error('Cannot send survey: Pharmaceutical ID is missing.');
+      return;
+    }
+
     const selectedDoctorIds = this.filteredDoctors
       .filter((doctor) => doctor.selected)
       .map((doctor) => doctor.userId);
 
     if (selectedDoctorIds.length > 0) {
-      // Retrieve the survey record from IndexedDB, update it with sharedWith, and save
-      this.organizationService.getSurveyById(this.surveyId).then((survey) => {
-        survey.sharedWith = selectedDoctorIds;
-        this.organizationService.updateSurvey(this.surveyId, survey).then(() => {
-          alert('Survey shared successfully!');
-          this.isSurveyShared = true; // disable further changes
-        });
-      });
+      this.subscriptions.add(
+        this.organizationService.addSharedWith(this.currentPharmaId, this.surveyId, selectedDoctorIds)
+          .subscribe({
+            next: () => {
+              console.log('Survey shared successfully!');
+              this.isSurveyShared = true;
+            },
+            error: (error) => {
+              console.error('Error sharing survey:', error);
+            }
+          })
+      );
     } else {
-      alert('No doctors selected!');
+      console.log('No doctors selected!');
     }
   }
 
@@ -131,7 +161,6 @@ export class ShareSurveyComponent implements OnInit {
   }
 
   goBack() {
-
     this.router.navigate(['/organization/pharma/surveys']);
   }
 }

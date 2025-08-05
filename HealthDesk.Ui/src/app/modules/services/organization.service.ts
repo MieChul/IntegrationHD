@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { openDB } from 'idb';
 import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
+import { SurveyDto, SurveyResponse } from '../../shared/models/survey';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +13,6 @@ export class OrganizationService {
   private apiUrl = `${environment.apiUrl}`;
 
   constructor(private http: HttpClient) {
-    this.initDB();
   }
 
   getAllLabTests(id: string): Observable<any[]> {
@@ -102,80 +102,69 @@ export class OrganizationService {
     return this.http.delete<any>(`${this.apiUrl}/${pharmaId}/surveys/${surveyId}`);
   }
 
-  getSharedWith(pharmaId: string, surveyId: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${pharmaId}/surveys/${surveyId}/shared-with`);
+  getMedicalCaseById(userId: string, caseId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/hospital/${userId}/medical-case/${caseId}`);
+  }
+
+  getMedicalCases(id: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/hospital/${id}/medical-cases`);
+  }
+
+  saveMedicalCase(id: string, medicalCase: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/hospital/${id}/medical-case`, medicalCase);
+  }
+
+  deleteMedicalCase(id: string, caseId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/hospital/${id}/medical-cases/${caseId}`);
+  }
+
+  saveComment(userId: string, caseId: string, comment: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/hospital/${userId}/comment/${caseId}`, comment);
+  }
+
+  toggleLike(userId: string, caseId: string, currentUserId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/hospital/${userId}/like/${caseId}/${currentUserId}`, {});
+  }
+
+  updatePreferences(userId: string, preferences: string[]): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/hospital/${userId}/preference`, preferences);
+  }
+
+  getHospitalInfo(hospitalId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/hospital/${hospitalId}/info`);
+  }
+
+  getSurveys(pharmaId: string): Observable<SurveyResponse[]> {
+    return this.http.get<any>(`${this.apiUrl}/Pharmaceutical/${pharmaId}/surveys`)
+      .pipe(map((response: any) => response.data));
+  }
+
+
+  getSurveyById(pharmaId: string, surveyId: string): Observable<SurveyResponse> {
+    return this.http.get<any>(`${this.apiUrl}/Pharmaceutical/${pharmaId}/surveys/${surveyId}`)
+      .pipe(map((response: any) => response.data));
+  }
+
+
+  saveSurvey(pharmaId: string, survey: SurveyDto): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/Pharmaceutical/${pharmaId}/surveys`, survey);
+  }
+
+  deleteSurvey(pharmaId: string, surveyId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/Pharmaceutical/${pharmaId}/surveys/${surveyId}`);
   }
 
   addSharedWith(pharmaId: string, surveyId: string, sharedWith: string[]): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/${pharmaId}/surveys/${surveyId}/shared-with`, sharedWith);
+    return this.http.post<any>(`${this.apiUrl}/Pharmaceutical/${pharmaId}/surveys/${surveyId}/shared-with`, sharedWith);
   }
 
-  getCases(hospitalId: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${hospitalId}/cases`);
+  getSharedWith(pharmaId: string, surveyId: string): Observable<string[]> {
+    return this.http.get<any>(`${this.apiUrl}/Pharmaceutical/${pharmaId}/surveys/${surveyId}/shared-with`)
+      .pipe(map((response: any) => response.data));
   }
 
-  getCaseById(id: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${id}/case`);
-  }
 
-  saveCase(id: string, medicalCase: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/case`, medicalCase);
-  }
-
-  deleteCase(id: string, caseId: string): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/${id}/case/${caseId}`);
-  }
-
-  async initDB() {
-    this.db = await openDB('surveyDB', 1, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains('surveys')) {
-          db.createObjectStore('surveys', { keyPath: 'id', autoIncrement: true });
-        }
-      }
-    });
-  }
-
-  async saveSurvey(survey: any) {
-    await this.initDB();
-    const tx = await this.db.transaction('surveys', 'readwrite');
-    await tx.store.add(survey);
-    await tx.done;
-  }
-
-  async getSurveyById(id: string) {
-    await this.initDB();
-    const tx = await this.db.transaction('surveys', 'readonly');
-    const survey = await tx.store.get(Number(id));
-    return survey;
-  }
-
-  async saveResponse(surveyId: string, response: any) {
-    await this.initDB();
-    const tx = await this.db.transaction('surveys', 'readwrite');
-    const survey = await tx.store.get(Number(surveyId));
-    survey.responses = survey.responses || [];
-    survey.responses.push(response);
-    await tx.store.put(survey);
-  }
-
-  async getSurveys() {
-    await this.initDB();
-    const tx = await this.db.transaction('surveys', 'readonly');
-    return await tx.store.getAll();
-  }
-
-  async deleteSurvey(surveyId: string) {
-    await this.initDB();
-    const tx = await this.db.transaction('surveys', 'readwrite');
-    await tx.store.delete(Number(surveyId));
-    await tx.done;
-  }
-
-  async updateSurvey(id: string, updatedSurvey: any) {
-    await this.initDB();
-    const tx = await this.db.transaction('surveys', 'readwrite');
-    await tx.store.put(updatedSurvey);  // Update the survey
-    await tx.done;
+  saveResponse(surveyId: string, response: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/Pharmaceutical/${surveyId}/responses`, response);
   }
 }

@@ -1,5 +1,6 @@
 
 using System.Globalization;
+using System.Text.Json;
 using System.Threading.Tasks;
 using HealthDesk.Application.DTO;
 using HealthDesk.Core;
@@ -7,6 +8,7 @@ using HealthDesk.Core.Enum;
 using HealthDesk.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 
 namespace HealthDesk.Application;
 
@@ -21,8 +23,10 @@ public class PhysicianService : IPhysicianService
 
     private readonly IPatientRepository _patientRepository;
 
+    private readonly IPharmaceuticalRepository _pharmaceuticalRepository;
+
     private readonly Random _random = new Random();
-    public PhysicianService(IPhysicianRepository physicianRepository, IMessageService messageService, IUserRepository userRepository, IUserService userService, IPatientService patientService, IPatientRepository patientRepository)
+    public PhysicianService(IPhysicianRepository physicianRepository, IMessageService messageService, IUserRepository userRepository, IUserService userService, IPatientService patientService, IPatientRepository patientRepository, IPharmaceuticalRepository pharmaceuticalRepository)
     {
         _physicianRepository = physicianRepository;
         _messageService = messageService;
@@ -30,6 +34,7 @@ public class PhysicianService : IPhysicianService
         _userService = userService;
         _patientService = patientService;
         _patientRepository = patientRepository;
+        _pharmaceuticalRepository = pharmaceuticalRepository;
     }
 
     public async Task AddOrUpdateClinicAsync(string physicianId, PhysicianClinicDto clinicDto)
@@ -850,6 +855,10 @@ public class PhysicianService : IPhysicianService
             .Select(s => GenericMapper.Map(s, new SymptomDto()))
             .ToList() ?? new List<SymptomDto>();
 
+        var medicalHistory = patientEntity.MedicalHistory?
+            .Select(m => GenericMapper.Map(m, new MedicalHistoryDto()))
+            .ToList() ?? new List<MedicalHistoryDto>();
+
         // Create the history DTO using the mapped collections.
         var historyDto = new PatientHistoryDto
         {
@@ -858,7 +867,8 @@ public class PhysicianService : IPhysicianService
             LabInvestigations = labInvestigationsDto,
             Reports = reportsDto,
             Immunizations = immunizationsDto,
-            Symptoms = symptomsDto
+            Symptoms = symptomsDto,
+            MedicalHistories = medicalHistory
         };
 
         return historyDto;
@@ -929,5 +939,120 @@ public class PhysicianService : IPhysicianService
         physician.PhysicianInfo.Preferences = new List<string>();
         physician.PhysicianInfo.Preferences.AddRange(preferences);
         await _physicianRepository.UpdateAsync(physician);
+    }
+
+    public async Task<IEnumerable<SurveyDto>> GetSurveysSharedWithPhysicianAsync(string physicianId)
+    {
+        var allPharmaceuticals = await _pharmaceuticalRepository.GetAllAsync();
+        var sharedSurveys = new List<SurveyDto>();
+
+        foreach (var pharma in allPharmaceuticals)
+        {
+            if (pharma.Surveys == null) continue;
+
+            var surveysForPhysician = pharma.Surveys
+                .Where(s => s.SharedWith != null && s.SharedWith.Contains(physicianId) && s.IsActive)
+                .ToList();
+
+            foreach (var survey in surveysForPhysician)
+            {
+                var surveyDto = new SurveyDto();
+                GenericMapper.Map(survey, surveyDto);
+                sharedSurveys.Add(surveyDto);
+            }
+        }
+        return sharedSurveys;
+    }
+
+    public async Task<SurveyDto> GetSurveyByIdAsync(string surveyId)
+    {
+        var allPharmaceuticals = await _pharmaceuticalRepository.GetAllAsync();
+
+        foreach (var pharma in allPharmaceuticals)
+        {
+            var survey = pharma.Surveys?.FirstOrDefault(s => s.Id == surveyId);
+            if (survey != null)
+            {
+                var surveyDto = new SurveyDto
+                {
+                    Id = survey.Id,
+                    Name = survey.Name,
+                    Author = survey.Author,
+                    Date = survey.Date,
+                    IsActive = survey.IsActive,
+                    HeaderImageUrl = survey.HeaderImageUrl,
+                    Title = survey.Title,
+                    Description = survey.Description,
+                    SharedWith = survey.SharedWith,
+                    Questions = survey.Questions.Select(q => new QuestionDto
+                    {
+                        Id = q.Id,
+                        Text = q.Text,
+                        Description = q.Description,
+                        Type = q.Type,
+                        Required = q.Required,
+                        NumbersOnly = q.NumbersOnly,
+                        MinDate = q.MinDate,
+                        MaxDate = q.MaxDate,
+                        Options = q.Options.Select(o => new QuestionOptionDto { Text = o.Text }).ToList()
+                    }).ToList(),
+                    Responses = survey.Responses.Select(r => new SurveyResponseDto
+                    {
+                        UserDetails = r.UserDetails,
+                        UserId = r.UserId,
+                        SubmittedAt = r.SubmittedAt,
+                        ResponsesData = BsonSerializer.Deserialize<Dictionary<string, object>>(r.ResponsesData)
+                    }).ToList()
+                };
+
+                return surveyDto;
+            }
+        }
+        return null;
+    }
+
+    public async Task SaveSurveyResponseAsync(string surveyId, SurveyResponseDto responseDto)
+    {
+        var allPharmaceuticals = await _pharmaceuticalRepository.GetAllAsync();
+        Pharmaceutical ownerPharma = null;
+        Survey targetSurvey = null;
+
+        var user = await _userRepository.GetByIdAsync(responseDto.UserId);
+
+        foreach (var pharma in allPharmaceuticals)
+        {
+            targetSurvey = pharma.Surveys?.FirstOrDefault(s => s.Id == surveyId);
+            if (targetSurvey != null)
+            {
+                ownerPharma = pharma;
+                break;
+            }
+        }
+
+        if (targetSurvey == null || ownerPharma == null)
+        {
+            throw new ArgumentException("Survey not found.");
+        }
+
+        if (targetSurvey.Responses.Any(r => r.UserId == responseDto.UserId))
+        {
+            throw new InvalidOperationException("This survey has already been taken by the physician.");
+        }
+
+        var jsonText = JsonSerializer.Serialize(responseDto.ResponsesData);
+        var bsonDocument = BsonDocument.Parse(jsonText);
+        var locationParts = new[] { user.Address1, user.City, user.State };
+        var formattedLocation = string.Join(", ", locationParts.Where(part => !string.IsNullOrWhiteSpace(part)));
+        var newResponse = new SurveyResponse
+        {
+            UserDetails = $"{user.FirstName} {user.LastName} ({formattedLocation})",
+            UserId = responseDto.UserId,
+            ResponsesData = bsonDocument,
+            SubmittedAt = DateTime.UtcNow
+        };
+
+        targetSurvey.Responses.Add(newResponse);
+
+        await _pharmaceuticalRepository.UpdateAsync(ownerPharma);
     }
 }

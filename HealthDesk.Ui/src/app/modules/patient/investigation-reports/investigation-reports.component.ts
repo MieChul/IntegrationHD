@@ -32,7 +32,7 @@ export class InvestigationReportsComponent implements OnInit {
   filteredAssessmentsData: any = [];
 
   @ViewChild('reportModal') reportModal!: ElementRef;
-
+  @ViewChild('reportFileInput') reportFileInput!: ElementRef;
   constructor(
     private fb: FormBuilder,
     private sortingService: SortingService,
@@ -140,6 +140,12 @@ export class InvestigationReportsComponent implements OnInit {
       this.selectedReport = null;
       this.reportForm.reset();
     }
+
+    this.selectedFile = null;
+    if (this.reportFileInput) {
+      this.reportFileInput.nativeElement.value = '';
+    }
+
 
     const modal = new bootstrap.Modal(this.reportModal.nativeElement);
     modal.show();

@@ -60,8 +60,14 @@
                     <td>{{ report.comment }}</td>
                     <td>{{ report.price }}</td>
                     <td>
-                        <button class="btn btn-info btn-sm me-1" (click)="viewReport(i)">
-                            <i class="bi bi-eye"></i> View Report
+                        <button *ngIf="report.filePath" class="btn btn-info btn-sm me-1" (click)="viewReport(report)">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                         <button class="btn btn-warning btn-sm me-1" (click)="openReportModal(true,report)">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" (click)="deleteReport(report)">
+                            <i class="bi bi-trash"></i>
                         </button>
                     </td>
                 </tr>
@@ -162,8 +168,8 @@
                     </div>
                     <div class="mb-3">
                         <mat-label>Upload Report (PDF only)</mat-label>
-                        <input type="file" id="reportFile" (change)="onFileSelected($event)" class="form-control"
-                            accept="application/pdf">
+                        <input type="file" id="reportFile" #reportFileInput (change)="onFileSelected($event)"
+                            class="form-control" accept="application/pdf">
                     </div>
                 </form>
             </div>

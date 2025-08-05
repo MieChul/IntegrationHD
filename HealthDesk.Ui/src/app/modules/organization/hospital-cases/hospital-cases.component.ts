@@ -6,7 +6,7 @@ import { Modal, Tooltip } from 'bootstrap';
 import { map, Observable, startWith } from 'rxjs';
 import { DatabaseService } from '../../../shared/services/database.service';
 import { AccountService } from '../../services/account.service';
-import { PhysicianService } from '../../services/physician.service';
+import { OrganizationService } from '../../services/organization.service';
 
 @Component({
   selector: 'app-hospital-cases',
@@ -47,7 +47,7 @@ export class HospitalCasesComponent implements OnInit {
   newCommentText: any;
   isEditing: any;
 
-  constructor(private router: Router, private modalService: NgbModal, private databaseService: DatabaseService, private accountService: AccountService, private physicianService: PhysicianService) { }
+  constructor(private router: Router, private modalService: NgbModal, private databaseService: DatabaseService, private accountService: AccountService, private organizationService: OrganizationService) { }
 
   async ngOnInit(): Promise<void> {
     this.accountService.getUserData().subscribe({
@@ -72,7 +72,7 @@ export class HospitalCasesComponent implements OnInit {
   }
 
   savePreferences() {
-    this.physicianService.updatePreferences(this.userData.id, this.selectedPreferences).subscribe({
+    this.organizationService.updatePreferences(this.userData.id, this.selectedPreferences).subscribe({
       next: (res: any) => {
         this.loadInfo();
       },
@@ -88,7 +88,7 @@ export class HospitalCasesComponent implements OnInit {
       return;
     }
 
-    this.physicianService.getMedicalCases(this.userData.id).subscribe({
+    this.organizationService.getMedicalCases(this.userData.id).subscribe({
       next: (cases: any) => {
         this.otherMedicalCases = cases.data.others;
         this.yourMedicalCases = cases.data.yours;
@@ -101,7 +101,7 @@ export class HospitalCasesComponent implements OnInit {
   }
 
   loadInfo() {
-    this.physicianService.getPhysicianInfo(this.userData.id).subscribe({
+    this.organizationService.getHospitalInfo(this.userData.id).subscribe({
       next: info => {
         this.selectedPreferences = info.data.preferences || [];
         this.filterMedicalCases();
@@ -122,11 +122,11 @@ export class HospitalCasesComponent implements OnInit {
   }
 
   createNewCase(): void {
-    this.router.navigate(['/physician/new-medical-case']);
+    this.router.navigate(['/organization/hospital/new-case']);
   }
 
   toggleLike(user: string, id: string,): void {
-    this.physicianService.toggleLike(user, id, this.userData.id).subscribe({
+    this.organizationService.toggleLike(user, id, this.userData.id).subscribe({
       next: (com: any) => {
         this.loadCases();
       },
@@ -137,14 +137,14 @@ export class HospitalCasesComponent implements OnInit {
   }
 
   shareCase(caseId: string): void {
-    this.shareLink = `https://HealthDesk.com/physician/view-medical/${caseId}`;
+    this.shareLink = `https://healthdeskapp.in/organization/hospital/view-case/${caseId}`;
     const modalInstance = new Modal(this.shareModal.nativeElement);
     modalInstance.show();
   }
 
 
   viewCase(caseId: string): void {
-    this.router.navigate(['/physician/view-medical-case', caseId]);
+    this.router.navigate(['/organization/hospital/view-case', caseId]);
   }
 
   setActiveSubTab(tab: string): void {
@@ -248,7 +248,7 @@ export class HospitalCasesComponent implements OnInit {
       itemType: "Medical Case"
     };
 
-    this.physicianService.saveComment(this.case.userId, this.case.id, comment).subscribe({
+    this.organizationService.saveComment(this.case.userId, this.case.id, comment).subscribe({
       next: (com: any) => {
         this.loadCases();
         this.newCommentText = '';

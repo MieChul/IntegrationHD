@@ -41,10 +41,13 @@ export class DailyActivityComponent implements OnInit {
   constructor(private fb: FormBuilder, private accountService: AccountService, private databaseService: DatabaseService, private patientService: PatientService, private sortingService: SortingService, private filteringService: FilteringService) { }
 
   ngOnInit(): void {
+    this.initializeForm();
     this.accountService.getUserData().subscribe({
       next: async (data) => {
         this.userData = data;
-        this.initializeForm();
+        this.editForm.patchValue({
+          gender: this.userData.gender
+        });
         this.foodItems = await this.databaseService.getFoodItems();
         this.exerciseItems = await this.databaseService.getExercises();
         await this.loadActivity();
@@ -76,19 +79,11 @@ export class DailyActivityComponent implements OnInit {
 
   initializeForm(): void {
     this.editForm = this.fb.group({
-      height: this.fb.control('', [
-        Validators.required,
-        Validators.min(50),
-        Validators.max(300)
-      ]),
-      weight: this.fb.control('', [
-        Validators.required,
-        Validators.min(20),
-        Validators.max(300)
-      ]),
+      height: ['', [Validators.required, Validators.min(50), Validators.max(300)]],
+      weight: ['', [Validators.required, Validators.min(20), Validators.max(300)]],
       age: new FormControl({ value: '', disabled: true }),
-      gender: new FormControl({ value: this.userData.gender, disabled: true }),
-      lifeStyle: this.fb.control('', Validators.required)
+      gender: new FormControl({ value: '', disabled: true }),
+      lifeStyle: ['', Validators.required]
     });
 
     this.activityForm = this.fb.group({
@@ -98,29 +93,19 @@ export class DailyActivityComponent implements OnInit {
       exercises: this.fb.array([this.createExercise()]),
       totalCalories: [0],
       totalCaloriesBurnt: [0]
-    }, { validators: this.atLeastOneMealOrExerciseValidator });
+    });
   }
-
-  atLeastOneMealOrExerciseValidator(formGroup: AbstractControl): ValidationErrors | null {
-    const meals = (formGroup.get('meals') as FormArray)?.length || 0;
-    const exercises = (formGroup.get('exercises') as FormArray)?.length || 0;
-
-    return meals === 0 && exercises === 0
-      ? { atLeastOneRequired: true }
-      : null;
-  }
-
 
   createMeal(meal?: any): FormGroup {
     const group = this.fb.group({
       id: [meal?.id || null],
-      type: [meal?.type || '', Validators.required],
+      type: [meal?.type || ''],
       foodItems: this.fb.array(
         meal?.foodItems?.length
           ? meal.foodItems.map((item: any) => this.createFoodItem(item))
           : [this.createFoodItem()]
       )
-    }, { validators: [this.atLeastOneFoodItemValidator()] });
+    }, {});
 
     return group;
   }
@@ -128,8 +113,8 @@ export class DailyActivityComponent implements OnInit {
   createFoodItem(item?: any): FormGroup {
     return this.fb.group({
       id: [item?.id || null],
-      name: [item?.name || '', Validators.required],
-      quantity: [item?.quantity ?? '', [Validators.required, Validators.min(1)]],
+      name: [item?.name || ''],
+      quantity: [item?.quantity ?? ''],
       calories: [{ value: item?.calories ?? '' }]
     });
   }
@@ -286,19 +271,44 @@ export class DailyActivityComponent implements OnInit {
 
   saveActivity(): void {
     this.activityForm.markAllAsTouched();
-    if (this.activityForm.invalid) return;
+    const formValue = this.activityForm.getRawValue();
+
+    const hasValidMeal = formValue.meals.some((meal: any) =>
+      meal.type && meal.foodItems.some((item: any) => item.name && item.quantity > 0)
+    );
+
+    const hasValidExercise = formValue.exercises.some((exercise: any) =>
+      exercise.type && exercise.exerciseItems.some((item: any) => item.name && item.quantity > 0)
+    );
+
+    if (!hasValidMeal && !hasValidExercise) {
+      return;
+    }
+
+
+    const payload = {
+      ...formValue,
+      meals: formValue.meals.filter((meal: any) =>
+        meal.type && meal.foodItems.some((item: any) => item.name && item.quantity > 0)
+      ),
+      exercises: formValue.exercises.filter((exercise: any) =>
+        exercise.type && exercise.exerciseItems.some((item: any) => item.name && item.quantity > 0)
+      )
+    };
+
     this.patientService
-      .saveActivity(this.userData.id, this.activityForm.value)
+      .saveActivity(this.userData.id, payload)
       .subscribe({
-        next: (response) => {
+        next: () => {
           this.loadActivity();
+          const modal = bootstrap.Modal.getInstance(this.activityModal.nativeElement);
+          modal?.hide();
         },
         error: (error) => {
-          console.error('Error updating medical activity:', error);
+          console.error('Error saving activity:', error);
         },
       });
   }
-
 
   saveDetail(): void {
     this.editForm.markAllAsTouched();
@@ -421,26 +431,11 @@ export class DailyActivityComponent implements OnInit {
           ? exercise.exerciseItems.map((item: any) => this.createExerciseItem(item))
           : [this.createExerciseItem()]
       )
-    }, { validators: [this.atLeastOneExerciseItemValidator()] });
+    }, {});
 
     return group;
   }
 
-  atLeastOneFoodItemValidator(): ValidatorFn {
-    return (group: AbstractControl): ValidationErrors | null => {
-      const foodItems = (group.get('foodItems') as FormArray)?.controls;
-      const hasValidItem = foodItems?.some(item => item.valid);
-      return hasValidItem ? null : { noFoodItems: true };
-    };
-  }
-
-  atLeastOneExerciseItemValidator(): ValidatorFn {
-    return (group: AbstractControl): ValidationErrors | null => {
-      const exerciseItems = (group.get('exerciseItems') as FormArray)?.controls;
-      const hasValidItem = exerciseItems?.some(item => item.valid);
-      return hasValidItem ? null : { noExerciseItems: true };
-    };
-  }
 
   createExerciseItem(item?: any): FormGroup {
     return this.fb.group({

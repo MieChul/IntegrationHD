@@ -47,14 +47,23 @@ public class BrandLibrary : BaseEntity
 
 public class Survey : BaseEntity
 {
+    [BsonElement("name")]
+    public string Name { get; set; }
+
+    [BsonElement("author")]
+    public string Author { get; set; }
+
+    [BsonElement("date")]
+    public DateTime Date { get; set; }
+
+    [BsonElement("is_active")]
+    public bool IsActive { get; set; }
+
     [BsonElement("header_image_url")]
     public string HeaderImageUrl { get; set; }
 
     [BsonElement("title")]
     public string Title { get; set; }
-
-    [BsonElement("author_name")]
-    public string AuthorName { get; set; }
 
     [BsonElement("description")]
     public string Description { get; set; }
@@ -63,27 +72,60 @@ public class Survey : BaseEntity
     public List<Question> Questions { get; set; } = new();
 
     [BsonElement("shared_with")]
-    public List<string> SharedWith { get; set; }
+    public List<string> SharedWith { get; set; } = new();
+
+    [BsonElement("responses")]
+    public List<SurveyResponse> Responses { get; set; } = new();
 }
 
 public class Question : BaseEntity
 {
-    [BsonElement("question_text")]
-    public string QuestionText { get; set; }
+    [BsonElement("text")]
+    public string Text { get; set; }
 
     [BsonElement("description")]
     public string Description { get; set; }
 
     [BsonElement("type")]
-    public string Type { get; set; } // E.g., "MCQ", "Text", etc.
+    public string Type { get; set; }
 
-    [BsonElement("from_date")]
-    public DateTime FromDate { get; set; }
+    [BsonElement("options")]
+    public List<QuestionOption> Options { get; set; } = new();
 
-    [BsonElement("to_date")]
-    public DateTime ToDate { get; set; }
+    [BsonElement("required")]
+    public bool Required { get; set; } = false;
 
-    [BsonElement("validations")]
-    public string Validations { get; set; } // E.g., "Required", "MaxLength:100", etc.
+    [BsonElement("numbersOnly")]
+    public bool NumbersOnly { get; set; } = false;
+
+    [BsonElement("minDate")]
+    [BsonRepresentation(BsonType.DateTime)]
+    public DateTime? MinDate { get; set; }
+
+    [BsonElement("maxDate")]
+    [BsonRepresentation(BsonType.DateTime)]
+    public DateTime? MaxDate { get; set; }
 }
+
+public class QuestionOption
+{
+    [BsonElement("text")]
+    public string Text { get; set; }
+}
+
+public class SurveyResponse
+{
+    [BsonElement("user_details")]
+    public string UserDetails { get; set; }
+
+    [BsonElement("user_id")]
+    public string UserId { get; set; }
+
+    [BsonElement("submitted_at")]
+    public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
+
+    [BsonElement("responses_data")]
+    public BsonDocument ResponsesData { get; set; }
+}
+
 

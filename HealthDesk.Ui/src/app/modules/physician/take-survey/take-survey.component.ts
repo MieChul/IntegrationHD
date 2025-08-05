@@ -1,76 +1,90 @@
-import { Component, OnInit } from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  FormArray,
-  FormControl,
-  Validators,
-  AbstractControl
-} from '@angular/forms';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { FormBuilder, FormGroup, FormArray, FormControl, Validators, AbstractControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { OrganizationService } from '../../services/organization.service';
+import { PhysicianService } from '../../services/physician.service';
 import { AccountService } from '../../services/account.service';
+import { Subscription, of } from 'rxjs';
+import { switchMap, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-take-survey',
   templateUrl: './take-survey.component.html',
   styleUrls: ['./take-survey.component.scss']
 })
-export class TakeSurveyComponent implements OnInit {
+export class TakeSurveyComponent implements OnInit, OnDestroy {
   surveyForm!: FormGroup;
-  survey: any; // Loaded survey from IndexedDB
+  survey: any;
   surveyId!: string;
   userData: any;
-
+  isViewMode = false;
+  private subscriptions = new Subscription();
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private organizationService: OrganizationService,
+    private physicianService: PhysicianService,
     private accountService: AccountService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.surveyId = this.route.snapshot.paramMap.get('id')!;
-    this.accountService.getUserData().subscribe({
-      next: (data) => {
-        this.userData = data;
+    if (!this.surveyId) {
+      return;
+    }
 
-           
-    this.loadSurvey();
-      },
-      error: (err) => console.error('Error fetching user data:', err)
-    });
-
+    this.subscriptions.add(
+      this.accountService.getUserData().pipe(
+        switchMap(userData => {
+          this.userData = userData;
+          if (!this.userData?.id) {
+            return of(null);
+          }
+          return this.physicianService.getSurveyById(this.surveyId).pipe(
+            catchError(err => of(null))
+          );
+        })
+      ).subscribe(survey => {
+        if (survey) {
+          this.survey = survey;
+          const existingResponse = this.survey.responses?.find((r: any) => r.userId === this.userData.id);
+          if (existingResponse) {
+            this.isViewMode = true;
+          }
+          this.buildForm(existingResponse);
+        }
+      })
+    );
   }
 
-  async loadSurvey(): Promise<void> {
-    // Load the survey based on its id
-    this.survey = await this.organizationService.getSurveyById(this.surveyId);
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
 
-    // Build the FormArray for questions dynamically
+  buildForm(existingResponse?: any): void {
     const questionsFormArray = this.fb.array<AbstractControl>([]);
 
     this.survey.questions.forEach((question: any) => {
       let control: AbstractControl;
-      const validators = question.required ? [Validators.required] : [];
+      const validators = question.required && !this.isViewMode ? [Validators.required] : [];
       switch (question.type) {
         case 'text':
         case 'number':
-        case 'date':
-          // Simple control starting with an empty string
+        case 'dropdown':
+        case 'radio':
           control = this.fb.control('', validators);
           break;
-        case 'radio':
-          // Radio control: no option selected by default
-          control = this.fb.control('', validators);
+        case 'date':
+          const dateValidators = question.required && !this.isViewMode ? [Validators.required] : [];
+          if (question.minDate || question.maxDate) {
+            dateValidators.push(this.dateRangeValidator(question.minDate, question.maxDate));
+          }
+          control = this.fb.control('', dateValidators);
           break;
         case 'checkbox':
-          // For checkboxes, create a FormArray of booleans (all starting unchecked)
           const checkboxArray = this.fb.array(
             question.options.map(() => this.fb.control(false)),
-            question.required ? this.minSelectedCheckbox(1) : null
+            question.required && !this.isViewMode ? this.minSelectedCheckbox(1) : null
           );
           control = checkboxArray;
           break;
@@ -80,15 +94,49 @@ export class TakeSurveyComponent implements OnInit {
       questionsFormArray.push(control);
     });
 
-    // Build the complete form. (Meta-data controls are read-only.)
     this.surveyForm = this.fb.group({
-      name: [{ value: this.survey.name, disabled: true }],
-      creator: [{ value: this.survey.author, disabled: true }],
       responses: questionsFormArray
     });
+
+    if (this.isViewMode && existingResponse) {
+      this.populateAndDisableForm(existingResponse);
+    }
   }
 
-  // Custom validator for checkbox arrays: at least one must be selected if required.
+  populateAndDisableForm(response: any): void {
+    const responseData = response.responsesData;
+    this.survey.questions.forEach((question: any, index: number) => {
+      const answer = responseData[question.text];
+      if (answer !== undefined) {
+        if (question.type === 'checkbox') {
+          const checkboxValues = question.options.map((option: any) =>
+            (answer as any[]).includes(option.text)
+          );
+          this.responses.at(index).setValue(checkboxValues);
+        } else {
+          this.responses.at(index).setValue(answer);
+        }
+      }
+    });
+    this.surveyForm.disable();
+  }
+
+  dateRangeValidator(minDateStr: string | null, maxDateStr: string | null) {
+    return (control: AbstractControl): { [key: string]: any } | null => {
+      if (!control.value) return null;
+      const selectedDate = new Date(control.value);
+      if (minDateStr) {
+        const minDate = new Date(minDateStr);
+        if (selectedDate < minDate) return { 'minDateError': true };
+      }
+      if (maxDateStr) {
+        const maxDate = new Date(maxDateStr);
+        if (selectedDate > maxDate) return { 'maxDateError': true };
+      }
+      return null;
+    };
+  }
+
   minSelectedCheckbox(min: number) {
     return (formArray: AbstractControl): { [key: string]: any } | null => {
       const totalSelected = (formArray as FormArray).controls
@@ -98,54 +146,46 @@ export class TakeSurveyComponent implements OnInit {
     };
   }
 
-  // Getter for the responses FormArray.
   get responses(): FormArray {
     return this.surveyForm.get('responses') as FormArray;
   }
 
-  // Helper method for retrieving the radio control at a given index as FormControl.
   getRadioControl(index: number): FormControl {
     return this.responses.at(index) as FormControl;
   }
 
-  // Helper method for retrieving the controls of a checkbox FormArray at index i.
   getCheckboxControls(index: number): AbstractControl[] {
     return (this.responses.at(index) as FormArray).controls;
   }
 
-  async submitSurvey(): Promise<void> {
+  submitSurvey(): void {
     if (this.surveyForm.valid) {
-      // Build the response payload.
-      const responsesPayload = this.survey.questions.map((question: any, index: number) => {
+      const responsesPayload: { [key: string]: any } = {};
+      this.survey.questions.forEach((question: any, index: number) => {
         let answer = this.responses.at(index).value;
         if (question.type === 'checkbox') {
-          // Convert boolean array to an array of option texts that are selected.
-          answer = question.options.filter((option: any, i: number) => answer[i]);
+          answer = question.options
+            .filter((option: any, i: number) => answer[i])
+            .map((option: any) => option.text);
         }
-        return {
-          question: question.text,
-          type: question.type,
-          answer: answer
-        };
+        responsesPayload[question.text] = answer;
       });
 
-      // Save the response with the current physician's ID.
       const responseData = {
-        physicianId: this.userData.id,
-        answers: responsesPayload,
-        submittedAt: new Date().toISOString()
+        userId: this.userData.id,
+        responsesData: responsesPayload
       };
 
-      await this.organizationService.saveResponse(this.surveyId, responseData);
-      alert('Survey submitted successfully!');
-      this.router.navigate(['/physician/survey']);
+      this.physicianService.saveSurveyResponse(this.surveyId, responseData).subscribe({
+        next: () => this.router.navigate(['/physician/survey']),
+        error: (err) => console.error('Failed to submit survey:', err)
+      });
     } else {
       this.surveyForm.markAllAsTouched();
     }
   }
 
   goBack() {
-
     this.router.navigate(['/physician/survey']);
   }
 }

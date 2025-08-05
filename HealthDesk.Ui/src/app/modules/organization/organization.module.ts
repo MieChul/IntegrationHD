@@ -17,6 +17,7 @@ import { HospitalCasesComponent } from './hospital-cases/hospital-cases.componen
 import { HospitalManagementComponent } from './hospital-management/hospital-management.component';
 import { HospitalViewCaseComponent } from './hospital-view-case/hospital-view-case.component';
 import { HospitalNewCaseComponent } from './hospital-new-case/hospital-new-case.component';
+import { ViewSingleResponseComponent } from './view-single-response/view-single-response.component';
 
 
 @NgModule({
@@ -34,7 +35,8 @@ import { HospitalNewCaseComponent } from './hospital-new-case/hospital-new-case.
     HospitalCasesComponent,
     HospitalManagementComponent,
     HospitalViewCaseComponent,
-    HospitalNewCaseComponent
+    HospitalNewCaseComponent,
+    ViewSingleResponseComponent
   ],
   imports: [
     SharedModule,

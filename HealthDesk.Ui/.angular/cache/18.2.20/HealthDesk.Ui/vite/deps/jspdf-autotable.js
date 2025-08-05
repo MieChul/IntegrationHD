@@ -1,12 +1,12 @@
 import {
   init_jspdf_es_min,
   jspdf_es_min_exports
-} from "./chunk-FQTYIL7W.js";
-import "./chunk-6BTAOVKH.js";
+} from "./chunk-UA3MP3OE.js";
+import "./chunk-PNGFZJMY.js";
 import {
   __commonJS,
   __toCommonJS
-} from "./chunk-ZGWC6NTF.js";
+} from "./chunk-S35DAJRX.js";
 
 // node_modules/jspdf-autotable/dist/jspdf.plugin.autotable.js
 var require_jspdf_plugin_autotable = __commonJS({

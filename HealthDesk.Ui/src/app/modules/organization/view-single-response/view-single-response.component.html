@@ -1,0 +1,81 @@
+<div class="main-container">
+    <div class="container">
+        <h1 class="animated-heading mb-0">
+            <i class="bi bi-file-earmark-text me-2"></i>View Response
+        </h1>
+        <div class="header-bar">
+            <button type="button" class="btn btn-secondary me-3" (click)="goBack()" matTooltip="Back to Response List">
+                <i class="bi bi-arrow-left"></i>
+            </button>
+        </div>
+
+        <div class="survey-content-wrapper" *ngIf="surveyForm; else loadingTemplate">
+            <div class="card survey-header-card">
+                <img *ngIf="survey?.headerImageUrl" [src]="survey.headerImageUrl" class="card-img-top header-image"
+                    alt="Survey Header">
+                <div class="card-body">
+                    <h2 class="card-title">{{ survey?.title }}</h2>
+                    <p *ngIf="survey?.description" class="card-text lead">{{ survey.description }}</p>
+                    <p class="card-text text-muted mb-0">by {{ survey?.author }}</p>
+                </div>
+            </div>
+
+            <form [formGroup]="surveyForm">
+                <div formArrayName="responses">
+                    <div *ngFor="let ctrl of responses.controls; let i = index" class="card question-card mb-3">
+                        <div class="card-body">
+                            <label class="question-label">{{ survey.questions[i].text }}</label>
+                            <p *ngIf="survey.questions[i].description" class="question-description">{{
+                                survey.questions[i].description }}</p>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <ng-container [ngSwitch]="survey.questions[i].type">
+                                        <mat-form-field *ngSwitchCase="'text'" appearance="outline" class="w-100">
+                                            <mat-label>Response</mat-label>
+                                            <input matInput [formControlName]="i">
+                                        </mat-form-field>
+                                        <mat-form-field *ngSwitchCase="'number'" appearance="outline" class="w-100">
+                                            <mat-label>Response</mat-label>
+                                            <input matInput type="number" [formControlName]="i">
+                                        </mat-form-field>
+                                        <mat-form-field *ngSwitchCase="'date'" appearance="outline" class="w-100">
+                                            <mat-label>Date</mat-label>
+                                            <input matInput [matDatepicker]="picker" [formControlName]="i">
+                                            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                                            <mat-datepicker #picker></mat-datepicker>
+                                        </mat-form-field>
+                                        <div *ngSwitchCase="'radio'">
+                                            <div *ngFor="let option of survey.questions[i].options; let j = index"
+                                                class="form-check">
+                                                <input class="form-check-input" type="radio" [value]="option.text"
+                                                    [formControl]="getRadioControl(i)" [name]="'radio-' + i"
+                                                    [id]="'radio-' + i + '-' + j">
+                                                <label class="form-check-label" [for]="'radio-' + i + '-' + j">{{
+                                                    option.text }}</label>
+                                            </div>
+                                        </div>
+                                        <div *ngSwitchCase="'checkbox'" [formArrayName]="i">
+                                            <div *ngFor="let chkCtrl of getCheckboxControls(i); let j = index"
+                                                class="mb-2">
+                                                <mat-checkbox [formControlName]="j">{{
+                                                    survey.questions[i].options[j].text }}</mat-checkbox>
+                                            </div>
+                                        </div>
+                                    </ng-container>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <ng-template #loadingTemplate>
+            <div class="d-flex justify-content-center align-items-center vh-100">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </ng-template>
+    </div>
+</div>

@@ -76,7 +76,7 @@
                 <div class="row row-cols-1 g-2">
                   <div class="col" *ngFor="let case of trendingMedicalCases">
                     <div class="card h-100">
-                      <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
+                      <img [src]="case.thumbnailUrl" class="card-img-top" alt="Thumbnail"
                         style="height: 120px; object-fit: cover" />
                       <div class="card-body p-2">
                         <h6 class="card-title text-truncate">{{ case.name }}</h6>
@@ -129,7 +129,7 @@
                 <div class="row row-cols-1 g-2">
                   <div class="col" *ngFor="let case of latestMedicalCases">
                     <div class="card h-100">
-                      <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
+                      <img [src]="case.thumbnailUrl" class="card-img-top" alt="Thumbnail"
                         style="height: 120px; object-fit: cover" />
                       <div class="card-body p-2">
                         <h6 class="card-title text-truncate">{{ case.name }}</h6>
@@ -190,7 +190,7 @@
                 <div class="row row-cols-1 g-2">
                   <div class="col" *ngFor="let case of recommendedMedicalCases">
                     <div class="card h-100">
-                      <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
+                      <img [src]="case.thumbnailUrl" class="card-img-top" alt="Thumbnail"
                         style="height: 120px; object-fit: cover" />
                       <div class="card-body p-2">
                         <h6 class="card-title text-truncate">{{ case.name }}</h6>
@@ -243,7 +243,7 @@
           <div class="row">
             <div class="col-md-4 mb-3" *ngFor="let case of trendingMedicalCases">
               <div class="card h-100">
-                <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
+                <img [src]="case.thumbnailUrl" class="card-img-top" alt="Thumbnail"
                   style="height: 120px; object-fit: cover" />
                 <div class="card-body p-2">
                   <h6 class="card-title text-truncate">{{ case.name }}</h6>
@@ -290,7 +290,7 @@
           <div class="row">
             <div class="col-md-4 mb-3" *ngFor="let case of latestMedicalCases">
               <div class="card h-100">
-                <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
+                <img [src]="case.thumbnailUrl" class="card-img-top" alt="Thumbnail"
                   style="height: 120px; object-fit: cover" />
                 <div class="card-body p-2">
                   <h6 class="card-title text-truncate">{{ case.name }}</h6>
@@ -347,7 +347,7 @@
           <div class="row">
             <div class="col-md-4 mb-3" *ngFor="let case of recommendedMedicalCases">
               <div class="card h-100">
-                <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
+                <img [src]="case.thumbnailUrl" class="card-img-top" alt="Thumbnail"
                   style="height: 120px; object-fit: cover" />
                 <div class="card-body p-2">
                   <h6 class="card-title text-truncate">{{ case.name }}</h6>
@@ -404,7 +404,7 @@
         <div class="row g-3">
           <div class="col-md-4" *ngFor="let case of yourMedicalCases">
             <div class="card h-100 shadow-sm">
-              <img [src]="case.thumbnail" class="card-img-top" alt="Thumbnail"
+              <img [src]="case.thumbnailUrl" class="card-img-top" alt="Thumbnail"
                 style="height: 160px; object-fit: cover" />
               <div class="card-body p-3">
                 <h6 class="card-title text-truncate">{{ case.name }}</h6>
