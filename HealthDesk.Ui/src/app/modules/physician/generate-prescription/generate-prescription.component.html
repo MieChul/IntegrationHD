@@ -381,23 +381,23 @@
                   <tr *ngFor="let rxControl of rx.controls; let i = index" [formGroupName]="i">
                     <td>
                       <div class="mb-3 form-floating small-field">
-                        <select formControlName="brand" class="form-select" id="brand-{{i}}">
+                        <select formControlName="brand" class="form-select" id="brand-{{i}}"
+                          (change)="onRxBrandChange(i)">
                           <option value="" disabled>-- Select Brand --</option>
                           <option *ngFor="let brand of brands" [value]="brand">{{ brand }}</option>
                         </select>
                         <label for="brand-{{i}}">Brand</label>
-                        <!-- Add validation error display if needed -->
                       </div>
                     </td>
                     <td>
                       <div class="mb-3 form-floating small-field">
                         <select formControlName="drugName" class="form-select" id="drugName-{{i}}"
-                          (change)="onRxDrugChange(i)">
+                          (change)="onRxDrugChange(i)"
+                          [attr.disabled]="rxControl.get('drugName')?.disabled ? true : null">
                           <option value="" disabled>-- Select Drug --</option>
-                          <option *ngFor="let drug of drugs" [value]="drug">{{ drug }}</option>
+                          <option *ngFor="let drug of rxRowOptions[i]?.drugs" [value]="drug">{{ drug }}</option>
                         </select>
                         <label for="drugName-{{i}}">Drug</label>
-                        <!-- Add validation error display if needed -->
                       </div>
                     </td>
                     <td>
@@ -406,10 +406,9 @@
                           (change)="onRxDosageFormChange(i)"
                           [attr.disabled]="rxControl.get('dosageForm')?.disabled ? true : null">
                           <option value="" disabled>-- Select Form --</option>
-                          <option *ngFor="let form of forms" [value]="form">{{ form }}</option>
+                          <option *ngFor="let form of rxRowOptions[i]?.forms" [value]="form">{{ form }}</option>
                         </select>
                         <label for="dosageForm-{{i}}">Form</label>
-                        <!-- Add validation error display if needed -->
                       </div>
                     </td>
                     <td>
@@ -417,10 +416,10 @@
                         <select formControlName="strength" class="form-select" id="strength-{{i}}"
                           [attr.disabled]="rxControl.get('strength')?.disabled ? true : null">
                           <option value="" disabled>-- Select Strength --</option>
-                          <option *ngFor="let strength of strengths" [value]="strength">{{ strength }}</option>
+                          <option *ngFor="let strength of rxRowOptions[i]?.strengths" [value]="strength">{{ strength }}
+                          </option>
                         </select>
                         <label for="strength-{{i}}">Strength</label>
-                        <!-- Add validation error display if needed -->
                       </div>
                     </td>
                     <td>
@@ -430,30 +429,22 @@
                           <option *ngFor="let frequency of frequencies" [value]="frequency">{{ frequency }}</option>
                         </select>
                         <label for="times-{{i}}">Times</label>
-                        <!-- Add validation error display if needed -->
                       </div>
                     </td>
                     <td>
-                      <mat-form-field appearance="outline" class="small-field">
-                        <mat-label>Duration</mat-label>
-                        <mat-select formControlName="duration">
-                          <mat-option>
-                            <ngx-mat-select-search [formControl]="durationFilterCtrl"
-                              placeholderLabel="Search duration">
-                            </ngx-mat-select-search>
-                          </mat-option>
-                          <mat-option *ngFor="let unit of filteredDurations | async" [value]="unit">
-                            {{ unit }}
-                          </mat-option>
-                        </mat-select>
-                      </mat-form-field>
+                      <div class="mb-3 form-floating small-field">
+                        <select formControlName="duration" class="form-select" id="duration-{{i}}">
+                          <option value="" disabled>-- Select Duration --</option>
+                          <option *ngFor="let duration of durations" [value]="duration">{{ duration }}</option>
+                        </select>
+                        <label for="duration-{{i}}">Duration</label>
+                      </div>
                     </td>
                     <td>
                       <div class="mb-3 form-floating small-field">
                         <input type="text" formControlName="instruction" class="form-control" id="instruction-{{i}}"
                           placeholder=" " />
                         <label for="instruction-{{i}}">Instructions</label>
-                        <!-- Add validation error display if needed -->
                       </div>
                     </td>
                     <td>

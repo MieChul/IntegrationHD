@@ -80,4 +80,21 @@ public class CommonService : ICommonService
 
     public async Task<IEnumerable<AdministrationRoute>> GetAdministrationRoutesAsync() =>
         await _commonRepository.GetAllAsync<AdministrationRoute>("AdministrationRoute");
+
+    public async Task<IEnumerable<BrandDto>> GetBrandsAsync()
+    {
+        var pharmaceuticals = await _commonRepository.GetAllAsync<Pharmaceutical>("Pharmaceutical");
+
+        return pharmaceuticals
+            .SelectMany(p => p.BrandLibrary ?? new List<BrandLibrary>())
+            .Where(b => b.IsApproved)
+            .Select(b => new BrandDto
+            {
+                BrandName = b.BrandName,
+                GenericName = b.GenericName,
+                DosageForm = b.DosageForm,
+                Strength = b.Strength
+            })
+            .ToList();
+    }
 }

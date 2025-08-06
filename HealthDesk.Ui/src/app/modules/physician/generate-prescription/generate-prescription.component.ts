@@ -29,14 +29,13 @@ export class GeneratePrescriptionComponent implements OnInit {
   finalInvestigations!: FormArray;
   selectedProfilesControl = new FormControl([]);
 
-  forms: string[] = [];
-  drugs: string[] = [];
-  strengths: string[] = [];
   frequencies: string[] = [];
   durations: string[] = [];
   bodySystems: string[] = [];
   investigations: string[] = [];
   brands: string[] = [];
+  rxRowOptions: { drugs: string[], forms: string[], strengths: string[] }[] = [];
+
   filteredInvestigations!: Observable<string[]>;
   investigationFilterCtrl = new FormControl();
   profileDatas: string[] = [];
@@ -76,14 +75,11 @@ export class GeneratePrescriptionComponent implements OnInit {
         this.userData = data;
         this.physicianService.getDefaultPrescriptionHeaderFooter(this.userData.id).subscribe({
           next: async (response: any) => {
-            // this.headerImg = await this.fetchImageAsBase64(response.data.header);
-            // this.footerImg = await this.fetchImageAsBase64(response.data.footer);
-            this.drugs = await this.databaseService.getDrugs();
             this.frequencies = await this.databaseService.getFrequencies();
             this.durations = await this.databaseService.getDurations();
             this.bodySystems = await this.databaseService.getSystems();
             this.investigations = await this.databaseService.getInvestigations();
-            this.brands = await this.databaseService.getDrugBrands();
+            this.brands = await this.databaseService.getBrands();
             await this.loadProfiles();
             await this.initializeSearch();
           },
@@ -101,10 +97,10 @@ export class GeneratePrescriptionComponent implements OnInit {
       gender: [this.patientRecord?.gender || ''],
       pastHistory: [''],
       complaints: this.fb.array([this.createComplaint()]),
-      temperature: [''], // Valid range for body temperature
-      pulseRate: [''], // Valid range for pulse rate
-      bloodPressure: [''], // Valid BP format: e.g., 120/80
-      respiratoryRate: [''], // Normal respiratory rate range
+      temperature: [''],
+      pulseRate: [''],
+      bloodPressure: [''],
+      respiratoryRate: [''],
       systems: this.fb.array([this.createSystem()]),
       localExamination: [''],
       investigations: [''],
@@ -146,11 +142,11 @@ export class GeneratePrescriptionComponent implements OnInit {
   }
 
   futureDateValidator(control: AbstractControl): { [key: string]: boolean } | null {
-    if (!control.value) return null; // Allow empty values
+    if (!control.value) return null;
 
     const selectedDate = new Date(control.value);
     const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0); // Normalize to start of the day
+    currentDate.setHours(0, 0, 0, 0);
 
     return selectedDate < currentDate ? { pastDate: true } : null;
   }
@@ -159,8 +155,6 @@ export class GeneratePrescriptionComponent implements OnInit {
     const filterValue = search.toLowerCase();
     return options.filter(option => option.toLowerCase().includes(filterValue));
   }
-
-
 
   createComplaint(): FormGroup {
     return this.fb.group({
@@ -179,9 +173,9 @@ export class GeneratePrescriptionComponent implements OnInit {
   createRx(): FormGroup {
     return this.fb.group({
       brand: [''],
-      dosageForm: [''],
-      drugName: [''],
-      strength: [''],
+      drugName: [{ value: '', disabled: true }],
+      dosageForm: [{ value: '', disabled: true }],
+      strength: [{ value: '', disabled: true }],
       times: [''],
       duration: [''],
       instruction: ['']
@@ -193,7 +187,7 @@ export class GeneratePrescriptionComponent implements OnInit {
       .pipe(
         catchError((error) => {
           console.error('Error fetching profiles:', error);
-          return of([]); // Return an empty array in case of error
+          return of([]);
         })
       )
       .subscribe((profiles: any) => {
@@ -224,7 +218,6 @@ export class GeneratePrescriptionComponent implements OnInit {
     let age = today.getFullYear() - dob.getFullYear();
     const monthDifference = today.getMonth() - dob.getMonth();
 
-    // Adjust age if the birthday hasn't occurred yet this year
     if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < dob.getDate())) {
       age--;
     }
@@ -232,16 +225,15 @@ export class GeneratePrescriptionComponent implements OnInit {
     return age;
   }
 
-
   fetchImageAsBase64(imageUrl: string): Promise<string> {
     return firstValueFrom(
-      this.http.get(imageUrl, { responseType: 'blob' }) // Fetch image as a Blob
+      this.http.get(imageUrl, { responseType: 'blob' })
     ).then((blob) => {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result as string);
         reader.onerror = reject;
-        reader.readAsDataURL(blob); // Convert Blob to Base64
+        reader.readAsDataURL(blob);
       });
     });
   }
@@ -264,10 +256,12 @@ export class GeneratePrescriptionComponent implements OnInit {
 
   addRx() {
     this.rx.push(this.createRx());
+    this.rxRowOptions.push({ drugs: [], forms: [], strengths: [] });
   }
 
   removeRx(index: number) {
     this.rx.removeAt(index);
+    this.rxRowOptions.splice(index, 1);
   }
 
   nextTab() {
@@ -283,25 +277,21 @@ export class GeneratePrescriptionComponent implements OnInit {
   }
 
   async generatePDF(): Promise<Blob> {
-    // Validate form
     this.prescriptionForm.markAllAsTouched();
     if (this.prescriptionForm.invalid) {
       return Promise.reject('Form is invalid');
     }
 
-    // Initialize jsPDF
     const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
     const pageHeight = doc.internal.pageSize.getHeight();
     const pageWidth = doc.internal.pageSize.getWidth();
 
-    // Layout constants
     const headerHeight = 45;
     const footerHeight = 40;
     const bottomMargin = 20;
     let startY = headerHeight + 15;
     const userDisplay = this.userData.username || 'User';
 
-    // Date formatting helper
     const formatDate = (date: Date): string => {
       const dd = String(date.getDate()).padStart(2, '0');
       const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -309,24 +299,19 @@ export class GeneratePrescriptionComponent implements OnInit {
       return `${dd}/${mm}/${yyyy}`;
     };
 
-    // Add header and footer to current page
     const addHeaderAndFooter = (): void => {
       const useHeader = !!this.prescriptionForm.get('useHeader')?.value;
 
-      // Header image
       if (useHeader && this.headerImg) {
         try { doc.addImage(this.headerImg, 'PNG', 10, 10, pageWidth - 20, 30); } catch { }
       }
 
-      // Separator below header
       doc.setDrawColor(0).line(5, headerHeight, pageWidth - 5, headerHeight);
 
-      // Footer image
       if (this.footerImg) {
         try { doc.addImage(this.footerImg, 'PNG', 10, pageHeight - footerHeight, pageWidth - 20, 30); } catch { }
       }
 
-      // "Generated using..." text
       const now = new Date();
       const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' });
       const timeStr = now.toTimeString().slice(0, 5);
@@ -337,11 +322,9 @@ export class GeneratePrescriptionComponent implements OnInit {
         pageHeight - 8
       );
 
-      // Reset content start
       startY = headerHeight + 15;
     };
 
-    // Insert page break if needed
     const checkPageBreak = (blockHeight: number): void => {
       if (startY + blockHeight > pageHeight - footerHeight - bottomMargin) {
         doc.addPage();
@@ -349,12 +332,8 @@ export class GeneratePrescriptionComponent implements OnInit {
       }
     };
 
-    // First page header/footer
     addHeaderAndFooter();
 
-    // --------------------
-    // 1. Patient Info
-    // --------------------
     const name = this.prescriptionForm.get('name')?.value || '';
     const age = this.calculateAge(this.patientRecord?.dateOfBirth) || '';
     const gender = this.prescriptionForm.get('gender')?.value || '';
@@ -363,7 +342,7 @@ export class GeneratePrescriptionComponent implements OnInit {
     checkPageBreak(18);
     doc.setFontSize(10).setFont('helvetica', 'bold');
     doc.text('Barcode:', 14, startY);
-    doc.setFont('helvetica', 'normal').text('', 38, startY); // Placeholder for barcode if needed
+    doc.setFont('helvetica', 'normal').text('', 38, startY);
 
     doc.setFont('helvetica', 'bold').text('Date:', pageWidth - 70, startY, { align: 'left' });
     doc.setFont('helvetica', 'normal').text(date, pageWidth - 28, startY, { align: 'right' });
@@ -382,13 +361,10 @@ export class GeneratePrescriptionComponent implements OnInit {
 
     startY += 6;
     doc.setFont('helvetica', 'bold').text('OPD Registration:', 14, startY);
-    doc.setFont('helvetica', 'normal').text('', 55, startY); // Placeholder
+    doc.setFont('helvetica', 'normal').text('', 55, startY);
 
     startY += 8;
 
-    // --------------------
-    // 2. Chief Complaints
-    // --------------------
     const complaintCtrls = (this.prescriptionForm.get('complaints') as FormArray).controls;
     const complaintStrings = complaintCtrls
       .filter(c => (c.value.text || '').trim())
@@ -403,9 +379,6 @@ export class GeneratePrescriptionComponent implements OnInit {
       startY += complaintHeight + 5;
     }
 
-    // --------------------
-    // 3. History
-    // --------------------
     const significientHistory = this.prescriptionForm.get('pastHistory')?.value?.trim();
     if (significientHistory) {
       doc.setFont('helvetica', 'bold').text('Significant history:', 14, startY);
@@ -416,9 +389,6 @@ export class GeneratePrescriptionComponent implements OnInit {
       startY += localHeight + 5;
     }
 
-    // --------------------
-    // 4. Vitals
-    // --------------------
     doc.setFont('helvetica', 'bold').text('Vital Signs:', 14, startY);
     const vitalsLines = [
       `Pulse (per min): ${this.prescriptionForm.get('pulseRate')?.value || ''}`,
@@ -434,9 +404,6 @@ export class GeneratePrescriptionComponent implements OnInit {
     });
     startY += vitalsHeight + 5;
 
-    // --------------------
-    // 5. Local Examination
-    // --------------------
     const localExam = this.prescriptionForm.get('localExamination')?.value?.trim();
     if (localExam) {
       doc.setFont('helvetica', 'bold').text('Local examination:', 14, startY);
@@ -447,10 +414,6 @@ export class GeneratePrescriptionComponent implements OnInit {
       startY += localHeight + 5;
     }
 
-
-    // --------------------
-    // 6. Physical Examination
-    // --------------------
     const systemCtrls = (this.prescriptionForm.get('systems') as FormArray).controls;
     const systemStrings = systemCtrls
       .filter(c => (c.value.name || '').trim())
@@ -465,9 +428,6 @@ export class GeneratePrescriptionComponent implements OnInit {
       startY += sysHeight + 5;
     }
 
-    // --------------------
-    // 7. Provisional Diagnosis
-    // --------------------
     const diag = this.prescriptionForm.get('pastHistory')?.value?.trim();
     if (diag) {
       doc.setFont('helvetica', 'bold').text('Provisional Diagnosis:', 14, startY);
@@ -478,9 +438,6 @@ export class GeneratePrescriptionComponent implements OnInit {
       startY += diagHeight + 5;
     }
 
-    // --------------------
-    // 8. Investigations
-    // --------------------
     if (this.selectedProfiles?.length) {
       doc.setFont('helvetica', 'bold').text('Investigations:', 14, startY);
       const invText = `${this.selectedProfiles.join(', ')}`;
@@ -491,9 +448,6 @@ export class GeneratePrescriptionComponent implements OnInit {
       startY += invHeight + 5;
     }
 
-    // --------------------
-    // 9. Prescription (Rx) Table
-    // --------------------
     const rxArray = this.prescriptionForm.get('rx') as FormArray;
     const rxBody = rxArray.controls.map((c, i) => [
       i + 1,
@@ -518,9 +472,6 @@ export class GeneratePrescriptionComponent implements OnInit {
       startY = (doc as any).autoTable.previous.finalY + 5;
     }
 
-    // --------------------
-    // 10. Other Instructions & Follow-Up
-    // --------------------
     const otherInst = this.prescriptionForm.get('otherInstructions')?.value?.trim();
     if (otherInst) {
       doc.setFont('helvetica', 'bold').text('Other Instructions:', 14, startY);
@@ -540,19 +491,14 @@ export class GeneratePrescriptionComponent implements OnInit {
       startY += 20;
     }
 
-    // --------------------
-    // 11. Signature Section
-    // --------------------
     checkPageBreak(10);
     doc.setFont('helvetica', 'bold').text("Physician's Signature and Stamp", 14, startY);
     startY += 10;
 
-    // Output PDF
     const pdfBlob = doc.output('blob');
     window.open(URL.createObjectURL(pdfBlob), '_blank');
     return pdfBlob;
   }
-
 
   openConfirmModal() {
     const modalRef = new bootstrap.Modal(document.getElementById('confirmSaveModal')!);
@@ -561,7 +507,7 @@ export class GeneratePrescriptionComponent implements OnInit {
 
   async savePDF() {
     try {
-      const pdfBlob = await this.generatePDF(); // ✅ Call generatePDF first
+      const pdfBlob = await this.generatePDF();
 
       const physicianId = this.userData.id;
       const patientId = this.patientRecord.userId;
@@ -592,48 +538,41 @@ export class GeneratePrescriptionComponent implements OnInit {
     }
   }
 
-
   prepareTreatmentData(): any[] {
     const rxArray = this.prescriptionForm.get('rx') as FormArray;
-    // You can get start date from a control, but here we use the current date
     const startDate = new Date();
 
     return rxArray.controls.map((control: AbstractControl) => {
       const group = control as FormGroup;
       const rxValue = group.value;
-      // Optional: calculate EndDate based on duration if provided (assuming duration is in days)
       let endDate: Date | null = null;
       if (rxValue.duration) {
         endDate = new Date(startDate);
         endDate.setDate(endDate.getDate() + Number(rxValue.duration));
       }
       return {
-        id: null, // or assign an id if available
+        id: null,
         brand: rxValue.brand,
-        treatmentDrug: rxValue.drugName,  // mapping your 'drugName' to TreatmentDrug
+        treatmentDrug: rxValue.drugName,
         dosageForm: rxValue.dosageForm,
         strengthUnit: rxValue.strength,
         frequency: rxValue.times,
         startDate: startDate,
-        comment: rxValue.instruction  // mapping 'instruction' to Comment
+        comment: rxValue.instruction
       };
     });
   }
 
-
-  // Trigger on investigation value change
   onInvestigationValueChange(selectedInvestigation: string, index: number): void {
-    // Add new investigation
     if (selectedInvestigation && !this.selectedProfiles.includes(selectedInvestigation)) {
       this.selectedProfiles.push(selectedInvestigation);
     }
   }
 
-
   addInvestigation(name: string = ''): void {
     this.finalInvestigationsFormArray.push(
       this.fb.group({
-        name: [name, Validators.required], // Add validation if needed
+        name: [name, Validators.required],
       })
     );
   }
@@ -641,7 +580,6 @@ export class GeneratePrescriptionComponent implements OnInit {
   removeInvestigation(index: number): void {
     const oldInvestigationName = this.finalInvestigationsFormArray.at(index)?.get('name')?.value;
 
-    // Remove old investigation from selectedProfiles if exists
     const oldIndex = this.selectedProfiles.indexOf(oldInvestigationName);
     if (oldIndex !== -1) {
       this.selectedProfiles.splice(oldIndex, 1);
@@ -650,17 +588,14 @@ export class GeneratePrescriptionComponent implements OnInit {
   }
 
   updateFinalInvestigations(selectedProfiles: any[]): void {
-    // Clear current investigations
     this.finalInvestigationsFormArray.clear();
 
-    // Add investigations from selected profiles
     for (const profile of selectedProfiles) {
       for (const investigation of profile.investigations) {
         this.addInvestigation(investigation.name);
       }
     }
 
-    // Add custom investigations
     for (const customInv of this.customInvestigations) {
       this.addInvestigation(customInv.name);
     }
@@ -668,36 +603,30 @@ export class GeneratePrescriptionComponent implements OnInit {
 
   onProfileSelectionChange(selectedProfiles: string[]): void {
 
-    // Find selected profiles from this.profiles
     const selectedProfileObjects = this.profiles.filter((profile: any) => selectedProfiles.includes(profile.name));
 
-    // Extract investigations from the selected profiles
     let selectedInvestigations: any[] = [];
     selectedProfileObjects.forEach((profile: any) => {
       selectedInvestigations = [...selectedInvestigations, ...profile.investigations];
     });
 
-    // Remove duplicate investigations by name
     const uniqueInvestigations = selectedInvestigations.filter(
       (inv, index, self) => index === self.findIndex(t => t.name === inv.name)
     );
 
-    // Add investigations to the FormArray
     this.selectedProfiles = uniqueInvestigations
       .map(inv => inv.name);
   }
 
   addCustomInvestigation(): void {
-    // Add a new custom investigation directly to the FormArray
     this.finalInvestigationsFormArray.push(
       this.fb.group({
-        name: ['', Validators.required], // Start with an empty name
+        name: ['', Validators.required],
       })
     );
   }
 
   updateCustomInvestigations(): void {
-    // Ensure custom investigations remain distinct from profile-based investigations
     const profileInvestigationNames = new Set(
       this.selectedProfiles.flatMap((profile: any) =>
         profile.investigations.map((inv: any) => inv.name)
@@ -710,57 +639,57 @@ export class GeneratePrescriptionComponent implements OnInit {
       .map((name) => ({ name }));
   }
 
+  async onRxBrandChange(index: number): Promise<void> {
+    const rxGroup = this.rx.at(index) as FormGroup;
+    const selectedBrand = rxGroup.get('brand')?.value;
+
+    rxGroup.get('drugName')?.reset({ value: '', disabled: true });
+    rxGroup.get('dosageForm')?.reset({ value: '', disabled: true });
+    rxGroup.get('strength')?.reset({ value: '', disabled: true });
+
+    this.rxRowOptions[index] = { drugs: [], forms: [], strengths: [] };
+
+    if (selectedBrand) {
+      this.rxRowOptions[index].drugs = await this.databaseService.getDrugs(selectedBrand);
+      if (this.rxRowOptions[index].drugs.length > 0) {
+        rxGroup.get('drugName')?.enable();
+      }
+    }
+  }
+
   async onRxDrugChange(index: number): Promise<void> {
-    const rxArray = this.prescriptionForm.get('rx') as FormArray;
-    const rxGroup = rxArray.at(index) as FormGroup;
-
-    rxGroup.get('dosageForm')?.disable();
-    rxGroup.get('strength')?.disable();
-
-    this.forms = [];
-    this.strengths = [];
-
-
+    const rxGroup = this.rx.at(index) as FormGroup;
+    const selectedBrand = rxGroup.get('brand')?.value;
     const selectedDrug = rxGroup.get('drugName')?.value;
 
-    if (selectedDrug) {
+    rxGroup.get('dosageForm')?.reset({ value: '', disabled: true });
+    rxGroup.get('strength')?.reset({ value: '', disabled: true });
 
-      this.forms = await this.databaseService.getForms(selectedDrug);
-    }
+    this.rxRowOptions[index].forms = [];
+    this.rxRowOptions[index].strengths = [];
 
-
-    rxGroup.patchValue({ dosageForm: '', strength: '' });
-
-
-    if (this.forms.length > 0) {
-      rxGroup.get('dosageForm')?.enable();
-    } else {
-      rxGroup.get('dosageForm')?.disable();
+    if (selectedBrand && selectedDrug) {
+      this.rxRowOptions[index].forms = await this.databaseService.getForms(selectedBrand, selectedDrug);
+      if (this.rxRowOptions[index].forms.length > 0) {
+        rxGroup.get('dosageForm')?.enable();
+      }
     }
   }
 
   async onRxDosageFormChange(index: number): Promise<void> {
-    const rxArray = this.prescriptionForm.get('rx') as FormArray;
-    const rxGroup = rxArray.at(index) as FormGroup;
-
-    rxGroup.get('strength')?.disable();
-
-    this.strengths = [];
-
+    const rxGroup = this.rx.at(index) as FormGroup;
+    const selectedBrand = rxGroup.get('brand')?.value;
     const selectedDrug = rxGroup.get('drugName')?.value;
     const selectedDosageForm = rxGroup.get('dosageForm')?.value;
 
-    if (selectedDrug && selectedDosageForm) {
-      this.strengths = await this.databaseService.getStrengths(selectedDrug, selectedDosageForm);
-    }
+    rxGroup.get('strength')?.reset({ value: '', disabled: true });
+    this.rxRowOptions[index].strengths = [];
 
-    // Reset the strength field
-    rxGroup.patchValue({ strength: '' });
-
-    if (this.strengths.length > 0) {
-      rxGroup.get('strength')?.enable();
-    } else {
-      rxGroup.get('strength')?.disable();
+    if (selectedBrand && selectedDrug && selectedDosageForm) {
+      this.rxRowOptions[index].strengths = await this.databaseService.getStrengths(selectedBrand, selectedDrug, selectedDosageForm);
+      if (this.rxRowOptions[index].strengths.length > 0) {
+        rxGroup.get('strength')?.enable();
+      }
     }
   }
 

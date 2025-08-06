@@ -106,16 +106,25 @@
         </div>
 
         <div *ngIf="question.type === 'date'" class="form-group mb-3">
-          <label>Date Range (Optional)</label>
+          <label>Date Range (Optional: Set a date range limit)</label>
           <div class="d-flex">
-            <input type="date" class="form-control input-modern me-2" placeholder="Min Date"
-              [(ngModel)]="question.minDate" name="minDate{{i}}">
-            <input type="date" class="form-control input-modern" placeholder="Max Date" [(ngModel)]="question.maxDate"
-              name="maxDate{{i}}">
+            <div class="d-flex align-items-end">
+              <mat-form-field appearance="outline" class="me-3">
+                <mat-label>Min Date</mat-label>
+                <input matInput [matDatepicker]="minDatePicker" [(ngModel)]="question.minDate" name="minDate{{i}}">
+                <mat-datepicker-toggle matIconSuffix [for]="minDatePicker"></mat-datepicker-toggle>
+                <mat-datepicker #minDatePicker></mat-datepicker>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Max Date</mat-label>
+                <input matInput [matDatepicker]="maxDatePicker" [(ngModel)]="question.maxDate" name="maxDate{{i}}">
+                <mat-datepicker-toggle matIconSuffix [for]="maxDatePicker"></mat-datepicker-toggle>
+                <mat-datepicker #maxDatePicker></mat-datepicker>
+              </mat-form-field>
+            </div>
           </div>
           <span class="text-danger mt-1" *ngIf="questionErrors[i]?.date">Min Date cannot be after Max Date.</span>
         </div>
-
         <div class="form-group mb-3">
           <label>Add Validations</label>
           <div class="form-check">

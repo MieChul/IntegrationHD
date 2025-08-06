@@ -88,4 +88,8 @@ public class CommonController : ControllerBase
     [HttpGet("administrationroute")]
     public async Task<IActionResult> GetAdministrationRoutes() =>
         Ok(new { Success = true, Message = "Administration Routes retrieved successfully.", Data = await _commonService.GetAdministrationRoutesAsync() });
+
+    [HttpGet("brands")]
+    public async Task<IActionResult> GetBrands() =>
+    Ok(new { Success = true, Message = "Brands retrieved successfully.", Data = await _commonService.GetBrandsAsync() });
 }

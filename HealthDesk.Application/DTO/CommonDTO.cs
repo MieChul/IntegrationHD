@@ -20,3 +20,11 @@ public class RatingDto
     public int Role { get; set; }
     public string EntityId { get; set; }
 }
+
+public class BrandDto
+{
+    public string BrandName { get; set; }
+    public string GenericName { get; set; }
+    public string DosageForm { get; set; }
+    public string Strength { get; set; }
+}

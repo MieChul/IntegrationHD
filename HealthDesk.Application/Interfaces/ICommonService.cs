@@ -21,4 +21,5 @@ public interface ICommonService
     Task<IEnumerable<Symptoms>> GetSymptomsAsync();
     Task<IEnumerable<Vaccine>> GetVaccinesAsync();
     Task<IEnumerable<AdministrationRoute>> GetAdministrationRoutesAsync();
+    Task<IEnumerable<BrandDto>> GetBrandsAsync();
 }
