@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
 import { map } from 'rxjs';
 import { User } from '../../shared/models/user';
+import { BrandApprovalPayload } from '../../shared/models/admin';
 
 @Injectable({
     providedIn: 'root',
@@ -31,5 +32,9 @@ export class AdminService {
         return this.http.get<User[]>(`${this.apiUrl}/brands`, {
             withCredentials: true // Ensures cookies are sent with the request
         });
+    }
+
+    approveRejectBrand(pharmaId: string, payload: BrandApprovalPayload) {
+        return this.http.post(`${this.apiUrl}/approveRejectBrand/${pharmaId}`, payload);
     }
 }

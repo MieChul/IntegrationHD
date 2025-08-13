@@ -1,0 +1,24 @@
+<div class="custom-form-field" [class.active]="showDropdown || selectedValue" [class.disabled]="disabled">
+    <label>{{ label }}</label>
+    <div class="dropdown-wrapper">
+        <button #dropdownButton class="form-control text-start" (click)="toggleDropdown()" [disabled]="disabled">
+            <span>{{ selectedValue }}</span>
+            <i class="bi bi-chevron-down"></i>
+        </button>
+
+    </div>
+</div>
+
+<ng-template #dropdownTemplate>
+    <div #dropdownMenu class="dropdown-menu" [class.show]="showDropdown">
+        <input type="text" class="form-control search-box" [formControl]="searchControl" placeholder="Search...">
+        <div class="options-container">
+            <a *ngFor="let item of filteredItems" class="dropdown-item" (click)="selectItem(item)">
+                {{ item }}
+            </a>
+            <div *ngIf="filteredItems.length === 0" class="dropdown-item disabled text-muted">
+                No results found
+            </div>
+        </div>
+    </div>
+</ng-template>

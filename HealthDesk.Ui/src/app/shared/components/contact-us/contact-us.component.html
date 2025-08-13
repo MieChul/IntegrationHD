@@ -1,1 +1,103 @@
-<p>contact-us works!</p>
+<!-- contact-us.component.html -->
+<div class="d-flex" style="height: 100vh;">
+    <app-sidebar></app-sidebar>
+    <div class="flex-grow-1 d-flex flex-column">
+        <app-header></app-header>
+
+        <main class="flex-grow-1 p-4 overflow-auto">
+            <div class="contact-us-container">
+                <div class="text-center mb-5">
+                    <h1 class="display-4 fw-bold">Get In Touch</h1>
+                    <p class="lead text-muted">We're here to help and answer any question you might have. We look
+                        forward to hearing from you!</p>
+                </div>
+
+                <div class="row">
+                    <!-- Contact Info Column -->
+                    <div class="col-lg-5 mb-5 mb-lg-0">
+                        <div class="contact-info-wrapper p-4 h-100">
+                            <h3 class="mb-4">Contact Information</h3>
+                            <ul class="list-unstyled">
+                                <li class="d-flex align-items-start mb-4">
+                                    <i class="bi bi-geo-alt-fill fs-4 me-3"></i>
+                                    <div>
+                                        <strong>Address:</strong>
+                                        <p class="mb-0 text-muted">123 Innovation Drive, Tech Park, Bengaluru,
+                                            Karnataka, 560103, India</p>
+                                    </div>
+                                </li>
+                                <li class="d-flex align-items-start mb-4">
+                                    <i class="bi bi-telephone-fill fs-4 me-3"></i>
+                                    <div>
+                                        <strong>Phone:</strong>
+                                        <p class="mb-0 text-muted">+91 80 1234 5678</p>
+                                    </div>
+                                </li>
+                                <li class="d-flex align-items-start mb-4">
+                                    <i class="bi bi-envelope-fill fs-4 me-3"></i>
+                                    <div>
+                                        <strong>Email:</strong>
+                                        <p class="mb-0 text-muted">support&#64;healthdesk.com</p>
+                                    </div>
+                                </li>
+                                <li class="d-flex align-items-start">
+                                    <i class="bi bi-clock-fill fs-4 me-3"></i>
+                                    <div>
+                                        <strong>Business Hours:</strong>
+                                        <p class="mb-0 text-muted">Monday - Friday: 9:00 AM - 6:00 PM (IST)</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Contact Form Column -->
+                    <div class="col-lg-7">
+                        <div class="contact-form-wrapper p-4">
+                            <h3 class="mb-4">Send Us a Message</h3>
+                            <form>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="firstName" class="form-label">First Name</label>
+                                        <input type="text" class="form-control" id="firstName" placeholder="John">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="lastName" class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" id="lastName" placeholder="Doe">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email address</label>
+                                    <input type="email" class="form-control" id="email"
+                                        placeholder="john.doe@example.com">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="subject" class="form-label">Subject</label>
+                                    <input type="text" class="form-control" id="subject"
+                                        placeholder="Inquiry about services">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="message" class="form-label">Message</label>
+                                    <textarea class="form-control" id="message" rows="5"
+                                        placeholder="Your message here..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-gradient w-100">Send Message</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map Section -->
+                <div class="map-container mt-5">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d124448.40139229009!2d77.594562!3d12.971599!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae1670c9b44e6d%3A0xf80173f3731aefe!2sBengaluru%2C%20Karnataka!5e0!3m2!1sen!2sin!4v1678886555555!5m2!1sen!2sin"
+                        width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+            </div>
+        </main>
+
+        <app-footer></app-footer>
+    </div>
+</div>

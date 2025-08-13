@@ -3,7 +3,6 @@
         <i class="bi bi-prescription me-2"></i>Treatment
     </h1>
 
-    <!-- Tabs for Ongoing and Past Treatments -->
     <ul class="nav nav-tabs mb-3">
         <li class="nav-item">
             <a class="nav-link pointer-cursor" [ngClass]="{'active': activeTab === 'ongoing'}"
@@ -19,12 +18,10 @@
         </li>
     </ul>
 
-    <!-- Date Filter -->
     <div class="row align-items-center">
         <div class="col-md-8 col-sm-6 d-flex justify-content-start flex-wrap">
             <form [formGroup]="filterForm" class="w-100">
                 <div class="row">
-                    <!-- Start Date -->
                     <div class="col-md-6">
                         <mat-form-field appearance="outline" class="w-100">
                             <mat-label>Filter by Start Date</mat-label>
@@ -33,7 +30,6 @@
                             <mat-datepicker #f_startDatePicker></mat-datepicker>
                         </mat-form-field>
                     </div>
-                    <!-- End Date -->
                     <div class="col-md-6">
                         <mat-form-field appearance="outline" class="w-100">
                             <mat-label>Filter by End Date</mat-label>
@@ -53,8 +49,6 @@
         </div>
     </div>
 
-
-    <!-- Treatment Table -->
     <div class="table-responsive">
         <table class="table table-hover table-modern">
             <thead>
@@ -91,13 +85,11 @@
                 </tr>
             </tbody>
         </table>
-        <!-- No Records Found -->
         <div *ngIf="filteredTreatments?.length === 0" class="alert alert-info">
             No treatments found. Click "Add Treatment" to get started.
         </div>
     </div>
 
-    <!-- Add/Edit Treatment Modal -->
     <div class="modal fade" data-bs-backdrop='static' data-bs-focus="false" id="treatmentModal" tabindex="-1"
         aria-labelledby="treatmentModalLabel" aria-hidden="true" #treatmentModal>
         <div class="modal-dialog modal-dialog-centered">
@@ -110,88 +102,65 @@
                 <div class="modal-body">
                     <form [formGroup]="treatmentForm">
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3 form-floating">
-                                    <select formControlName="brand" class="form-select" id="brandSelect">
-                                        <option value="" disabled>-- Select Brand --</option>
-                                        <option *ngFor="let brand of brands" [value]="brand">{{ brand }}</option>
-                                    </select>
-                                    <label for="brandSelect">Drug Brand Name</label>
-                                    <div *ngIf="treatmentForm.get('brand')?.hasError('required') && treatmentForm.get('brand')?.touched"
-                                        class="text-danger small">
-                                        Drug Brand is required.
-                                    </div>
+                            <div class="col-md-6 mb-3">
+                                <app-searchable-dropdown [items]="brands" [label]="'Drug Brand Name'"
+                                    [selectedValue]="treatmentForm.get('brand')?.value"
+                                    (selectionChange)="onBrandChange($event)">
+                                </app-searchable-dropdown>
+                                <div *ngIf="treatmentForm.get('brand')?.hasError('required') && treatmentForm.get('brand')?.touched"
+                                    class="text-danger small mt-1">
+                                    Drug Brand is required.
                                 </div>
                             </div>
-                            <!-- Treatment Drug -->
-                            <div class="col-md-6">
-                                <div class="mb-3 form-floating">
-                                    <select formControlName="treatmentDrug" class="form-select" id="treatmentSelect"
-                                        (change)="onDrugChange()">
-                                        <option value="" disabled>-- Select Drug --</option>
-                                        <option *ngFor="let drug of drugs" [value]="drug">{{ drug }}</option>
-                                    </select>
-                                    <label for="treatmentSelect">Drug Generic Name</label>
-                                    <div *ngIf="treatmentForm.get('treatmentDrug')?.hasError('required') && treatmentForm.get('treatmentDrug')?.touched"
-                                        class="text-danger small">
-                                        Treatment drug is required.
-                                    </div>
+                            <div class="col-md-6 mb-3">
+                                <app-searchable-dropdown [items]="drugs" [label]="'Drug Generic Name'"
+                                    [selectedValue]="treatmentForm.get('treatmentDrug')?.value"
+                                    [disabled]="!!treatmentForm.get('treatmentDrug')?.disabled"
+                                    (selectionChange)="onDrugChange($event)">
+                                </app-searchable-dropdown>
+                                <div *ngIf="treatmentForm.get('treatmentDrug')?.hasError('required') && treatmentForm.get('treatmentDrug')?.touched"
+                                    class="text-danger small mt-1">
+                                    Treatment drug is required.
                                 </div>
                             </div>
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3 form-floating">
-                                    <select formControlName="dosageForm" class="form-select" id="dosageSelect"
-                                        (change)="onDosageFormChange()"
-                                        [attr.disabled]="treatmentForm.get('dosageForm')?.disabled ? true : null">
-                                        <option value="" disabled>-- Select Dosage Form --</option>
-                                        <option *ngFor="let form of dosageForms" [value]="form">{{ form }}</option>
-                                    </select>
-                                    <label for="dosageSelect">Dosage Form</label>
-                                    <div *ngIf="treatmentForm.get('dosageForm')?.hasError('required') && treatmentForm.get('dosageForm')?.touched"
-                                        class="text-danger small">
-                                        Dosage form is required.
-                                    </div>
+                            <div class="col-md-6 mb-3">
+                                <app-searchable-dropdown [items]="dosageForms" [label]="'Dosage Form'"
+                                    [selectedValue]="treatmentForm.get('dosageForm')?.value"
+                                    [disabled]="!!treatmentForm.get('dosageForm')?.disabled"
+                                    (selectionChange)="onDosageFormChange($event)">
+                                </app-searchable-dropdown>
+                                <div *ngIf="treatmentForm.get('dosageForm')?.hasError('required') && treatmentForm.get('dosageForm')?.touched"
+                                    class="text-danger small mt-1">
+                                    Dosage form is required.
                                 </div>
                             </div>
-                            <!-- Strength Unit -->
-                            <div class="col-md-6">
-                                <div class="mb-3 form-floating">
-                                    <select formControlName="strengthUnit" id="strengthSelect" class="form-select"
-                                        [attr.disabled]="treatmentForm.get('strengthUnit')?.disabled ? true : null">
-                                        <option value="" disabled>-- Select Strength --</option>
-                                        <option *ngFor="let unit of strengthUnits" [value]="unit">{{ unit }}</option>
-                                    </select>
-                                    <label for="strengthSelect">Strength</label>
-                                    <div *ngIf="treatmentForm.get('strengthUnit')?.hasError('required') && treatmentForm.get('strengthUnit')?.touched"
-                                        class="text-danger small">
-                                        Strength is required.
-                                    </div>
+                            <div class="col-md-6 mb-3">
+                                <app-searchable-dropdown [items]="strengthUnits" [label]="'Strength'"
+                                    [selectedValue]="treatmentForm.get('strengthUnit')?.value"
+                                    [disabled]="!!treatmentForm.get('strengthUnit')?.disabled"
+                                    (selectionChange)="onStrengthChange($event)">
+                                </app-searchable-dropdown>
+                                <div *ngIf="treatmentForm.get('strengthUnit')?.hasError('required') && treatmentForm.get('strengthUnit')?.touched"
+                                    class="text-danger small mt-1">
+                                    Strength is required.
                                 </div>
                             </div>
                         </div>
 
                         <div class="row">
-                            <!-- Frequency -->
-                            <div class="col-md-6">
-                                <div class="mb-3 form-floating">
-                                    <select formControlName="frequency" id="frequencySelect" class="form-select">
-                                        <option value="" disabled>-- Select Frequency --</option>
-                                        <option *ngFor="let frequency of frequencies" [value]="frequency">
-                                            {{ frequency }}
-                                        </option>
-                                    </select>
-                                    <label for="frequencySelect">Frequency</label>
-                                    <div *ngIf="treatmentForm.get('frequency')?.hasError('required') && treatmentForm.get('frequency')?.touched"
-                                        class="text-danger small">
-                                        Frequency is required.
-                                    </div>
+                            <div class="col-md-6 mb-3">
+                                <app-searchable-dropdown [items]="frequencies" [label]="'Frequency'"
+                                    [selectedValue]="treatmentForm.get('frequency')?.value"
+                                    (selectionChange)="onFrequencyChange($event)">
+                                </app-searchable-dropdown>
+                                <div *ngIf="treatmentForm.get('frequency')?.hasError('required') && treatmentForm.get('frequency')?.touched"
+                                    class="text-danger small mt-1">
+                                    Frequency is required.
                                 </div>
                             </div>
-
-                            <!-- Start Date -->
                             <div class="col-md-6">
                                 <mat-form-field appearance="outline" class="w-100">
                                     <mat-label>Start Date</mat-label>
@@ -209,7 +178,6 @@
                         </div>
 
                         <div class="row">
-                            <!-- End Date -->
                             <div class="col-md-6">
                                 <mat-form-field appearance="outline" class="w-100">
                                     <mat-label>End Date <i class="bi bi-info-circle text-primary"
@@ -228,7 +196,6 @@
                                 </mat-form-field>
                             </div>
 
-                            <!-- Comment -->
                             <div class="col-md-6">
                                 <mat-form-field appearance="outline" class="w-100">
                                     <mat-label>Comment</mat-label>
@@ -265,3 +232,4 @@
             </div>
         </div>
     </div>
+</div>

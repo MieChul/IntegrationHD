@@ -1,0 +1,159 @@
+$primary-color: #d76745bc; // From logo
+$secondary-color: #a159ffd2; // From logo
+$dark-background-image: url('/assets/background1.jpg');
+$font-family: 'Roboto', sans-serif;
+$gradient-color1: hsl(302, 76%, 53%);
+$gradient-color2: #63b4ee;
+$gradient-color3: #2cbf5d;
+$gradient-color1-dark: hsl(302, 76%, 20%); // Deep purple, closer to black
+$gradient-color2-dark: #1b3b5a; // Dark navy blue
+$gradient-color3-dark: #0d331b; // Dark forest green
+
+// Additional colors from the background
+$background-light-blue: #7ac7fd;
+$background-medium-blue: #7dcbfc;
+$background-dark-blue: #65ade7;
+$background-lightest-blue: #7cc9fd;
+$background-darker-blue: #63abe5;
+
+// Additional colors from the logo
+$logo-white: #ffffff;
+$logo-light-red: #ff7261;
+$logo-green: #0fcf82d1;
+
+.about-us-container {
+    font-family: $font-family;
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Carousel Styles
+#aboutUsCarousel {
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+
+    .carousel-item img {
+        filter: brightness(0.7);
+    }
+
+    .carousel-caption {
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 2rem 1rem 1rem;
+
+        h5 {
+            font-size: 2rem;
+            font-weight: 700;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+        }
+
+        p {
+            font-size: 1.1rem;
+        }
+    }
+}
+
+// Section Title Styles
+.section-title {
+    font-weight: 700;
+    color: $primary-color;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, $gradient-color1, $gradient-color2);
+    }
+}
+
+// Mission & Vision Cards
+.mission-vision .card {
+    background-color: #d1d0d0; // Change back to white
+    border: 1px solid #727981; // Add a subtle border
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15) !important;
+    }
+}
+
+.icon-gradient {
+    background: -webkit-linear-gradient(45deg, $gradient-color1, $gradient-color2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+
+// Team Section Styles
+.meet-the-team {
+    .team-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+
+        &:hover {
+            transform: scale(1.05);
+        }
+
+        .team-img {
+            width: 100%;
+            display: block;
+        }
+
+        .team-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.85), transparent);
+            color: $logo-white;
+            padding: 2rem 1rem 1rem;
+            text-align: left;
+            transition: opacity 0.3s ease;
+
+            .team-name {
+                font-weight: 700;
+                margin: 0;
+            }
+
+            .team-title {
+                font-size: 0.9rem;
+                color: rgba(255, 255, 255, 0.8);
+                margin: 0;
+            }
+        }
+    }
+}
+
+.about-us-container {
+    background-color: #f8f9fa; // Sets a light gray background for the whole page area
+    padding: 2rem;
+    border-radius: 0.5rem;
+    font-family: $font-family;
+    animation: fadeIn 0.8s ease-in-out;
+}

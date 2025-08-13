@@ -52,3 +52,6 @@
     </div>
   </form>
 </div>
+
+<app-terms-modal [isVisible]="showTermsModal" (accepted)="onTermsAccepted()" (declined)="onTermsDeclined()">
+</app-terms-modal>

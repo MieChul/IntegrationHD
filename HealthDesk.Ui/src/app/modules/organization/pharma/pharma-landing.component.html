@@ -36,6 +36,8 @@
           <th>Pack Shot</th>
           <th (click)="sortTable('approvalAgency')">Approval Agency</th>
           <th>Comment</th>
+          <th (click)="sortTable('isApproved')">Status</th>
+          <th style="width:40px;text-wrap:unset;">Rejection Comment</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -54,7 +56,13 @@
           <td>{{ b.approvalAgency }}</td>
           <td>{{ b.comment }}</td>
           <td>
-            <button class="btn btn-warning btn-sm me-1" (click)="openBrandDialog(true, b)">
+            <span *ngIf="b.isApproved" class="badge bg-success">Approved</span>
+            <span *ngIf="b.isRejected" class="badge bg-danger">Rejected</span>
+            <span *ngIf="!b.isApproved && !b.isRejected" class="badge bg-warning text-dark">Pending</span>
+          </td>
+          <td>{{ b.rejectedComment }}</td>
+          <td>
+            <button *ngIf="!b.isRejected" class="btn btn-warning btn-sm me-1" (click)="openBrandDialog(true, b)">
               <i class="bi bi-pencil"></i>
             </button>
             <button class="btn btn-danger btn-sm" (click)="deleteBrand(b)">
@@ -63,7 +71,7 @@
           </td>
         </tr>
         <tr *ngIf="filteredBrands.length === 0">
-          <td colspan="9" class="text-center text-muted">
+          <td colspan="11" class="text-center text-muted">
             No brands found.
           </td>
         </tr>

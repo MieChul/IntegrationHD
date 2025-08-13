@@ -9,7 +9,7 @@ import { environment } from '../../../environments/environment';
 export class CommonService {
   private baseUrl = `${environment.apiUrl}/common`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
   getComments(): Observable<any> {
     return this.http.get(`${this.baseUrl}/comments`);
   }
@@ -70,5 +70,9 @@ export class CommonService {
 
   getAdministrationRoutes(): Observable<any> {
     return this.http.get(`${this.baseUrl}/administration-routes`);
+  }
+
+  getBrands(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/brands`);
   }
 }

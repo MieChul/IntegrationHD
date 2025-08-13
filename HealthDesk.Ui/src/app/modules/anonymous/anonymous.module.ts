@@ -8,6 +8,7 @@ import { ForgotPasswordComponent } from './forgot-password/forgot-password.compo
 import { SharedModule } from '../../shared/shared.module';
 import { VerifyForgotPasswordComponent } from './verify-forgot-password/verify-forgot-password.component';
 import { AnonymousComponent } from './anonymous.component';
+import { TermsModalComponent } from './terms-conditions/temrs.component';
 
 
 @NgModule({
@@ -18,7 +19,8 @@ import { AnonymousComponent } from './anonymous.component';
     RegisterComponent,
     VerifyForgotPasswordComponent,
     ForgotPasswordComponent,
-    AnonymousComponent
+    AnonymousComponent,
+    TermsModalComponent 
   ],
   imports: [
     SharedModule,

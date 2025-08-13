@@ -21,10 +21,10 @@
           <a class="nav-link nav-bold" mat-button [attr.href]="getDashboardLink(userData.role)">Dashboard</a>
         </li>
         <li class="nav-item" *ngIf="userData.role !== 'admin'">
-          <a class="nav-link nav-bold" mat-button href="#">About Us</a>
+          <a class="nav-link nav-bold" mat-button routerLink="/about-us">About Us</a>
         </li>
         <li class="nav-item" *ngIf="userData.role !== 'admin'">
-          <a class="nav-link nav-bold" mat-button href="#">Contact Us</a>
+          <a class="nav-link nav-bold" mat-button routerLink="/contact-us">Contact Us</a>
         </li>
         <li class="nav-item">
           <button mat-button [matMenuTriggerFor]="profileMenu">

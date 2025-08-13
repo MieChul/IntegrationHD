@@ -46,6 +46,12 @@ public class BrandLibrary : BaseEntity
 
     [BsonElement("is_approved")]
     public bool IsApproved { get; set; }
+
+    [BsonElement("is_rejected")]
+    public bool IsRejected { get; set; }
+
+    [BsonElement("rejectedComment")]
+    public string RejectedComment { get; set; }
 }
 
 public class Survey : BaseEntity

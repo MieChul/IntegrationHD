@@ -61,7 +61,7 @@ export class ImmunizationComponent implements OnInit {
       next: async (data) => {
         this.userData = data;
         this.vaccines = await this.databaseService.getVaccines();
-        this.dosageForms = await this.databaseService.getDosageForms();
+        this.dosageForms = await this.databaseService.getAllDosageForms();
         this.routes = await this.databaseService.getRoutes();
         this.diseases = await this.databaseService.getSymptoms();
 

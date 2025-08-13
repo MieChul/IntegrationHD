@@ -36,4 +36,11 @@ public class AdminController : ControllerBase
         var users = await _adminService.GetAllBrands();
         return Ok(users);
     }
+
+    [HttpPost("approveRejectBrand/{pharmaid}")]
+    public async Task<IActionResult> ApproveRejectBrand(string pharmaId, BrandApprovalDto model)
+    {
+        await _adminService.ApproveRejectBrand(pharmaId, model.BrandId, model.Approved, model.Comment);
+        return Ok(new { message = "Brand updated successfully" });
+    }
 }

@@ -1,0 +1,97 @@
+<!-- src/app/shared/components/terms-modal/terms-modal.component.html -->
+<div class="modal-backdrop" *ngIf="isVisible">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h4 class="modal-title">Terms and Conditions</h4>
+            <button type="button" class="btn-close" aria-label="Close" (click)="onDecline()"></button>
+        </div>
+        <div class="modal-body" #scrollContainer (scroll)="onScroll()">
+            <h5>Terms and Conditions for HealthDesk™</h5>
+
+            <p>Please read these Terms and Conditions ("Terms", "Terms and Conditions") carefully before using the
+                "HealthDesk™" mobile application and website (the "Service") operated by HealthDesk Innovations Pvt.
+                Ltd. ("us", "we", or "our").</p>
+
+            <p>Your access to and use of the Service is conditioned on your acceptance of and compliance with these
+                Terms. These Terms apply to all visitors, users, and others who access or use the Service.</p>
+
+            <h6>1. Definitions</h6>
+            <ul>
+                <li><strong>"Service" / "Platform"</strong>: Refers to the HealthDesk™ mobile application and website.
+                </li>
+                <li><strong>"User" / "You"</strong>: Any individual or entity using the Service.</li>
+                <li><strong>"Healthcare Provider"</strong>: Physicians, Hospitals, and Laboratories registered on the
+                    Service.</li>
+                <li><strong>"Content"</strong>: Any data, text, graphics, or other material made available by Users on
+                    the Service.</li>
+                <li><strong>"SPDI"</strong>: Sensitive Personal Data or Information as defined under Indian IT Rules,
+                    2011.</li>
+            </ul>
+
+            <h6>2. Eligibility</h6>
+            <p>By using the Service, you represent that you are at least 18 years of age and capable of entering into a
+                binding contract. Healthcare Providers must be duly qualified, licensed, and registered in India.</p>
+
+            <h6>3. User Accounts</h6>
+            <p>You are responsible for providing accurate registration information and for safeguarding your password.
+                You are solely responsible for all activities that occur under your account.</p>
+
+            <h6>4. Nature of Service</h6>
+            <p>HealthDesk™ is a technology platform to facilitate communication. <strong>It DOES NOT provide medical
+                    advice, diagnosis, or treatment.</strong> Always consult a qualified healthcare professional for
+                medical concerns. We are not responsible for the professional conduct or services rendered by any User.
+            </p>
+
+            <h6>5. Data Collection, Usage, and Privacy</h6>
+            <p>By using the Service, you explicitly consent to the collection, storage, and processing of your Personal
+                Data and SPDI in accordance with our Privacy Policy. Your data is used to provide the Service,
+                facilitate interactions, process payments, and improve our platform. We implement reasonable security
+                practices as mandated by Indian law.</p>
+
+            <h6>6. Data Sharing with Third Parties</h6>
+            <p>You agree that your data may be shared with other users to facilitate healthcare services (e.g., sharing
+                a prescription with a pharmacy). Anonymized or aggregated data may be shared with Pharmaceutical
+                Companies for research. We may also share data with service providers (e.g., payment gateways) and as
+                required by law.</p>
+
+            <h6>7. User Responsibilities and Conduct</h6>
+            <p>You agree not to use the Service for any unlawful purpose, interfere with its operation, or engage in any
+                abusive or discriminatory behavior. Healthcare Providers must adhere to all professional codes of
+                conduct.</p>
+
+            <h6>8. Disclaimers</h6>
+            <p>The Service is provided "AS IS" and "AS AVAILABLE". We do not warrant the accuracy of information
+                provided by other users or that the service will be uninterrupted or error-free.</p>
+
+            <h6>9. Limitation of Liability</h6>
+            <p>In no event shall HealthDesk Innovations Pvt. Ltd. be liable for any indirect, incidental, special, or
+                consequential damages resulting from your use of the Service.</p>
+
+            <h6>10. Governing Law and Dispute Resolution</h6>
+            <p>These Terms shall be governed by the laws of India. Any disputes shall be resolved by arbitration in
+                Bengaluru, Karnataka, India.</p>
+
+            <h6>11. Amendments to Terms</h6>
+            <p>We reserve the right to modify these Terms at any time. We will provide notice of material changes. Your
+                continued use of the Service after revisions constitutes acceptance of the new terms.</p>
+        </div>
+        <div class="modal-footer">
+            <div class="form-check w-100 mb-2">
+                <input class="form-check-input" type="checkbox" id="termsCheckbox" [(ngModel)]="isAccepted"
+                    [disabled]="!isScrolledToBottom">
+                <label class="form-check-label" for="termsCheckbox">
+                    I have read and agree to the Terms and Conditions.
+                </label>
+                <small *ngIf="!isScrolledToBottom" class="d-block text-muted mt-1">Please scroll to the bottom to
+                    accept.</small>
+            </div>
+
+            <!-- Wrap buttons in this new div -->
+            <div class="button-group">
+                <button type="button" class="btn btn-secondary" (click)="onDecline()">Decline</button>
+                <button type="button" class="btn btn-primary" (click)="onAccept()"
+                    [disabled]="!isAccepted || !isScrolledToBottom">Accept</button>
+            </div>
+        </div>
+    </div>
+</div>

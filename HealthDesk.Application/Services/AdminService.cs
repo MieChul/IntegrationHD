@@ -5,11 +5,12 @@ using HealthDesk.Core.Enum;
 using HealthDesk.Infrastructure;
 
 namespace HealthDesk.Application;
+
 public class AdminService : IAdminService
 {
     private readonly IUserRepository _userRepository;
     private readonly IMessageService _messageService;
-     private readonly IPharmaceuticalRepository _pharmaceuticalRepository;
+    private readonly IPharmaceuticalRepository _pharmaceuticalRepository;
     public AdminService(IUserRepository userRepository, IMessageService messageService, IPharmaceuticalRepository pharmaceuticalRepository)
     {
         _userRepository = userRepository;
@@ -93,7 +94,8 @@ public class AdminService : IAdminService
             {
                 dynamic dto = new ExpandoObject();
                 var dict = (IDictionary<string, object>)dto;
-
+                dict["Id"] = bl.Id;
+                dict["PharmaId"] = pharma.Id;
                 dict["BrandName"] = bl.BrandName;
                 dict["GenericName"] = bl.GenericName;
                 dict["DrugClass"] = bl.DrugClass;
@@ -101,12 +103,34 @@ public class AdminService : IAdminService
                 dict["Strength"] = bl.Strength;
                 dict["ApprovalAgency"] = bl.ApprovalAgency;
                 dict["SubmittedBy"] = submittedBy;
-
+                dict["IsApproved"] = bl.IsApproved;
+                dict["IsRejected"] = bl.IsRejected;
+                dict["Comment"] = bl.RejectedComment;
                 result.Add(dto);
             }
         }
 
         return result;
+    }
+
+    public async Task ApproveRejectBrand(string pharmaId, string brandId, bool approve = true, string comment = null)
+    {
+        var pharma = await _pharmaceuticalRepository.GetByIdAsync(pharmaId);
+        if (pharma == null)
+            throw new InvalidOperationException("Pharma not found");
+        var brand = pharma.BrandLibrary.Where(b => b.Id == brandId)?.FirstOrDefault();
+        if (brand == null)
+            throw new InvalidOperationException("Brand not found");
+
+        if (approve)
+            brand.IsApproved = approve;
+        else
+        {
+            brand.IsRejected = true;
+            brand.RejectedComment = comment;
+        }
+
+        await _pharmaceuticalRepository.UpdateAsync(pharma);
     }
 }
 

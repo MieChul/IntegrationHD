@@ -21,6 +21,10 @@
       "PackagePath": "staticwebassets\\assets\\documents\\6880c2a9bd7314b2882a24a2\\cases\\688f7bfe677babfb9c490f45_image0.png"
     },
     {
+      "Id": "D:\\IntegrationHD\\HealthDesk.API\\wwwroot\\assets\\documents\\6885d45073763133bb064083\\prescription\\p_1.pdf",
+      "PackagePath": "staticwebassets\\assets\\documents\\6885d45073763133bb064083\\prescription\\p_1.pdf"
+    },
+    {
       "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.HealthDesk.API.Microsoft.AspNetCore.StaticWebAssets.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
     },

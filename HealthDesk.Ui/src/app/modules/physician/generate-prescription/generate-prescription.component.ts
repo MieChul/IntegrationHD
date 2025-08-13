@@ -27,7 +27,6 @@ export class GeneratePrescriptionComponent implements OnInit {
   selectedProfiles: any;
   customInvestigations: { name: string }[] = [];
   finalInvestigations!: FormArray;
-  selectedProfilesControl = new FormControl([]);
 
   frequencies: string[] = [];
   durations: string[] = [];
@@ -110,7 +109,8 @@ export class GeneratePrescriptionComponent implements OnInit {
       otherInstructions: [''],
       nextFollowUp: ['', [this.futureDateValidator]],
       useHeader: [true],
-      finalInvestigations: this.fb.array([])
+      finalInvestigations: this.fb.array([]),
+      selectedProfilesControl: new FormControl([])
     });
   }
 
@@ -171,11 +171,12 @@ export class GeneratePrescriptionComponent implements OnInit {
   }
 
   createRx(): FormGroup {
+    this.rxRowOptions.push({ drugs: [], forms: [], strengths: [] });
     return this.fb.group({
       brand: [''],
       drugName: [{ value: '', disabled: true }],
       dosageForm: [{ value: '', disabled: true }],
-      strength: [{ value: '', disabled: true }],
+      strength: [{ value: '', disabled: - true }],
       times: [''],
       duration: [''],
       instruction: ['']
@@ -256,7 +257,6 @@ export class GeneratePrescriptionComponent implements OnInit {
 
   addRx() {
     this.rx.push(this.createRx());
-    this.rxRowOptions.push({ drugs: [], forms: [], strengths: [] });
   }
 
   removeRx(index: number) {
@@ -275,6 +275,77 @@ export class GeneratePrescriptionComponent implements OnInit {
       this.currentTabIndex--;
     }
   }
+
+  async onRxBrandChange(index: number, brand: string): Promise<void> {
+    const rxGroup = this.rx.at(index) as FormGroup;
+    rxGroup.get('brand')?.setValue(brand);
+
+    rxGroup.get('drugName')?.reset({ value: '', disabled: true });
+    rxGroup.get('dosageForm')?.reset({ value: '', disabled: true });
+    rxGroup.get('strength')?.reset({ value: '', disabled: true });
+    this.rxRowOptions[index] = { drugs: [], forms: [], strengths: [] };
+
+    if (brand) {
+      this.rxRowOptions[index].drugs = await this.databaseService.getDrugs(brand);
+      if (this.rxRowOptions[index].drugs.length > 0) {
+        rxGroup.get('drugName')?.enable();
+      }
+    }
+  }
+
+  async onRxDrugChange(index: number, drug: string): Promise<void> {
+    const rxGroup = this.rx.at(index) as FormGroup;
+    const selectedBrand = rxGroup.get('brand')?.value;
+    rxGroup.get('drugName')?.setValue(drug);
+
+    // Reset dependent fields and their options
+    rxGroup.get('dosageForm')?.reset({ value: '', disabled: true });
+    rxGroup.get('strength')?.reset({ value: '', disabled: true });
+    this.rxRowOptions[index].forms = [];
+    this.rxRowOptions[index].strengths = [];
+
+    if (selectedBrand && drug) {
+      this.rxRowOptions[index].forms = await this.databaseService.getForms(selectedBrand, drug);
+      if (this.rxRowOptions[index].forms.length > 0) {
+        rxGroup.get('dosageForm')?.enable();
+      }
+    }
+  }
+
+  async onRxDosageFormChange(index: number, form: string): Promise<void> {
+    const rxGroup = this.rx.at(index) as FormGroup;
+    const selectedBrand = rxGroup.get('brand')?.value;
+    const selectedDrug = rxGroup.get('drugName')?.value;
+    rxGroup.get('dosageForm')?.setValue(form);
+
+    rxGroup.get('strength')?.reset({ value: '', disabled: true });
+    this.rxRowOptions[index].strengths = [];
+
+    if (selectedBrand && selectedDrug && form) {
+      this.rxRowOptions[index].strengths = await this.databaseService.getStrengths(selectedBrand, selectedDrug, form);
+      if (this.rxRowOptions[index].strengths.length > 0) {
+        rxGroup.get('strength')?.enable();
+      }
+    }
+  }
+
+  onRxStrengthChange(index: number, strength: string): void {
+    const rxGroup = this.rx.at(index) as FormGroup;
+    rxGroup.get('strength')?.setValue(strength);
+  }
+
+  onRxTimesChange(index: number, times: string): void {
+    const rxGroup = this.rx.at(index) as FormGroup;
+    rxGroup.get('times')?.setValue(times);
+  }
+
+  onRxDurationChange(index: number, duration: string): void {
+    const rxGroup = this.rx.at(index) as FormGroup;
+    rxGroup.get('duration')?.setValue(duration);
+  }
+
+  // *** END: Updated Rx Table Logic ***
+
 
   async generatePDF(): Promise<Blob> {
     this.prescriptionForm.markAllAsTouched();
@@ -637,60 +708,6 @@ export class GeneratePrescriptionComponent implements OnInit {
       .map((control) => control.value.name)
       .filter((name) => !profileInvestigationNames.has(name))
       .map((name) => ({ name }));
-  }
-
-  async onRxBrandChange(index: number): Promise<void> {
-    const rxGroup = this.rx.at(index) as FormGroup;
-    const selectedBrand = rxGroup.get('brand')?.value;
-
-    rxGroup.get('drugName')?.reset({ value: '', disabled: true });
-    rxGroup.get('dosageForm')?.reset({ value: '', disabled: true });
-    rxGroup.get('strength')?.reset({ value: '', disabled: true });
-
-    this.rxRowOptions[index] = { drugs: [], forms: [], strengths: [] };
-
-    if (selectedBrand) {
-      this.rxRowOptions[index].drugs = await this.databaseService.getDrugs(selectedBrand);
-      if (this.rxRowOptions[index].drugs.length > 0) {
-        rxGroup.get('drugName')?.enable();
-      }
-    }
-  }
-
-  async onRxDrugChange(index: number): Promise<void> {
-    const rxGroup = this.rx.at(index) as FormGroup;
-    const selectedBrand = rxGroup.get('brand')?.value;
-    const selectedDrug = rxGroup.get('drugName')?.value;
-
-    rxGroup.get('dosageForm')?.reset({ value: '', disabled: true });
-    rxGroup.get('strength')?.reset({ value: '', disabled: true });
-
-    this.rxRowOptions[index].forms = [];
-    this.rxRowOptions[index].strengths = [];
-
-    if (selectedBrand && selectedDrug) {
-      this.rxRowOptions[index].forms = await this.databaseService.getForms(selectedBrand, selectedDrug);
-      if (this.rxRowOptions[index].forms.length > 0) {
-        rxGroup.get('dosageForm')?.enable();
-      }
-    }
-  }
-
-  async onRxDosageFormChange(index: number): Promise<void> {
-    const rxGroup = this.rx.at(index) as FormGroup;
-    const selectedBrand = rxGroup.get('brand')?.value;
-    const selectedDrug = rxGroup.get('drugName')?.value;
-    const selectedDosageForm = rxGroup.get('dosageForm')?.value;
-
-    rxGroup.get('strength')?.reset({ value: '', disabled: true });
-    this.rxRowOptions[index].strengths = [];
-
-    if (selectedBrand && selectedDrug && selectedDosageForm) {
-      this.rxRowOptions[index].strengths = await this.databaseService.getStrengths(selectedBrand, selectedDrug, selectedDosageForm);
-      if (this.rxRowOptions[index].strengths.length > 0) {
-        rxGroup.get('strength')?.enable();
-      }
-    }
   }
 
   gotToHome() {

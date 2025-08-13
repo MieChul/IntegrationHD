@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "iD82tZKWVNS964sZfQZlz50V4g0ZxdEmWe8sg/pt0y8=",
+  "Hash": "rR0GCrqeP9BKGVSBVxgrhnAo1NoI1g60ZZnDUOelt+U=",
   "Source": "HealthDesk.API",
   "BasePath": "_content/HealthDesk.API",
   "Mode": "Default",
@@ -110,6 +110,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\assets\\documents\\6880c2a9bd7314b2882a24a2\\cases\\688f7bfe677babfb9c490f45_image0.png"
+    },
+    {
+      "Identity": "D:\\IntegrationHD\\HealthDesk.API\\wwwroot\\assets\\documents\\6885d45073763133bb064083\\prescription\\p_1.pdf",
+      "SourceId": "HealthDesk.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\IntegrationHD\\HealthDesk.API\\wwwroot\\",
+      "BasePath": "_content/HealthDesk.API",
+      "RelativePath": "assets/documents/6885d45073763133bb064083/prescription/p_1.pdf",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\assets\\documents\\6885d45073763133bb064083\\prescription\\p_1.pdf"
     }
   ]
 }

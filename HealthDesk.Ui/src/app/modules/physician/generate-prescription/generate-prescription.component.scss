@@ -58,3 +58,7 @@ $sky-blue-500: #005cbb;
     border: 1px solid #ced4da;
     border-radius: 0.25rem;
 }
+
+.table-responsive {
+    overflow: visible !important; // Override overflow to prevent clipping
+}

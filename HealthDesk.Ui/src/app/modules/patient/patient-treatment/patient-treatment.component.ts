@@ -1,12 +1,11 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import * as bootstrap from 'bootstrap';
 import { FilteringService } from '../../../shared/services/filter.service';
 import { PatientService } from '../../services/patient.service';
 import { AccountService } from '../../services/account.service';
 import { DatabaseService } from '../../../shared/services/database.service';
 import { SortingService } from '../../../shared/services/sorting.service';
-import { map, Observable, startWith } from 'rxjs';
 
 @Component({
   selector: 'app-patient-treatment',
@@ -20,10 +19,9 @@ export class PatientTreatmentComponent implements OnInit {
   filterForm!: FormGroup;
   isEditMode = false;
   selectedTreatment: any = null;
-  activeTab = 'ongoing'; // Default tab
+  activeTab = 'ongoing';
   userData: any = [];
 
-  // Dropdowns
   drugs: string[] = [];
   dosageForms: string[] = [];
   strengthUnits: string[] = [];
@@ -50,14 +48,10 @@ export class PatientTreatmentComponent implements OnInit {
     this.accountService.getUserData().subscribe({
       next: async (data) => {
         this.userData = data;
-        this.drugs = await this.databaseService.getDrugs();
         this.frequencies = await this.databaseService.getFrequencies();
         this.diseases = await this.databaseService.getSymptoms();
-        this.brands = await this.databaseService.getDrugBrands();
-
-        // Load treatments
+        this.brands = await this.databaseService.getBrands();
         await this.loadTreatments();
-
       },
       error: (err) => console.error('Error fetching user data:', err)
     });
@@ -75,9 +69,9 @@ export class PatientTreatmentComponent implements OnInit {
       {
         id: this.fb.control(''),
         brand: this.fb.control('', Validators.required),
-        treatmentDrug: this.fb.control('', Validators.required),
-        dosageForm: this.fb.control('', Validators.required),
-        strengthUnit: this.fb.control('', Validators.required),
+        treatmentDrug: this.fb.control({ value: '', disabled: true }, Validators.required),
+        dosageForm: this.fb.control({ value: '', disabled: true }, Validators.required),
+        strengthUnit: this.fb.control({ value: '', disabled: true }, Validators.required),
         frequency: this.fb.control('', Validators.required),
         startDate: this.fb.control('', [
           Validators.required,
@@ -104,49 +98,86 @@ export class PatientTreatmentComponent implements OnInit {
     this.filterForm.valueChanges.subscribe(() => this.applyDateFilter());
   }
 
+  async onBrandChange(brand: string) {
+    this.treatmentForm.get('brand')?.setValue(brand);
 
-  async onDrugChange() {
-    const selectedDrug = this.treatmentForm.get('treatmentDrug')?.value;
+    this.treatmentForm.get('treatmentDrug')?.reset({ value: '', disabled: true });
+    this.treatmentForm.get('dosageForm')?.reset({ value: '', disabled: true });
+    this.treatmentForm.get('strengthUnit')?.reset({ value: '', disabled: true });
 
-    this.treatmentForm.get('dosageForm')?.disable();
-    this.treatmentForm.get('strengthUnit')?.disable();
-    this.treatmentForm.patchValue({ dosageForm: '', strengthUnit: '' });
+    this.drugs = [];
+    this.dosageForms = [];
+    this.strengthUnits = [];
+
+    if (brand) {
+      this.drugs = await this.databaseService.getDrugs(brand);
+      if (this.drugs.length > 0) {
+        this.treatmentForm.get('treatmentDrug')?.enable();
+      }
+    }
+  }
+
+  async onDrugChange(drug: string) {
+    this.treatmentForm.get('treatmentDrug')?.setValue(drug);
+    const selectedBrand = this.treatmentForm.get('brand')?.value;
+
+    this.treatmentForm.get('dosageForm')?.reset({ value: '', disabled: true });
+    this.treatmentForm.get('strengthUnit')?.reset({ value: '', disabled: true });
 
     this.dosageForms = [];
     this.strengthUnits = [];
 
-    if (selectedDrug) {
-      this.dosageForms = await this.databaseService.getForms(selectedDrug);
+    if (selectedBrand && drug) {
+      this.dosageForms = await this.databaseService.getForms(selectedBrand, drug);
       if (this.dosageForms.length > 0) {
         this.treatmentForm.get('dosageForm')?.enable();
       }
     }
   }
 
-  async onDosageFormChange() {
+  async onDosageFormChange(form: string) {
+    this.treatmentForm.get('dosageForm')?.setValue(form);
+    const selectedBrand = this.treatmentForm.get('brand')?.value;
     const selectedDrug = this.treatmentForm.get('treatmentDrug')?.value;
-    const selectedDosageForm = this.treatmentForm.get('dosageForm')?.value;
 
-    this.treatmentForm.get('strengthUnit')?.disable();
-    this.treatmentForm.patchValue({ strengthUnit: '' });
-
+    this.treatmentForm.get('strengthUnit')?.reset({ value: '', disabled: true });
     this.strengthUnits = [];
 
-    if (selectedDrug && selectedDosageForm) {
-      this.strengthUnits = await this.databaseService.getStrengths(selectedDrug, selectedDosageForm);
+    if (selectedBrand && selectedDrug && form) {
+      this.strengthUnits = await this.databaseService.getStrengths(selectedBrand, selectedDrug, form);
       if (this.strengthUnits.length > 0) {
         this.treatmentForm.get('strengthUnit')?.enable();
       }
     }
   }
 
+  onStrengthChange(strength: string) {
+    this.treatmentForm.get('strengthUnit')?.setValue(strength);
+  }
+
+  onFrequencyChange(frequency: string) {
+    this.treatmentForm.get('frequency')?.setValue(frequency);
+  }
+
+  async populateDropdownsForEdit(treatment: any) {
+    if (!treatment.brand) return;
+    this.drugs = await this.databaseService.getDrugs(treatment.brand);
+    this.treatmentForm.get('treatmentDrug')?.enable();
+
+    if (!treatment.treatmentDrug) return;
+    this.dosageForms = await this.databaseService.getForms(treatment.brand, treatment.treatmentDrug);
+    this.treatmentForm.get('dosageForm')?.enable();
+
+    if (!treatment.dosageForm) return;
+    this.strengthUnits = await this.databaseService.getStrengths(treatment.brand, treatment.treatmentDrug, treatment.dosageForm);
+    this.treatmentForm.get('strengthUnit')?.enable();
+  }
 
   loadTreatments(): void {
     if (!this.userData?.id) {
       console.error('User ID is missing');
       return;
     }
-
     this.patientService.getCurrentTreatments(this.userData.id).subscribe({
       next: (data: any) => {
         this.patientTreatments = data?.data.map((treatments: any) => ({
@@ -155,22 +186,27 @@ export class PatientTreatmentComponent implements OnInit {
         this.filteredTreatments = [...this.patientTreatments];
         this.filterTreatments('ongoing');
       },
-      error: (error) => {
-        console.error('Error loading history:', error);
-      }
+      error: (error) => console.error('Error loading history:', error),
     });
   }
 
-
-  openTreatmentModal(isEditMode: boolean, treatment: any = null): void {
+  async openTreatmentModal(isEditMode: boolean, treatment: any = null): Promise<void> {
     this.isEditMode = isEditMode;
+    this.treatmentForm.reset();
+
+    this.drugs = [];
+    this.dosageForms = [];
+    this.strengthUnits = [];
 
     if (isEditMode && treatment) {
       this.selectedTreatment = treatment;
       this.treatmentForm.patchValue(treatment);
+      await this.populateDropdownsForEdit(treatment);
     } else {
       this.selectedTreatment = null;
-      this.treatmentForm.reset();
+      this.treatmentForm.get('treatmentDrug')?.disable();
+      this.treatmentForm.get('dosageForm')?.disable();
+      this.treatmentForm.get('strengthUnit')?.disable();
     }
 
     const modal = new bootstrap.Modal(this.treatmentModal.nativeElement);
@@ -181,35 +217,19 @@ export class PatientTreatmentComponent implements OnInit {
     this.treatmentForm.markAllAsTouched();
     if (this.treatmentForm.invalid || !this.userData.id) return;
 
-    const treatmentData = this.treatmentForm.value;
-    if (this.isEditMode) {
-      // Update existing medical history
-      treatmentData.id = this.selectedTreatment?.id;
+    const treatmentData = this.treatmentForm.getRawValue();
 
-      this.patientService.saveCurrentTreatment(this.userData.id, treatmentData).subscribe({
-        next: (response) => {
-          this.loadTreatments();
-        },
-        error: (error) => {
-          console.error('Error updating medical treatments:', error);
-        },
-      });
-    } else {
-      // Add new medical history
-      this.patientService
-        .saveCurrentTreatment(this.userData.id, treatmentData)
-        .subscribe({
-          next: (response) => {
-            this.loadTreatments();
-          },
-          error: (error) => {
-            console.error('Error adding medical treatments:', error);
-          },
-        });
-    }
+    const serviceCall = this.isEditMode
+      ? this.patientService.saveCurrentTreatment(this.userData.id, treatmentData)
+      : this.patientService.saveCurrentTreatment(this.userData.id, treatmentData);
 
-    bootstrap.Modal.getInstance(this.treatmentModal.nativeElement)?.hide();
-
+    serviceCall.subscribe({
+      next: (response) => {
+        this.loadTreatments();
+        bootstrap.Modal.getInstance(this.treatmentModal.nativeElement)?.hide();
+      },
+      error: (error) => console.error('Error saving treatment:', error),
+    });
   }
 
   deleteTreatment(treatment: any): void {
@@ -217,47 +237,34 @@ export class PatientTreatmentComponent implements OnInit {
 
     this.patientService.deleteCurrentTreatment(this.userData.id, treatment.id).subscribe({
       next: (response) => {
-        console.log(response.message); // Success message from API
-        this.loadTreatments(); // Reload the list after successful deletion
+        console.log(response.message);
+        this.loadTreatments();
       },
-      error: (error) => {
-        console.error('Error deleting treatments:', error); // Handle errors
-      }
+      error: (error) => console.error('Error deleting treatments:', error),
     });
   }
 
   filterTreatments(tab: string): void {
     this.activeTab = tab;
-
-    if (tab === 'ongoing') {
-      this.filteredTreatments = this.patientTreatments.filter((t) => !t.endDate);
-    } else if (tab === 'past') {
-      this.filteredTreatments = this.patientTreatments.filter((t) => t.endDate);
-    }
+    this.applyDateFilter();
   }
 
   applyDateFilter(): void {
     const { f_startDate, f_endDate } = this.filterForm.value;
 
-    // Apply the date filter using the filtering service
-    let filteredResults = this.filteringService.filter(
-      this.patientTreatments,
-      {},
-      [
-        {
-          field: 'startDate',
-          range: [f_startDate || null, f_endDate || null]
-        }
-      ]
+    let dateFiltered = this.filteringService.filter(
+      this.patientTreatments, {}, [{
+        field: 'startDate',
+        range: [f_startDate || null, f_endDate || null]
+      }]
     );
 
-    // Further filter the results based on the active tab
     if (this.activeTab === 'ongoing') {
-      this.filteredTreatments = filteredResults.filter((t) => !t.endDate);
+      this.filteredTreatments = dateFiltered.filter((t) => !t.endDate);
     } else if (this.activeTab === 'past') {
-      this.filteredTreatments = filteredResults.filter((t) => t.endDate);
+      this.filteredTreatments = dateFiltered.filter((t) => t.endDate);
     } else {
-      this.filteredTreatments = filteredResults; // Default case if no tab is active
+      this.filteredTreatments = dateFiltered;
     }
   }
 
@@ -268,6 +275,7 @@ export class PatientTreatmentComponent implements OnInit {
 
   futureDateValidator(control: any): { [key: string]: boolean } | null {
     const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
     if (new Date(control.value) > currentDate) {
       return { futureDate: true };
     }
@@ -277,25 +285,26 @@ export class PatientTreatmentComponent implements OnInit {
   dateRangeValidator(group: FormGroup): { [key: string]: any } | null {
     const startDateControl = group.get('startDate');
     const endDateControl = group.get('endDate');
-    if (!endDateControl?.value) return null;
 
-    if (startDateControl && endDateControl) {
-      const startDate = new Date(startDateControl.value);
-      const endDate = new Date(endDateControl.value);
-
-      if (startDate && endDate && startDate > endDate) {
-        endDateControl.setErrors({ invalidDateRange: true });
-        startDateControl.setErrors({ invalidDateRange: true });
-        return { invalidDateRange: true };
-      } else {
-        if (endDateControl.hasError('invalidDateRange')) {
-          endDateControl.setErrors(null);
-        }
-        if (startDateControl.hasError('invalidDateRange')) {
-          startDateControl.setErrors(null);
-        }
+    if (!startDateControl?.value || !endDateControl?.value) {
+      if (endDateControl?.hasError('invalidDateRange')) {
+        endDateControl.setErrors(null);
       }
+      return null;
     }
+
+    const startDate = new Date(startDateControl.value);
+    const endDate = new Date(endDateControl.value);
+
+    if (startDate > endDate) {
+      endDateControl.setErrors({ invalidDateRange: true });
+      return { invalidDateRange: true };
+    }
+
+    if (endDateControl.hasError('invalidDateRange')) {
+      endDateControl.setErrors(null);
+    }
+
     return null;
   }
 }

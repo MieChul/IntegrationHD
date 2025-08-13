@@ -26,18 +26,20 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { NgxMatTimepickerModule, NgxMatTimepickerToggleComponent } from 'ngx-mat-timepicker';
-import { MatRadioModule } from '@angular/material/radio'; 
-import { NgxMatColorPickerModule, NGX_MAT_COLOR_FORMATS, MAT_COLOR_FORMATS  } from '@angular-material-components/color-picker';
+import { MatRadioModule } from '@angular/material/radio';
+import { NgxMatColorPickerModule, NGX_MAT_COLOR_FORMATS, MAT_COLOR_FORMATS } from '@angular-material-components/color-picker';
+import { SearchableDropdownComponent } from './components/searchable-dropdown/searchable-dropdown.component';
 
 @NgModule({
   declarations: [
     LoaderComponent,
-SidebarComponent,
+    SidebarComponent,
     HeaderComponent,
     FooterComponent,
     AboutUsComponent,
     ContactUsComponent,
-    TermsConditionComponent
+    TermsConditionComponent,
+    SearchableDropdownComponent
   ],
   imports: [
     CommonModule,
@@ -53,7 +55,7 @@ SidebarComponent,
     MatInputModule,
     MatSelectModule,
     MatButtonToggleModule,
-    MatDatepickerModule, // Import Datepicker module
+    MatDatepickerModule, 
     MatNativeDateModule,
     MatIconModule,
     MatMenuModule,
@@ -63,8 +65,8 @@ SidebarComponent,
     NgxMatSelectSearchModule,
     NgxMatTimepickerModule,
     MatRadioModule,
-    NgxMatColorPickerModule ,
-    NgxMatTimepickerToggleComponent  
+    NgxMatColorPickerModule,
+    NgxMatTimepickerToggleComponent
   ],
   exports: [
     LoaderComponent,
@@ -85,7 +87,7 @@ SidebarComponent,
     MatInputModule,
     MatSelectModule,
     MatButtonToggleModule,
-    MatDatepickerModule, // Import Datepicker module
+    MatDatepickerModule,
     MatNativeDateModule,
     MatIconModule,
     MatMenuModule,
@@ -95,8 +97,9 @@ SidebarComponent,
     NgxMatSelectSearchModule,
     NgxMatTimepickerModule,
     MatRadioModule,
-    NgxMatColorPickerModule ,
-    NgxMatTimepickerToggleComponent 
+    NgxMatColorPickerModule,
+    NgxMatTimepickerToggleComponent,
+    SearchableDropdownComponent
   ],
   providers: [
     { provide: MAT_COLOR_FORMATS, useValue: NGX_MAT_COLOR_FORMATS }

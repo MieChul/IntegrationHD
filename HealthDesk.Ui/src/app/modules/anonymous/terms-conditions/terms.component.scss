@@ -1,0 +1,136 @@
+// src/app/shared/components/terms-modal/terms-modal.component.scss
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+}
+
+.modal-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+
+    .modal-title {
+        margin-bottom: 0;
+        font-weight: 500;
+        color: #212529;
+    }
+}
+
+.modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex-grow: 1;
+    font-size: 1rem;
+    line-height: 1.6;
+
+    h5 {
+        font-weight: 700;
+        margin-top: 1rem;
+        color: #212529;
+    }
+
+    h6 {
+        font-weight: 600;
+        margin-top: 1.25rem;
+        color: #343a40;
+    }
+
+    p {
+        color: #212529;
+        margin-bottom: 1rem;
+    }
+
+    ul {
+        padding-left: 20px;
+        color: #212529;
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+    }
+
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+
+    .form-check {
+        width: 100%;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .button-group {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .btn {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
+.form-check-label {
+    color: #212529;
+}
+
+.form-check-input {
+    width: 1.1em;
+    height: 1.1em;
+    border: 1.5px solid #1b3b5a;
+}
+
+.btn-close {
+    background: transparent;
+    border: 0;
+    font-size: 1.5rem;
+}

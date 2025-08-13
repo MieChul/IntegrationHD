@@ -1,0 +1,111 @@
+$primary-color: #d76745bc; // From logo
+$secondary-color: #a159ffd2; // From logo
+$dark-background-image: url('/assets/background1.jpg');
+$font-family: 'Roboto', sans-serif;
+$gradient-color1: hsl(302, 76%, 53%);
+$gradient-color2: #63b4ee;
+$gradient-color3: #2cbf5d;
+$gradient-color1-dark: hsl(302, 76%, 20%); // Deep purple, closer to black
+$gradient-color2-dark: #1b3b5a; // Dark navy blue
+$gradient-color3-dark: #0d331b; // Dark forest green
+
+// Additional colors from the background
+$background-light-blue: #7ac7fd;
+$background-medium-blue: #7dcbfc;
+$background-dark-blue: #65ade7;
+$background-lightest-blue: #7cc9fd;
+$background-darker-blue: #63abe5;
+
+// Additional colors from the logo
+$logo-white: #ffffff;
+$logo-light-red: #ff7261;
+$logo-green: #0fcf82d1;
+
+.contact-us-container {
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Info & Form Wrappers
+.contact-info-wrapper,
+.contact-form-wrapper {
+    background-color: #ffffff; // Change back to white to pop against the new background
+    border: 1px solid #e9ecef; // Add a subtle border for definition
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+    height: 100%;
+}
+
+// Info Section
+.contact-info-wrapper {
+    i {
+        color: $primary-color;
+        margin-top: 5px;
+    }
+
+    strong {
+        font-weight: 600;
+    }
+}
+
+// Form Section
+.contact-form-wrapper {
+    .form-control {
+        border-radius: 0.25rem;
+        padding: 0.75rem 1rem;
+
+        &:focus {
+            border-color: $primary-color;
+            box-shadow: 0 0 0 0.25rem rgba($primary-color, 0.25);
+        }
+    }
+
+    .btn-gradient {
+        background: linear-gradient(90deg, $gradient-color1, $gradient-color2);
+        border: none;
+        color: $logo-white;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        border-radius: 50px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+        &:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+    }
+}
+
+// Map Section
+.map-container {
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+
+    iframe {
+        filter: grayscale(80%);
+        transition: filter 0.3s ease-in-out;
+
+        &:hover {
+            filter: grayscale(0%);
+        }
+    }
+}
+
+.contact-us-container {
+    background-color: #d4dce1; // Sets a light gray background for the whole page area
+    padding: 2rem;
+    border-radius: 0.5rem;
+    animation: fadeIn 0.8s ease-in-out;
+}

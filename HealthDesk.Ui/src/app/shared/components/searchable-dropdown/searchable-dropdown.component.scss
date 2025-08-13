@@ -1,0 +1,121 @@
+// Azure Blue for focus effects
+$azure-blue: #0078D4;
+
+.custom-form-field {
+    position: relative;
+    width: 100%;
+    padding-top: 10px;
+
+    // When active, lift the entire component above its siblings
+    &.active {
+        z-index: 10;
+    }
+
+    label {
+        position: absolute;
+        top: 50%;
+        left: 12px;
+        transform: translateY(-50%);
+        background: #fff;
+        padding: 0 4px;
+        color: #6c757d;
+        font-size: 1rem;
+        transition: all 0.2s ease-in-out;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    // Floating label state
+    &.active label {
+        top: 10px;
+        font-size: 0.75rem;
+        color: $azure-blue;
+    }
+
+    &.disabled {
+        label {
+            color: #adb5bd;
+            background-color: #e9ecef;
+        }
+
+        .dropdown-wrapper button {
+            background-color: #e9ecef;
+        }
+    }
+
+    .dropdown-wrapper {
+        position: relative;
+
+        button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #ced4da;
+            height: 50px;
+
+            span {
+                color: #212529;
+            }
+        }
+    }
+
+    // Active state outline
+    &.active .dropdown-wrapper button {
+        border-color: $azure-blue;
+        box-shadow: 0 0 0 1px $azure-blue;
+    }
+
+    .dropdown-menu {
+        position: absolute; // This is correct, keeps it attached to the parent
+        left: 0; // Align to the left of the wrapper
+        width: 100%;
+        padding: 0;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+        max-height: 200px;
+        display: block;
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.15s ease-in-out, visibility 0.15s ease-in-out;
+        z-index: 1056; // High z-index to appear on top
+        background-color: #fff;
+
+        // Default 'down' direction
+        top: 100%;
+        margin-top: 4px;
+
+        // Style for 'up' direction
+        &.drop-up {
+            top: auto;
+            bottom: 100%;
+            margin-top: 0;
+            margin-bottom: 4px;
+        }
+
+        &.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .search-box {
+            border-radius: 0;
+            border: none;
+            border-bottom: 1px solid #dee2e6;
+            padding: 0.5rem 1rem;
+        }
+
+        .options-container {
+            max-height: 150px;
+            overflow-y: auto;
+
+            .dropdown-item {
+                cursor: pointer;
+
+                &:hover {
+                    background-color: #f8f9fa;
+                }
+            }
+        }
+    }
+}

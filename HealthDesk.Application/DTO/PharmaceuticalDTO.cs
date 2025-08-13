@@ -18,6 +18,9 @@ public class BrandLibraryDto
 
     public string ApprovalAgency { get; set; }
     public string? Comment { get; set; }
+    public bool? IsApproved { get; set; }
+    public bool? IsRejected { get; set; }
+    public string? RejectedComment { get; set; }
 }
 
 public class SurveyDto

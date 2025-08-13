@@ -15,6 +15,8 @@ export class LoginComponent implements OnInit {
   hide = true;
   errorMessage: string = '';
 
+  showTermsModal = false;
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -23,14 +25,12 @@ export class LoginComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Initialize form group with controls
     this.loginForm = this.fb.group({
       username: ['', Validators.required],
       password: ['', Validators.required]
     });
   }
 
-  // Generic getter for any form control
   getControl(controlName: string) {
     return this.loginForm.get(controlName);
   }
@@ -61,7 +61,16 @@ export class LoginComponent implements OnInit {
   }
 
   navigateToSignup() {
+    this.showTermsModal = true;
+  }
+
+  onTermsAccepted() {
+    this.showTermsModal = false;
     this.router.navigate(['/role-selection']);
+  }
+
+  onTermsDeclined() {
+    this.showTermsModal = false;
   }
 
   navigateVerifyPassword() {

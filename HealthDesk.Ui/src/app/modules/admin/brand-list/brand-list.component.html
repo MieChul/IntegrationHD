@@ -12,57 +12,114 @@
                 <i class="bi bi-download me-2"></i>Export to Excel
             </button>
         </div>
-        <table class="table table-hover table-responsive">
-            <thead class="thead-dark">
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Brand Name</th>
-                    <th scope="col">Generic Name</th>
-                    <th scope="col">Drug Class</th>
-                    <th scope="col">Dosage Form</th>
-                    <th scope="col">Strength</th>
-                    <th scope="col">Approval Agency</th>
-                    <th scope="col">Submitted By</th>
-                    <th scope="col">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let bl of brandLibraries; index as i" class="cursor-pointer">
-                    <td>{{ i + 1 }}</td>
-                    <td>{{ bl.BrandName }}</td>
-                    <td>{{ bl.GenericName }}</td>
-                    <td>{{ bl.DrugClass }}</td>
-                    <td>{{ bl.DosageForm }}</td>
-                    <td>{{ bl.Strength }}</td>
-                    <td>{{ bl.ApprovalAgency }}</td>
-                    <td>{{ bl.SubmittedBy }}</td>
-                    <td>
-                        <!-- Approve -->
-                        <button type="button" class="btn btn-success btn-sm me-1" title="Approve">
-                            <i class="bi bi-check-lg"></i>
-                        </button>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Brand Name</th>
+                        <th scope="col">Generic Name</th>
+                        <th scope="col">Drug Class</th>
+                        <th scope="col">Dosage Form</th>
+                        <th scope="col">Strength</th>
+                        <th scope="col">Approval Agency</th>
+                        <th scope="col">Submitted By</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Comment</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let bl of brandLibraries; index as i">
+                        <td>{{ i + 1 }}</td>
+                        <td>{{ bl.BrandName }}</td>
+                        <td>{{ bl.GenericName }}</td>
+                        <td>{{ bl.DrugClass }}</td>
+                        <td>{{ bl.DosageForm }}</td>
+                        <td>{{ bl.Strength }}</td>
+                        <td>{{ bl.ApprovalAgency }}</td>
+                        <td>{{ bl.SubmittedBy }}</td>
+                        <td>
+                            <span *ngIf="bl.IsApproved" class="badge bg-success">Approved</span>
+                            <span *ngIf="bl.IsRejected" class="badge bg-danger">Rejected</span>
+                            <span *ngIf="!bl.IsApproved && !bl.IsRejected"
+                                class="badge bg-warning text-dark">Pending</span>
+                        </td>
+                        <td>{{ bl.Comment }}</td>
+                        <td>
+                            <ng-container *ngIf="!bl.IsApproved && !bl.IsRejected">
+                                <button type="button" class="btn btn-success btn-sm me-1" title="Approve"
+                                    (click)="openApprovalModal(bl)">
+                                    <i class="bi bi-check-lg"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm" title="Reject"
+                                    (click)="openRejectionModal(bl)">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </ng-container>
+                        </td>
+                    </tr>
+                    <tr *ngIf="!brandLibraries">
+                        <td colspan="11" class="text-center py-5">
+                            <span class="spinner-border spinner-border-lg"></span>
+                        </td>
+                    </tr>
+                    <tr *ngIf="brandLibraries?.length === 0">
+                        <td colspan="11" class="text-center text-muted py-4">
+                            No brands available.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
-                        <!-- Reject -->
-                        <button type="button" class="btn btn-danger btn-sm" title="Reject">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
-                    </td>
-                </tr>
+<div class="modal fade" id="approvalConfirmationModal" data-bs-backdrop="static" data-bs-focus="false" tabindex="-1"
+    aria-labelledby="approvalModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="approvalModalLabel">Confirm Approval</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to approve the brand <strong>{{ selectedBrand?.BrandName }}</strong>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" (click)="confirmAction()">Approve</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-                <!-- loading spinner -->
-                <tr *ngIf="!brandLibraries">
-                    <td colspan="9" class="text-center">
-                        <span class="spinner-border spinner-border-lg"></span>
-                    </td>
-                </tr>
-
-                <!-- no records -->
-                <tr *ngIf="brandLibraries?.length === 0">
-                    <td colspan="9" class="text-center text-muted">
-                        No brands available.
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+<div class="modal fade" id="rejectionConfirmationModal" data-bs-backdrop="static" data-bs-focus="false" tabindex="-1"
+    aria-labelledby="rejectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rejectionModalLabel">Confirm Rejection</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to reject the brand <strong>{{ selectedBrand?.BrandName }}</strong>?</p>
+                <form [formGroup]="rejectionForm">
+                    <div class="mb-3">
+                        <label for="rejectionComment" class="form-label">Rejection Comment (Required)</label>
+                        <textarea class="form-control" id="rejectionComment" rows="3" formControlName="comment"
+                            [ngClass]="{ 'is-invalid': submitted && rejectionForm.get('comment')?.invalid }"></textarea>
+                        <div *ngIf="submitted && rejectionForm.get('comment')?.hasError('required')"
+                            class="invalid-feedback">
+                            A comment is required for rejection.
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" (click)="confirmAction()">Reject</button>
+            </div>
+        </div>
     </div>
 </div>

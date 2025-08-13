@@ -36,7 +36,6 @@
     </ul>
 
 
-    <!-- General & Complaints Tab -->
     <div class="card mt-2" *ngIf="currentTabIndex === 0" id="generalAndComplaints">
       <div class="card-body">
         <div class="sections">
@@ -124,7 +123,6 @@
       </div>
     </div>
 
-    <!-- Examination & Systemic Tab -->
     <div class="card mt-2" *ngIf="currentTabIndex === 1" id="examinationAndSystemic">
       <div class="card-body">
         <div class="sections">
@@ -238,7 +236,6 @@
             <h3>Investigations</h3>
           </div>
 
-          <!-- Select Profiles: Material Multiselect Dropdown -->
           <div class="row mb-4">
             <div class="col">
               <mat-form-field appearance="outline" class="w-100">
@@ -262,12 +259,10 @@
             </div>
           </div>
 
-          <!-- Selected Profiles Display -->
           <div *ngIf="selectedProfiles && selectedProfiles.length" class="mb-3">
             <strong>Selected Profiles:</strong> {{ selectedProfiles.join(', ') }}
           </div>
 
-          <!-- Investigations Table -->
           <div class="table-responsive">
             <table class="table table-hover table-modern">
               <thead class="table-light">
@@ -305,8 +300,6 @@
             </table>
           </div>
 
-
-          <!-- Navigation Buttons -->
           <div class="d-flex justify-content-between mt-4">
             <button class="btn btn-secondary" (click)="previousTab()">
               <i class="bi bi-arrow-left"></i> Back
@@ -319,7 +312,6 @@
       </div>
     </div>
 
-    <!-- Rx-->
     <div class="card mt-2" *ngIf="currentTabIndex === 3" id="rx">
       <div class="card-body">
         <div class="sections">
@@ -352,18 +344,17 @@
               <i class="bi bi-plus-lg"></i>
             </button>
 
-            <!-- Make table responsive and enable horizontal scroll -->
             <div class="table-responsive" style="overflow-x: auto; max-width: 100%;">
               <table class="table table-hover table-modern table-fixed">
                 <colgroup>
-                  <col style="width: 85px;">
-                  <col style="width: 85px;">
-                  <col style="width: 65px;">
-                  <col style="width: 65px;">
-                  <col style="width: 65px;">
-                  <col style="width: 65px;">
-                  <col style="width: 105px;">
-                  <col style="width: 40px;">
+                  <col style="width: 150px;">
+                  <col style="width: 150px;">
+                  <col style="width: 150px;">
+                  <col style="width: 150px;">
+                  <col style="width: 150px;">
+                  <col style="width: 150px;">
+                  <col style="width: 150px;">
+                  <col style="width: 60px;">
                 </colgroup>
                 <thead class="table-light">
                   <tr>
@@ -380,72 +371,47 @@
                 <tbody formArrayName="rx">
                   <tr *ngFor="let rxControl of rx.controls; let i = index" [formGroupName]="i">
                     <td>
-                      <div class="mb-3 form-floating small-field">
-                        <select formControlName="brand" class="form-select" id="brand-{{i}}"
-                          (change)="onRxBrandChange(i)">
-                          <option value="" disabled>-- Select Brand --</option>
-                          <option *ngFor="let brand of brands" [value]="brand">{{ brand }}</option>
-                        </select>
-                        <label for="brand-{{i}}">Brand</label>
-                      </div>
+                      <app-searchable-dropdown [items]="brands" label="Brand"
+                        [selectedValue]="rxControl.get('brand')?.value" (selectionChange)="onRxBrandChange(i, $event)">
+                      </app-searchable-dropdown>
                     </td>
                     <td>
-                      <div class="mb-3 form-floating small-field">
-                        <select formControlName="drugName" class="form-select" id="drugName-{{i}}"
-                          (change)="onRxDrugChange(i)"
-                          [attr.disabled]="rxControl.get('drugName')?.disabled ? true : null">
-                          <option value="" disabled>-- Select Drug --</option>
-                          <option *ngFor="let drug of rxRowOptions[i]?.drugs" [value]="drug">{{ drug }}</option>
-                        </select>
-                        <label for="drugName-{{i}}">Drug</label>
-                      </div>
+                      <app-searchable-dropdown [items]="rxRowOptions[i].drugs" label="Drug"
+                        [selectedValue]="rxControl.get('drugName')?.value"
+                        [disabled]="!!rxControl.get('drugName')?.disabled"
+                        (selectionChange)="onRxDrugChange(i, $event)">
+                      </app-searchable-dropdown>
                     </td>
                     <td>
-                      <div class="mb-3 form-floating small-field">
-                        <select formControlName="dosageForm" class="form-select" id="dosageForm-{{i}}"
-                          (change)="onRxDosageFormChange(i)"
-                          [attr.disabled]="rxControl.get('dosageForm')?.disabled ? true : null">
-                          <option value="" disabled>-- Select Form --</option>
-                          <option *ngFor="let form of rxRowOptions[i]?.forms" [value]="form">{{ form }}</option>
-                        </select>
-                        <label for="dosageForm-{{i}}">Form</label>
-                      </div>
+                      <app-searchable-dropdown [items]="rxRowOptions[i].forms" label="Form"
+                        [selectedValue]="rxControl.get('dosageForm')?.value"
+                        [disabled]="!!rxControl.get('dosageForm')?.disabled"
+                        (selectionChange)="onRxDosageFormChange(i, $event)">
+                      </app-searchable-dropdown>
                     </td>
                     <td>
-                      <div class="mb-3 form-floating small-field">
-                        <select formControlName="strength" class="form-select" id="strength-{{i}}"
-                          [attr.disabled]="rxControl.get('strength')?.disabled ? true : null">
-                          <option value="" disabled>-- Select Strength --</option>
-                          <option *ngFor="let strength of rxRowOptions[i]?.strengths" [value]="strength">{{ strength }}
-                          </option>
-                        </select>
-                        <label for="strength-{{i}}">Strength</label>
-                      </div>
+                      <app-searchable-dropdown [items]="rxRowOptions[i].strengths" label="Strength"
+                        [selectedValue]="rxControl.get('strength')?.value"
+                        [disabled]="!!rxControl.get('strength')?.disabled"
+                        (selectionChange)="onRxStrengthChange(i, $event)">
+                      </app-searchable-dropdown>
                     </td>
                     <td>
-                      <div class="mb-3 form-floating small-field">
-                        <select formControlName="times" class="form-select" id="times-{{i}}">
-                          <option value="" disabled>-- Select Times --</option>
-                          <option *ngFor="let frequency of frequencies" [value]="frequency">{{ frequency }}</option>
-                        </select>
-                        <label for="times-{{i}}">Times</label>
-                      </div>
+                      <app-searchable-dropdown [items]="frequencies" label="Times"
+                        [selectedValue]="rxControl.get('times')?.value" (selectionChange)="onRxTimesChange(i, $event)">
+                      </app-searchable-dropdown>
                     </td>
                     <td>
-                      <div class="mb-3 form-floating small-field">
-                        <select formControlName="duration" class="form-select" id="duration-{{i}}">
-                          <option value="" disabled>-- Select Duration --</option>
-                          <option *ngFor="let duration of durations" [value]="duration">{{ duration }}</option>
-                        </select>
-                        <label for="duration-{{i}}">Duration</label>
-                      </div>
+                      <app-searchable-dropdown [items]="durations" label="Duration"
+                        [selectedValue]="rxControl.get('duration')?.value"
+                        (selectionChange)="onRxDurationChange(i, $event)">
+                      </app-searchable-dropdown>
                     </td>
                     <td>
-                      <div class="mb-3 form-floating small-field">
-                        <input type="text" formControlName="instruction" class="form-control" id="instruction-{{i}}"
-                          placeholder=" " />
-                        <label for="instruction-{{i}}">Instructions</label>
-                      </div>
+                      <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Instruction</mat-label>
+                        <input matInput formControlName="instruction" />
+                      </mat-form-field>
                     </td>
                     <td>
                       <button class="btn btn-danger pointer-cursor" (click)="removeRx(i)" data-bs-toggle="tooltip"
@@ -460,11 +426,9 @@
           </div>
         </div>
         <div class="d-flex justify-content-between align-items-center mt-4">
-          <!-- Back Button - Left -->
           <button class="btn btn-secondary" (click)="previousTab()">
             <i class="bi bi-arrow-left"></i> Back
           </button>
-
 
           <div class="d-flex gap-2">
             <button class="btn btn-primary pointer-cursor" (click)="generatePDF()" [disabled]="currentTabIndex !== 3">

@@ -1,1 +1,135 @@
-<p>about-us works!</p>
+<!-- about-us.component.html -->
+<div class="d-flex" style="height: 100vh;">
+    <app-sidebar></app-sidebar>
+    <div class="flex-grow-1 d-flex flex-column">
+        <app-header></app-header>
+
+        <main class="flex-grow-1 p-4 overflow-auto">
+            <div class="about-us-container">
+                <!-- Hero Section with Carousel -->
+                <div id="aboutUsCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-indicators">
+                        <button type="button" data-bs-target="#aboutUsCarousel" data-bs-slide-to="0" class="active"
+                            aria-current="true" aria-label="Slide 1"></button>
+                        <button type="button" data-bs-target="#aboutUsCarousel" data-bs-slide-to="1"
+                            aria-label="Slide 2"></button>
+                        <button type="button" data-bs-target="#aboutUsCarousel" data-bs-slide-to="2"
+                            aria-label="Slide 3"></button>
+                    </div>
+                    <div class="carousel-inner">
+                        <div class="carousel-item active">
+                            <img src="https://placehold.co/1200x500/63b4ee/FFFFFF?text=Our+Innovation"
+                                class="d-block w-100" alt="Innovation Hub">
+                            <div class="carousel-caption d-none d-md-block">
+                                <h5>Driving Innovation Forward</h5>
+                                <p>We are committed to pushing the boundaries of technology and creativity.</p>
+                            </div>
+                        </div>
+                        <div class="carousel-item">
+                            <img src="https://placehold.co/1200x500/2cbf5d/FFFFFF?text=Our+Team" class="d-block w-100"
+                                alt="Collaborative Team">
+                            <div class="carousel-caption d-none d-md-block">
+                                <h5>A Team of Passionate Experts</h5>
+                                <p>Our strength lies in our diverse and dedicated team of professionals.</p>
+                            </div>
+                        </div>
+                        <div class="carousel-item">
+                            <img src="https://placehold.co/1200x500/d76745/FFFFFF?text=Our+Vision" class="d-block w-100"
+                                alt="Future Vision">
+                            <div class="carousel-caption d-none d-md-block">
+                                <h5>Building the Future, Together</h5>
+                                <p>Our vision is to create solutions that make a meaningful impact on the world.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#aboutUsCarousel"
+                        data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#aboutUsCarousel"
+                        data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+
+                <!-- Our Story Section -->
+                <section class="our-story text-center my-5 px-4">
+                    <h2 class="section-title">Our Story</h2>
+                    <p class="lead text-muted">Founded in 2020 with a vision to revolutionize the industry, HealthDesk
+                        has grown from a small startup into a leading provider of innovative solutions. Our journey is
+                        one of passion, persistence, and a relentless pursuit of excellence. We believe in creating
+                        technology that not only solves problems but also inspires and empowers users.</p>
+                </section>
+
+                <!-- Mission and Vision Section -->
+                <section class="mission-vision my-5 px-4">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-bullseye fs-1 mb-3 icon-gradient"></i>
+                                    <h4 class="card-title">Our Mission</h4>
+                                    <p class="card-text">To empower businesses and individuals with cutting-edge tools
+                                        and platforms that enhance productivity, foster collaboration, and drive growth
+                                        in an ever-evolving digital landscape.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-eye fs-1 mb-3 icon-gradient"></i>
+                                    <h4 class="card-title">Our Vision</h4>
+                                    <p class="card-text">To be a globally recognized leader in digital innovation, known
+                                        for our commitment to quality, integrity, and customer success, while creating a
+                                        sustainable and inspiring future.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Meet the Team Section -->
+                <section class="meet-the-team text-center my-5 px-4">
+                    <h2 class="section-title">Meet Our Leaders</h2>
+                    <div class="row mt-4 justify-content-center">
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="team-card">
+                                <img src="https://placehold.co/300x300/7ac7fd/FFFFFF?text=Person+A" class="team-img"
+                                    alt="Team Member 1">
+                                <div class="team-info">
+                                    <h5 class="team-name">Alex Doe</h5>
+                                    <p class="team-title">Chief Executive Officer</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="team-card">
+                                <img src="https://placehold.co/300x300/a159ff/FFFFFF?text=Person+B" class="team-img"
+                                    alt="Team Member 2">
+                                <div class="team-info">
+                                    <h5 class="team-name">Jamie Smith</h5>
+                                    <p class="team-title">Chief Technology Officer</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="team-card">
+                                <img src="https://placehold.co/300x300/0fcf82/FFFFFF?text=Person+C" class="team-img"
+                                    alt="Team Member 3">
+                                <div class="team-info">
+                                    <h5 class="team-name">Sam Wilson</h5>
+                                    <p class="team-title">Head of Product</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <app-footer></app-footer>
+    </div>
+</div>
