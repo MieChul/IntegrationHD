@@ -153,6 +153,7 @@ public class PatientRecordDto
 {
     public string? Id { get; set; }
     public string? UserId { get; set; }
+    public string? DependentId { get; set; }
     public bool? IsDependent { get; set; } = false;
 
     [Required(ErrorMessage = "First Name is required.")]

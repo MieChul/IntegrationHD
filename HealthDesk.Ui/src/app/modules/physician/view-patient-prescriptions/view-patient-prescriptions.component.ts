@@ -61,4 +61,8 @@ export class ViewPatientPrescriptionsComponent implements OnInit {
     this.searchDate = null;
     this.filteredPrescriptions = [...this.prescriptions];
   }
+
+  goBack(): void {
+    this.router.navigate(['/physician/patient-record']);
+  }
 }

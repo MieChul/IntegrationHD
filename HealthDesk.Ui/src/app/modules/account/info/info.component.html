@@ -46,10 +46,10 @@
                                         (dateChange)="calculateAge()" />
                                     <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                                     <mat-datepicker #picker></mat-datepicker>
-                                    <mat-error *ngIf="form.get('birthDate')?.hasError('required') && submitted">
+                                    <mat-error *ngIf="f['birthDate'].hasError('required')">
                                         Birth Date is required
                                     </mat-error>
-                                    <mat-error *ngIf="form.get('birthDate')?.hasError('minAge') && submitted">
+                                    <mat-error *ngIf="f['birthDate'].hasError('minAge')">
                                         Must be 18+ years
                                     </mat-error>
                                 </mat-form-field>
@@ -63,7 +63,7 @@
                             </div>
                         </div>
                         <div class="row mb-3" *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
-                            <mat-label>Gender</mat-label>
+                            <mat-label>Gender*</mat-label>
                             <div class="btn-group flex-wrap">
                                 <input type="radio" formControlName="gender" class="btn-check " name="gender"
                                     id="option1" value="Male" autocomplete="off" />
@@ -242,11 +242,11 @@
                                             <mat-label>Mobile 2</mat-label>
                                             <input matInput formControlName="mobile2" placeholder="Mobile 2"
                                                 autocomplete="off">
-                                            <mat-error *ngIf="submitted && f['mobile2'].errors">
-                                                <div *ngIf="f['mobile2'].invalid">Mobile number is invalid</div>
+                                            <mat-error *ngIf="f['mobile2'].hasError('pattern')">
+                                                Mobile number is invalid
                                             </mat-error>
-                                            <mat-error *ngIf="submitted && mobileSameError">
-                                                Both mobile numbers are same.
+                                            <mat-error *ngIf="f['mobile2'].hasError('sameAsMobile1')">
+                                                Both mobile numbers are the same.
                                             </mat-error>
                                         </mat-form-field>
                                     </div>
@@ -268,11 +268,11 @@
                                             <mat-label>Email 2</mat-label>
                                             <input matInput formControlName="email2" placeholder="Email 2"
                                                 autocomplete="off">
-                                            <mat-error *ngIf="submitted && f['email2'].errors">
-                                                <div *ngIf="f['email2'].invalid">Email is invalid</div>
+                                            <mat-error *ngIf="f['email2'].hasError('email')">
+                                                Email is invalid
                                             </mat-error>
-                                            <mat-error *ngIf="submitted && emailSameError">
-                                                Both email ids are same.
+                                            <mat-error *ngIf="f['email2'].hasError('sameAsEmail1')">
+                                                Both email IDs are the same.
                                             </mat-error>
                                         </mat-form-field>
                                     </div>
@@ -285,7 +285,7 @@
                                             <input matInput formControlName="aadhar" placeholder="Aadhar Number"
                                                 autocomplete="off">
                                             <mat-error *ngIf="submitted && f['aadhar'].errors">
-                                                <div *ngIf="f['aadhar'].invalid">Aadhar is invalid</div>
+                                                Aadhar is invalid
                                             </mat-error>
                                         </mat-form-field>
                                     </div>
@@ -294,7 +294,7 @@
                                             <mat-label>PAN</mat-label>
                                             <input matInput formControlName="pan" placeholder="PAN" autocomplete="off">
                                             <mat-error *ngIf="submitted && f['pan'].errors">
-                                                <div *ngIf="f['pan'].invalid">Pan is invalid</div>
+                                                PAN is invalid
                                             </mat-error>
                                         </mat-form-field>
                                     </div>
@@ -503,14 +503,14 @@
                                         </mat-form-field>
                                     </div>
                                     <div class="col">
-                                        <select class="form-select" id="year" formControlName="year"
-                                            style="height:56px">
-                                            <option value="" disabled selected>Select Year</option>
-                                            <option *ngFor="let year of yearsList" [value]="year">{{ year }}</option>
-                                        </select>
-                                        <div *ngIf="submitted && gYearError" class="invalid-feedback d-flex">
-                                            <div>Year is required</div>
-                                        </div>
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Year</mat-label>
+                                            <mat-select formControlName="year">
+                                                <mat-option *ngFor="let year of yearsList" [value]="year">{{ year
+                                                    }}</mat-option>
+                                            </mat-select>
+                                            <mat-error *ngIf="submitted && gYearError">Year is required</mat-error>
+                                        </mat-form-field>
                                     </div>
                                     <div class="col">
                                         <mat-form-field appearance="outline" class="w-100">
@@ -567,11 +567,13 @@
                                         </mat-form-field>
                                     </div>
                                     <div class="col">
-                                        <select class="form-select" id="year" formControlName="year"
-                                            style="height:56px">
-                                            <option value="" disabled selected>Select Year</option>
-                                            <option *ngFor="let year of yearsList" [value]="year">{{ year }}</option>
-                                        </select>
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Year</mat-label>
+                                            <mat-select formControlName="year">
+                                                <mat-option *ngFor="let year of yearsList" [value]="year">{{ year
+                                                    }}</mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
                                     </div>
                                     <div class="col">
                                         <mat-form-field appearance="outline" class="w-100">
@@ -621,11 +623,15 @@
                                         </mat-form-field>
                                     </div>
                                     <div class="col">
-                                        <select class="form-select" id="year" formControlName="year"
-                                            style="height:56px">
-                                            <option value="" disabled selected>Select Year</option>
-                                            <option *ngFor="let year of yearsList" [value]="year">{{ year }}</option>
-                                        </select>
+                                        <div class="col">
+                                            <mat-form-field appearance="outline" class="w-100">
+                                                <mat-label>Year</mat-label>
+                                                <mat-select formControlName="year">
+                                                    <mat-option *ngFor="let year of yearsList" [value]="year">{{ year
+                                                        }}</mat-option>
+                                                </mat-select>
+                                            </mat-form-field>
+                                        </div>
                                     </div>
                                     <div class="col">
                                         <mat-form-field appearance="outline" class="w-100">
@@ -666,11 +672,13 @@
                                         </mat-form-field>
                                     </div>
                                     <div class="col">
-                                        <select class="form-select" id="year" formControlName="year"
-                                            style="height:56px">
-                                            <option value="" disabled selected>Select Year</option>
-                                            <option *ngFor="let year of yearsList" [value]="year">{{ year }}</option>
-                                        </select>
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>Year</mat-label>
+                                            <mat-select formControlName="year">
+                                                <mat-option *ngFor="let year of yearsList" [value]="year">{{ year
+                                                    }}</mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
                                     </div>
                                     <div class="col">
                                         <mat-form-field appearance="outline" class="w-100">

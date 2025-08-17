@@ -149,7 +149,7 @@ namespace HealthDesk.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(new { Success = false, Message = "Invalid data provided.", Errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
 
-            await _physicianService.SavePatientAsync(id, dto);
+            await _physicianService.AddDependent(id, dto);
             return Ok(new { Success = true, Message = "Patient saved successfully." });
         }
 

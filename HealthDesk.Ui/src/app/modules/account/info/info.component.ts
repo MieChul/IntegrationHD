@@ -323,6 +323,7 @@ export class InfoComponent {
       authEmail: [this.user.email],
       bloodGroup: [this.user.bloodGroup],
       relationId: [this.user.relationId],
+      relationship: [this.user.relationship],
       isSave: [],
       profImage: [this.user.profImage || '/assets/defaultProfile.jpg'],
       clinicImage: [this.user.clinicImage || '/assets/defaultProfile.jpg'],
@@ -424,8 +425,22 @@ export class InfoComponent {
 
   onSubmit() {
     this.submitted = true;
+    this.form.markAllAsTouched();
     this.errorsFound = false;
     this.updateErrors = false;
+
+    if (this.user.role === 'physician' || this.user.role === 'patient') {
+      const mobile2Control = this.form.get('mobile2');
+      if (this.form.value.mobile1 && this.form.value.mobile1 === this.form.value.mobile2) {
+        mobile2Control?.setErrors({ ...mobile2Control.errors, 'sameAsMobile1': true });
+      }
+
+      const email2Control = this.form.get('email2');
+      if (this.form.value.email1 && this.form.value.email1 === this.form.value.email2) {
+        email2Control?.setErrors({ ...email2Control.errors, 'sameAsEmail1': true });
+      }
+    }
+
     //stop here if form is invalid
     if (this.form.invalid) {
       this.errorsFound = true;
@@ -498,6 +513,20 @@ export class InfoComponent {
     this.errorsFound = false;
     this.updateErrors = false;
     this.submitted = true;
+    this.form.markAllAsTouched();
+    if (this.userData.status === 'Submitted' || this.userData.status === 'Approved') {
+      if (this.user.role === 'physician' || this.user.role === 'patient') {
+        const mobile2Control = this.form.get('mobile2');
+        if (this.form.value.mobile1 && this.form.value.mobile1 === this.form.value.mobile2) {
+          mobile2Control?.setErrors({ ...mobile2Control.errors, 'sameAsMobile1': true });
+        }
+
+        const email2Control = this.form.get('email2');
+        if (this.form.value.email1 && this.form.value.email1 === this.form.value.email2) {
+          email2Control?.setErrors({ ...email2Control.errors, 'sameAsEmail1': true });
+        }
+      }
+    }
     if (this.userData.status === 'Submitted' || this.userData.status === 'Approved') {
       if (this.form.invalid) {
         this.errorsFound = true;
@@ -728,7 +757,7 @@ export class InfoComponent {
     else
       this.councilError = false;
 
-    if (!this.form.value.noDocConsentProvided && !this.form.value.medicalRegistration.document) {
+    if (!this.form.value.medicalRegistration.document) {
       this.docError = true;
       this.notificationService.showError('There are errors in the submitted application, please fix them and submit again.');
       has_error = true;
@@ -773,4 +802,6 @@ export class InfoComponent {
   removeAdditionalRow(index: number) {
     this.additionalRows.splice(index, 1);
   }
+
 }
+

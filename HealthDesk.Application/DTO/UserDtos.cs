@@ -118,6 +118,7 @@ public class UpdateUserInfoRequestDto
     public string? AuthEmail { get; set; } = string.Empty;
     public string? BloodGroup { get; set; } = string.Empty;
     public string? RelationId { get; set; } = string.Empty;
+    public string? Relationship { get; set; } = string.Empty;
 
     public string Role { get; set; } = string.Empty;
 

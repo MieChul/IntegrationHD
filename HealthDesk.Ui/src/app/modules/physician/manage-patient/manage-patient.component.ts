@@ -31,6 +31,8 @@ export class ManagePatientComponent implements OnInit {
   verifyOtpForm !: FormGroup;
   patientForView: any;
   isEditMode = false;
+  parentDetails: any;
+  parentDetailsLoaded: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -42,6 +44,7 @@ export class ManagePatientComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.parentDetailsLoaded = false;
     this.initForm();
     this.initOtpForm();
 
@@ -80,7 +83,7 @@ export class ManagePatientComponent implements OnInit {
       middleName: [{ value: '', disabled: true }, [Validators.pattern(/^[a-zA-Z][a-zA-Z .'’-]{1,25}$/)],],
       lastName: [{ value: '', disabled: true }, [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z .'’-]{1,25}$/)]],
       gender: [{ value: '', disabled: true }, Validators.required],
-      dateOfBirth: [Validators.required, (control: AbstractControl) => this.validateAge(control)],
+      dateOfBirth: ['', [Validators.required, (control: AbstractControl) => this.validateAge(control)]],
       abhaid: ['', Validators.pattern(/^[a-zA-Z0-9]*$/)],
       secondaryId: ['', Validators.pattern(/^[a-zA-Z0-9]*$/)],
     });
@@ -88,18 +91,20 @@ export class ManagePatientComponent implements OnInit {
     this.dependentForm = this.fb.group({
       id: [''],
       userId: [''],
+      dependentId: [''],
       mobile: ['', [Validators.required, Validators.pattern(/^[789]\d{9}$/)]],
-      firstName: [{ value: '', disabled: true }, [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z .'’-]{1,25}$/), Validators.minLength(2)]],
-      middleName: [{ value: '', disabled: true }, [Validators.pattern(/^[a-zA-Z][a-zA-Z .'’-]{1,25}$/)],],
-      lastName: [{ value: '', disabled: true }, [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z .'’-]{1,25}$/)]],
-      gender: [{ value: '', disabled: true }, Validators.required],
-      dateOfBirth: [Validators.required, (control: AbstractControl) => this.validateAge(control)],
+      firstName: ['', [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z .'’-]{1,25}$/), Validators.minLength(2)]],
+      middleName: ['', [Validators.pattern(/^[a-zA-Z][a-zA-Z .'’-]{1,25}$/)],],
+      lastName: ['', [Validators.required, Validators.pattern(/^[a-zA-Z][a-zA-Z .'’-]{1,25}$/)]],
+      gender: ['', Validators.required],
+      dateOfBirth: ['', Validators.required],
       abhaid: ['', Validators.pattern(/^[a-zA-Z0-9]*$/)],
       secondaryId: ['', Validators.pattern(/^[a-zA-Z0-9]*$/)],
     });
   }
 
   loadPatients(): void {
+    this.parentDetailsLoaded = false;
     this.physicianService.getPatients(this.userData.id).subscribe({
       next: (data: any) => {
         this.patients = data?.data.map((patient: any) => ({
@@ -136,14 +141,14 @@ export class ManagePatientComponent implements OnInit {
 
   onMobileInputChange(): void {
     const mobile = this.patientForm.get('mobile')?.value;
-    if (mobile.length === 10) {
+    if (mobile && mobile.length === 10) {
       this.checkPatientExists(mobile);
     }
   }
 
   onDependentMobileInputChange(): void {
     const mobile = this.dependentForm.get('mobile')?.value;
-    if (mobile.length === 10) {
+    if (mobile && mobile.length === 10) {
       this.checkDependentExists(mobile);
     }
   }
@@ -183,25 +188,36 @@ export class ManagePatientComponent implements OnInit {
         const patient = response.data;
         this.dependentForm.patchValue({
           userId: patient.userId,
+          dependentId: patient.dependentId,
           firstName: patient.firstName,
           middleName: patient.middleName,
           lastName: patient.lastName,
           gender: patient.gender,
           dateOfBirth: patient.dateOfBirth,
         });
-        this.dependentForm.get('firstName')?.disable();
-        this.dependentForm.get('lastName')?.disable();
-        this.dependentForm.get('middleName')?.disable();
-        this.dependentForm.get('gender')?.disable();
-        this.dependentForm.get('dateOfBirth')?.disable();
-      } else {
-        this.dependentForm.reset({ mobile });
-        this.dependentForm.get('mobile')?.disable();
-        this.dependentForm.get('firstName')?.enable();
-        this.dependentForm.get('middleName')?.enable();
-        this.dependentForm.get('lastName')?.enable();
-        this.dependentForm.get('gender')?.enable();
-        this.dependentForm.get('dateOfBirth')?.enable();
+
+        this.parentDetails = { name: patient.patientName, address: patient.patientAddress };
+        this.parentDetailsLoaded = true;
+
+        if (patient.dependentId) {
+          this.dependentForm.get('firstName')?.disable();
+          this.dependentForm.get('lastName')?.disable();
+          this.dependentForm.get('middleName')?.disable();
+          this.dependentForm.get('gender')?.disable();
+          this.dependentForm.get('dateOfBirth')?.disable();
+        } else {
+          this.dependentForm.reset({
+            mobile: mobile,
+            userId: patient.userId
+          });
+          this.dependentForm.get('mobile')?.disable();
+          this.dependentForm.get('mobile')?.disable();
+          this.dependentForm.get('firstName')?.enable();
+          this.dependentForm.get('middleName')?.enable();
+          this.dependentForm.get('lastName')?.enable();
+          this.dependentForm.get('gender')?.enable();
+          this.dependentForm.get('dateOfBirth')?.enable();
+        }
       }
     });
   }
@@ -241,13 +257,11 @@ export class ManagePatientComponent implements OnInit {
 
   savePatient(): void {
     if (this.patientForm.invalid) {
-      // Mark all controls as touched to trigger validation errors
       this.patientForm.markAllAsTouched();
       return;
     }
     const patient = this.patientForm.getRawValue();
 
-    // Convert dateOfBirth to ISO string format if it exists
     if (patient.dateOfBirth) {
       patient.dateOfBirth = new Date(patient.dateOfBirth).toISOString();
     }
@@ -287,13 +301,11 @@ export class ManagePatientComponent implements OnInit {
 
   saveDependent(): void {
     if (this.dependentForm.invalid) {
-      // Mark all controls as touched to trigger validation errors
       this.dependentForm.markAllAsTouched();
       return;
     }
     const dependent = this.dependentForm.getRawValue();
 
-    // Convert dateOfBirth to ISO string format if it exists
     if (dependent.dateOfBirth) {
       dependent.dateOfBirth = new Date(dependent.dateOfBirth).toISOString();
     }
@@ -302,8 +314,8 @@ export class ManagePatientComponent implements OnInit {
       this.loadPatients();
     });
 
-    const addPatientModal = bootstrap.Modal.getInstance(document.getElementById('addPatientModal')!);
-    addPatientModal?.hide();
+    const addDependentModal = bootstrap.Modal.getInstance(document.getElementById('addDependentModal')!);
+    addDependentModal?.hide();
   }
 
 
@@ -316,31 +328,27 @@ export class ManagePatientComponent implements OnInit {
   }
 
 
-
-
   validateAge(control: AbstractControl): ValidationErrors | null {
-    if (!control.value) return null; // Allow empty values (handled by required validator)
+    if (!control.value) return null;
 
-    const birthDate = new Date(control.value); // Directly parse the date
-    const today = new Date(); // Get today's date
+    const birthDate = new Date(control.value);
+    const today = new Date();
 
     let age = today.getFullYear() - birthDate.getFullYear();
 
-    // Check if the birthday has passed in the current year
     const isBirthdayPassed =
       today.getMonth() > birthDate.getMonth() ||
       (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
 
     if (!isBirthdayPassed) {
-      age--; // Adjust if birthday hasn't occurred yet this year
+      age--;
     }
 
-    // Validate if the user must be at least 18 years old (only if dependentId is NOT present)
-    if (!this.userData?.dependentId && age < 18) {
-      return { minAge: true }; // Validation fails
+    if (age < 18) {
+      return { minAge: true };
     }
 
-    return null; // Validation passes
+    return null;
   }
 
 
@@ -352,29 +360,21 @@ export class ManagePatientComponent implements OnInit {
     this.currentPatient = patient;
 
     if (!this.verifyOtpForm) {
-      this.initOtpForm(); // Ensure form is initialized
+      this.initOtpForm();
     }
 
-    console.log('Opening OTP popup for:', patient);
-
     if (patient?.mobile) {
-      this.verifyOtpForm.patchValue({ contact: patient.mobile }); // ✅ Prefill Mobile
+      this.verifyOtpForm.patchValue({ contact: patient.mobile });
     } else {
       console.warn('Patient mobile is missing:', patient);
     }
 
-    // Reset OTP fields
     this.otpControls.controls.forEach(control => control.setValue(''));
-
-    // Send OTP automatically after UI updates
     setTimeout(() => this.sendOtp());
 
-    // Open Bootstrap modal
     const otpModal = new bootstrap.Modal(document.getElementById('otpModal')!);
     otpModal.show();
   }
-
-
 
   sendOtp(): void {
     if (!this.currentPatient?.mobile) {
@@ -405,7 +405,7 @@ export class ManagePatientComponent implements OnInit {
   }
 
   verifyOtp(): void {
-    const otp = this.otpControls.value.join(''); // Combine OTP values
+    const otp = this.otpControls.value.join('');
 
     this.otpService.verifyOtp(this.currentPatient.mobile, otp, this.otpToken).subscribe({
       next: (response) => {
@@ -415,8 +415,6 @@ export class ManagePatientComponent implements OnInit {
           localStorage.setItem(storageKey, JSON.stringify(verificationData));
           const otpModal = bootstrap.Modal.getInstance(document.getElementById('otpModal')!);
           otpModal?.hide();
-
-          // Navigate to patient history after successful verification
           this.router.navigate(['physician/view-patient-history', this.currentPatient.userId]);
         } else {
           this.notificationService.showError('Invalid OTP.');
@@ -431,7 +429,6 @@ export class ManagePatientComponent implements OnInit {
   moveToNext(event: KeyboardEvent, index: number): void {
     const target = event.target as HTMLInputElement;
 
-    // Handle number input and move to the next box
     if (event.key >= '0' && event.key <= '9') {
       const nextInput = target.nextElementSibling as HTMLInputElement;
       if (nextInput) {

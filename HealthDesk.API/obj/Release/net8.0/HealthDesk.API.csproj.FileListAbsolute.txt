@@ -73,3 +73,14 @@ D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\Microsoft.IdentityModel.Proto
 D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\Microsoft.Bcl.Memory.dll
 D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\Twilio.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\BouncyCastle.Cryptography.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\Google.Apis.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\Google.Apis.Auth.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\Google.Apis.Core.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\Google.Apis.Gmail.v1.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\MimeKit.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\System.CodeDom.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\System.Management.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\System.Security.Cryptography.Pkcs.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\runtimes\win\lib\net7.0\System.Management.dll
+D:\IntegrationHD\HealthDesk.Api\bin\Release\net8.0\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll

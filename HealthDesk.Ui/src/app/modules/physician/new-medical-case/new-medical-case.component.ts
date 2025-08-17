@@ -14,9 +14,7 @@ import { DatabaseService } from '../../../shared/services/database.service';
 })
 export class NewMedicalCaseComponent {
   caseForm!: FormGroup;
-  imageFiles: (File | null)[] = [null, null, null];
   imagePreviewUrls: (string | null)[] = [null, null, null];
-  displayImageIndex: number | null = null;
   specialities: string[] = [];
   specialitiesFilterCtrl = new FormControl();
   filteredSpecialitiesOptions!: Observable<string[]>;
@@ -29,7 +27,9 @@ export class NewMedicalCaseComponent {
     this.accountService.getUserData().subscribe({
       next: async (data) => {
         this.userData = data;
-        this.specialities = await this.databaseService.getSpecialities();
+        // FIX 3: Ensure you are mapping to a string array if the service returns objects
+        const specialitiesData = await this.databaseService.getSpecialities();
+        this.specialities = specialitiesData.map((s: any) => s.name); // Adjust '.name' if your property is different
         await this.initializeSearch();
       },
       error: (err) => console.error('Error fetching user data:', err)
@@ -39,12 +39,12 @@ export class NewMedicalCaseComponent {
   initializeForm() {
     this.caseForm = this.fb.group({
       id: [],
-      userId: ['', Validators.required],
-      speciality: [[], Validators.required, Validators.minLength(1)],
+      userId: [''], 
+      speciality: [[], [Validators.required, Validators.minLength(1)]],
       name: ['', Validators.required],
       diagnosis: ['', Validators.required],
       patientInitials: ['', [Validators.required, Validators.minLength(2), Validators.pattern(/^[A-Za-z\-]{2,}$/)]],
-      age: ['', [Validators.min(0.09), Validators.max(150)]],
+      age: ['', [Validators.required, Validators.min(0), Validators.max(150)]],
       images: this.fb.array([this.createImage(), this.createImage(), this.createImage()], [this.atLeastOneDefaultImageValidator()]),
       complaints: this.fb.array([this.createComplaint()], [this.atLeastOneComplaintValidator()]),
       pastHistory: [''],
@@ -78,7 +78,7 @@ export class NewMedicalCaseComponent {
 
   createImage(): FormGroup {
     return this.fb.group({
-      image: ['',],
+      image: [''],
       isDefault: [false]
     });
   }
@@ -103,19 +103,18 @@ export class NewMedicalCaseComponent {
     return this.fb.group({
       id: [],
       name: ['', Validators.required],
-      days: [0, Validators.min(1)]
-    })
-
+      days: [1, [Validators.required, Validators.min(1)]] // Added required validator and default value 1
+    });
   }
 
   addComplaint() {
-    const newComplaint = this.createComplaint();
-    newComplaint.reset({ id: null, name: '', days: 0 });
-    this.complaints.push(newComplaint);
+    this.complaints.push(this.createComplaint());
   }
 
   removeComplaint(index: number) {
-    this.complaints.removeAt(index);
+    if (this.complaints.length > 1) { // Prevent removing the last one
+      this.complaints.removeAt(index);
+    }
   }
 
   triggerFileInput(inputId: string) {
@@ -140,11 +139,15 @@ export class NewMedicalCaseComponent {
     this.images.controls.forEach((ctrl, i) =>
       ctrl.get('isDefault')?.setValue(i === index)
     );
+    this.images.updateValueAndValidity(); // Important: trigger re-validation
   }
 
   submitCase() {
     this.caseForm.markAllAsTouched();
-    if (this.caseForm.invalid) return;
+    if (this.caseForm.invalid) {
+      console.log("Form is invalid. Errors:", this.caseForm.errors);
+      return;
+    };
 
     this.caseForm.get('userId')?.setValue(this.userData.id);
     this.physicianService
@@ -161,7 +164,7 @@ export class NewMedicalCaseComponent {
 
   showDefaultImageError(): boolean {
     return this.images?.hasError('noDefaultImage') &&
-      this.images.controls.some(c => c.touched || c.get('file')?.value);
+      this.images.controls.some(c => c.get('image')?.value);
   }
 
   goBack() {

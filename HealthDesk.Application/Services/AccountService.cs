@@ -117,6 +117,7 @@ public class AccountService : IAccountService
 
             user.BloodGroup = model.BloodGroup;
             user.RelationId = model.RelationId;
+            user.Relationship = model.Relationship;
 
             if (model.Graduation != null)
             {

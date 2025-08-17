@@ -75,7 +75,7 @@ export class OrganizationService {
   }
 
   deleteService(id: string, serviceId: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}/hopital/services/${serviceId}`);
+    return this.http.delete(`${this.apiUrl}/hospital/${id}/services/${serviceId}`);
   }
 
   getAllBrandLibraries(pharmaceuticalId: string): Observable<any[]> {

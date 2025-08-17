@@ -713,4 +713,8 @@ export class GeneratePrescriptionComponent implements OnInit {
   gotToHome() {
     this.router.navigate(['/physician/patient-record']);
   }
+
+  goBack(): void {
+    this.router.navigate(['/physician/patient-record']);
+  }
 }

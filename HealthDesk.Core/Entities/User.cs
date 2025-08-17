@@ -121,6 +121,9 @@ public class User : BaseEntity
     [BsonElement("relation_id")]
     public string RelationId { get; set; }
 
+    [BsonElement("relationship")]
+    public string Relationship { get; set; }
+
     [BsonElement("graduation")]
     public G? Graduation { get; set; }
 

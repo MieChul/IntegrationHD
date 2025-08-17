@@ -50,4 +50,5 @@ public interface IPhysicianService
     Task<IEnumerable<SurveyDto>> GetSurveysSharedWithPhysicianAsync(string physicianId);
     Task<SurveyDto> GetSurveyByIdAsync(string surveyId);
     Task SaveSurveyResponseAsync(string surveyId, SurveyResponseDto responseDto);
+    Task AddDependent(string id, PatientRecordDto dto);
 }

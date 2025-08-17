@@ -21,7 +21,7 @@ export class ViewPatientHistoryComponent implements OnInit {
   patientId: string = '';
 
 
-  constructor(private route: ActivatedRoute, private physicianService: PhysicianService) { }
+  constructor(private route: ActivatedRoute, private physicianService: PhysicianService, private router: Router) { }
 
   ngOnInit(): void {
     this.patientId = this.route.snapshot.paramMap.get('patientId')!;
@@ -40,5 +40,9 @@ export class ViewPatientHistoryComponent implements OnInit {
 
   selectTab(tabName: string): void {
     this.selectedTab = tabName;
+  }
+
+  goBack(): void {
+    this.router.navigate(['/physician/patient-record']);
   }
 }

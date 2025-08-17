@@ -66,7 +66,7 @@ export class PhysicianService {
   }
 
   saveDependent(id: string, patient: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/${id}/patients`, patient);
+    return this.http.post<any>(`${this.apiUrl}/${id}/dependents`, patient);
   }
 
   deletePatient(id: string, patientId: string): Observable<any> {

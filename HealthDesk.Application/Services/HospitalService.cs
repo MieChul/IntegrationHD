@@ -106,7 +106,7 @@ public class HospitalService : IHospitalService
     // 3. Delete a physician from the hospital
     public async Task DeletePhysicianAsync(string hospitalId, string physicianId)
     {
-        var hospital = await _hospitalRepository.GetByIdAsync(hospitalId);
+        var hospital = await GetHospitalByIdAsync(hospitalId);
         RemoveIfNotExpired(hospital.Physicians, r => r.Id == physicianId);
         await _hospitalRepository.UpdateAsync(hospital);
     }
@@ -158,12 +158,7 @@ public class HospitalService : IHospitalService
     public async Task DeleteServiceAsync(string id, string serviceId)
     {
         var hospital = await GetHospitalByIdAsync(id);
-
-        var serviceToRemove = hospital.Services.FirstOrDefault(s => s.Id == serviceId);
-        if (serviceToRemove == null)
-            throw new ArgumentException("Service not found.");
-
-        hospital.Services.Remove(serviceToRemove);
+        RemoveIfNotExpired(hospital.Services, r => r.Id == serviceId);
         await _hospitalRepository.UpdateAsync(hospital);
     }
 
@@ -280,7 +275,7 @@ public class HospitalService : IHospitalService
                 img.ImageName = $@"{medicalCase.Id}_image{count++}.png";
                 medicalCase.CaseImages.Add(new CaseImage
                 {
-                    ImageUrl = $@"/assets/documents/{dto.UserId}/medical_cases/{img.ImageName}",
+                    ImageUrl = $@"/assets/documents/{dto.UserId}/cases/{img.ImageName}",
                     IsDefault = img.IsDefault
                 });
             }

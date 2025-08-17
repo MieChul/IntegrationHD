@@ -258,9 +258,22 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <form [formGroup]="dependentForm" (ngSubmit)="saveDependent()">
+        <form [formGroup]="dependentForm">
+
+          <div class="row" *ngIf="parentDetailsLoaded">
+            <div class="col-12 mb-3">
+              <div class="alert alert-secondary" role="alert">
+                <h6 class="alert-heading fw-bold">Adding Dependent For:</h6>
+                <hr>
+                <div class="d-flex justify-content-between flex-wrap">
+                  <span class="me-3"><strong>Name:</strong> {{ parentDetails.name }}</span>
+                  <span><strong>Address:</strong> {{ parentDetails.address }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="row">
-            <!-- Mobile -->
             <div class="col-md-6 mb-3">
               <mat-form-field appearance="outline" class="w-100">
                 <mat-label>Mobile</mat-label>
@@ -275,7 +288,6 @@
               </mat-form-field>
             </div>
 
-            <!-- Name -->
             <div class="col-md-6 mb-3">
               <mat-form-field appearance="outline" class="w-100">
                 <mat-label>First Name</mat-label>
@@ -315,7 +327,6 @@
           </div>
 
           <div class="row">
-            <!-- Gender -->
             <div class="col-md-6 mb-3">
               <mat-form-field appearance="outline" class="w-100">
                 <mat-label>Gender</mat-label>
@@ -329,7 +340,6 @@
               </mat-form-field>
             </div>
 
-            <!-- Date of Birth -->
             <div class="col-md-6 mb-3">
               <mat-form-field appearance="outline" class="w-100">
                 <mat-label>Date of Birth</mat-label>
@@ -348,7 +358,6 @@
           </div>
 
           <div class="row">
-            <!-- ABHA ID -->
             <div class="col-md-6 mb-3">
               <mat-form-field appearance="outline" class="w-100">
                 <mat-label>ABHA ID</mat-label>
@@ -359,7 +368,6 @@
               </mat-form-field>
             </div>
 
-            <!-- Secondary ID -->
             <div class="col-md-6 mb-3">
               <mat-form-field appearance="outline" class="w-100">
                 <mat-label>Secondary ID</mat-label>
@@ -371,7 +379,6 @@
             </div>
           </div>
 
-          <!-- Save Button -->
           <div class="modal-footer d-flex justify-content-between">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             <button type="button" class="btn btn-primary" (click)="saveDependent()">

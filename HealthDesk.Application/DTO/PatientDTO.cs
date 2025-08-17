@@ -187,7 +187,7 @@ public class ReportDto
     public string Time { get; set; }
     public string Type { get; set; }
     public string Assessment { get; set; }
-    public string Comment { get; set; }
+    public string? Comment { get; set; }
     public string? FilePath { get; set; }
     public decimal? Price { get; set; }
 }

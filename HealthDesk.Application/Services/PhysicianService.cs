@@ -196,7 +196,6 @@ public class PhysicianService : IPhysicianService
             };
             var id = await _userService.Register(user);
             dto.UserId = id;
-            // _messageService.SendSms(dto.Mobile, "Hi, Welcome to HealthDesk. Your profile is created with Username: " + user.Username + " and Password: " + user.Password);
         }
         else if (string.IsNullOrEmpty(dto.Id))
         {
@@ -205,12 +204,16 @@ public class PhysicianService : IPhysicianService
 
         var patient = GenericMapper.Map<PatientRecordDto, PatientRecord>(dto);
 
+        if (string.IsNullOrEmpty(dto.Id) && physician.Patients.Any(p => p.UserId == patient.UserId))
+        {
+            throw new InvalidOperationException("This patient is already associated with your account.");
+        }
+
         if (string.IsNullOrEmpty(dto.Id))
         {
             patient.LastVisitedDate = DateTime.Now;
             physician.Patients.Add(patient);
         }
-
         else
         {
             var existing = physician.Patients.FirstOrDefault(p => p.Id == dto.Id);
@@ -222,19 +225,16 @@ public class PhysicianService : IPhysicianService
 
     public async Task AddDependent(string physicianId, PatientRecordDto dto)
     {
-
         var physician = await _physicianRepository.GetByDynamicPropertyAsync("UserId", physicianId);
-        // Fetch the parent user by ID
         var userEntity = await _userRepository.GetByIdAsync(dto.UserId);
-        if (userEntity == null)
-            throw new KeyNotFoundException("User not found");
 
-        // Check if a Dependent already exists for this user
         User existingDependent = null;
         if (!string.IsNullOrEmpty(userEntity.DependentId))
             existingDependent = await _userRepository.GetByIdAsync(userEntity.DependentId);
         else
             existingDependent = await _userRepository.GetByDynamicPropertyAsync("DependentId", userEntity.Id);
+
+        User dependentUser;
 
         if (existingDependent == null)
         {
@@ -244,17 +244,19 @@ public class PhysicianService : IPhysicianService
                 Mobile = userEntity.Mobile,
                 Email = userEntity.Email,
                 Username = userEntity.Username,
-                DependentId = userEntity.Id,
-                DependentName = $"{userEntity.FirstName} {userEntity.LastName}",
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                BirthDate = Convert.ToString(dto.DateOfBirth),
                 HasDependent = false,
-                CanSwitch = false
+                CanSwitch = false,
+                DependentId = userEntity.Id
             };
 
             await _userRepository.AddAsync(user);
 
             if (string.IsNullOrEmpty(user.Id))
                 throw new InvalidOperationException("Failed to retrieve the generated ID for the new user.");
-            var roleId = string.Empty;
+
             var patient = new Patient
             {
                 UserId = user.Id,
@@ -272,23 +274,36 @@ public class PhysicianService : IPhysicianService
                 Reports = new List<Report>()
             };
             await _patientRepository.AddAsync(patient);
-            roleId = patient.Id;
-            user.Roles = new List<UserRole> { new UserRole { Id = roleId, Role = Role.Patient, Status = "New" } };
-            await _userRepository.UpdateAsync(user);
-            userEntity.HasDependent = true;
-            userEntity.DependentName = $"{user.FirstName} {user.LastName}";
-            await _userRepository.UpdateAsync(userEntity);
 
+            user.Roles = new List<UserRole> { new UserRole { Id = patient.Id, Role = Role.Patient, Status = "New" } };
+            await _userRepository.UpdateAsync(user);
+
+            userEntity.HasDependent = true;
+            userEntity.DependentName = $"{dto.FirstName} {dto.LastName}";
+            userEntity.DependentId = user.Id;
+            await _userRepository.UpdateAsync(userEntity);
+            dependentUser = user;
+        }
+        else
+        {
+            dependentUser = existingDependent;
         }
 
         var patientPhy = GenericMapper.Map<PatientRecordDto, PatientRecord>(dto);
+
+        patientPhy.UserId = dependentUser.Id;
+        patientPhy.IsDependent = true;
+
+        if (string.IsNullOrEmpty(dto.Id) && physician.Patients.Any(p => p.UserId == patientPhy.UserId))
+        {
+            throw new InvalidOperationException("This dependent is already associated with your account.");
+        }
 
         if (string.IsNullOrEmpty(dto.Id))
         {
             patientPhy.LastVisitedDate = DateTime.Now;
             physician.Patients.Add(patientPhy);
         }
-
         else
         {
             var existing = physician.Patients.FirstOrDefault(p => p.Id == dto.Id);
@@ -403,7 +418,7 @@ public class PhysicianService : IPhysicianService
                 img.ImageName = $@"{medicalCase.Id}_image{count++}.png";
                 medicalCase.CaseImages.Add(new CaseImage
                 {
-                    ImageUrl = $@"/assets/documents/{dto.UserId}/medical_cases/{img.ImageName}",
+                    ImageUrl = $@"/assets/documents/{dto.UserId}/cases/{img.ImageName}",
                     IsDefault = img.IsDefault
                 });
             }
@@ -544,21 +559,22 @@ public class PhysicianService : IPhysicianService
         else
             existingDependent = await _userRepository.GetByDynamicPropertyAsync("DependentId", user.Id);
 
-        if (existingDependent != null)
+        if (user != null && user.Roles.Any(r => r.Role == Role.Patient))
         {
-            if (user != null && user.Roles.Any(r => r.Role == Role.Patient))
+            // Return patient details if found
+            return new
             {
-                // Return patient details if found
-                return new
-                {
-                    UserId = existingDependent.Id,
-                    FirstName = existingDependent.FirstName,
-                    MiddleName = existingDependent.MiddleName,
-                    LastName = existingDependent.LastName,
-                    Gender = existingDependent.Gender,
-                    DateOfBirth = existingDependent.BirthDate
-                };
+                PatientName = string.Join(", ", [user.FirstName, user.LastName]),
+                PatientAddress = string.Join(", ", [user.Area, user.City, user.State]),
+                UserId = user?.Id,
+                DependentId = existingDependent?.Id,
+                FirstName = existingDependent?.FirstName,
+                MiddleName = existingDependent?.MiddleName,
+                LastName = existingDependent?.LastName,
+                Gender = existingDependent?.Gender,
+                DateOfBirth = existingDependent?.BirthDate
             }
+        ;
         }
 
         return null;

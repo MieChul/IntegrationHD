@@ -271,6 +271,10 @@ export class DailyActivityComponent implements OnInit {
 
   saveActivity(): void {
     this.activityForm.markAllAsTouched();
+    if (this.activityForm.get('date')?.invalid) {
+      return;
+    }
+
     const formValue = this.activityForm.getRawValue();
 
     const hasValidMeal = formValue.meals.some((meal: any) =>

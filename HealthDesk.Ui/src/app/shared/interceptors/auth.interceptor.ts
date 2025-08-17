@@ -22,36 +22,31 @@ export class AuthInterceptor implements HttpInterceptor {
   ) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // Show loader before processing the request
     this.loaderService.show();
 
     const isGetRequest = req.method.toLowerCase() === 'get';
 
     return next.handle(req).pipe(
       tap((event) => {
-        // Handle successful response
         if (event instanceof HttpResponse) {
           const responseBody = event.body;
-
-          // Check if the response contains a success message and is not a GET request
-          if (!isGetRequest && responseBody?.success === true && responseBody?.message) {
-            this.notificationService.showSuccess(responseBody.message);
+          const message = responseBody?.message;
+          if (!isGetRequest && responseBody?.success === true && typeof message === 'string' && message.trim() !== '') {
+            this.notificationService.showSuccess(message);
           }
         }
       }),
       catchError((error: HttpErrorResponse) => {
-        // Handle error response
         this.loaderService.hide();
+        const serverMessage = error.error?.message;
+        const genericErrorMessage = 'Something went wrong, please try again later or contact admin';
 
-        // Check if the error is an expected server error and is not a GET request
-        if (!isGetRequest && error.error?.success === false && error.error?.message) {
-          this.notificationService.showError(error.error.message);
-        } else if (!isGetRequest) {
-          // Generic error handling for unexpected errors on non-GET requests
-          this.notificationService.showError('An unexpected error occurred.');
+        if (typeof serverMessage === 'string' && serverMessage.trim() !== '') {
+          this.notificationService.showError(serverMessage);
+        } else {
+          this.notificationService.showError(genericErrorMessage);
         }
 
-        // Handle 401 Unauthorized or 403 Forbidden
         if (error.status === 401 || error.status === 403) {
           this.authService.logout();
         }
@@ -59,7 +54,6 @@ export class AuthInterceptor implements HttpInterceptor {
         return throwError(() => error);
       }),
       finalize(() => {
-        // Hide loader after the request is complete
         this.loaderService.hide();
       })
     );

@@ -450,10 +450,30 @@ export class HospitalManagementComponent implements OnInit {
   }
 
   deleteService(service: any): void {
+    this.organizationService.deleteService(this.userData.id, service.id).subscribe({
+      next: (response) => {
+        console.log(response.message);
+        this.loadData();
+      },
+      error: (error) => {
+        console.error('Error deleting service:', error);
+      }
+    });
 
   }
 
   deletePhysician(physician: any): void {
+    if (!this.userData.id || !physician.id) return;
+
+    this.organizationService.deletePhysician(this.userData.id, physician.id).subscribe({
+      next: (response) => {
+        console.log(response.message);
+        this.loadData();
+      },
+      error: (error) => {
+        console.error('Error deleting physician:', error);
+      }
+    });
 
   }
 

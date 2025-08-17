@@ -2,6 +2,12 @@
   <h1 class="animated-heading">
     <i class="bi bi-file-earmark-medical me-2"></i>Generate Prescription
   </h1>
+  <div class="col-sm-1 text-start mb-2">
+    <button type="button" class="btn btn-secondary" (click)="goBack()" data-bs-toggle="tooltip"
+      data-bs-placement="right" title="Back">
+      <i class="bi bi-arrow-left"></i>
+    </button>
+  </div>
   <form [formGroup]="prescriptionForm">
     <div class="header mb-3">
       <button *ngIf="currentTabIndex === 3" class="btn btn-primary" (click)="gotToHome()">
