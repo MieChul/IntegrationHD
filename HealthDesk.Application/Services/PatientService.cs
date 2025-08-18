@@ -1156,11 +1156,8 @@ public class PatientService : IPatientService
 
     public async Task<Remedy> GetRemedy(string userId, string id)
     {
-        var patient = await _patientRepository.GetByDynamicPropertyAsync("UserId", userId);
-        if (patient == null)
-            throw new ArgumentException("Patient not found.");
-
-        return patient.HomeRemedies.Where(h => h.Id == id).FirstOrDefault();
+        var remedies = _patientRepository.GetAllRemedies();
+        return remedies.Where(h => h.Id == id).FirstOrDefault();
     }
 
     public async Task SaveComment(string remedyUserId, string remedyId, CommentDto dto)

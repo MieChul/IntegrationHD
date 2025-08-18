@@ -2,126 +2,148 @@
   <h1 class="animated-heading">
     Welcome!! How can I help you today?
   </h1>
-  <ng-container *ngIf="userData && userData.status">
+
+  <ng-container *ngIf="userData">
     <div *ngIf="userData.status !== 'Approved' && userData.status !== 'Submitted'"
-      class=" blink-message alert bg-danger fade show mt-3" role="alert">
+      class="blink-message alert bg-danger fade show mt-3" role="alert">
       <strong>Complete Your Profile!</strong> To access HealthDesk utilities, please complete your profile. Clicking any
-      button will redirect you to the profile page.<a href="account/" class="btn btn-primary">Click Here</a>
+      button will redirect you to the profile page.<a href="account/" class="btn btn-primary ms-2">Click Here</a>
     </div>
-    <div *ngIf="userData.isConfirm" class=" blink-message alert bg-info fade show mt-3" role="alert">
+    <div *ngIf="userData.isConfirm" class="blink-message alert bg-info fade show mt-3" role="alert">
       To access HealthDesk utilities as Physician, please complete your profile and confirm. Clicking any button will
-      redirect you to the profile page.<a href="account/" class="btn btn-primary">Click Here</a>
+      redirect you to the profile page.<a href="account/" class="btn btn-primary ms-2">Click Here</a>
     </div>
-    <div *ngIf="userData.status === 'Submitted'" class=" blink-message alert bg-warning fade show mt-3" role="alert">
+    <div *ngIf="userData.status === 'Submitted'" class="blink-message alert bg-warning fade show mt-3" role="alert">
       <strong>Thank you for submitting your profile!</strong> We are currently reviewing it, and once approved, you will
       gain access to HealthDesk utilities.
     </div>
   </ng-container>
 
-  <div class="row justify-content-center mb-2">
-    <div class="col card small">
-      <div class="h-100 fade-in">
-        <img src="assets/clinic_management.png" class="card-img-top" alt="">
-        <div class="card-body">
-          <h5 class="card-title">Clinic Management</h5>
-          <p class="card-text">Add/edit clinic(s) and clinic timings.</p>
-          <a *ngIf="userData.status !== 'Approved' || userData.isConfirm" href="account/" class="btn btn-primary btn-pin-bottom">Click
-            here to visit <i class="bi bi-arrow-right"></i></a>
+  <div class="row justify-content-center mt-3">
+    <div class="col-12 col-md-6 col-lg-3 mb-4">
+      <div class="card h-100 fade-in">
+        <img src="assets/clinic_management.png" class="card-img-top" alt="Clinic Management">
+        <div class="card-body d-flex flex-column">
+          <div>
+            <h5 class="card-title">Clinic Management</h5>
+            <p class="card-text">Add/edit clinic(s) and clinic timings.</p>
+          </div>
+          <a *ngIf="userData.status !== 'Approved' || userData.isConfirm" href="account/"
+            class="btn btn-primary mt-auto">Click here to visit <i class="bi bi-arrow-right"></i></a>
           <a *ngIf="userData.status === 'Approved' && !userData.isConfirm" href="physician/manage-clinic"
-            class="btn btn-primary btn-pin-bottom">Click here to visit <i class="bi bi-arrow-right"></i></a>
+            class="btn btn-primary mt-auto">Click here to visit <i class="bi bi-arrow-right"></i></a>
         </div>
       </div>
     </div>
-    <div class="col card small">
-      <div class="h-100 fade-in">
-        <img src="assets/design-prescription.png" class="card-img-top" alt="">
-        <div class="card-body">
-          <h5 class="card-title">Prescription Format</h5>
-          <p class="card-text">Design your own prescription formats/templates.</p>
-          <a *ngIf="userData.status !== 'Approved' || userData.isConfirm" href="account/" class="btn btn-primary ">Click
-            here to visit <i class="bi bi-arrow-right"></i></a>
+
+    <div class="col-12 col-md-6 col-lg-3 mb-4">
+      <div class="card h-100 fade-in">
+        <img src="assets/design-prescription.png" class="card-img-top" alt="Prescription Format">
+        <div class="card-body d-flex flex-column">
+          <div>
+            <h5 class="card-title">Prescription Format</h5>
+            <p class="card-text">Design your own prescription formats/templates.</p>
+          </div>
+          <a *ngIf="userData.status !== 'Approved' || userData.isConfirm" href="account/"
+            class="btn btn-primary mt-auto">Click here to visit <i class="bi bi-arrow-right"></i></a>
           <a *ngIf="userData.status === 'Approved' && !userData.isConfirm" href="physician/design-prescription"
-            class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
+            class="btn btn-primary mt-auto">Click here to visit <i class="bi bi-arrow-right"></i></a>
         </div>
       </div>
     </div>
-    <div class="col card small">
-      <div class="h-100 fade-in">
-        <img src="assets/profile.png" class="card-img-top" alt="">
-        <div class="card-body">
-          <h5 class="card-title">Laboratory Profile</h5>
-          <p class="card-text">Add laboratory investigations for specific disease to prevent repetition.</p>
-          <a *ngIf="userData.status !== 'Approved' || userData.isConfirm" href="account/" class="btn btn-primary">Click
-            here to visit <i class="bi bi-arrow-right"></i></a>
+
+    <div class="col-12 col-md-6 col-lg-3 mb-4">
+      <div class="card h-100 fade-in">
+        <img src="assets/profile.png" class="card-img-top" alt="Laboratory Profile">
+        <div class="card-body d-flex flex-column">
+          <div>
+            <h5 class="card-title">Laboratory Profile</h5>
+            <p class="card-text">Add laboratory investigations for specific disease to prevent repetition.</p>
+          </div>
+          <a *ngIf="userData.status !== 'Approved' || userData.isConfirm" href="account/"
+            class="btn btn-primary mt-auto">Click here to visit <i class="bi bi-arrow-right"></i></a>
           <a *ngIf="userData.status === 'Approved' && !userData.isConfirm" href="physician/lab-profile"
-            class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
+            class="btn btn-primary mt-auto">Click here to visit <i class="bi bi-arrow-right"></i></a>
         </div>
       </div>
     </div>
-    <div class="col card small">
-      <div class="h-100 fade-in">
-        <img src="assets/patient_management.jpg" class="card-img-top" alt="">
-        <div class="card-body">
-          <h5 class="card-title">Patient Management</h5>
-          <p class="card-text">View/update patient records and generate prescription/medical certificate.</p>
-          <a *ngIf="userData.status !== 'Approved' || userData.isConfirm" href="account/" class="btn btn-primary">Click
-            here to visit <i class="bi bi-arrow-right"></i></a>
+
+    <div class="col-12 col-md-6 col-lg-3 mb-4">
+      <div class="card h-100 fade-in">
+        <img src="assets/patient_management.jpg" class="card-img-top" alt="Patient Management">
+        <div class="card-body d-flex flex-column">
+          <div>
+            <h5 class="card-title">Patient Management</h5>
+            <p class="card-text">View/update patient records and generate prescription/medical certificate.</p>
+          </div>
+          <a *ngIf="userData.status !== 'Approved' || userData.isConfirm" href="account/"
+            class="btn btn-primary mt-auto">Click here to visit <i class="bi bi-arrow-right"></i></a>
           <a *ngIf="userData.status === 'Approved' && !userData.isConfirm" href="physician/patient-record"
-            class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
+            class="btn btn-primary mt-auto">Click here to visit <i class="bi bi-arrow-right"></i></a>
         </div>
       </div>
     </div>
-  </div>
-  <div class="row justify-content-center">
-    <div class="col card small">
-      <div class="h-100 fade-in">
-        <img src="assets/appointment.png" class="card-img-top" alt="">
-        <div class="card-body">
-          <h5 class="card-title">Appointments</h5>
-          <p class="card-text">View/accept/modify patient appointments.</p>
-          <a *ngIf="userData.status !== 'Approved' || userData.isConfirm" href="account/" class="btn btn-primary btn-pin-bottom">Click
-            here to visit <i class="bi bi-arrow-right"></i></a>
+
+    <div class="col-12 col-md-6 col-lg-3 mb-4">
+      <div class="card h-100 fade-in">
+        <img src="assets/appointment.png" class="card-img-top" alt="Appointments">
+        <div class="card-body d-flex flex-column">
+          <div>
+            <h5 class="card-title">Appointments</h5>
+            <p class="card-text">View/accept/modify patient appointments.</p>
+          </div>
+          <a *ngIf="userData.status !== 'Approved' || userData.isConfirm" href="account/"
+            class="btn btn-primary mt-auto">Click here to visit <i class="bi bi-arrow-right"></i></a>
           <a *ngIf="userData.status === 'Approved' && !userData.isConfirm" href="physician/appointments"
-            class="btn btn-primary btn-pin-bottom">Click here to visit <i class="bi bi-arrow-right"></i></a>
+            class="btn btn-primary mt-auto">Click here to visit <i class="bi bi-arrow-right"></i></a>
         </div>
       </div>
     </div>
-    <div class="col card small">
-      <div class="h-100 fade-in">
-        <img src="assets/medical-journal.png" class="card-img-top" alt="">
-        <div class="card-body">
-          <h5 class="card-title">Medical Journals</h5>
-          <p class="card-text">Access medical journals information.</p>
-          <a *ngIf="userData.status !== 'Approved' || userData.isConfirm" href="account/" class="btn btn-primary">Click
-            here to visit <i class="bi bi-arrow-right btn-pin-bottom"></i></a>
+
+    <div class="col-12 col-md-6 col-lg-3 mb-4">
+      <div class="card h-100 fade-in">
+        <img src="assets/medical-journal.png" class="card-img-top" alt="Medical Journals">
+        <div class="card-body d-flex flex-column">
+          <div>
+            <h5 class="card-title">Medical Journals</h5>
+            <p class="card-text">Access medical journals information.</p>
+          </div>
+          <a *ngIf="userData.status !== 'Approved' || userData.isConfirm" href="account/"
+            class="btn btn-primary mt-auto">Click here to visit <i class="bi bi-arrow-right"></i></a>
           <a *ngIf="userData.status === 'Approved' && !userData.isConfirm" href="physician/medical-journal"
-            class="btn btn-primary btn-pin-bottom">Click here to visit <i class="bi bi-arrow-right "></i></a>
+            class="btn btn-primary mt-auto">Click here to visit <i class="bi bi-arrow-right"></i></a>
         </div>
       </div>
     </div>
-    <div class="col card small">
-      <div class="h-100 fade-in">
-        <img src="assets/cases.png" class="card-img-top" alt="">
-        <div class="card-body">
-          <h5 class="card-title">Medical Cases</h5>
-          <p class="card-text">Add/view interesting/unique medical cases and share it with collegues/fraternity.</p>
-          <a *ngIf="userData.status !== 'Approved' || userData.isConfirm" href="account/" class="btn btn-primary">Click
-            here to visit <i class="bi bi-arrow-right"></i></a>
+
+    <div class="col-12 col-md-6 col-lg-3 mb-4">
+      <div class="card h-100 fade-in">
+        <img src="assets/cases.png" class="card-img-top" alt="Medical Cases">
+        <div class="card-body d-flex flex-column">
+          <div>
+            <h5 class="card-title">Medical Cases</h5>
+            <p class="card-text">Add/view interesting/unique medical cases and share it with collegues/fraternity.</p>
+          </div>
+          <a *ngIf="userData.status !== 'Approved' || userData.isConfirm" href="account/"
+            class="btn btn-primary mt-auto">Click here to visit <i class="bi bi-arrow-right"></i></a>
           <a *ngIf="userData.status === 'Approved' && !userData.isConfirm" href="physician/medical-cases"
-            class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
+            class="btn btn-primary mt-auto">Click here to visit <i class="bi bi-arrow-right"></i></a>
         </div>
       </div>
     </div>
-    <div class="col card small">
-      <div class="h-100 fade-in">
-        <img src="assets/survey.png" class="card-img-top" alt="">
-        <div class="card-body">
-          <h5 class="card-title">Surveys</h5>
-          <p class="card-text">View/access surveys to provide opinions to pharmaceutical companies.</p>
-          <a *ngIf="userData.status !== 'Approved' || userData.isConfirm" href="account/" class="btn btn-primary">Click
-            here to visit <i class="bi bi-arrow-right"></i></a>
+
+    <div class="col-12 col-md-6 col-lg-3 mb-4">
+      <div class="card h-100 fade-in">
+        <img src="assets/survey.png" class="card-img-top" alt="Surveys">
+        <div class="card-body d-flex flex-column">
+          <div>
+            <h5 class="card-title">Surveys</h5>
+            <p class="card-text">View/access surveys to provide opinions to pharmaceutical companies.</p>
+          </div>
+          <a *ngIf="userData.status !== 'Approved' || userData.isConfirm" href="account/"
+            class="btn btn-primary mt-auto">Click here to visit <i class="bi bi-arrow-right"></i></a>
           <a *ngIf="userData.status === 'Approved' && !userData.isConfirm" href="physician/survey"
-            class="btn btn-primary">Click here to visit <i class="bi bi-arrow-right"></i></a>
+            class="btn btn-primary mt-auto">Click here to visit <i class="bi bi-arrow-right"></i></a>
         </div>
       </div>
     </div>

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HealthDesk.API.Controllers;
 
 [ApiController]
-[Authorize(Policy = "AnyAuthenticated")]
+[Authorize]
 [Route("api/[controller]")]
 public class AccountController : ControllerBase
 {

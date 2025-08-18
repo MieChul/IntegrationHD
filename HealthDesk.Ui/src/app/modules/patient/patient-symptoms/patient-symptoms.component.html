@@ -31,7 +31,7 @@
                 </div>
             </form>
         </div>
-        <div class="col-md-4 col-sm-6 d-flex justify-content-end">
+        <div class="col-md-4 col-sm-12 d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
             <button class="btn btn-primary" (click)="openSymptomModal(false)">Add Symptom</button>
         </div>
     </div>
@@ -52,20 +52,37 @@
             </thead>
             <tbody>
                 <tr *ngFor="let symptom of filteredSymptomsData; let i = index">
-                    <td>{{ symptom.dateOfOnset | date: 'dd-MM-yyyy' }}</td>
-                    <td>{{ symptom.timeOfOnset }}</td>
-                    <td>{{ symptom.endDate ? (symptom.endDate | date: 'dd-MM-yyyy') : 'Ongoing' }}</td>
-                    <td>{{ symptom.symptomType }}</td>
-                    <td>{{ symptom.description }}</td>
-                    <td>{{ symptom.severity }}</td>
-                    <td>{{ symptom.comment }}</td>
-                    <td class="text-center align-middle text-nowrap">
-                        <button class="btn btn-warning btn-sm me-1" (click)="openSymptomModal(true,symptom)">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm" (click)="deleteSymptom(symptom)">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                    <td data-label="Date of Onset">
+                        <span class="data-value">{{ symptom.dateOfOnset | date: 'dd-MM-yyyy' }}</span>
+                    </td>
+                    <td data-label="Time of Onset">
+                        <span class="data-value">{{ symptom.timeOfOnset }}</span>
+                    </td>
+                    <td data-label="End Date">
+                        <span class="data-value">{{ symptom.endDate ? (symptom.endDate | date: 'dd-MM-yyyy') : 'Ongoing'
+                            }}</span>
+                    </td>
+                    <td data-label="Symptom Type">
+                        <span class="data-value">{{ symptom.symptomType }}</span>
+                    </td>
+                    <td data-label="Description">
+                        <span class="data-value">{{ symptom.description }}</span>
+                    </td>
+                    <td data-label="Severity">
+                        <span class="data-value">{{ symptom.severity }}</span>
+                    </td>
+                    <td data-label="Comment">
+                        <span class="data-value">{{ symptom.comment }}</span>
+                    </td>
+                    <td data-label="Action" class="text-center align-middle text-nowrap">
+                        <span class="data-value">
+                            <button class="btn btn-warning btn-sm me-1" (click)="openSymptomModal(true,symptom)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" (click)="deleteSymptom(symptom)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </span>
                     </td>
                 </tr>
             </tbody>

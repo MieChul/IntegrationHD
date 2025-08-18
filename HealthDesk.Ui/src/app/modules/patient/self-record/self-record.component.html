@@ -32,7 +32,7 @@
     </div>
 
     <!-- Right: Button -->
-    <div class="col-md-4 col-sm-12 d-flex flex-column align-items-md-end align-items-start mt-3 mt-md-0">
+    <div class="col-md-4 col-sm-12 d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
       <button class="btn btn-primary mb-2" (click)="addSelfRecord()">Add Self Record</button>
     </div>
   </div>
@@ -50,24 +50,34 @@
       </thead>
       <tbody>
         <tr *ngFor="let record of filteredSelfRecords">
-          <td>{{ record.date | date: 'dd-MM-yyyy' }}</td>
-          <td>{{ record.time}}</td>
-          <td>{{ record.type }}</td>
-          <td>
-            <ng-container *ngIf="record.type === 'Blood Pressure'; else normalValue">
-              {{ record.value1 }} / {{ record.value2 }} {{ record.unit }}
-            </ng-container>
-            <ng-template #normalValue>
-              {{ record.value1 }} {{ record.unit }}
-            </ng-template>
+          <td data-label="Date">
+            <span class="data-value">{{ record.date | date: 'dd-MM-yyyy' }}</span>
           </td>
-          <td>
-            <button class="btn btn-warning btn-sm me-1" (click)="editSelfRecord(record)">
-              <i class="bi bi-pencil"></i>
-            </button>
-            <button class="btn btn-danger btn-sm" (click)="deleteSelfRecord(record)">
-              <i class="bi bi-trash"></i>
-            </button>
+          <td data-label="Time">
+            <span class="data-value">{{ record.time }}</span>
+          </td>
+          <td data-label="Type">
+            <span class="data-value">{{ record.type }}</span>
+          </td>
+          <td data-label="Value">
+            <span class="data-value">
+              <ng-container *ngIf="record.type === 'Blood Pressure'; else normalValue">
+                {{ record.value1 }} / {{ record.value2 }} {{ record.unit }}
+              </ng-container>
+              <ng-template #normalValue>
+                {{ record.value1 }} {{ record.unit }}
+              </ng-template>
+            </span>
+          </td>
+          <td data-label="Action">
+            <span class="data-value">
+              <button class="btn btn-warning btn-sm me-1" (click)="editSelfRecord(record)">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn btn-danger btn-sm" (click)="deleteSelfRecord(record)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </span>
           </td>
         </tr>
       </tbody>

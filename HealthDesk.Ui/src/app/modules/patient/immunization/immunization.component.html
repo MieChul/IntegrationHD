@@ -31,7 +31,7 @@
                 </div>
             </form>
         </div>
-        <div class="col-md-4 col-sm-6 d-flex justify-content-end">
+        <div class="col-md-4 col-sm-12 d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
             <button class="btn btn-primary" (click)="openImmunizationModal(false)">Add Immunization</button>
         </div>
     </div>
@@ -52,20 +52,37 @@
             </thead>
             <tbody>
                 <tr *ngFor="let immunization of filteredimmunizationRecords">
-                    <td>{{ immunization.date | date: 'dd-MM-yyyy' }}</td>
-                    <td>{{ immunization.vaccine }}</td>
-                    <td>{{ immunization.disease }}</td>
-                    <td>{{ immunization.route }}</td>
-                    <td>{{ immunization.dosageForm }}</td>
-                    <td>{{ immunization.details }}</td>
-                    <td>{{ immunization.price }}</td>
-                    <td class="text-center align-middle text-nowrap">
-                        <button class="btn btn-warning btn-sm me-1" (click)="openImmunizationModal(true,immunization)">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm" (click)="deleteImmunization(immunization)">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                    <td data-label="Date">
+                        <span class="data-value">{{ immunization.date | date: 'dd-MM-yyyy' }}</span>
+                    </td>
+                    <td data-label="Vaccine">
+                        <span class="data-value">{{ immunization.vaccine }}</span>
+                    </td>
+                    <td data-label="Preventable Disease">
+                        <span class="data-value">{{ immunization.disease }}</span>
+                    </td>
+                    <td data-label="Route">
+                        <span class="data-value">{{ immunization.route }}</span>
+                    </td>
+                    <td data-label="Dosage Form">
+                        <span class="data-value">{{ immunization.dosageForm }}</span>
+                    </td>
+                    <td data-label="Dosage Details">
+                        <span class="data-value">{{ immunization.details }}</span>
+                    </td>
+                    <td data-label="Price">
+                        <span class="data-value">{{ immunization.price }}</span>
+                    </td>
+                    <td data-label="Action" class="text-nowrap">
+                        <span class="data-value">
+                            <button class="btn btn-warning btn-sm me-1"
+                                (click)="openImmunizationModal(true, immunization)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" (click)="deleteImmunization(immunization)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </span>
                     </td>
                 </tr>
             </tbody>

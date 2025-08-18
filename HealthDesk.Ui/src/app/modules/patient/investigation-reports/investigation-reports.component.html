@@ -33,7 +33,7 @@
             </div>
 
         </div>
-        <div class="col-md-4 col-sm-6 d-flex justify-content-end flex-wrap">
+        <div class="col-md-4 col-sm-12 d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
             <button class="btn btn-primary" (click)="openReportModal(false)">Add Investigation</button>
         </div>
     </div>
@@ -53,22 +53,37 @@
             </thead>
             <tbody>
                 <tr *ngFor="let report of filteredInvestigationReports; let i = index">
-                    <td>{{ report.date | date: 'dd-MM-yyyy' }}</td>
-                    <td>{{ report.time }}</td>
-                    <td>{{ report.type }}</td>
-                    <td>{{ report.assessment }}</td>
-                    <td>{{ report.comment }}</td>
-                    <td>{{ report.price }}</td>
-                    <td>
-                        <button *ngIf="report.filePath" class="btn btn-info btn-sm me-1" (click)="viewReport(report)">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                         <button class="btn btn-warning btn-sm me-1" (click)="openReportModal(true,report)">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm" (click)="deleteReport(report)">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                    <td data-label="Date">
+                        <span class="data-value">{{ report.date | date: 'dd-MM-yyyy' }}</span>
+                    </td>
+                    <td data-label="Time">
+                        <span class="data-value">{{ report.time }}</span>
+                    </td>
+                    <td data-label="Type">
+                        <span class="data-value">{{ report.type }}</span>
+                    </td>
+                    <td data-label="Assessment">
+                        <span class="data-value">{{ report.assessment }}</span>
+                    </td>
+                    <td data-label="Comment">
+                        <span class="data-value">{{ report.comment }}</span>
+                    </td>
+                    <td data-label="Price">
+                        <span class="data-value">{{ report.price }}</span>
+                    </td>
+                    <td data-label="Action">
+                        <span class="data-value">
+                            <button *ngIf="report.filePath" class="btn btn-info btn-sm me-1"
+                                (click)="viewReport(report)">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-warning btn-sm me-1" (click)="openReportModal(true,report)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" (click)="deleteReport(report)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </span>
                     </td>
                 </tr>
             </tbody>

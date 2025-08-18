@@ -1,0 +1,49 @@
+.tabs-container-mobile {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    .nav-tabs {
+        flex-wrap: nowrap;
+        border-bottom: none;
+    }
+
+    .nav-link {
+        white-space: nowrap;
+    }
+}
+
+.remedy-column {
+    border-right: 1px solid #ccc;
+
+    @media (max-width: 991.98px) {
+        border-right: none;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    &.no-border,
+    &:last-child {
+        border-right: none;
+        border-bottom: none;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .remedy-column {
+        .card {
+            min-width: 0;
+        }
+
+        .card-body {
+            overflow-wrap: break-word;
+        }
+    }
+}

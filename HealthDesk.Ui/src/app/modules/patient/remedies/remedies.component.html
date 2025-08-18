@@ -3,8 +3,8 @@
     <i class="bi bi-journal-medical me-2"></i>Home Remedies
   </h2>
 
-  <div class="row mb-3 align-items-center">
-    <div class="col-md-4">
+  <div class="row mb-3 align-items-center g-3">
+    <div class="col-md-8 col-lg-6">
       <mat-form-field appearance="outline" class="w-100">
         <mat-label>Select Home Remedy For</mat-label>
         <mat-select multiple [(ngModel)]="searchValue" name="searchValue" (ngModelChange)="filterRemedies()">
@@ -19,8 +19,7 @@
       </mat-form-field>
 
     </div>
-    <div class="col-md-4 "></div>
-    <div class="col-md-4 text-end">
+    <div class="col-md-4 col-lg-6 text-center text-md-end">
       <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#preferencesModal">
         Select Preferences for Choice
       </button>
@@ -28,96 +27,101 @@
   </div>
 
   <!-- Main Tabs -->
-  <ul class="nav nav-tabs" id="remediesTabs" role="tablist">
-    <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="others-tab" data-bs-toggle="tab" data-bs-target="#others" type="button"
-        role="tab" aria-controls="others" aria-selected="true">
-        Home Remedies
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" id="yours-tab" data-bs-toggle="tab" data-bs-target="#yours" type="button" role="tab"
-        aria-controls="yours" aria-selected="false">
-        My Home Remedies
-      </button>
-    </li>
-  </ul>
+  <div class="tabs-container-mobile">
+    <ul class="nav nav-tabs" id="remediesTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="others-tab" data-bs-toggle="tab" data-bs-target="#others" type="button"
+          role="tab" aria-controls="others" aria-selected="true">
+          Home Remedies
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="yours-tab" data-bs-toggle="tab" data-bs-target="#yours" type="button" role="tab"
+          aria-controls="yours" aria-selected="false">
+          My Home Remedies
+        </button>
+      </li>
+    </ul>
+  </div>
+
   <div class="tab-content" id="remediesTabsContent">
     <!-- Others Remedies Tab with Sub Tabs -->
     <div class="tab-pane fade show active" id="others" role="tabpanel" aria-labelledby="others-tab">
       <!-- Sub Tabs -->
-      <ul class="nav nav-tabs mt-3" id="remediesSubTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="home-sub-tab" data-bs-toggle="tab" data-bs-target="#homeSub" type="button"
-            role="tab" aria-controls="homeSub" aria-selected="true" (click)="setActiveSubTab('home')">All</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="trending-sub-tab" data-bs-toggle="tab" data-bs-target="#trendingSub"
-            type="button" role="tab" aria-controls="trendingSub" aria-selected="false"
-            (click)="setActiveSubTab('trending')">Trending</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="latest-sub-tab" data-bs-toggle="tab" data-bs-target="#latestSub" type="button"
-            role="tab" aria-controls="latestSub" aria-selected="false"
-            (click)="setActiveSubTab('latest')">Latest</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="mychoice-sub-tab" data-bs-toggle="tab" data-bs-target="#mychoiceSub"
-            type="button" role="tab" aria-controls="mychoiceSub" aria-selected="false"
-            (click)="setActiveSubTab('mychoice')">My Choice</button>
-        </li>
-      </ul>
+      <div class="tabs-container-mobile">
+        <ul class="nav nav-tabs mt-3" id="remediesSubTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="home-sub-tab" data-bs-toggle="tab" data-bs-target="#homeSub"
+              type="button" role="tab" aria-controls="homeSub" aria-selected="true"
+              (click)="setActiveSubTab('home')">All</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="trending-sub-tab" data-bs-toggle="tab" data-bs-target="#trendingSub"
+              type="button" role="tab" aria-controls="trendingSub" aria-selected="false"
+              (click)="setActiveSubTab('trending')">Trending</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="latest-sub-tab" data-bs-toggle="tab" data-bs-target="#latestSub" type="button"
+              role="tab" aria-controls="latestSub" aria-selected="false"
+              (click)="setActiveSubTab('latest')">Latest</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="mychoice-sub-tab" data-bs-toggle="tab" data-bs-target="#mychoiceSub"
+              type="button" role="tab" aria-controls="mychoiceSub" aria-selected="false"
+              (click)="setActiveSubTab('mychoice')">My Choice</button>
+          </li>
+        </ul>
+      </div>
+
       <div class="tab-content mt-3" id="remediesSubTabsContent">
         <!-- Home Sub Tab: Three Columns for Latest, Trending and My Choice -->
         <div class="tab-pane fade show active" id="homeSub" role="tabpanel" aria-labelledby="home-sub-tab">
           <div class="row">
             <!-- Trending Column -->
-            <div class="col-md-4" style="border-right: 1px solid #ccc;">
+            <div class="col-lg-4 remedy-column">
               <h4>Top 5 Trending</h4>
               <div *ngIf="trendingRemedies.length > 0; else noTrendingHome">
-                <div class="row row-cols-1 g-2">
-                  <div class="col" *ngFor="let remedy of trendingRemedies">
-                    <div class="card h-100">
-                      <img [src]="remedy.thumbnailUrl" class="card-img-top" alt="Thumbnail"
-                        style="height: 120px; object-fit: cover" />
-                      <div class="card-body p-2">
-                        <h6 class="card-title fw-bold text-info text-truncate">{{ remedy.name }}</h6>
-                        <p class="card-text text-truncate">{{ remedy.description }}</p>
-                        <p class="card-text">
-                          <small><b>Submitted by:</b> {{ remedy.submittedBy }}</small>
-                        </p>
-                        <p class="card-text text-truncate-remedy" data-bs-toggle="tooltip" data-bs-placement="top"
-                          [attr.title]="remedy.remedyFor?.join(', ')">
-                          <small><b>Remedy For:</b>
-                            <ng-container *ngIf=" remedy.remedyFor?.length; else noSpec">
-                              {{ remedy.remedyFor.join(', ') | slice:0:50 }}<span
-                                *ngIf=" remedy.remedyFor.join(', ').length > 50">...</span>
-                            </ng-container>
-                            <ng-template #noSpec>None</ng-template>
-                          </small>
-                        </p>
-                        <div>
-                          <button class="btn btn-primary btn-sm me-1" (click)="viewCase(remedy.id)">View</button>
-                          <button
-                          *ngIf="remedy?.userId !== userData?.id"
-                            [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(remedy),'btn-info': hasLiked(remedy)}"
-                            class="btn-sm me-1" (click)="toggleLike(remedy.userId, remedy.id)"
-                            [attr.title]="hasLiked(remedy) ? 'Unlike' : 'Like'">
-                            <i class="bi"
-                              [ngClass]="hasLiked(remedy)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
-                            <span class="ms-1">{{ remedy.likedBy?.length || 0 }}</span>
-                          </button>
-                          <button  *ngIf="remedy?.userId !== userData?.id" class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Comment" (click)="viewComments(remedy)">
-                            <i class="bi bi-chat"></i>
-                            <span class="ms-1">{{ remedy.comments?.length ?? 0 }}</span>
-                          </button>
-                          <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
-                            title="Share" (click)="shareCase(remedy.id)">
-                            <i class="bi bi-share"></i>
-                            <span class="ms-1">&nbsp;</span>
-                          </button>
-                        </div>
+                <div class="mb-2" *ngFor="let remedy of trendingRemedies">
+                  <div class="card">
+                    <img [src]="remedy.thumbnailUrl" class="card-img-top" alt="Thumbnail"
+                      style="height: 120px; object-fit: cover" />
+                    <div class="card-body p-2">
+                      <h6 class="card-title fw-bold text-info text-truncate">{{ remedy.name }}</h6>
+                      <p class="card-text">{{ remedy.description | slice:0:50 }}<span
+                          *ngIf=" remedy.remedyFor.join(', ').length > 50">...</span>
+                      <p class="card-text">
+                        <small><b>Submitted by:</b> {{ remedy.submittedBy }}</small>
+                      </p>
+                      <p class="card-text text-truncate-remedy" data-bs-toggle="tooltip" data-bs-placement="top"
+                        [attr.title]="remedy.remedyFor?.join(', ')">
+                        <small><b>Remedy For:</b>
+                          <ng-container *ngIf=" remedy.remedyFor?.length; else noSpec">
+                            {{ remedy.remedyFor.join(', ') | slice:0:50 }}<span
+                              *ngIf=" remedy.remedyFor.join(', ').length > 50">...</span>
+                          </ng-container>
+                          <ng-template #noSpec>None</ng-template>
+                        </small>
+                      </p>
+                      <div>
+                        <button class="btn btn-primary btn-sm me-1" (click)="viewCase(remedy.id)">View</button>
+                        <button *ngIf="remedy?.userId !== userData?.id"
+                          [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(remedy),'btn-info': hasLiked(remedy)}"
+                          class="btn-sm me-1" (click)="toggleLike(remedy.userId, remedy.id)"
+                          [attr.title]="hasLiked(remedy) ? 'Unlike' : 'Like'">
+                          <i class="bi" [ngClass]="hasLiked(remedy)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
+                          <span class="ms-1">{{ remedy.likedBy?.length || 0 }}</span>
+                        </button>
+                        <button *ngIf="remedy?.userId !== userData?.id" class="btn btn-outline-secondary btn-sm me-1"
+                          data-bs-toggle="tooltip" data-bs-placement="top" title="Comment"
+                          (click)="viewComments(remedy)">
+                          <i class="bi bi-chat"></i>
+                          <span class="ms-1">{{ remedy.comments?.length ?? 0 }}</span>
+                        </button>
+                        <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
+                          title="Share" (click)="shareCase(remedy.id)">
+                          <i class="bi bi-share"></i>
+                          <span class="ms-1">&nbsp;</span>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -127,51 +131,50 @@
                 <p class="text-muted">No trending remedies available.</p>
               </ng-template>
             </div>
-            <div class="col-md-4" style="border-right: 1px solid #ccc;">
+            <div class="col-lg-4 remedy-column">
               <h4>Top 5 Latest</h4>
               <div *ngIf="latestRemedies.length > 0; else noLatestHome">
-                <div class="row row-cols-1 g-2">
-                  <div class="col" *ngFor="let remedy of latestRemedies">
-                    <div class="card h-100">
-                      <img [src]="remedy.thumbnailUrl" class="card-img-top" alt="Thumbnail"
-                        style="height: 120px; object-fit: cover" />
-                      <div class="card-body p-2">
-                        <h6 class="card-title fw-bold text-info text-truncate">{{ remedy.name }}</h6>
-                        <p class="card-text text-truncate">{{ remedy.description }}</p>
-                        <p class="card-text">
-                          <small><b>Submitted by:</b> {{ remedy.submittedBy }}</small>
-                        </p>
-                        <p class="card-text text-truncate-remedy" data-bs-toggle="tooltip" data-bs-placement="top"
-                          [attr.title]="remedy.remedyFor?.join(', ')">
-                          <small><b>Remedy For:</b>
-                            <ng-container *ngIf=" remedy.remedyFor?.length; else noSpec">
-                              {{ remedy.remedyFor.join(', ') | slice:0:50 }}<span
-                                *ngIf=" remedy.remedyFor.join(', ').length > 50">...</span>
-                            </ng-container>
-                            <ng-template #noSpec>None</ng-template>
-                          </small>
-                        </p>
-                        <div>
-                          <button class="btn btn-primary btn-sm me-1" (click)="viewCase(remedy.id)">View</button>
-                          <button  *ngIf="remedy?.userId !== userData?.id"
-                            [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(remedy),'btn-info': hasLiked(remedy)}"
-                            class="btn-sm me-1" (click)="toggleLike(remedy.userId, remedy.id)"
-                            [attr.title]="hasLiked(remedy) ? 'Unlike' : 'Like'">
-                            <i class="bi"
-                              [ngClass]="hasLiked(remedy)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
-                            <span class="ms-1">{{ remedy.likedBy?.length || 0 }}</span>
-                          </button>
-                          <button  *ngIf="remedy?.userId !== userData?.id" class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Comment" (click)="viewComments(remedy)">
-                            <i class="bi bi-chat"></i>
-                            <span class="ms-1">{{ remedy.comments?.length ?? 0 }}</span>
-                          </button>
-                          <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
-                            title="Share" (click)="shareCase(remedy.id)">
-                            <i class="bi bi-share"></i>
-                            <span class="ms-1">&nbsp;</span>
-                          </button>
-                        </div>
+                <div class="mb-2" *ngFor="let remedy of latestRemedies">
+                  <div class="card">
+                    <img [src]="remedy.thumbnailUrl" class="card-img-top" alt="Thumbnail"
+                      style="height: 120px; object-fit: cover" />
+                    <div class="card-body p-2">
+                      <h6 class="card-title fw-bold text-info">{{ remedy.name }}</h6>
+                      <p class="card-text ">{{ remedy.description | slice:0:50 }}<span
+                          *ngIf=" remedy.remedyFor.join(', ').length > 50">...</span>
+                      <p class="card-text">
+                        <small><b>Submitted by:</b> {{ remedy.submittedBy }}</small>
+                      </p>
+                      <p class="card-text text-truncate-remedy" data-bs-toggle="tooltip" data-bs-placement="top"
+                        [attr.title]="remedy.remedyFor?.join(', ')">
+                        <small><b>Remedy For:</b>
+                          <ng-container *ngIf=" remedy.remedyFor?.length; else noSpec">
+                            {{ remedy.remedyFor.join(', ') | slice:0:50 }}<span
+                              *ngIf=" remedy.remedyFor.join(', ').length > 50">...</span>
+                          </ng-container>
+                          <ng-template #noSpec>None</ng-template>
+                        </small>
+                      </p>
+                      <div>
+                        <button class="btn btn-primary btn-sm me-1" (click)="viewCase(remedy.id)">View</button>
+                        <button *ngIf="remedy?.userId !== userData?.id"
+                          [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(remedy),'btn-info': hasLiked(remedy)}"
+                          class="btn-sm me-1" (click)="toggleLike(remedy.userId, remedy.id)"
+                          [attr.title]="hasLiked(remedy) ? 'Unlike' : 'Like'">
+                          <i class="bi" [ngClass]="hasLiked(remedy)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
+                          <span class="ms-1">{{ remedy.likedBy?.length || 0 }}</span>
+                        </button>
+                        <button *ngIf="remedy?.userId !== userData?.id" class="btn btn-outline-secondary btn-sm me-1"
+                          data-bs-toggle="tooltip" data-bs-placement="top" title="Comment"
+                          (click)="viewComments(remedy)">
+                          <i class="bi bi-chat"></i>
+                          <span class="ms-1">{{ remedy.comments?.length ?? 0 }}</span>
+                        </button>
+                        <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
+                          title="Share" (click)="shareCase(remedy.id)">
+                          <i class="bi bi-share"></i>
+                          <span class="ms-1">&nbsp;</span>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -181,7 +184,7 @@
                 <p class="text-muted">No latest remedies available.</p>
               </ng-template>
             </div>
-            <div class="col-md-4">
+            <div class="col-lg-4 remedy-column">
               <h4>Top 5 My Choice</h4>
               <div class="preferences-container mb-4 p-3" style="box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
                 <h5>Your Preferences</h5>
@@ -192,48 +195,47 @@
                 </div>
               </div>
               <div *ngIf="recommendedRemedies.length > 0; else noMyChoiceHome">
-                <div class="row row-cols-1 g-2">
-                  <div class="col" *ngFor="let remedy of recommendedRemedies">
-                    <div class="card h-100">
-                      <img [src]="remedy.thumbnailUrl" class="card-img-top" alt="Thumbnail"
-                        style="height: 120px; object-fit: cover" />
-                      <div class="card-body p-2">
-                        <h6 class="card-title fw-bold text-info text-truncate">{{ remedy.name }}</h6>
-                        <p class="card-text text-truncate">{{ remedy.description }}</p>
-                        <p class="card-text">
-                          <small><b>Submitted by:</b> {{ remedy.submittedBy }}</small>
-                        </p>
-                        <p class="card-text text-truncate-remedy" data-bs-toggle="tooltip" data-bs-placement="top"
-                          [attr.title]="remedy.remedyFor?.join(', ')">
-                          <small><b>Remedy For:</b>
-                            <ng-container *ngIf=" remedy.remedyFor?.length; else noSpec">
-                              {{ remedy.remedyFor.join(', ') | slice:0:50 }}<span
-                                *ngIf=" remedy.remedyFor.join(', ').length > 50">...</span>
-                            </ng-container>
-                            <ng-template #noSpec>None</ng-template>
-                          </small>
-                        </p>
-                        <div>
-                          <button class="btn btn-primary btn-sm me-1" (click)="viewCase(remedy.id)">View</button>
-                          <button  *ngIf="remedy?.userId !== userData?.id"
-                            [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(remedy),'btn-info': hasLiked(remedy)}"
-                            class="btn-sm me-1" (click)="toggleLike(remedy.userId, remedy.id)"
-                            [attr.title]="hasLiked(remedy) ? 'Unlike' : 'Like'">
-                            <i class="bi"
-                              [ngClass]="hasLiked(remedy)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
-                            <span class="ms-1">{{ remedy.likedBy?.length || 0 }}</span>
-                          </button>
-                          <button  *ngIf="remedy?.userId !== userData?.id" class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Comment" (click)="viewComments(remedy)">
-                            <i class="bi bi-chat"></i>
-                            <span class="ms-1">{{ remedy.comments?.length ?? 0 }}</span>
-                          </button>
-                          <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
-                            title="Share" (click)="shareCase(remedy.id)">
-                            <i class="bi bi-share"></i>
-                            <span class="ms-1">&nbsp;</span>
-                          </button>
-                        </div>
+                <div class="mb-2" *ngFor="let remedy of recommendedRemedies">
+                  <div class="card">
+                    <img [src]="remedy.thumbnailUrl" class="card-img-top" alt="Thumbnail"
+                      style="height: 120px; object-fit: cover" />
+                    <div class="card-body p-2">
+                      <h6 class="card-title fw-bold text-info">{{ remedy.name }}</h6>
+                      <p class="card-text">{{ remedy.description | slice:0:50 }}<span
+                          *ngIf=" remedy.remedyFor.join(', ').length > 50">...</span>
+                      <p class="card-text">
+                        <small><b>Submitted by:</b> {{ remedy.submittedBy }}</small>
+                      </p>
+                      <p class="card-text text-truncate-remedy" data-bs-toggle="tooltip" data-bs-placement="top"
+                        [attr.title]="remedy.remedyFor?.join(', ')">
+                        <small><b>Remedy For:</b>
+                          <ng-container *ngIf=" remedy.remedyFor?.length; else noSpec">
+                            {{ remedy.remedyFor.join(', ') | slice:0:50 }}<span
+                              *ngIf=" remedy.remedyFor.join(', ').length > 50">...</span>
+                          </ng-container>
+                          <ng-template #noSpec>None</ng-template>
+                        </small>
+                      </p>
+                      <div>
+                        <button class="btn btn-primary btn-sm me-1" (click)="viewCase(remedy.id)">View</button>
+                        <button *ngIf="remedy?.userId !== userData?.id"
+                          [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(remedy),'btn-info': hasLiked(remedy)}"
+                          class="btn-sm me-1" (click)="toggleLike(remedy.userId, remedy.id)"
+                          [attr.title]="hasLiked(remedy) ? 'Unlike' : 'Like'">
+                          <i class="bi" [ngClass]="hasLiked(remedy)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
+                          <span class="ms-1">{{ remedy.likedBy?.length || 0 }}</span>
+                        </button>
+                        <button *ngIf="remedy?.userId !== userData?.id" class="btn btn-outline-secondary btn-sm me-1"
+                          data-bs-toggle="tooltip" data-bs-placement="top" title="Comment"
+                          (click)="viewComments(remedy)">
+                          <i class="bi bi-chat"></i>
+                          <span class="ms-1">{{ remedy.comments?.length ?? 0 }}</span>
+                        </button>
+                        <button class="btn btn-outline-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
+                          title="Share" (click)="shareCase(remedy.id)">
+                          <i class="bi bi-share"></i>
+                          <span class="ms-1">&nbsp;</span>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -248,13 +250,14 @@
         <!-- Trending Sub Tab: Only trending remedies -->
         <div class="tab-pane fade" id="trendingSub" role="tabpanel" aria-labelledby="trending-sub-tab">
           <div class="row">
-            <div class="col-md-4 mb-3" *ngFor="let remedy of trendingRemedies">
-              <div class="card h-100">
+            <div class="col-12 col-md-6 col-lg-4 mb-3" *ngFor="let remedy of trendingRemedies">
+              <div class="card">
                 <img [src]="remedy.thumbnailUrl" class="card-img-top" alt="Thumbnail"
                   style="height: 120px; object-fit: cover" />
                 <div class="card-body p-2">
-                  <h6 class="card-title fw-bold text-info text-truncate">{{ remedy.name }}</h6>
-                  <p class="card-text text-truncate">{{ remedy.description }}</p>
+                  <h6 class="card-title fw-bold text-info">{{ remedy.name }}</h6>
+                  <p class="card-text">{{ remedy.description | slice:0:50 }}<span
+                      *ngIf=" remedy.remedyFor.join(', ').length > 50">...</span>
                   <p class="card-text">
                     <small><b>Submitted by:</b> {{ remedy.submittedBy }}</small>
                   </p>
@@ -270,15 +273,15 @@
                   </p>
                   <div>
                     <button class="btn btn-primary btn-sm me-1" (click)="viewCase(remedy.id)">View</button>
-                    <button  *ngIf="remedy?.userId !== userData?.id"
+                    <button *ngIf="remedy?.userId !== userData?.id"
                       [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(remedy),'btn-info': hasLiked(remedy)}"
                       class="btn-sm me-1" (click)="toggleLike(remedy.userId, remedy.id)"
                       [attr.title]="hasLiked(remedy) ? 'Unlike' : 'Like'">
                       <i class="bi" [ngClass]="hasLiked(remedy)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
                       <span class="ms-1">{{ remedy.likedBy?.length || 0 }}</span>
                     </button>
-                    <button  *ngIf="remedy?.userId !== userData?.id" class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
-                      data-bs-placement="top" title="Comment" (click)="viewComments(remedy)">
+                    <button *ngIf="remedy?.userId !== userData?.id" class="btn btn-outline-secondary btn-sm me-1"
+                      data-bs-toggle="tooltip" data-bs-placement="top" title="Comment" (click)="viewComments(remedy)">
                       <i class="bi bi-chat"></i>
                       <span class="ms-1">{{ remedy.comments?.length ?? 0 }}</span>
                     </button>
@@ -296,13 +299,14 @@
         <!-- Latest Sub Tab: Only latest remedies -->
         <div class="tab-pane fade" id="latestSub" role="tabpanel" aria-labelledby="latest-sub-tab">
           <div class="row">
-            <div class="col-md-4 mb-3" *ngFor="let remedy of latestRemedies">
-              <div class="card h-100">
+            <div class="col-12 col-md-6 col-lg-4 mb-3" *ngFor="let remedy of latestRemedies">
+              <div class="card">
                 <img [src]="remedy.thumbnailUrl" class="card-img-top" alt="Thumbnail"
                   style="height: 120px; object-fit: cover" />
                 <div class="card-body p-2">
-                  <h6 class="card-title fw-bold text-info text-truncate">{{ remedy.name }}</h6>
-                  <p class="card-text text-truncate">{{ remedy.description }}</p>
+                  <h6 class="card-title fw-bold text-info">{{ remedy.name }}</h6>
+                  <p class="card-text">{{ remedy.description | slice:0:50 }}<span
+                      *ngIf=" remedy.remedyFor.join(', ').length > 50">...</span>
                   <p class="card-text">
                     <small><b>Submitted by:</b> {{ remedy.submittedBy }}</small>
                   </p>
@@ -318,15 +322,15 @@
                   </p>
                   <div>
                     <button class="btn btn-primary btn-sm me-1" (click)="viewCase(remedy.id)">View</button>
-                    <button  *ngIf="remedy?.userId !== userData?.id"
+                    <button *ngIf="remedy?.userId !== userData?.id"
                       [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(remedy),'btn-info': hasLiked(remedy)}"
                       class="btn-sm me-1" (click)="toggleLike(remedy.userId, remedy.id)"
                       [attr.title]="hasLiked(remedy) ? 'Unlike' : 'Like'">
                       <i class="bi" [ngClass]="hasLiked(remedy)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
                       <span class="ms-1">{{ remedy.likedBy?.length || 0 }}</span>
                     </button>
-                    <button  *ngIf="remedy?.userId !== userData?.id" class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
-                      data-bs-placement="top" title="Comment" (click)="viewComments(remedy)">
+                    <button *ngIf="remedy?.userId !== userData?.id" class="btn btn-outline-secondary btn-sm me-1"
+                      data-bs-toggle="tooltip" data-bs-placement="top" title="Comment" (click)="viewComments(remedy)">
                       <i class="bi bi-chat"></i>
                       <span class="ms-1">{{ remedy.comments?.length ?? 0 }}</span>
                     </button>
@@ -352,13 +356,14 @@
             </div>
           </div>
           <div class="row">
-            <div class="col-md-4 mb-3" *ngFor="let remedy of recommendedRemedies">
-              <div class="card h-100">
+            <div class="col-12 col-md-6 col-lg-4 mb-3" *ngFor="let remedy of recommendedRemedies">
+              <div class="card">
                 <img [src]="remedy.thumbnailUrl" class="card-img-top" alt="Thumbnail"
                   style="height: 120px; object-fit: cover" />
                 <div class="card-body p-2">
-                  <h6 class="card-title fw-bold text-info text-truncate">{{ remedy.name }}</h6>
-                  <p class="card-text text-truncate">{{ remedy.description }}</p>
+                  <h6 class="card-title fw-bold text-info">{{ remedy.name }}</h6>
+                  <p class="card-text">{{ remedy.description | slice:0:50 }}<span
+                      *ngIf=" remedy.remedyFor.join(', ').length > 50">...</span>
                   <p class="card-text">
                     <small><b>Submitted by:</b> {{ remedy.submittedBy }}</small>
                   </p>
@@ -374,15 +379,15 @@
                   </p>
                   <div>
                     <button class="btn btn-primary btn-sm me-1" (click)="viewCase(remedy.id)">View</button>
-                    <button  *ngIf="remedy?.userId !== userData?.id"
+                    <button *ngIf="remedy?.userId !== userData?.id"
                       [ngClass]="{'btn': true, 'btn-outline-primary': !hasLiked(remedy),'btn-info': hasLiked(remedy)}"
                       class="btn-sm me-1" (click)="toggleLike(remedy.userId, remedy.id)"
                       [attr.title]="hasLiked(remedy) ? 'Unlike' : 'Like'">
                       <i class="bi" [ngClass]="hasLiked(remedy)? 'bi-hand-thumbs-up-fill': 'bi-hand-thumbs-up'"></i>
                       <span class="ms-1">{{ remedy.likedBy?.length || 0 }}</span>
                     </button>
-                    <button  *ngIf="remedy?.userId !== userData?.id" class="btn btn-outline-secondary btn-sm me-1" data-bs-toggle="tooltip"
-                      data-bs-placement="top" title="Comment" (click)="viewComments(remedy)">
+                    <button *ngIf="remedy?.userId !== userData?.id" class="btn btn-outline-secondary btn-sm me-1"
+                      data-bs-toggle="tooltip" data-bs-placement="top" title="Comment" (click)="viewComments(remedy)">
                       <i class="bi bi-chat"></i>
                       <span class="ms-1">{{ remedy.comments?.length ?? 0 }}</span>
                     </button>
@@ -402,19 +407,20 @@
 
     <!-- My Remedies Tab -->
     <div class="tab-pane fade" id="yours" role="tabpanel" aria-labelledby="yours-tab">
-      <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
+      <div class="d-flex flex-column flex-md-row justify-content-md-between align-items-center gap-2 mt-3 mb-2">
         <h4>My Home Remedies</h4>
         <button class="btn btn-success" (click)="createNewCase()">Add Home Remedy</button>
       </div>
       <div *ngIf="yourRemedies.length > 0; else noYourRemedies">
         <div class="row g-3">
-          <div class="col-md-4" *ngFor="let remedy of yourRemedies">
-            <div class="card h-100 shadow-sm">
+          <div class="col-12 col-md-6 col-lg-4 mb-3" *ngFor="let remedy of yourRemedies">
+            <div class="card shadow-sm">
               <img [src]="remedy.thumbnailUrl" class="card-img-top" alt="Thumbnail"
                 style="height: 160px; object-fit: cover" />
               <div class="card-body p-3">
-                <h6 class="card-title fw-bold text-info text-truncate">{{ remedy.name }}</h6>
-                <p class="card-text text-truncate">{{ remedy.description }}</p>
+                <h6 class="card-title fw-bold text-info">{{ remedy.name }}</h6>
+                <p class="card-text">{{ remedy.description | slice:0:50 }}<span
+                    *ngIf=" remedy.remedyFor.join(', ').length > 50">...</span>
                 <p class="card-text">
                   <small><b>Submitted by:</b> {{ remedy.submittedBy }}</small>
                 </p>

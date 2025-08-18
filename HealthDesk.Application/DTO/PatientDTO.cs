@@ -379,7 +379,6 @@ public class IngredientDto
 {
     public string? Id { get; set; }
     public string Name { get; set; }
-    [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0.")]
-    public decimal Quantity { get; set; }
+    public string Quantity { get; set; }
 
 }

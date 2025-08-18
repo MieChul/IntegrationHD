@@ -33,8 +33,8 @@
             </form>
         </div>
 
-        <!-- Right: Add Button -->
-        <div class="col-md-4 col-sm-12 d-flex justify-content-md-end justify-content-start mt-3 mt-md-0">
+
+        <div class="col-md-4 col-sm-12 d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
             <button class="btn btn-primary" (click)="openHistoryModal(false)">
                 Add Medical History
             </button>
@@ -42,7 +42,7 @@
     </div>
 
 
-    <div *ngIf="filteredHistories?.length > 0" class="alert alert-info">
+    <div *ngIf="filteredHistories?.length > 0" class="alert alert-info mt-2">
         Treatment taken for these diseases shall be added to Treatment <i class="bi bi-arrow-right"></i> Past treatment.
     </div>
     <div class="table-responsive">
@@ -58,17 +58,28 @@
             </thead>
             <tbody>
                 <tr *ngFor="let history of filteredHistories">
-                    <td>{{ history.dateOfDiagnosis | date: 'dd-MM-yyyy' }}</td>
-                    <td>{{ history.disease }}</td>
-                    <td>{{ history.start | date: 'dd-MM-yyyy' }}</td>
-                    <td>{{ history.end ? (history.end | date: 'dd-MM-yyyy') : 'Ongoing' }}</td>
-                    <td class="text-center align-middle text-nowrap">
-                        <button class="btn btn-warning btn-sm me-1" (click)="openHistoryModal(true, history)">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm" (click)="deleteHistory(history)">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                    <td data-label="Diagnosis Date">
+                        <span class="data-value">{{ history.dateOfDiagnosis | date: 'dd-MM-yyyy' }}</span>
+                    </td>
+                    <td data-label="Disease">
+                        <span class="data-value">{{ history.disease }}</span>
+                    </td>
+                    <td data-label="Start Date">
+                        <span class="data-value">{{ history.start | date: 'dd-MM-yyyy' }}</span>
+                    </td>
+                    <td data-label="End Date">
+                        <span class="data-value">{{ history.end ? (history.end | date: 'dd-MM-yyyy') : 'Ongoing'
+                            }}</span>
+                    </td>
+                    <td data-label="Action" class="text-nowrap">
+                        <span class="data-value">
+                            <button class="btn btn-warning btn-sm me-1" (click)="openHistoryModal(true, history)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" (click)="deleteHistory(history)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </span>
                     </td>
                 </tr>
             </tbody>

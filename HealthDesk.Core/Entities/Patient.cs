@@ -327,7 +327,7 @@ public class Ingredient : BaseEntity
     public string Name { get; set; }
 
     [BsonElement("quantity")]
-    public decimal Quantity { get; set; }
+    public string Quantity { get; set; }
 
 }
 

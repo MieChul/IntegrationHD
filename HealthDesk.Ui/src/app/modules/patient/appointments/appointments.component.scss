@@ -1,115 +1,144 @@
 // --- Date Carousel Styles ---
 .carousel-3d-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    width: auto; /* Adjust width as needed */
-    margin: 0 auto;
-  }
-  
-  .carousel-3d {
-    display: flex;
-    transition: transform 0.5s ease-in-out;
-  }
-  
-  .date-item {
-    width: 100px;
-    flex-shrink: 0;
-    margin: 0 5px;
-    opacity: 0.5;
-    transform: scale(0.8);
-    transition: opacity 0.3s, transform 0.3s;
-  }
-  
-  .active-date {
-    opacity: 1 !important;
-    transform: scale(1) !important;
-  }
-  
-  .inactive-date {
-    opacity: 0.5;
-    transform: scale(0.8);
-  }
-  
-  .subslot-container {
-    display: flex;
-    flex-wrap: wrap;
-  }
-  
-  .tile-slot {
-    width: 30%; /* Adjust width to fit three subslots per row */
-    min-width: 150px;
-    height: auto;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    padding: 8px;
-    transition: transform 0.2s, box-shadow 0.2s;
-    background-color: #f8f9fa; /* light background for the tile */
-  }
-  
-  .tile-slot:hover {
-    pointer-events: auto !important;
-    transform: translateY(-3px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-  }
-  
-  .slot-time {
-    line-height: 1.2;
-    text-align: center;
-    font-size: 0.8rem;
-  }
-  
-
-  
-  /* Disable styling for full slots */
-  .disabled-slot {
-    opacity: 0.7; /* Reduce visibility */
-    pointer-events: none; /* ✅ Allow clicks */
-  }
-  
-
-  @keyframes blinker {
-    50% {
-      opacity: 0;
-    }
-  }
-  
-  .slot-badge {
-    position: absolute;
-    bottom: 2px; /* Fixed to the bottom */
-    left: 50%;  /* Center horizontally */
-    transform: translateX(-50%); /* Align center */
-    color: white; /* White text */
-    font-weight: bold; /* Make text bold */
-    padding: 3px 8px; /* Padding for better visibility */
-    font-size: 0.6rem; /* Slightly bigger font */
-    text-align: center;
-    min-width: 45px;
-    white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  width: auto;
+  margin: 0 auto;
 }
 
-  .blink {
-    animation: blinker 1.5s linear infinite;
-  }
+.carousel-3d {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+}
 
-  .selected-info {
-    color: rgba(253, 9, 70, 0.9);
-    font-weight: bold; /* Make text bold */
-    padding: 3px 8px; /* Padding for better visibility */
-    font-size: 0.6rem; 
-    text-align: center;
+.date-item {
+  width: 100px;
+  flex-shrink: 0;
+  margin: 0 5px;
+  opacity: 0.5;
+  transform: scale(0.8);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.active-date {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+}
+
+.inactive-date {
+  opacity: 0.5;
+  transform: scale(0.8);
+}
+
+.subslot-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.tile-slot {
+  width: 30%;
+  /* Adjust width to fit three subslots per row */
+  min-width: 150px;
+  height: auto;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  background-color: #f8f9fa;
+  /* light background for the tile */
+}
+
+.tile-slot:hover {
+  pointer-events: auto !important;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.slot-time {
+  line-height: 1.2;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+
+
+/* Disable styling for full slots */
+.disabled-slot {
+  opacity: 0.7;
+  /* Reduce visibility */
+  pointer-events: none;
+  /* ✅ Allow clicks */
+}
+
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
   }
+}
+
+.slot-badge {
+  position: absolute;
+  bottom: 2px;
+  /* Fixed to the bottom */
+  left: 50%;
+  /* Center horizontally */
+  transform: translateX(-50%);
+  /* Align center */
+  color: white;
+  /* White text */
+  font-weight: bold;
+  /* Make text bold */
+  padding: 3px 8px;
+  /* Padding for better visibility */
+  font-size: 0.6rem;
+  /* Slightly bigger font */
+  text-align: center;
+  min-width: 45px;
+  white-space: nowrap;
+}
+
+.blink {
+  animation: blinker 1.5s linear infinite;
+}
+
+.selected-info {
+  color: rgba(253, 9, 70, 0.9);
+  font-weight: bold;
+  /* Make text bold */
+  padding: 3px 8px;
+  /* Padding for better visibility */
+  font-size: 0.6rem;
+  text-align: center;
+}
 
 /* Selected Details */
 .selected-details {
-    text-align: center;
-    font-weight: bold;
-    color: #395ebac5;
-    margin-bottom: 10px;
+  text-align: center;
+  font-weight: bold;
+  color: #395ebac5;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+  .date-item {
+    width: 75px;
+    margin: 0 2px; 
+    transform: scale(0.75); 
+  }
+
+  .active-date {
+    transform: scale(0.95) !important; 
+  }
+
+  .inactive-date {
+    transform: scale(0.75);
+  }
 }

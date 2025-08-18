@@ -6,7 +6,7 @@ namespace HealthDesk.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Policy = "AnyAuthenticated")]
+[Authorize]
 public class CommonController : ControllerBase
 {
     private readonly ICommonService _commonService;

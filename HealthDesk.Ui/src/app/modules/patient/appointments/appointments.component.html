@@ -4,10 +4,8 @@
   </h1>
 
   <div class="row mb-3 align-items-start">
-    <!-- Left: Date Filters -->
-    <div class="col-md-8 col-sm-12">
+    <div class="col-lg-8 col-md-12">
       <form [formGroup]="dateForm" class="row g-3">
-        <!-- Start Date -->
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Start Date</mat-label>
@@ -17,7 +15,6 @@
           </mat-form-field>
         </div>
 
-        <!-- End Date -->
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>End Date</mat-label>
@@ -32,20 +29,19 @@
       </form>
     </div>
 
-    <!-- Right: Button + Legends -->
-    <div class="col-md-4 col-sm-12 d-flex flex-column align-items-md-end align-items-start mt-3 mt-md-0">
-      <button class="btn btn-primary mb-2" (click)="scheduleNewAppointment()">Schedule Appointment</button>
+    <div class="col-lg-4 col-md-12 text-center text-lg-end mt-3 mt-lg-0">
+      <button class="btn btn-primary" (click)="scheduleNewAppointment()">Schedule Appointment</button>
+    </div>
 
-      <div class="d-flex flex-wrap justify-content-md-end">
-        <div class="legend me-3 mb-2">
-          <span class="legend-color upcoming-appointment"></span> Accepted
-        </div>
-        <div class="legend me-3 mb-2">
-          <span class="legend-color past-appointment"></span> Rejected
-        </div>
-        <div class="legend mb-2">
-          <span class="legend-color proposed-time"></span> Proposed
-        </div>
+    <div class="col-12 d-flex flex-wrap justify-content-center mt-3">
+      <div class="legend me-3 mb-2">
+        <span class="legend-color upcoming-appointment"></span> Accepted
+      </div>
+      <div class="legend me-3 mb-2">
+        <span class="legend-color past-appointment"></span> Rejected
+      </div>
+      <div class="legend mb-2">
+        <span class="legend-color proposed-time"></span> Proposed
       </div>
     </div>
   </div>
@@ -66,30 +62,44 @@
       </thead>
       <tbody *ngIf="filteredAppointments && filteredAppointments.length > 0">
         <tr *ngFor="let appointment of filteredAppointments" [ngClass]="{
-          'light-green-row': appointment.status === 'accepted',
-          'light-yellow-row': appointment.status === 'proposed',
-          'light-red-row': appointment.status === 'cancelled' || appointment.status === 'rejected'
-        }">
-          <td>{{ appointment.physicianName }}</td>
-          <td>{{ appointment.date | date: 'dd-MM-yyyy' }}</td>
-          <td>{{ appointment.time }}</td>
-          <td>{{ appointment.clinicName }}</td>
-          <td>{{ appointment.status }}</td>
-          <td *ngIf="appointment.status === 'cancelled' || appointment.status === 'rejected'">{{ appointment?.reason }}
+      'light-green-row': appointment.status === 'accepted',
+      'light-yellow-row': appointment.status === 'proposed',
+      'light-red-row': appointment.status === 'cancelled' || appointment.status === 'rejected'
+    }">
+          <td data-label="Physician">
+            <span class="data-value">{{ appointment.physicianName }}</span>
           </td>
-          <td>
-            <button *ngIf="appointment.status === 'pending'" class="btn btn-primary btn-sm me-1"
-              (click)="editAppointment(appointment)" ngbTooltip="Reschedule Appointment">
-              <i class="bi bi-calendar-check"></i>
-            </button>
-            <button *ngIf="appointment.status === 'proposed'" class="btn btn-primary btn-sm me-1"
-              (click)="openAcceptModal(appointment)" ngbTooltip="Accept Appointment">
-              <i class="bi bi-calendar-check"></i>
-            </button>
-            <button *ngIf="appointment.status !== 'cancelled' && appointment.status !== 'rejected'"
-              class="btn btn-danger btn-sm me-1" (click)="openCancelModal(appointment)" ngbTooltip="Cancel Appointment">
-              <i class="bi bi-x-circle"></i>
-            </button>
+          <td data-label="Date">
+            <span class="data-value">{{ appointment.date | date: 'dd-MM-yyyy' }}</span>
+          </td>
+          <td data-label="Time">
+            <span class="data-value">{{ appointment.time }}</span>
+          </td>
+          <td data-label="Clinic">
+            <span class="data-value">{{ appointment.clinicName }}</span>
+          </td>
+          <td data-label="Status">
+            <span class="data-value">{{ appointment.status }}</span>
+          </td>
+          <td *ngIf="appointment.status === 'cancelled' || appointment.status === 'rejected'" data-label="Reason">
+            <span class="data-value">{{ appointment?.reason }}</span>
+          </td>
+          <td data-label="Action">
+            <span class="data-value">
+              <button *ngIf="appointment.status === 'pending'" class="btn btn-primary btn-sm me-1"
+                (click)="editAppointment(appointment)" ngbTooltip="Reschedule Appointment">
+                <i class="bi bi-calendar-check"></i>
+              </button>
+              <button *ngIf="appointment.status === 'proposed'" class="btn btn-primary btn-sm me-1"
+                (click)="openAcceptModal(appointment)" ngbTooltip="Accept Appointment">
+                <i class="bi bi-calendar-check"></i>
+              </button>
+              <button *ngIf="appointment.status !== 'cancelled' && appointment.status !== 'rejected'"
+                class="btn btn-danger btn-sm me-1" (click)="openCancelModal(appointment)"
+                ngbTooltip="Cancel Appointment">
+                <i class="bi bi-x-circle"></i>
+              </button>
+            </span>
           </td>
         </tr>
       </tbody>

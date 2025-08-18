@@ -25,6 +25,11 @@ $logo-white: #ffffff;
 $logo-light-red: #ff7261;
 $logo-green: #0fcf82d1;
 
+// Set a base font-size for rem units
+html {
+  font-size: 16px; // This is the standard browser default
+}
+
 // Global styles
 body {
   background: linear-gradient(to right, $gradient-color1, $gradient-color2, $gradient-color3);
@@ -142,7 +147,16 @@ main {
   border-radius: 1rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s, box-shadow 0.3s;
-  margin: 0.5rem;
+
+  .card-img-top {
+    height: 100px;
+    object-fit: cover;
+  }
+
+  .card-body {
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
 
   &:hover {
     transform: translateY(-10px);
@@ -361,7 +375,7 @@ h6,
   background: linear-gradient(to right, #d76745bc, #880ED4);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  font-family: 'Roboto', sans-serif; // Modern font style
+  font-family: 'Roboto', sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -381,7 +395,7 @@ h6,
   background: linear-gradient(to right, #d76745bc, #880ED4);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  font-family: 'Roboto', sans-serif; // Modern font style
+  font-family: 'Roboto', sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -414,16 +428,14 @@ h6,
     cursor: pointer;
     position: relative;
     padding: 0.75rem;
-    background-color: #FEE2E2; // Light red from palette
+    background-color: #FEE2E2;
     border-bottom: 2px solid #dee2e6;
     transition: background-color 0.3s ease-in-out, box-shadow 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
     &:hover {
-      background-color: #FF69B4; // Slightly darker shade for hover effect
+      background-color: #FF69B4;
     }
-
-    // 3D effect
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
     &::after {
       content: '';
@@ -440,9 +452,8 @@ h6,
       transform: translateY(-50%) rotate(180deg);
     }
 
-    // Adding a gradient effect
     background: linear-gradient(145deg, #d8a8c0, #FF69B4);
-    color: #111827; // Dark text color for contrast
+    color: #111827;
   }
 
   td {
@@ -452,22 +463,19 @@ h6,
 }
 
 .table-hover tbody tr:hover {
-  background-color: rgba(252, 165, 165, 0.3); // Light red background on hover
+  background-color: rgba(252, 165, 165, 0.3);
 }
 
 .proposed-time {
   background-color: rgba(253, 230, 138, 0.6);
-  /* Light yellow for proposed time */
 }
 
 .upcoming-appointment {
   background-color: rgba(167, 243, 208, 0.6);
-  /* Light green for upcoming appointment */
 }
 
 .past-appointment {
   background-color: rgba(253, 164, 175, 0.6);
-  /* Light pink for past appointment */
 }
 
 .tab-content {
@@ -523,11 +531,11 @@ body.dark-mode .modal-content {
   color: #000;
 }
 
-// Modern Tabs with lighter theme and gradient 3D effect
+// Modern Tabs
 .nav-tabs {
   .nav-link {
-    background: linear-gradient(145deg, #E0F2FE, #BAE6FD); // Light blue gradient
-    color: #111827; // Dark text color
+    background: linear-gradient(145deg, #E0F2FE, #BAE6FD);
+    color: #111827;
     border: 1px solid transparent;
     border-radius: 0.25rem;
     transition: background-color 0.3s, box-shadow 0.3s;
@@ -537,11 +545,11 @@ body.dark-mode .modal-content {
     justify-content: center;
 
     &:hover {
-      background: linear-gradient(145deg, #BAE6FD, #7DD3FC); // Darker blue on hover
+      background: linear-gradient(145deg, #BAE6FD, #7DD3FC);
     }
 
     &.active {
-      background: linear-gradient(145deg, #7DD3FC, #38BDF8); // Even darker blue for active tab
+      background: linear-gradient(145deg, #7DD3FC, #38BDF8);
       box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
     }
 
@@ -551,33 +559,16 @@ body.dark-mode .modal-content {
   }
 }
 
-@media (max-width: 768px) {
-  .table-responsive {
-    overflow-x: auto;
-  }
-
-  .row.mb-3 {
-    flex-direction: column;
-  }
-
-  .col-md-8 {
-    margin-top: 1rem;
-  }
-}
-
 .light-green-row td {
   background-color: #32ed5ea9 !important;
-  /* Light green */
 }
 
 .light-red-row td {
   background-color: #cf3c487b !important;
-  /* Light red */
 }
 
 .light-yellow-row td {
   background-color: #e6b71d8a !important;
-  /* Light yellow */
 }
 
 .pointer-cursor {
@@ -591,43 +582,113 @@ body.dark-mode .modal-content {
   padding: 0.25rem;
   border-radius: 0.25rem;
   transition: transform 0.3s, background-color 0.3s;
-}
 
-.label-modern:hover {
-  background-color: #d82c2c;
-  transform: scale(1.05);
+  &:hover {
+    background-color: #d82c2c;
+    transform: scale(1.05);
+  }
 }
-
 
 .blink-message {
   color: white;
-  /* Text color white */
   animation: blink 1s infinite;
-  /* Apply blinking animation */
   padding: 10px;
-  /* Optional: padding for better spacing */
   text-align: center;
-  /* Optional: centers the text */
   border-radius: 5px;
-  /* Optional: rounded corners */
 }
 
-
-/* Keyframes for blinking effect */
 @keyframes blink {
 
   0%,
   100% {
     opacity: 1;
-    /* Fully visible */
   }
 
   50% {
     opacity: 0;
-    /* Invisible */
   }
 }
 
 .cdk-overlay-container {
   z-index: 9999;
+}
+
+@media (max-width: 768px) {
+
+  html {
+    font-size: 12px;
+  }
+
+  .personal-details-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  .row.mb-3 {
+    flex-direction: column;
+  }
+
+  .col-md-8 {
+    margin-top: 1rem;
+  }
+
+  .table-modern {
+    thead {
+      display: none;
+    }
+
+    tr,
+    td {
+      display: block;
+      width: 100%;
+    }
+
+    tr {
+      margin-bottom: 1rem;
+      border: 1px solid #dee2e6;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+
+    td {
+      display: flex;
+      align-items: stretch;
+      padding: 0;
+      border-bottom: 1px solid #eee;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &::before {
+        content: attr(data-label);
+        flex-basis: 40%;
+        padding: 0.75rem;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+
+        background: linear-gradient(145deg, #d8a8c0, #FF69B4);
+        color: #111827;
+      }
+
+      .data-value {
+        flex-basis: 60%;
+        padding: 0.75rem;
+        display: flex;
+        align-items: left;
+      }
+
+      &[data-label="Date"] .data-value {
+        width: auto !important;
+      }
+    }
+  }
 }

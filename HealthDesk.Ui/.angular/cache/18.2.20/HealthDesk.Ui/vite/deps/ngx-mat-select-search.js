@@ -10,6 +10,10 @@ import {
   MatDividerModule
 } from "./chunk-KXVZIWHT.js";
 import {
+  MatCheckbox,
+  MatCheckboxModule
+} from "./chunk-KBHE5TLJ.js";
+import {
   MatIcon,
   MatIconModule
 } from "./chunk-VNKWYUNV.js";
@@ -23,10 +27,7 @@ import {
 } from "./chunk-ZBKC5CIE.js";
 import "./chunk-QMOYQ2JI.js";
 import "./chunk-XQOPP6ED.js";
-import {
-  MatCheckbox,
-  MatCheckboxModule
-} from "./chunk-KBHE5TLJ.js";
+import "./chunk-ZTW4I7DM.js";
 import {
   DefaultValueAccessor,
   FormControl,
@@ -35,7 +36,6 @@ import {
   NgControlStatus,
   ReactiveFormsModule
 } from "./chunk-HGX3O44T.js";
-import "./chunk-ZTW4I7DM.js";
 import {
   MatButtonModule,
   MatIconButton

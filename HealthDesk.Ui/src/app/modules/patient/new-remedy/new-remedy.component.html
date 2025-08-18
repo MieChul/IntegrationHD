@@ -1,6 +1,6 @@
 <div class="container">
   <button class="btn btn-secondary mb-3" (click)="goBack()">
-    <i class="bi bi-arrow-left"></i> Back
+    <i class="bi bi-arrow-left"></i>
   </button>
   <h2 class="animated-heading">
     <i class="bi bi-file-earmark-plus me-2"></i> New Home Remedy
@@ -107,24 +107,45 @@
             </tr>
           </thead>
           <tbody formArrayName="ingredients">
-            <mat-error *ngIf="ingredients?.hasError('noIngredients')">At least one ingredient is required</mat-error>
+            <tr *ngIf="ingredients?.hasError('noIngredients')">
+              <td colspan="3">
+                <mat-error>At least one ingredient is required</mat-error>
+              </td>
+            </tr>
+
             <tr *ngFor="let ing of ingredients.controls; let i = index" [formGroupName]="i">
-              <td>
-                <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>Ingredient</mat-label>
-                  <input matInput formControlName="name" required placeholder="e.g. Ginger">
-                  <mat-error *ngIf="ing.get('name')?.hasError('required')">Required</mat-error>
-                </mat-form-field>
+              <td data-label="Ingredient">
+                <span class="data-value">
+                  <div class="form-floating">
+                    <input type="text" class="form-control" id="ingredientName{{i}}" placeholder="e.g. Ginger"
+                      formControlName="name" required>
+                    <label for="ingredientName{{i}}">Ingredient</label>
+                  </div>
+                </span>
+                <div *ngIf="ing.get('name')?.touched && ing.get('name')?.hasError('required')"
+                  class="text-danger small mt-1">
+                  Required
+                </div>
               </td>
-              <td>
-                <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>Quantity</mat-label>
-                  <input matInput type="number" formControlName="quantity" required placeholder="e.g. 2">
-                  <mat-error *ngIf="ing.get('quantity')?.hasError('required')">Required</mat-error>
-                </mat-form-field>
+
+              <td data-label="Quantity">
+                <span class="data-value">
+                  <div class="form-floating">
+                    <input type="text" class="form-control" id="quantity{{i}}" placeholder="e.g. 2"
+                      formControlName="quantity" required>
+                    <label for="quantity{{i}}">Quantity</label>
+                  </div>
+                </span>
+                <div *ngIf="ing.get('quantity')?.touched && ing.get('quantity')?.hasError('required')"
+                  class="text-danger small mt-1">
+                  Required
+                </div>
               </td>
-              <td>
-                <button class="btn btn-danger" type="button" (click)="removeIngredient(i)">X</button>
+
+              <td data-label="Action">
+                <span class="data-value">
+                  <button class="btn btn-danger" type="button" (click)="removeIngredient(i)">X</button>
+                </span>
               </td>
             </tr>
           </tbody>

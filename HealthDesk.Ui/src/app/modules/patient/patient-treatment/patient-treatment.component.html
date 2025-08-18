@@ -44,7 +44,7 @@
                 </div>
             </form>
         </div>
-        <div class="col-md-4 col-sm-6 d-flex justify-content-end">
+        <div class="col-md-4 col-sm-12 d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
             <button class="btn btn-primary" (click)="openTreatmentModal(false)">Add Treatment</button>
         </div>
     </div>
@@ -66,21 +66,40 @@
             </thead>
             <tbody>
                 <tr *ngFor="let treatment of filteredTreatments">
-                    <td>{{ treatment.brand }}</td>
-                    <td>{{ treatment.treatmentDrug }}</td>
-                    <td>{{ treatment.dosageForm }}</td>
-                    <td>{{ treatment.strength }} {{ treatment.strengthUnit }}</td>
-                    <td>{{ treatment.frequency }}</td>
-                    <td>{{ treatment.startDate | date: 'dd-MM-yyyy' }}</td>
-                    <td>{{ treatment.endDate ? (treatment.endDate | date: 'dd-MM-yyyy') : 'Ongoing' }}</td>
-                    <td>{{ treatment.price}}</td>
-                    <td class="text-center">
-                        <button class="btn btn-warning btn-sm me-1" (click)="openTreatmentModal(true, treatment)">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm" (click)="deleteTreatment(treatment)">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                    <td data-label="Brand Name">
+                        <span class="data-value">{{ treatment.brand }}</span>
+                    </td>
+                    <td data-label="Generic Name">
+                        <span class="data-value">{{ treatment.treatmentDrug }}</span>
+                    </td>
+                    <td data-label="Dosage Form">
+                        <span class="data-value">{{ treatment.dosageForm }}</span>
+                    </td>
+                    <td data-label="Strength">
+                        <span class="data-value">{{ treatment.strength }} {{ treatment.strengthUnit }}</span>
+                    </td>
+                    <td data-label="Frequency">
+                        <span class="data-value">{{ treatment.frequency }}</span>
+                    </td>
+                    <td data-label="Start Date">
+                        <span class="data-value">{{ treatment.startDate | date: 'dd-MM-yyyy' }}</span>
+                    </td>
+                    <td data-label="End Date">
+                        <span class="data-value">{{ treatment.endDate ? (treatment.endDate | date: 'dd-MM-yyyy') :
+                            'Ongoing' }}</span>
+                    </td>
+                    <td data-label="Price">
+                        <span class="data-value">{{ treatment.price }}</span>
+                    </td>
+                    <td data-label="Action" class="text-nowrap">
+                        <span class="data-value">
+                            <button class="btn btn-warning btn-sm me-1" (click)="openTreatmentModal(true, treatment)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" (click)="deleteTreatment(treatment)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </span>
                     </td>
                 </tr>
             </tbody>

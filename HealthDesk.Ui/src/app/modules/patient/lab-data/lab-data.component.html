@@ -31,7 +31,7 @@
                 </div>
             </form>
         </div>
-        <div class="col-md-4 col-sm-6 d-flex justify-content-end">
+        <div class="col-md-4 col-sm-12 d-flex justify-content-md-end justify-content-center mt-3 mt-md-0">
             <button class="btn btn-primary" (click)="openLabModal(false)">Add Lab Investigation</button>
         </div>
     </div>
@@ -52,20 +52,36 @@
             </thead>
             <tbody>
                 <tr *ngFor="let labData of filteredLabDataRecords">
-                    <td>{{ labData.laboratoryName }}</td>
-                    <td>{{ labData.date | date: 'dd-MM-yyyy' }}</td>
-                    <td>{{ labData.time }}</td>
-                    <td>{{ labData.labTest }}</td>
-                    <td>{{ labData.value }}</td>
-                    <td>{{ labData.unit }}</td>
-                    <td>{{ labData.price }}</td>
-                    <td class="text-center align-middle text-nowrap">
-                        <button class="btn btn-warning btn-sm me-1" (click)="openLabModal(true,labData)">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm" (click)="deleteLabData(labData)">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                    <td data-label="Laboratory">
+                        <span class="data-value">{{ labData.laboratoryName }}</span>
+                    </td>
+                    <td data-label="Date">
+                        <span class="data-value">{{ labData.date | date: 'dd-MM-yyyy' }}</span>
+                    </td>
+                    <td data-label="Time">
+                        <span class="data-value">{{ labData.time }}</span>
+                    </td>
+                    <td data-label="Lab Test">
+                        <span class="data-value">{{ labData.labTest }}</span>
+                    </td>
+                    <td data-label="Value">
+                        <span class="data-value">{{ labData.value }}</span>
+                    </td>
+                    <td data-label="Unit">
+                        <span class="data-value">{{ labData.unit }}</span>
+                    </td>
+                    <td data-label="Price">
+                        <span class="data-value">{{ labData.price }}</span>
+                    </td>
+                    <td data-label="Action" class="text-center align-middle text-nowrap">
+                        <span class="data-value">
+                            <button class="btn btn-warning btn-sm me-1" (click)="openLabModal(true,labData)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" (click)="deleteLabData(labData)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </span>
                     </td>
                 </tr>
             </tbody>
@@ -152,53 +168,53 @@
                                 <mat-error *ngIf="labDataForm.get('labTest')?.hasError('required')">Lab Test is
                                     required</mat-error>
                             </mat-form-field>
+                        </div>
                     </div>
-            </div>
-            <div class="row">
-                <!-- Value -->
-                <div class="col-md-6">
-                    <mat-form-field appearance="outline" class="w-100">
-                        <mat-label>Value</mat-label>
-                        <input matInput formControlName="value" maxlength="25" required />
-                        <mat-error *ngIf="labDataForm.get('value')?.hasError('required')">
-                            value is required.
-                        </mat-error>
-                    </mat-form-field>
-                </div>
+                    <div class="row">
+                        <!-- Value -->
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Value</mat-label>
+                                <input matInput formControlName="value" maxlength="25" required />
+                                <mat-error *ngIf="labDataForm.get('value')?.hasError('required')">
+                                    value is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
 
-                <!-- Strength Unit -->
-                <div class="col-md-6">
-                    <mat-form-field appearance="outline" class="w-100">
-                        <mat-label>Unit</mat-label>
-                        <input matInput formControlName="unit" placeholder="Unit will auto-populate" />
-                        <mat-error *ngIf="labDataForm.get('unit')?.hasError('required')">
-                            Unit is required.
-                        </mat-error>
-                    </mat-form-field>
-                </div>
+                        <!-- Strength Unit -->
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100">
+                                <mat-label>Unit</mat-label>
+                                <input matInput formControlName="unit" placeholder="Unit will auto-populate" />
+                                <mat-error *ngIf="labDataForm.get('unit')?.hasError('required')">
+                                    Unit is required.
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <mat-form-field appearance="outline" class="w-100 mb-3">
+                                <mat-label>Price</mat-label>
+                                <input matInput formControlName="price" type="number" step="0.01" min="0"
+                                    placeholder="Enter price" />
+                                <mat-error *ngIf="labDataForm.get('price')?.hasError('required')">
+                                    Price is required
+                                </mat-error>
+                                <mat-error *ngIf="labDataForm.get('price')?.hasError('pattern')">
+                                    Enter a valid positive amount (up to 2 decimals)
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+                    </div>
+                </form>
             </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <mat-form-field appearance="outline" class="w-100 mb-3">
-                        <mat-label>Price</mat-label>
-                        <input matInput formControlName="price" type="number" step="0.01" min="0"
-                            placeholder="Enter price" />
-                        <mat-error *ngIf="labDataForm.get('price')?.hasError('required')">
-                            Price is required
-                        </mat-error>
-                        <mat-error *ngIf="labDataForm.get('price')?.hasError('pattern')">
-                            Enter a valid positive amount (up to 2 decimals)
-                        </mat-error>
-                    </mat-form-field>
-                </div>
+            <div class="modal-footer  d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" (click)="saveLabData()">{{ isEditMode ? 'Save Changes' :
+                    'Add Lab Data' }}</button>
             </div>
-            </form>
-        </div>
-        <div class="modal-footer  d-flex justify-content-between">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" (click)="saveLabData()">{{ isEditMode ? 'Save Changes' :
-                'Add Lab Data' }}</button>
         </div>
     </div>
-</div>
 </div>
