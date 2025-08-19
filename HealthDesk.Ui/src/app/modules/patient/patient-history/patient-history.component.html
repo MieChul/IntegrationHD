@@ -149,9 +149,7 @@
                                 <mat-error *ngIf="historyForm.get('start')?.hasError('required')">
                                     Start date is required.
                                 </mat-error>
-                                <mat-error *ngIf="historyForm.get('start')?.hasError('futureDate')">
-                                    Start date cannot be in the future.
-                                </mat-error>
+                                <mat-error *ngIf="historyForm.get('start')?.hasError('futureDate')">Start date cannot be in the future.</mat-error>
                             </mat-form-field>
                         </div>
 
@@ -180,7 +178,7 @@
                     style="font-size: 12px;">
                     End Date cannot be before Start Date.
                 </mat-error>
-                <mat-error *ngIf="historyForm.errors?.['dateDiagnosisBeforeStart']" style="font-size: 12px;">
+                <mat-error *ngIf="historyForm.errors?.['dateDiagnosisBeforeStart']" class="mt-2" style="font-size: 11px;">
                     Date of Diagnosis cannot be before Start Date.
                 </mat-error>
 

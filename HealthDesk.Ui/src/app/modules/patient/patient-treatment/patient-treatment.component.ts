@@ -100,11 +100,9 @@ export class PatientTreatmentComponent implements OnInit {
 
   async onBrandChange(brand: string) {
     this.treatmentForm.get('brand')?.setValue(brand);
-
     this.treatmentForm.get('treatmentDrug')?.reset({ value: '', disabled: true });
     this.treatmentForm.get('dosageForm')?.reset({ value: '', disabled: true });
     this.treatmentForm.get('strengthUnit')?.reset({ value: '', disabled: true });
-
     this.drugs = [];
     this.dosageForms = [];
     this.strengthUnits = [];
@@ -120,10 +118,8 @@ export class PatientTreatmentComponent implements OnInit {
   async onDrugChange(drug: string) {
     this.treatmentForm.get('treatmentDrug')?.setValue(drug);
     const selectedBrand = this.treatmentForm.get('brand')?.value;
-
     this.treatmentForm.get('dosageForm')?.reset({ value: '', disabled: true });
     this.treatmentForm.get('strengthUnit')?.reset({ value: '', disabled: true });
-
     this.dosageForms = [];
     this.strengthUnits = [];
 
@@ -139,7 +135,6 @@ export class PatientTreatmentComponent implements OnInit {
     this.treatmentForm.get('dosageForm')?.setValue(form);
     const selectedBrand = this.treatmentForm.get('brand')?.value;
     const selectedDrug = this.treatmentForm.get('treatmentDrug')?.value;
-
     this.treatmentForm.get('strengthUnit')?.reset({ value: '', disabled: true });
     this.strengthUnits = [];
 

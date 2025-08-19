@@ -59,19 +59,20 @@ export class SearchableDropdownComponent implements OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // When the initial list of items changes, update the filtered list
-    if (changes['items']) {
+    if (changes['items'] && this.items) {
       this.filterItems('');
+
+      if (this.items.length === 1 && this.selectedValue !== this.items[0]) {
+        this.selectItem(this.items[0]);
+      }
     }
   }
 
   ngOnDestroy(): void {
-    // Clean up subscriptions and overlay to prevent memory leaks
     this.subscription.unsubscribe();
     this.destroyOverlay();
   }
 
-  // --- Item Filtering Logic ---
   filterItems(searchTerm: string): void {
     if (!searchTerm) {
       this.filteredItems = [...this.items];

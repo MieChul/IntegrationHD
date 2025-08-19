@@ -237,11 +237,13 @@ export class InfoComponent {
           this.user = user;
           this.user.role = this.userData.role || this.user.role || 'physician';
 
-          if (this.user.role != 'patient' && this.user.role != 'physician')
+          if (this.user.role === 'physician' || this.user.role === 'patient') {
+            this.tab = 'p_info';
+          } else {
             this.tab = 'hosp_info';
+          }
 
           this.initForm();
-
         });
     }
   }
@@ -407,12 +409,9 @@ export class InfoComponent {
       this.form.get('age')?.setValue(age);
     }
   }
-  changeTab(tab: string, menuIcon: HTMLElement) {
-    var element = document.getElementById(this.tab);
-    element?.classList.remove('active');
-    this.tab = tab;
-    menuIcon.classList.add('active');
 
+  changeTab(tab: string): void {
+    this.tab = tab;
   }
 
   nagivateToRole() {

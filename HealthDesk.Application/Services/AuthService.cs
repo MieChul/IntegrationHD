@@ -52,29 +52,44 @@ public class AuthService : IAuthService
 
     public async Task<string> GenerateRefreshToken(string userId)
     {
-        var refreshToken = new RefreshToken
-        {
-            UserId = userId,
-            Token = Guid.NewGuid().ToString(),
-            ExpiryDate = DateTime.UtcNow.AddDays(7) // Set expiration for refresh token
-        };
+        var existingToken = await _refreshTokenRepository.GetByDynamicPropertyAsync("UserId", userId);
 
-        await _refreshTokenRepository.AddAsync(refreshToken);
-        return refreshToken.Token;
+        if (existingToken != null)
+        {
+            existingToken.Token = Guid.NewGuid().ToString();
+            existingToken.ExpiryDate = DateTime.UtcNow.AddDays(1);
+            existingToken.IsRevoked = false;
+
+            await _refreshTokenRepository.UpdateAsync(existingToken);
+            return existingToken.Token;
+        }
+        else
+        {
+            var newRefreshToken = new RefreshToken
+            {
+                UserId = userId,
+                Token = Guid.NewGuid().ToString(),
+                ExpiryDate = DateTime.UtcNow.AddDays(1)
+            };
+
+            await _refreshTokenRepository.AddAsync(newRefreshToken);
+            return newRefreshToken.Token;
+        }
     }
 
-    public async Task<string?> RefreshAccessToken(string refreshToken)
+    public async Task<(string? NewAccessToken, string? NewRefreshToken)> RefreshTokens(string refreshToken)
     {
-        // Validate the refresh token
         var tokenEntry = await _refreshTokenRepository.GetByDynamicPropertyAsync("Token", refreshToken);
         if (tokenEntry == null || tokenEntry.ExpiryDate <= DateTime.UtcNow || tokenEntry.IsRevoked)
         {
-            return null;// Invalid, expired, or revoked token
+            return (null, null);
         }
 
-        // Retrieve the user and generate a new access token
+        tokenEntry.IsRevoked = true;
+        await _refreshTokenRepository.UpdateAsync(tokenEntry);
+
         var user = await _userRepository.GetByIdAsync(tokenEntry.UserId);
-        if (user == null) return null;
+        if (user == null) return (null, null);
 
         var userDto = new UserDto
         {
@@ -83,42 +98,44 @@ public class AuthService : IAuthService
             Roles = new List<UserRoleDto>(),
             ProfImage = user.ProfImage
         };
-
+        
         user.Roles.ForEach(u => userDto.Roles.Add(new UserRoleDto { Role = u.Role, Status = u.Status }));
 
+        var newAccessToken = GenerateAccessToken(userDto);
+        var newRefreshToken = await GenerateRefreshToken(user.Id);
 
-        return GenerateAccessToken(userDto);
+        return (newAccessToken, newRefreshToken);
     }
 
-public async Task SetTokenCookies(HttpContext context, UserDto user, bool isDev)
-{
-    var accessToken = GenerateAccessToken(user);
-    var refreshToken = await GenerateRefreshToken(user.Id);
-
-    // Determine the settings based on the environment
-    var isSecure = !isDev;
-    var sameSiteMode = isSecure ? SameSiteMode.None : SameSiteMode.Lax;
-
-    // Set the AccessToken cookie
-    context.Response.Cookies.Append("AccessToken", accessToken, new CookieOptions
+    public async Task SetTokenCookies(HttpContext context, UserDto user, bool isDev)
     {
-        HttpOnly = true,
-        Secure = isSecure,
-        SameSite = sameSiteMode,
-        Path = "/",
-        Expires = DateTime.UtcNow.AddMinutes(15) // Set expiration directly
-    });
+        var accessToken = GenerateAccessToken(user);
+        var refreshToken = await GenerateRefreshToken(user.Id);
 
-    // Set the RefreshToken cookie
-    context.Response.Cookies.Append("RefreshToken", refreshToken, new CookieOptions
-    {
-        HttpOnly = true,
-        Secure = isSecure,
-        SameSite = sameSiteMode,
-        Path = "/",
-        Expires = DateTime.UtcNow.AddDays(1) // Set expiration directly
-    });
-}
+        // Determine the settings based on the environment
+        var isSecure = !isDev;
+        var sameSiteMode = isSecure ? SameSiteMode.None : SameSiteMode.Lax;
+
+        // Set the AccessToken cookie
+        context.Response.Cookies.Append("AccessToken", accessToken, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = isSecure,
+            SameSite = sameSiteMode,
+            Path = "/",
+            Expires = DateTime.UtcNow.AddMinutes(_configuration.GetValue<int>("Jwt:ExpirationMinutes"))
+        });
+
+        // Set the RefreshToken cookie
+        context.Response.Cookies.Append("RefreshToken", refreshToken, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = isSecure,
+            SameSite = sameSiteMode,
+            Path = "/",
+            Expires = DateTime.UtcNow.AddDays(1) // Set expiration directly
+        });
+    }
 
     private string GenerateAccessToken(UserDto user)
     {

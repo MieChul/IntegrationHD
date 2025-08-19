@@ -22,7 +22,10 @@ namespace HealthDesk.Application
                 if (destProp == null) continue;
 
                 var sourceValue = sourceProperty.GetValue(source);
-                if (sourceValue == null) continue;
+                if (sourceValue == null && destProp.PropertyType.IsValueType && Nullable.GetUnderlyingType(destProp.PropertyType) == null)
+                {
+                    continue;
+                }
 
                 var sourceType = sourceProperty.PropertyType;
                 var destType = destProp.PropertyType;
@@ -33,8 +36,12 @@ namespace HealthDesk.Application
                     if (IsList(sourceType) && IsList(destType))
                     {
                         var sourceList = (IEnumerable)sourceValue;
+                        if (sourceList == null)
+                        {
+                            destProp.SetValue(destination, null);
+                            continue;
+                        }
                         var destList = (IList)(Activator.CreateInstance(destType) ?? throw new InvalidOperationException());
-
                         var sourceItemType = sourceType.GetGenericArguments()[0];
                         var destItemType = destType.GetGenericArguments()[0];
 
@@ -43,11 +50,9 @@ namespace HealthDesk.Application
                             if (IsComplexType(sourceItemType) && IsComplexType(destItemType))
                             {
                                 var destItem = Activator.CreateInstance(destItemType);
-
                                 var mapMethod = typeof(GenericMapper)
                                     .GetMethod(nameof(Map))!
                                     .MakeGenericMethod(sourceItemType, destItemType);
-
                                 var mappedItem = mapMethod.Invoke(null, new[] { item, destItem });
                                 destList.Add(mappedItem);
                             }
@@ -56,20 +61,20 @@ namespace HealthDesk.Application
                                 destList.Add(ConvertIfNeeded(item, destItemType));
                             }
                         }
-
                         destProp.SetValue(destination, destList);
                     }
                     // Handle nested complex object
                     else if (IsComplexType(sourceType) && IsComplexType(destType))
                     {
-                        // Only attempt to map if both types are complex and not string
-                        var nestedDest = Activator.CreateInstance(destType);
-                        Map(sourceValue, nestedDest);
+                        var nestedDest = sourceValue != null ? Activator.CreateInstance(destType) : null;
+                        if (nestedDest != null)
+                        {
+                            Map(sourceValue, nestedDest);
+                        }
                         destProp.SetValue(destination, nestedDest);
                     }
                     else if (!IsComplexType(sourceType) && IsComplexType(destType))
                     {
-                        // Skip mapping if source is simple type but destination is complex
                         continue;
                     }
                     else
@@ -80,7 +85,6 @@ namespace HealthDesk.Application
                 }
                 catch
                 {
-                    // Skip this property if any error occurs during mapping
                     continue;
                 }
             }
@@ -91,7 +95,6 @@ namespace HealthDesk.Application
         private static object ConvertIfNeeded(object value, Type destinationType)
         {
             if (value == null) return null;
-
             var valueType = value.GetType();
 
             if (destinationType.IsAssignableFrom(valueType))

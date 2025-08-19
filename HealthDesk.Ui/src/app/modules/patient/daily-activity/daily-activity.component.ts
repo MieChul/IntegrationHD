@@ -79,8 +79,8 @@ export class DailyActivityComponent implements OnInit {
 
   initializeForm(): void {
     this.editForm = this.fb.group({
-      height: ['', [Validators.required, Validators.min(50), Validators.max(300)]],
-      weight: ['', [Validators.required, Validators.min(20), Validators.max(300)]],
+      height: ['', [Validators.required]],
+      weight: ['', [Validators.required]],
       age: new FormControl({ value: '', disabled: true }),
       gender: new FormControl({ value: '', disabled: true }),
       lifeStyle: ['', Validators.required]

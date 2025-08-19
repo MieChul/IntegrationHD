@@ -24,6 +24,9 @@ $font-family: 'Roboto', sans-serif;
   width: 100%;
 }
 
+html {
+  font-size: 16px;
+}
 
 html,
 body {
@@ -925,4 +928,30 @@ canvas {
 .mat-mdc-form-field {
   margin-bottom: 0;
   /* Adjust as needed */
+}
+
+@media (max-width: 768px) {
+
+  html {
+    font-size: 12px;
+  }
+
+  :host ::ng-deep {
+
+    // Add vertical margin to all mat-form-fields when they stack on mobile
+    mat-form-field {
+      margin-bottom: 1rem !important;
+    }
+  }
+
+  .nav-tabs {
+    // This prevents the tabs from wrapping to a second line
+    flex-wrap: nowrap;
+
+    .nav-link {
+      // Drastically reduce padding to make the tabs smaller
+      padding: 0.5rem 0.4rem;
+      font-size: 0.75rem;
+    }
+  }
 }

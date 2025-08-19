@@ -165,16 +165,10 @@
                             <div class="col-md-6">
                                 <mat-form-field appearance="outline" class="w-100">
                                     <mat-label>Height (in cm)</mat-label>
-                                    <input matInput type="number" formControlName="height" required min="50" max="300"
+                                    <input matInput type="number" formControlName="height" required
                                         placeholder="Enter height in cm" />
                                     <mat-error *ngIf="editForm.get('height')?.hasError('required')">
                                         Height is required.
-                                    </mat-error>
-                                    <mat-error *ngIf="editForm.get('height')?.hasError('min')">
-                                        Height must be at least 50 cm.
-                                    </mat-error>
-                                    <mat-error *ngIf="editForm.get('height')?.hasError('max')">
-                                        Height cannot exceed 300 cm.
                                     </mat-error>
                                 </mat-form-field>
                             </div>
@@ -183,16 +177,10 @@
                             <div class="col-md-6">
                                 <mat-form-field appearance="outline" class="w-100">
                                     <mat-label>Weight (in kg)</mat-label>
-                                    <input matInput type="number" formControlName="weight" required min="20" max="300"
+                                    <input matInput type="number" formControlName="weight" required
                                         placeholder="Enter weight in kg" />
                                     <mat-error *ngIf="editForm.get('weight')?.hasError('required')">
                                         Weight is required.
-                                    </mat-error>
-                                    <mat-error *ngIf="editForm.get('weight')?.hasError('min')">
-                                        Weight must be at least 20 kg.
-                                    </mat-error>
-                                    <mat-error *ngIf="editForm.get('weight')?.hasError('max')">
-                                        Weight cannot exceed 300 kg.
                                     </mat-error>
                                 </mat-form-field>
                             </div>

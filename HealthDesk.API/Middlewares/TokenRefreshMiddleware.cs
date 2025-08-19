@@ -52,36 +52,49 @@ public class TokenRefreshMiddleware
                     return;
                 }
 
-                string newAccessToken;
+                (string newAccessToken, string newRefreshToken) = (null, null);
                 using (var scope = serviceProvider.CreateScope())
                 {
                     var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
-                    newAccessToken = await authService.RefreshAccessToken(refreshToken);
+                    (newAccessToken, newRefreshToken) = await authService.RefreshTokens(refreshToken);
                 }
 
-                if (!string.IsNullOrEmpty(newAccessToken))
+                if (!string.IsNullOrEmpty(newAccessToken) && !string.IsNullOrEmpty(newRefreshToken))
                 {
+                    var isSecure = !serviceProvider.GetRequiredService<IWebHostEnvironment>().IsDevelopment();
+                    var sameSiteMode = isSecure ? SameSiteMode.None : SameSiteMode.Lax;
+                    var expirationMinutes = _configuration.GetValue<int>("Jwt:ExpirationMinutes");
+
                     context.Response.Cookies.Append("AccessToken", newAccessToken, new CookieOptions
                     {
                         HttpOnly = true,
-                        Secure = true,
-                        SameSite = SameSiteMode.None,
-                        Expires = DateTime.UtcNow
-                        .AddMinutes(_configuration.GetValue<int>("Jwt:ExpirationMinutes"))
+                        Secure = isSecure,
+                        SameSite = sameSiteMode,
+                        Path = "/",
+                        Expires = DateTime.UtcNow.AddMinutes(expirationMinutes)
+                    });
+                    context.Response.Cookies.Append("RefreshToken", newRefreshToken, new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = isSecure,
+                        SameSite = sameSiteMode,
+                        Path = "/",
+                        Expires = DateTime.UtcNow.AddDays(1)
                     });
 
+                    context.Request.Headers.Authorization = "Bearer " + newAccessToken;
                     await _next(context);
                 }
                 else
                 {
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    await context.Response.WriteAsync("Unauthorized: Unable to refresh access token.");
+                    await context.Response.WriteAsync("Unauthorized: Unable to refresh tokens.");
                 }
 
                 return;
             }
         }
-
+        
         await _next(context);
     }
 }

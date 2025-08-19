@@ -17,24 +17,24 @@
                                     <mat-label>User Name</mat-label>
                                     <input matInput formControlName="username" placeholder="User Name"
                                         autocomplete="off">
-                                    <mat-error *ngIf="submitted && f['username'].errors">
-                                        <div *ngIf="f['username'].errors['required']">User Name is required</div>
-                                        <div *ngIf="f['username'].errors['pattern']">Please enter a valid user name.
-                                        </div>
-                                    </mat-error>
                                 </mat-form-field>
+                                <div *ngIf="submitted && f['username'].errors" class="invalid-feedback d-block">
+                                    <div *ngIf="f['username'].errors['required']">User Name is required</div>
+                                    <div *ngIf="f['username'].errors['pattern']">Please enter a valid user name.
+                                    </div>
+                                </div>
                             </div>
                             <div *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
                                 <mat-form-field appearance="outline" class="w-100">
                                     <mat-label>Display Name</mat-label>
                                     <input matInput formControlName="displayName" placeholder="Display Name"
                                         autocomplete="off">
-                                    <mat-error *ngIf="submitted && f['displayName'].errors">
-                                        <div *ngIf="f['displayName'].errors['required']">Display Name is required</div>
-                                        <div *ngIf="f['displayName'].errors['pattern']">Please enter a valid display
-                                            name.</div>
-                                    </mat-error>
                                 </mat-form-field>
+                                <div *ngIf="submitted && f['displayName'].errors" class="invalid-feedback d-block">
+                                    <div *ngIf="f['displayName'].errors['required']">Display Name is required</div>
+                                    <div *ngIf="f['displayName'].errors['pattern']">Please enter a valid display
+                                        name.</div>
+                                </div>
                             </div>
                         </div>
                         <div class="row mb-3" *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
@@ -46,13 +46,13 @@
                                         (dateChange)="calculateAge()" />
                                     <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                                     <mat-datepicker #picker></mat-datepicker>
-                                    <mat-error *ngIf="f['birthDate'].hasError('required')">
-                                        Birth Date is required
-                                    </mat-error>
-                                    <mat-error *ngIf="f['birthDate'].hasError('minAge')">
-                                        Must be 18+ years
-                                    </mat-error>
                                 </mat-form-field>
+                                <div *ngIf="f['birthDate'].hasError('required')" class="invalid-feedback d-block">
+                                    Birth Date is required
+                                </div>
+                                <div *ngIf="f['birthDate'].hasError('minAge')" class="invalid-feedback d-block">
+                                    Must be 18+ years
+                                </div>
                             </div>
                             <div class="col-sm-4">
                                 <mat-form-field appearance="outline" class="w-100">
@@ -160,28 +160,34 @@
                     </div>
                 </div>
                 <ul class="nav nav-tabs">
-                    <li class="nav-item " *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
-                        <div class="nav-link" id="p_info" #p_info aria-current="page"
-                            (click)="changeTab('p_info',p_info)"><i class="bi bi-person"></i>Personal Information</div>
+                    <li class="nav-item" *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
+                        <div class="nav-link" [ngClass]="{'active': tab === 'p_info'}" (click)="changeTab('p_info')">
+                            <i class="bi bi-person"></i>Personal Information
+                        </div>
                     </li>
                     <li class="nav-item" *ngIf="this.user.role == 'physician' || this.user.role == 'patient'">
-                        <div class="nav-link" id="addr_info" #addr_info (click)="changeTab('addr_info', addr_info )"><i
-                                class="bi bi-building"></i>Address Details</div>
+                        <div class="nav-link" [ngClass]="{'active': tab === 'addr_info'}"
+                            (click)="changeTab('addr_info')">
+                            <i class="bi bi-building"></i>Address Details
+                        </div>
                     </li>
                     <li *ngIf="this.user.role == 'physician'" class="nav-item">
-                        <div class="nav-link" id="q_info" #q_info (click)="changeTab('q_info',q_info)"><i
-                                class="bi bi-filetype-doc"></i>Qualification
-                            Documents</div>
+                        <div class="nav-link" [ngClass]="{'active': tab === 'q_info'}" (click)="changeTab('q_info')">
+                            <i class="bi bi-filetype-doc"></i>Qualification Documents
+                        </div>
                     </li>
                     <li class="nav-item" *ngIf="this.user.role != 'patient'">
-                        <div class="nav-link" id="hosp_info" #hosp_info (click)="changeTab('hosp_info',hosp_info)"><i
-                                class="bi bi-hospital"></i>{{this.user.role === 'physician' ? 'Hospital / Clinic
-                            Information' : 'Basic
-                            Information'}}</div>
+                        <div class="nav-link" [ngClass]="{'active': tab === 'hosp_info'}"
+                            (click)="changeTab('hosp_info')">
+                            <i class="bi bi-hospital"></i>{{ this.user.role === 'physician' ? 'Hospital / Clinic
+                            Information' : 'Basic Information' }}
+                        </div>
                     </li>
-                    <li class="nav-item" *ngIf="this.user.role != 'physician' &&  this.user.role != 'patient' ">
-                        <div class="nav-link" id="auth_per" #auth_per (click)="changeTab('auth_per',auth_per)"><i
-                                class="bi bi-person"></i>Authorized Person Information</div>
+                    <li class="nav-item" *ngIf="this.user.role != 'physician' && this.user.role != 'patient'">
+                        <div class="nav-link" [ngClass]="{'active': tab === 'auth_per'}"
+                            (click)="changeTab('auth_per')">
+                            <i class="bi bi-person"></i>Authorized Person Information
+                        </div>
                     </li>
                 </ul>
                 <div class="row">
@@ -196,36 +202,39 @@
                                             <mat-label>First Name</mat-label>
                                             <input matInput formControlName="firstName" placeholder="First Name"
                                                 autocomplete="off">
-                                            <mat-error *ngIf="submitted && f['firstName'].errors">
-                                                <div *ngIf="f['firstName'].errors['required']">First Name is required
-                                                </div>
-                                                <div *ngIf="f['firstName'].errors['pattern']">Please enter a valid first
-                                                    name.</div>
-                                            </mat-error>
                                         </mat-form-field>
+                                        <div *ngIf="submitted && f['firstName'].errors">
+                                            <div *ngIf="f['firstName'].errors['required']"
+                                                class="invalid-feedback d-block">First Name is required
+                                            </div>
+                                            <div *ngIf="f['firstName'].errors['pattern']"
+                                                class="invalid-feedback d-block">Please enter a valid first name.
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="col-sm-4">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Middle Name</mat-label>
                                             <input matInput placeholder="Middle Name" autocomplete="off"
                                                 formControlName="middleName">
-                                            <mat-error *ngIf="submitted && f['middleName'].errors">
-                                                <div>Please enter a valid middle name.</div>
-                                            </mat-error>
                                         </mat-form-field>
+                                        <div *ngIf="submitted && f['middleName'].errors"
+                                            class="invalid-feedback d-block">
+                                            <div>Please enter a valid middle name.</div>
+                                        </div>
                                     </div>
                                     <div class="col-sm-4">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Last Name</mat-label>
                                             <input matInput formControlName="lastName" placeholder="Last Name"
                                                 autocomplete="off">
-                                            <mat-error *ngIf="submitted && f['lastName'].errors">
-                                                <div *ngIf="f['lastName'].errors['required']">Last Name is required
-                                                </div>
-                                                <div *ngIf="f['lastName'].errors['pattern']">Please enter a valid last
-                                                    name.</div>
-                                            </mat-error>
                                         </mat-form-field>
+                                        <div *ngIf="submitted && f['lastName'].errors" class="invalid-feedback d-block">
+                                            <div *ngIf="f['lastName'].errors['required']">Last Name is required
+                                            </div>
+                                            <div *ngIf="f['lastName'].errors['pattern']">Please enter a valid last
+                                                name.</div>
+                                        </div>
                                     </div>
                                 </div>
                                 <hr>
@@ -242,13 +251,14 @@
                                             <mat-label>Mobile 2</mat-label>
                                             <input matInput formControlName="mobile2" placeholder="Mobile 2"
                                                 autocomplete="off">
-                                            <mat-error *ngIf="f['mobile2'].hasError('pattern')">
-                                                Mobile number is invalid
-                                            </mat-error>
-                                            <mat-error *ngIf="f['mobile2'].hasError('sameAsMobile1')">
-                                                Both mobile numbers are the same.
-                                            </mat-error>
                                         </mat-form-field>
+                                        <div *ngIf="f['mobile2'].hasError('pattern')" class="invalid-feedback d-block">
+                                            Mobile number is invalid
+                                        </div>
+                                        <div *ngIf="f['mobile2'].hasError('sameAsMobile1')"
+                                            class="invalid-feedback d-block">
+                                            Both mobile numbers are the same.
+                                        </div>
                                     </div>
                                 </div>
                                 <hr>
@@ -258,23 +268,24 @@
                                             <mat-label>Email</mat-label>
                                             <input matInput formControlName="email1" placeholder="Email"
                                                 autocomplete="off">
-                                            <mat-error *ngIf="submitted && f['email1'].errors">
-                                                <div *ngIf="f['email1'].invalid">Email is invalid</div>
-                                            </mat-error>
                                         </mat-form-field>
+                                        <div *ngIf="submitted && f['email1'].errors" class="invalid-feedback d-block">
+                                            <div *ngIf="f['email1'].invalid">Email is invalid</div>
+                                        </div>
                                     </div>
                                     <div class="col-sm-6">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Email 2</mat-label>
                                             <input matInput formControlName="email2" placeholder="Email 2"
                                                 autocomplete="off">
-                                            <mat-error *ngIf="f['email2'].hasError('email')">
-                                                Email is invalid
-                                            </mat-error>
-                                            <mat-error *ngIf="f['email2'].hasError('sameAsEmail1')">
-                                                Both email IDs are the same.
-                                            </mat-error>
                                         </mat-form-field>
+                                        <div *ngIf="f['email2'].hasError('email')" class="invalid-feedback d-block">
+                                            Email is invalid
+                                        </div>
+                                        <div *ngIf="f['email2'].hasError('sameAsEmail1')"
+                                            class="invalid-feedback d-block">
+                                            Both email IDs are the same.
+                                        </div>
                                     </div>
                                 </div>
                                 <hr>
@@ -284,19 +295,19 @@
                                             <mat-label>Aadhar Number</mat-label>
                                             <input matInput formControlName="aadhar" placeholder="Aadhar Number"
                                                 autocomplete="off">
-                                            <mat-error *ngIf="submitted && f['aadhar'].errors">
-                                                Aadhar is invalid
-                                            </mat-error>
                                         </mat-form-field>
+                                        <div *ngIf="submitted && f['aadhar'].errors" class="invalid-feedback d-block">
+                                            Aadhar is invalid
+                                        </div>
                                     </div>
                                     <div class="col-sm-6">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>PAN</mat-label>
                                             <input matInput formControlName="pan" placeholder="PAN" autocomplete="off">
-                                            <mat-error *ngIf="submitted && f['pan'].errors">
-                                                PAN is invalid
-                                            </mat-error>
                                         </mat-form-field>
+                                        <div *ngIf="submitted && f['pan'].errors" class="invalid-feedback d-block">
+                                            PAN is invalid
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -313,22 +324,22 @@
                                             <mat-label>House / Flat Number</mat-label>
                                             <input matInput formControlName="address1" placeholder="House / Flat Number"
                                                 autocomplete="off">
-                                            <mat-error *ngIf="submitted && f['address1'].errors">
-                                                <div *ngIf="f['address1'].errors['required']">House / Flat Number is
-                                                    required</div>
-                                            </mat-error>
                                         </mat-form-field>
+                                        <div *ngIf="submitted && f['address1'].errors" class="invalid-feedback d-block">
+                                            <div *ngIf="f['address1'].errors['required']">House / Flat Number is
+                                                required</div>
+                                        </div>
                                     </div>
                                     <div class="col-sm-6">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Building / Society</mat-label>
                                             <input matInput formControlName="address2" placeholder="Building / Society"
                                                 autocomplete="off">
-                                            <mat-error *ngIf="submitted && f['address2'].errors">
-                                                <div *ngIf="f['address2'].errors['required']">Building / Society is
-                                                    required</div>
-                                            </mat-error>
                                         </mat-form-field>
+                                        <div *ngIf="submitted && f['address2'].errors" class="invalid-feedback d-block">
+                                            <div *ngIf="f['address2'].errors['required']">Building / Society is
+                                                required</div>
+                                        </div>
                                     </div>
                                 </div>
                                 <hr>
@@ -338,11 +349,11 @@
                                             <mat-label>Area / Locality</mat-label>
                                             <textarea matInput formControlName="area" placeholder="Area / Locality"
                                                 autocomplete="off"></textarea>
-                                            <mat-error *ngIf="submitted && f['area'].errors">
-                                                <div *ngIf="f['area'].errors['required']">Area / Locality is required
-                                                </div>
-                                            </mat-error>
                                         </mat-form-field>
+                                        <div *ngIf="submitted && f['area'].errors" class="invalid-feedback d-block">
+                                            <div *ngIf="f['area'].errors['required']">Area / Locality is required
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <hr>
@@ -352,12 +363,15 @@
                                             <mat-label>Pin Code</mat-label>
                                             <input matInput formControlName="pincode" placeholder="Pin Code"
                                                 autocomplete="off">
-                                            <mat-error *ngIf="submitted && f['pincode'].errors">
-                                                <div *ngIf="f['pincode'].errors['required']">Pincode is required</div>
-                                                <div *ngIf="f['pincode'].errors['pattern']">Please enter a valid 6-digit
-                                                    Indian pincode.</div>
-                                            </mat-error>
                                         </mat-form-field>
+                                        <div *ngIf="submitted && f['pincode'].errors" class="invalid-feedback d-block">
+                                            <div *ngIf="f['pincode'].errors['required']">Pincode is required
+                                            </div>
+                                            <div *ngIf="f['pincode'].errors['pattern']">Please enter a valid
+                                                6-digit
+                                                Indian pincode.
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="col">
                                         <mat-form-field appearance="outline" class="w-100">
@@ -373,9 +387,10 @@
                                                     {{ state.name }}
                                                 </mat-option>
                                             </mat-select>
-                                            <mat-error *ngIf="submitted && f['state'].errors">State is
-                                                required</mat-error>
                                         </mat-form-field>
+                                        <div *ngIf="submitted && f['state'].errors" class="invalid-feedback d-block">
+                                            State is required
+                                        </div>
                                     </div>
                                     <div class="col">
                                         <mat-form-field appearance="outline" class="w-100">
@@ -390,9 +405,10 @@
                                                     {{ city.name }}
                                                 </mat-option>
                                             </mat-select>
-                                            <mat-error *ngIf="submitted && f['city'].errors">City is
-                                                required</mat-error>
                                         </mat-form-field>
+                                        <div *ngIf="submitted && f['city'].errors" class="invalid-feedback d-block">
+                                            City is required
+                                        </div>
                                     </div>
                                 </div>
                                 <hr>
@@ -415,30 +431,34 @@
                                                 {{ speciality }}
                                             </mat-option>
                                         </mat-select>
-                                        <mat-error *ngIf="submitted && f['speciality'].errors">Speciality is
-                                            required</mat-error>
                                     </mat-form-field>
+                                    <div *ngIf="submitted && f['speciality'].errors" class="invalid-feedback d-block">
+                                        Speciality is required
+                                    </div>
                                 </div>
                                 <hr>
                                 <p class="mb-4"><span class="text-primary font-italic me-1">Medical Registration</span>
                                 </p>
                                 <div class="row" formGroupName="medicalRegistration">
-                                    <mat-form-field appearance="outline" class="col-sm-4" style="height: 30px;">
-                                        <mat-label>MRC Number</mat-label>
-                                        <input matInput formControlName="certificateNumber" placeholder="MRC Number">
-                                        <button mat-icon-button matSuffix
-                                            matTooltip="Medical Registration Certificate Number">
-                                            <mat-icon>info</mat-icon>
-                                        </button>
-                                        <mat-error
-                                            *ngIf="submitted && (certificateNumberError || f['medicalRegistration'].get('certificateNumber')?.errors)">
-                                            Certificate Number is required
-                                        </mat-error>
-                                        <mat-error
-                                            *ngIf="submitted && f['medicalRegistration'].get('certificateNumber')?.errors?.['pattern']">
+                                    <div class="col-sm-4">
+                                        <mat-form-field appearance="outline" class="w-100">
+                                            <mat-label>MRC Number</mat-label>
+                                            <input matInput formControlName="certificateNumber"
+                                                placeholder="MRC Number">
+                                            <button mat-icon-button matSuffix
+                                                matTooltip="Medical Registration Certificate Number">
+                                                <mat-icon>info</mat-icon>
+                                            </button>
+                                        </mat-form-field>
+                                        <div *ngIf="submitted && (certificateNumberError)"
+                                            class="invalid-feedback d-block">
+                                            MRC Number is required
+                                        </div>
+                                        <div *ngIf="submitted && f['medicalRegistration'].get('certificateNumber')?.errors?.['pattern']"
+                                            class="invalid-feedback d-block">
                                             Please enter a valid Certificate Number.
-                                        </mat-error>
-                                    </mat-form-field>
+                                        </div>
+                                    </div>
                                     <div class="col-sm-4">
                                         <mat-form-field appearance="outline" class="w-100">
                                             <mat-label>Medical Council Name</mat-label>
@@ -452,9 +472,10 @@
                                                     {{ council }}
                                                 </mat-option>
                                             </mat-select>
-                                            <mat-error *ngIf="submitted && councilError">Council Name is
-                                                required</mat-error>
                                         </mat-form-field>
+                                        <div *ngIf="submitted && councilError" class="invalid-feedback d-block">
+                                            Council Name is required
+                                        </div>
                                     </div>
                                     <div class="col-sm-4">
                                         <div class="input-group">
@@ -498,9 +519,10 @@
                                                     {{ graduation }}
                                                 </mat-option>
                                             </mat-select>
-                                            <mat-error *ngIf="submitted && gNameError">Qualification is
-                                                required</mat-error>
                                         </mat-form-field>
+                                        <div *ngIf="submitted && gNameError" class="invalid-feedback d-block">
+                                            Qualification is required
+                                        </div>
                                     </div>
                                     <div class="col">
                                         <mat-form-field appearance="outline" class="w-100">
@@ -509,8 +531,10 @@
                                                 <mat-option *ngFor="let year of yearsList" [value]="year">{{ year
                                                     }}</mat-option>
                                             </mat-select>
-                                            <mat-error *ngIf="submitted && gYearError">Year is required</mat-error>
                                         </mat-form-field>
+                                        <div *ngIf="submitted && gYearError" class="invalid-feedback d-block">Year is
+                                            required
+                                        </div>
                                     </div>
                                     <div class="col">
                                         <mat-form-field appearance="outline" class="w-100">
@@ -525,9 +549,10 @@
                                                     {{ college }}
                                                 </mat-option>
                                             </mat-select>
-                                            <mat-error *ngIf="submitted && gInstituteError">Institute is
-                                                required</mat-error>
                                         </mat-form-field>
+                                        <div *ngIf="submitted && gInstituteError" class="invalid-feedback d-block">
+                                            Institute is required
+                                        </div>
                                     </div>
                                     <div class="col">
                                         <div class="input-group">
@@ -755,23 +780,25 @@
                                         <mat-label>Hospital / Clinic Name</mat-label>
                                         <input matInput formControlName="clinicName" placeholder="Hospital Clinic Name"
                                             autocomplete="off">
-                                        <mat-error *ngIf="submitted && f['clinicName']?.errors?.['required']">
-                                            Hospital / Clinic Name is required
-                                        </mat-error>
-                                        <mat-error *ngIf="submitted && f['clinicName']?.errors?.['pattern']">
-                                            Enter valid Hospital / Clinic Name
-                                        </mat-error>
                                     </mat-form-field>
+                                    <div *ngIf="submitted && f['clinicName']?.errors?.['required']"
+                                        class="invalid-feedback d-block">
+                                        Hospital / Clinic Name is required
+                                    </div>
+                                    <div *ngIf="submitted && f['clinicName']?.errors?.['pattern']"
+                                        class="invalid-feedback d-block">
+                                        Enter valid Hospital / Clinic Name
+                                    </div>
                                 </div>
                                 <div *ngIf="user.role!='physician'" class="col-sm-6">
                                     <mat-form-field appearance="outline" class="w-100">
                                         <mat-label>Organization Name</mat-label>
                                         <input matInput formControlName="orgName" placeholder="Organization Name"
                                             autocomplete="off">
-                                        <mat-error *ngIf="submitted && f['orgName'].errors">
-                                            Organization Name is required
-                                        </mat-error>
                                     </mat-form-field>
+                                    <div *ngIf="submitted && f['orgName'].errors" class="invalid-feedback d-block">
+                                        Organization Name is required
+                                    </div>
                                 </div>
                                 <div *ngIf="user.role!='physician'" class="col-sm-6">
                                     <mat-form-field appearance="outline" class="w-100">
@@ -784,7 +811,7 @@
                             <div class="row">
                                 <div class="col-sm-6">
                                     <mat-form-field appearance="outline" class="w-100">
-                                        <mat-label>House/ Flat Number</mat-label>
+                                        <mat-label>House / Flat Number</mat-label>
                                         <input matInput placeholder="House/ Flat Number" autocomplete="off"
                                             formControlName="clinicAddress1">
                                     </mat-form-field>
@@ -804,10 +831,10 @@
                                         <mat-label>Area / Locality</mat-label>
                                         <textarea matInput placeholder="Area" autocomplete="off"
                                             formControlName="clinicArea"></textarea>
-                                        <mat-error *ngIf="submitted && f['clinicArea'].errors">
-                                            Area / Locality is required
-                                        </mat-error>
                                     </mat-form-field>
+                                    <div *ngIf="submitted && f['clinicArea'].errors" class="invalid-feedback d-block">
+                                        Area / Locality is required
+                                    </div>
                                 </div>
                             </div>
                             <hr>
@@ -817,12 +844,16 @@
                                         <mat-label>Pin Code</mat-label>
                                         <input matInput placeholder="Pin Code" autocomplete="off"
                                             formControlName="clinicPincode">
-                                        <mat-error *ngIf="submitted && f['clinicPincode'].errors">
-                                            <div *ngIf="f['clinicPincode'].errors['required']">Pincode is required</div>
-                                            <div *ngIf="f['clinicPincode'].errors['pattern']">Please enter a valid
-                                                6-digit Indian pincode.</div>
-                                        </mat-error>
                                     </mat-form-field>
+                                    <div *ngIf="submitted && f['clinicPincode'].errors">
+                                        <div *ngIf="f['clinicPincode'].errors['required']"
+                                            class="invalid-feedback d-block">Pincode is required
+                                        </div>
+                                        <div *ngIf="f['clinicPincode'].errors['pattern']"
+                                            class="invalid-feedback d-block">Please enter a valid
+                                            6-digit Indian pincode.
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="col">
                                     <mat-form-field appearance="outline" class="w-100">
@@ -838,10 +869,10 @@
                                                 {{ clinicState.name }}
                                             </mat-option>
                                         </mat-select>
-                                        <mat-error *ngIf="submitted && f['clinicState'].errors">
-                                            State is required
-                                        </mat-error>
                                     </mat-form-field>
+                                    <div *ngIf="submitted && f['clinicState'].errors" class="invalid-feedback d-block">
+                                        State is required
+                                    </div>
                                 </div>
                                 <div class="col">
                                     <mat-form-field appearance="outline" class="w-100">
@@ -856,9 +887,9 @@
                                                 {{ clinicCity.name }}
                                             </mat-option>
                                         </mat-select>
-                                        <mat-error *ngIf="submitted && f['clinicCity'].errors">City is
-                                            required</mat-error>
                                     </mat-form-field>
+                                    <div *ngIf="submitted && f['clinicCity'].errors" class="invalid-feedback d-block">
+                                        City is required</div>
                                 </div>
                             </div>
                             <hr>
@@ -876,13 +907,15 @@
                                         <mat-label>First Name</mat-label>
                                         <input matInput placeholder="First Name" autocomplete="off"
                                             formControlName="authFirstName">
-                                        <mat-error *ngIf="submitted && f['authFirstName'].errors">
-                                            <div *ngIf="f['authFirstName'].errors['required']">First Name is required
-                                            </div>
-                                            <div *ngIf="f['authFirstName'].errors['pattern']">Please enter a valid first
-                                                name.</div>
-                                        </mat-error>
                                     </mat-form-field>
+                                    <div *ngIf="submitted && f['authFirstName'].errors">
+                                        <div *ngIf="f['authFirstName'].errors['required']"
+                                            class="invalid-feedback d-block">First Name is required
+                                        </div>
+                                        <div *ngIf="f['authFirstName'].errors['pattern']"
+                                            class="invalid-feedback d-block">Please enter a valid firstname.
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="col-sm-4">
                                     <mat-form-field appearance="outline" class="w-100">
@@ -896,13 +929,15 @@
                                         <mat-label>Last Name</mat-label>
                                         <input matInput placeholder="Last Name" autocomplete="off"
                                             formControlName="authLastName">
-                                        <mat-error *ngIf="submitted && f['authLastName'].errors">
-                                            <div *ngIf="f['authLastName'].errors['required']">Last Name is required
-                                            </div>
-                                            <div *ngIf="f['authLastName'].errors['pattern']">Please enter a valid last
-                                                name.</div>
-                                        </mat-error>
                                     </mat-form-field>
+                                    <div *ngIf="submitted && f['authLastName'].errors">
+                                        <div *ngIf="f['authLastName'].errors['required']"
+                                            class="invalid-feedback d-block">Last Name is required
+                                        </div>
+                                        <div *ngIf="f['authLastName'].errors['pattern']"
+                                            class="invalid-feedback d-block">Please enter a valid last name.
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <hr>
@@ -912,10 +947,11 @@
                                         <mat-label>Designation</mat-label>
                                         <input matInput placeholder="Designation" autocomplete="off"
                                             formControlName="authDesignation">
-                                        <mat-error *ngIf="submitted && f['authDesignation'].errors">
-                                            <div>Designation is required</div>
-                                        </mat-error>
                                     </mat-form-field>
+                                    <div *ngIf="submitted && f['authDesignation'].errors"
+                                        class="invalid-feedback d-block">
+                                        <div>Designation is required</div>
+                                    </div>
                                 </div>
                                 <div class="col-sm-6">
                                     <mat-form-field appearance="outline" class="w-100">
@@ -939,20 +975,20 @@
                                         <mat-label>Mobile</mat-label>
                                         <input matInput placeholder="Mobile" autocomplete="off"
                                             formControlName="authMob">
-                                        <mat-error *ngIf="submitted && f['authMob'].errors">
-                                            <div>Mobile is required</div>
-                                        </mat-error>
                                     </mat-form-field>
+                                    <div *ngIf="submitted && f['authMob'].errors" class="invalid-feedback d-block">
+                                        <div>Mobile is required</div>
+                                    </div>
                                 </div>
                                 <div class="col-sm-3">
                                     <mat-form-field appearance="outline" class="w-100">
                                         <mat-label>Email</mat-label>
                                         <input matInput placeholder="Email" autocomplete="off"
                                             formControlName="authEmail" [readOnly]="true">
-                                        <mat-error *ngIf="submitted && f['authEmail'].errors">
-                                            <div *ngIf="f['authEmail'].invalid">Email is invalid</div>
-                                        </mat-error>
                                     </mat-form-field>
+                                    <div *ngIf="submitted && f['authEmail'].errors" class="invalid-feedback d-block">
+                                        <div *ngIf="f['authEmail'].invalid">Email is invalid</div>
+                                    </div>
                                 </div>
                             </div>
                             <hr>
