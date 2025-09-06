@@ -22,10 +22,7 @@ namespace HealthDesk.Application
                 if (destProp == null) continue;
 
                 var sourceValue = sourceProperty.GetValue(source);
-                if (sourceValue == null && destProp.PropertyType.IsValueType && Nullable.GetUnderlyingType(destProp.PropertyType) == null)
-                {
-                    continue;
-                }
+                if (sourceValue == null) continue;
 
                 var sourceType = sourceProperty.PropertyType;
                 var destType = destProp.PropertyType;
@@ -36,11 +33,6 @@ namespace HealthDesk.Application
                     if (IsList(sourceType) && IsList(destType))
                     {
                         var sourceList = (IEnumerable)sourceValue;
-                        if (sourceList == null)
-                        {
-                            destProp.SetValue(destination, null);
-                            continue;
-                        }
                         var destList = (IList)(Activator.CreateInstance(destType) ?? throw new InvalidOperationException());
                         var sourceItemType = sourceType.GetGenericArguments()[0];
                         var destItemType = destType.GetGenericArguments()[0];
@@ -66,11 +58,8 @@ namespace HealthDesk.Application
                     // Handle nested complex object
                     else if (IsComplexType(sourceType) && IsComplexType(destType))
                     {
-                        var nestedDest = sourceValue != null ? Activator.CreateInstance(destType) : null;
-                        if (nestedDest != null)
-                        {
-                            Map(sourceValue, nestedDest);
-                        }
+                        var nestedDest = Activator.CreateInstance(destType);
+                        Map(sourceValue, nestedDest);
                         destProp.SetValue(destination, nestedDest);
                     }
                     else if (!IsComplexType(sourceType) && IsComplexType(destType))

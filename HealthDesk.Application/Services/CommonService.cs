@@ -97,4 +97,10 @@ public class CommonService : ICommonService
             })
             .ToList();
     }
+
+    public async Task<IEnumerable<Advertisement>> GetAdvertisementsAsync()
+    {
+        var ads = await _commonRepository.GetAllAsync<Advertisement>("Advertisement");
+        return ads;
+    }
 }

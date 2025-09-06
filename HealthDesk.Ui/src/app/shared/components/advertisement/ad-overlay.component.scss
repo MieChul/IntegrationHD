@@ -1,0 +1,68 @@
+.overlay-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+    /* Ensure it's on top of other content */
+}
+
+.ad-container {
+    position: relative;
+    max-width: 90%;
+    max-height: 90%;
+    background-color: #fff;
+    padding: 1rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+}
+
+.ad-image {
+    display: block;
+    max-width: 100%;
+    max-height: calc(90vh - 2rem);
+    /* Ensure image fits within container */
+    object-fit: contain;
+}
+
+.close-button {
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background-color: #333;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1;
+    padding: 0;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.close-button:not(:disabled):hover {
+    background-color: #ff0000;
+}
+
+.close-button:disabled {
+    background-color: #777;
+    cursor: not-allowed;
+    font-size: 14px;
+    /* Smaller font for countdown text */
+    width: auto;
+    height: 40px;
+    padding: 0 15px;
+    border-radius: 20px;
+    /* Pill shape for countdown */
+}

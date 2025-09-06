@@ -95,4 +95,12 @@ public class CommonController : ControllerBase
         var brandData = await _commonService.GetBrandsAsync();
         return Ok(new { Success = true, Message = "Brands retrieved successfully.", Data = brandData });
     }
+
+    [HttpGet("advertisements")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAdvertisements()
+    {
+        var adData = await _commonService.GetAdvertisementsAsync();
+        return Ok(new { Success = true, Message = "Advertisements retrieved successfully.", Data = adData });
+    }
 }

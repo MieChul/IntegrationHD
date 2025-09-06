@@ -41,6 +41,22 @@
       "PackagePath": "staticwebassets\\assets\\documents\\68a12afe3a24256a77f403ac\\prescription\\p_1.pdf"
     },
     {
+      "Id": "D:\\IntegrationHD\\HealthDesk.Api\\wwwroot\\assets\\documents\\68a177fb1269a4857ec2933f\\graduation.pdf",
+      "PackagePath": "staticwebassets\\assets\\documents\\68a177fb1269a4857ec2933f\\graduation.pdf"
+    },
+    {
+      "Id": "D:\\IntegrationHD\\HealthDesk.Api\\wwwroot\\assets\\documents\\68a177fb1269a4857ec2933f\\remedies\\68a3354dd3702321d756b970_image0.png",
+      "PackagePath": "staticwebassets\\assets\\documents\\68a177fb1269a4857ec2933f\\remedies\\68a3354dd3702321d756b970_image0.png"
+    },
+    {
+      "Id": "D:\\IntegrationHD\\HealthDesk.Api\\wwwroot\\assets\\documents\\68a177fb1269a4857ec2933f\\remedies\\68a34c6e443aa5f75ffd8de1_image0.png",
+      "PackagePath": "staticwebassets\\assets\\documents\\68a177fb1269a4857ec2933f\\remedies\\68a34c6e443aa5f75ffd8de1_image0.png"
+    },
+    {
+      "Id": "D:\\IntegrationHD\\HealthDesk.Api\\wwwroot\\assets\\documents\\68a3f0def737c453e851071f\\medicalRegistration.pdf",
+      "PackagePath": "staticwebassets\\assets\\documents\\68a3f0def737c453e851071f\\medicalRegistration.pdf"
+    },
+    {
       "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.HealthDesk.API.Microsoft.AspNetCore.StaticWebAssets.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
     },

@@ -1,5 +1,6 @@
-
-<ng-container> 
+<ng-container>
   <app-loader *ngIf="isLoading$ | async"></app-loader>
   <router-outlet></router-outlet>
-</ng-container> 
+  <app-ad-overlay *ngIf="selectedAd" [ad]="selectedAd" (close)="onAdClosed()">
+  </app-ad-overlay>
+</ng-container>

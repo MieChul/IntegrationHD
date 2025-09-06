@@ -12,6 +12,7 @@ import { DatabaseService } from './shared/services/database.service';
 import { registerLocaleData } from '@angular/common';
 import localeIn from '@angular/common/locales/en-IN';
 import { MAT_DATE_FORMATS } from '@angular/material/core';
+import { AdOverlayComponent } from './shared/components/advertisement/ad-overlay.component';
 
 export function initializeDatabase(databaseService: DatabaseService): () => Promise<void> {
     return () => databaseService.loadDatabase();
@@ -31,7 +32,8 @@ const IN_DATE_FORMATS = {
 
 @NgModule({
     declarations: [
-        AppComponent
+        AppComponent,
+        AdOverlayComponent
     ],
     imports: [
         BrowserModule,
@@ -51,7 +53,7 @@ const IN_DATE_FORMATS = {
             useFactory: initializeDatabase,
             deps: [DatabaseService],
             multi: true,
-        }, // Register the interceptor
+        },
     ],
     bootstrap: [AppComponent]
 })

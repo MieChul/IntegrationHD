@@ -47,9 +47,9 @@ export class AuthInterceptor implements HttpInterceptor {
           this.notificationService.showError(genericErrorMessage);
         }
 
-        if (error.status === 401 || error.status === 403) {
-          this.authService.logout();
-        }
+        // if (error.status === 401 || error.status === 403) {
+        //   this.authService.logout();
+        // }
 
         return throwError(() => error);
       }),

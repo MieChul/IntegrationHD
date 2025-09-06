@@ -1,8 +1,8 @@
 using HealthDesk.Application;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
-namespace HealthDesk.API.Controllers;
 [ApiController]
 [AllowAnonymous]
 [Route("api/[controller]")]
@@ -10,65 +10,61 @@ public class OtpController : ControllerBase
 {
     private readonly IOtpService _otpService;
     private readonly IUserService _userService;
+    private readonly IMsg91Service _msg91Service;
 
-    public OtpController(IOtpService otpService, IUserService userService)
+    public OtpController(IOtpService otpService, IUserService userService, IMsg91Service msg91Service)
     {
         _otpService = otpService;
         _userService = userService;
+        _msg91Service = msg91Service;
     }
 
     [HttpPost("send")]
     public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request)
     {
-        if (!ModelState.IsValid)
+        if (!ModelState.IsValid || request.IsEmail)
         {
-            return BadRequest(ModelState);
+            return BadRequest("Invalid request. OTP can only be sent to a mobile number.");
         }
 
-        var prop = request.IsEmail ? "email" : "mobile";
-        if (await _userService.IsTaken(prop, request.Contact))
+        if (await _userService.IsTaken("mobile", request.Contact))
         {
-            return BadRequest($"{char.ToUpper(prop[0])}{prop[1..]} is already registered. Please use login.");
+            return BadRequest("Mobile is already registered. Please use login.");
         }
-        var otp = _otpService.GenerateOtp();
-        var otpToken = _otpService.GenerateOtpToken(otp, request.Contact);
 
-        // Send OTP via messaging service
-        //await _otpService.SendNotification(request.Contact, $"Your OTP is {otp}. It will expire in 5 minutes.", "Your OTP Code");
-        _otpService.SendNotification(request.Contact, $"Your OTP is {otp}. It will expire in 5 minutes.", "Your OTP Code");
+        bool isSent = await _msg91Service.SendOtpAsync(request.Contact);
 
-        return Ok(new { OtpToken = otpToken });
+        if (isSent)
+        {
+            var otpToken = _otpService.GenerateOtpToken(request.Contact);
+            return Ok(new { OtpToken = otpToken });
+        }
+
+        return BadRequest(new { Message = "Failed to send OTP via the provider." });
     }
-
-    [HttpPost("sendOtp")]
-
-    public async Task<IActionResult> SendOtpMessage([FromBody] SendOtpRequest request)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
-        var prop = request.IsEmail ? "email" : "mobile";
-        var otp = _otpService.GenerateOtp();
-        var otpToken = _otpService.GenerateOtpToken(otp, request.Contact);
-
-        // Send OTP via messaging service
-        //await _otpService.SendNotification(request.Contact, $"Your OTP is {otp}. It will expire in 5 minutes.", "Your OTP Code");
-        _otpService.SendNotification(request.Contact, $"Your OTP is {otp}. It will expire in 5 minutes.", "Your OTP Code");
-        
-        return Ok(new { OtpToken = otpToken });
-    }
-
 
     [HttpPost("verify")]
-    public IActionResult VerifyOtp([FromBody] VerifyOtpRequest request)
+    public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest request)
     {
-        var isValid = _otpService.VerifyOtpToken(request.OtpToken, request.Otp, request.Contact);
-        if (isValid)
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        bool isTokenValid = _otpService.VerifyOtpToken(request.OtpToken, request.Contact);
+
+        if (!isTokenValid)
+        {
+            return BadRequest(new { Success = false, Message = "Invalid or expired OTP token. Please try again." });
+        }
+
+        bool isMsg91Verified = await _msg91Service.VerifyOtpAsync(request.Contact, request.Otp);
+
+        if (isMsg91Verified)
         {
             return Ok(new { Message = "OTP verified successfully", Valid = true });
         }
-        return BadRequest(new { Success = false, Message = "Invalid or expired OTP." });
+
+        return BadRequest(new { Success = false, Message = "Invalid OTP code." });
     }
 }

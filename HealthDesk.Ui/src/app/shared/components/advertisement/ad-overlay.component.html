@@ -1,0 +1,12 @@
+<div class="overlay-backdrop" (click)="onClose()">
+    <div class="ad-container" (click)="$event.stopPropagation()">
+        <button class="close-button" (click)="onClose()" [disabled]="isCloseButtonDisabled">
+            <span *ngIf="isCloseButtonDisabled">Close in {{ countdown }}s</span>
+            <span *ngIf="!isCloseButtonDisabled">&times;</span>
+        </button>
+
+        <!-- FIX: Change ad.image_url to ad.imageUrl -->
+        <img [src]="ad.imageUrl" alt="Advertisement" class="ad-image" />
+
+    </div>
+</div>

@@ -66,28 +66,28 @@ export class VerifyForgotPasswordComponent implements OnInit, OnDestroy {
       else
         contactInfo = this.verifyForm.get('email')?.value;
 
-        this.userService.getUsername(contactInfo).pipe(
-          switchMap((response) => {
-            // The first API call succeeded, proceed with the second call
-            return this.otpService.sendOtpMessage(contactInfo, isEmail);
-          })
-        ).subscribe({
-          next: (otpResponse) => {
-            this.notificationService.showSuccess('OTP sent successfully');
-            this.otpToken = otpResponse.otpToken; // Store OTP token for verification
-            this.isOtpSent = true;
-            this.startCountdown();
-          },
-          error: (error) => {
-            if (error.status === 404) {
-              this.notificationService.showError('Not registered with app. Please Register');
-            } else {
-              console.error('Failed to send OTP', error);
-              this.notificationService.showError('Failed to send OTP. Please try again');
-            }
+      this.userService.getUsername(contactInfo).pipe(
+        switchMap((response) => {
+          // The first API call succeeded, proceed with the second call
+          return this.otpService.sendOtp(contactInfo, isEmail);
+        })
+      ).subscribe({
+        next: (otpResponse) => {
+          this.notificationService.showSuccess('OTP sent successfully');
+          this.otpToken = otpResponse.otpToken; // Store OTP token for verification
+          this.isOtpSent = true;
+          this.startCountdown();
+        },
+        error: (error) => {
+          if (error.status === 404) {
+            this.notificationService.showError('Not registered with app. Please Register');
+          } else {
+            console.error('Failed to send OTP', error);
+            this.notificationService.showError('Failed to send OTP. Please try again');
           }
-        });
-      
+        }
+      });
+
     } else {
       this.notificationService.showError('Please verify the captcha and provide a valid contact.');
     }
@@ -123,15 +123,15 @@ export class VerifyForgotPasswordComponent implements OnInit, OnDestroy {
     if (isEmail)
       contact = this.verifyForm.get('email')?.value;
     else
-      contact = this.verifyForm.get('mobile')?.value; 
+      contact = this.verifyForm.get('mobile')?.value;
     const otp = this.otpControls.value.join('');
 
     this.otpService.verifyOtp(contact, otp, this.otpToken).subscribe({
       next: (response) => {
         if (response.valid) {
           this.authStateService.setOtpVerified(true); // Set OTP as verified
-          this.router.navigate(['/forgot-password'], { queryParams: {contact: contact, isEmail: isEmail } });
-// Navigate to forgot-password if OTP is verified
+          this.router.navigate(['/forgot-password'], { queryParams: { contact: contact, isEmail: isEmail } });
+          // Navigate to forgot-password if OTP is verified
         } else {
           this.notificationService.showError('Invalid OTP. Please try again.');
         }
@@ -157,10 +157,10 @@ export class VerifyForgotPasswordComponent implements OnInit, OnDestroy {
     this.router.navigate(['/role-selection']);
   }
 
-  
+
   moveToNext(event: KeyboardEvent, index: number) {
     const target = event.target as HTMLInputElement;
-  
+
     // Move focus to the next box if a number is entered
     if (event.key >= '0' && event.key <= '9') {
       const nextInput = target.nextElementSibling as HTMLInputElement;
@@ -168,7 +168,7 @@ export class VerifyForgotPasswordComponent implements OnInit, OnDestroy {
         nextInput.focus();
       }
     }
-  
+
     // Handle Backspace: Move focus to the previous box
     if (event.key === 'Backspace') {
       const prevInput = target.previousElementSibling as HTMLInputElement;

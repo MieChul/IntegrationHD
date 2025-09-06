@@ -28,8 +28,7 @@ export class NewMedicalCaseComponent {
       next: async (data) => {
         this.userData = data;
         // FIX 3: Ensure you are mapping to a string array if the service returns objects
-        const specialitiesData = await this.databaseService.getSpecialities();
-        this.specialities = specialitiesData.map((s: any) => s.name); // Adjust '.name' if your property is different
+       this.specialities = await this.databaseService.getSpecialities();
         await this.initializeSearch();
       },
       error: (err) => console.error('Error fetching user data:', err)
@@ -103,7 +102,7 @@ export class NewMedicalCaseComponent {
     return this.fb.group({
       id: [],
       name: ['', Validators.required],
-      days: [1, [Validators.required, Validators.min(1)]] // Added required validator and default value 1
+      days: ['', [Validators.required, Validators.min(1)]] // Added required validator and default value 1
     });
   }
 

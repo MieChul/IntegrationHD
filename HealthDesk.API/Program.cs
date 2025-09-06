@@ -149,7 +149,7 @@ app.UseStaticFiles();
 app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 app.UseMiddleware<ErrorHandlingMiddleware>();
-app.UseMiddleware<SecurityHeadersMiddleware>();
+// app.UseMiddleware<SecurityHeadersMiddleware>();
 
 app.UseRouting();
 app.UseIpRateLimiting();
@@ -163,7 +163,7 @@ if (prerelease)
 }
 
 app.UseMiddleware<TokenRefreshMiddleware>();
-app.UseMiddleware<AntiMaliciousDataMiddleware>();
+// app.UseMiddleware<AntiMaliciousDataMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
